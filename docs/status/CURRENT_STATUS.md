@@ -1,0 +1,119 @@
+# 当前项目状态
+
+**最后更新**：2026-05-19  
+**状态维护人**：开发者每次开工和收工时共同维护  
+**必读**：每个 AI 会话开始前必须读取本文件
+
+## 1. 当前阶段
+
+阶段：规划完成，准备进入基础搭建。
+
+当前总目标：
+
+- 建立项目基础结构。
+- 明确双人开发边界。
+- 第一阶段实现 `PDF 工具箱`、`AI 修图工具`、`麻将 Roguelike 消除`。
+
+## 2. 当前任务看板
+
+权威任务池是 `docs/tasks/TASK_BOARD.md`。本节只作为快照摘要，可能落后于任务池；领取任务和判断文件冲突时，以 `TASK_BOARD.md` 和 `docs/tasks/CLAIMS.md` 为准。
+
+| 任务 | 名称 | 负责人 | 状态 | 允许修改范围 | 下一步 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 创建 Monorepo 外壳 | 开发 A | 未开始 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | 建立根目录结构 |
+| 2 | 搭建 Web 应用 | 开发 A | 未开始 | `apps/web/**` | 创建 Next.js 应用 |
+| 3 | 添加共享领域类型 | 开发 B | 未开始 | `packages/shared/**` | 建立内容类型和使用模式类型 |
+| 4 | 添加数据库和 Prisma 模型 | 开发 A | 未开始 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | 建立内容模型 |
+| 5 | 添加第一批种子内容 | 开发 A | 未开始 | `apps/web/src/lib/content/**`, `apps/web/prisma/seed.ts` | 准备工具/游戏初始数据 |
+| 6 | 实现内容查询层 | 开发 A | 未开始 | `apps/web/src/lib/content/**` | 实现热门、星标、最近更新 |
+| 7 | 实现公开门户页面 | 开发 A | 未开始 | `apps/web/src/app/**`, `apps/web/src/components/content/**` | 首页和频道页 |
+| 8 | 添加 AI 搜索 MVP | 开发 B | 未开始 | `apps/web/src/lib/ai/**`, `apps/web/src/components/ai/**`, `apps/web/src/app/api/ai/**` | 本地匹配搜索 |
+| 9 | 添加后台 MVP | 开发 A | 未开始 | `apps/web/src/app/admin/**`, `apps/web/src/lib/admin/**` | 内容后台 |
+| 10 | 添加使用模式和变现基础 | 开发 A | 未开始 | `apps/web/src/lib/billing/**`, `apps/web/src/components/billing/**` | 免费/限次/订阅展示 |
+| 11 | 添加游戏发布基础 | 开发 B | 未开始 | `apps/game/**`, `apps/web/src/components/game/**` | Cocos 发布文档和 Web 嵌入 |
+| 12 | 添加埋点和热门排序 | 开发 B | 未开始 | `apps/web/src/lib/analytics/**`, `apps/web/src/app/api/events/**` | 点击统计 |
+| 13 | 添加部署文件 | 开发 B | 未开始 | `deploy/**`, `apps/web/Dockerfile`, `docker-compose.yml` | Docker/Nginx |
+| 14 | 添加上线清单和运营手册 | 两人协作 | 未开始 | `docs/checklists/**`, `docs/operations/**` | 补齐上线流程 |
+| 15 | 实现 PDF 工具箱 MVP | 开发 A | 未开始 | `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/components/tools/pdf/**`, `apps/web/src/lib/tools/pdf/**` | PDF 预览和转换 |
+| 16 | 实现 AI 修图工具 MVP | 开发 B | 未开始 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | 基础修图和 AI 占位 |
+| 17 | 实现麻将 Roguelike 消除 MVP | 开发 B | 未开始 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | 规则模型和游戏文档 |
+
+## 3. 当前活跃任务
+
+暂无。
+
+领取任务后填写：
+
+```md
+### 当前任务
+
+- 任务编号：
+- 任务名称：
+- 负责人：
+- 状态：进行中
+- 开始时间：
+- 允许修改文件：
+- 禁止修改文件：
+- 验证命令：
+- 当前阻塞：
+- 下一步：
+```
+
+## 4. 已完成事项
+
+- 已确认产品定位：免费工具游戏门户，后续扩展 AI 能力平台。
+- 已确认工具和游戏平级。
+- 已确认 AI 搜索只做辅助发现，返回推荐列表。
+- 已确认第一阶段三个交付：PDF 工具箱、AI 修图工具、麻将 Roguelike 消除。
+- 已确认不调用模型的能力尽量免费。
+- 已确认双人开发模式和默认负责人边界。
+- 已新增根目录 `AGENTS.md` 和 `CLAUDE.md`，要求 AI 每次任务前读取项目上下文、当前状态、协作规范和实施计划。
+
+## 5. 当前阻塞
+
+暂无。
+
+## 6. 关键决策
+
+### 决策 1：收费原则
+
+不调用模型能力、不产生明显高成本的功能，第一阶段尽量免费。
+
+### 决策 2：PDF 编辑边界
+
+第一版不做完整 PDF 原文在线编辑，只做页面级处理和转换。
+
+### 决策 3：AI 修图边界
+
+基础修图免费，调用 AI 模型的能力收费或限次。
+
+### 决策 4：游戏方向
+
+小游戏不是简单换皮，而是麻将消除 + Roguelike 奖励构筑。
+
+### 决策 5：协作方式
+
+每个开发者和各自 AI 必须通过文档同步，状态统一记录在本文件。
+
+## 7. 下一步建议
+
+1. 开发 A 领取任务 1：创建 Monorepo 外壳。
+2. 开发 B 并行领取任务 3：添加共享领域类型。
+3. 两人完成后同步更新本文件。
+4. 再进入任务 2、4、8、17。
+
+## 8. 任务池和领取入口
+
+所有可领取任务记录在：
+
+`docs/tasks/TASK_BOARD.md`
+
+所有正在进行的任务、文件锁定、冲突和交接记录在：
+
+`docs/tasks/CLAIMS.md`
+
+所有新想法和需求变更先记录在：
+
+`docs/tasks/CHANGE_INTAKE.md`
+
+没有在 `docs/tasks/CLAIMS.md` 领取任务前，不要修改代码。
