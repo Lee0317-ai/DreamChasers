@@ -1,0 +1,34 @@
+# T018 完成记录：建立 Git 忽略规则和协作入口
+
+- 任务编号：T018
+- 任务名称：建立 Git 忽略规则和协作入口
+- 负责人：Codex / 开发 A
+- 完成时间：2026-05-19
+- 修改文件：
+  - `.gitignore`
+  - `README.md`
+  - `.claude/settings.local.json`
+  - `.obsidian/workspace.json`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-05-19.md`
+  - `docs/completion/2026-05-19-task-18-gitignore-collaboration.md`
+- 实现内容：
+  - 新增根目录 `.gitignore`，忽略依赖、环境变量、构建产物、测试输出、本地数据库、Cocos 生成目录、系统和编辑器本地文件。
+  - 从 Git 索引移除 `.claude/settings.local.json` 和 `.obsidian/workspace.json`，本地文件保留，提交后不再上传。
+  - 在 README 中补充协作入口，说明新开发者应先读的文档和建议分支。
+  - 将本次需求登记为 `IDEA-20260519-01` 并入池为 `T018`。
+  - 更新任务池、领取历史、当前状态和当天进展。
+- 验证命令：
+  - `git status --porcelain=v1 -uall`
+  - `git check-ignore`
+  - UTF-8 无 BOM 检查
+- 验证结果：
+  - `.gitignore` 已创建。
+  - 关键忽略规则对 `.env`、`node_modules`、`.next`、Cocos `library` 目录生效。
+  - 已跟踪的本地状态文件已从 Git 索引移除。
+  - 新增和修改的文本文件应保持 UTF-8 无 BOM。
+- 遗留问题：
+  - 无。

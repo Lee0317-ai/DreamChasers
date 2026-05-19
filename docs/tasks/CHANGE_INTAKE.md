@@ -52,7 +52,23 @@
 
 ## 5. 已处理想法
 
-暂无。
+### IDEA-20260519-01：建立 Git 忽略规则和协作入口
+
+- 提出人：Lee
+- 提出时间：2026-05-19
+- 背景：GitHub 仓库已创建，需要避免上传依赖、构建产物、本地环境和编辑器状态文件，并方便朋友加入协作。
+- 目标：新增 `.gitignore`，补充 README 协作入口，并在任务池记录本次仓库基础协作任务。
+- 不做：不搭建 Monorepo，不安装依赖，不提交或推送远端。
+- 用户价值：降低仓库污染和协作冲突，让另一位开发者 clone 后能快速找到任务池和领取规则。
+- 涉及模块：仓库基础、双人协作。
+- 可能影响文件：`.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**`
+- 是否影响另一方任务：否
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：`.gitignore` 存在且覆盖 Node/Next/Cocos/环境变量/构建产物/本地编辑器状态；已跟踪的本地状态文件从 Git 索引移除；README 有协作入口；状态文档已同步。
+- AI 初步方案：作为 `T018` 独立任务处理，文件范围限定在仓库忽略规则、本地状态文件取消跟踪和协作文档。
+- 处理结论：已入任务池
+- 对应任务编号：T018
 
 ## 6. AI 处理新想法时必须输出
 
@@ -68,4 +84,3 @@
 2. `docs/tasks/TASK_BOARD.md`
 3. 必要时更新 `docs/tasks/CLAIMS.md`
 4. 必要时更新 `docs/status/CURRENT_STATUS.md`
-

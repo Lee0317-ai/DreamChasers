@@ -18,7 +18,7 @@
 
 ## 2. 当前领取
 
-暂无。
+暂无进行中的任务。
 
 领取后按此格式添加：
 
@@ -74,3 +74,18 @@
 - 风险：
 - 新负责人需要先读：
 ```
+
+## 5. 领取历史
+
+### T018：建立 Git 忽略规则和协作入口
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-19
+- 状态：已完成
+- 预计完成：2026-05-19
+- 允许修改文件：`.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/2026-05-19-task-18-gitignore-collaboration.md`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `tsconfig.base.json`
+- 依赖任务：无
+- 验证命令：`git status --porcelain=v1 -uall`; `git check-ignore`; UTF-8 无 BOM 检查
+- 当前风险：无。
+- 备注：已执行 `git rm --cached .claude/settings.local.json .obsidian/workspace.json`，本地文件保留，仓库提交后将停止跟踪这两个本地状态文件。

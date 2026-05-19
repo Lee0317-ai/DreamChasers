@@ -42,6 +42,7 @@
 | T015 | P1 | 实现 PDF 工具箱 MVP | 开发 A | 待领取 | T007, T010 | `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/components/tools/pdf/**`, `apps/web/src/lib/tools/pdf/**` | `npm run test -w apps/web -- pdf` |
 | T016 | P1 | 实现 AI 修图工具 MVP | 开发 B | 待领取 | T007, T010 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | `npm run test -w apps/web -- photo` |
 | T017 | P1 | 实现麻将 Roguelike 消除 MVP | 开发 B | 待领取 | T003, T011 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | `npm run test -w packages/shared -- mahjong` |
+| T018 | P0 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | 无 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | `git status --porcelain=v1 -uall`; `git check-ignore`; UTF-8 无 BOM 检查 |
 
 ## 4. 新增任务模板
 
@@ -93,4 +94,3 @@
 - 依赖。
 - 主要文件范围。
 - 验证方式。
-

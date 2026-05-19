@@ -37,6 +37,7 @@
 | 15 | 实现 PDF 工具箱 MVP | 开发 A | 未开始 | `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/components/tools/pdf/**`, `apps/web/src/lib/tools/pdf/**` | PDF 预览和转换 |
 | 16 | 实现 AI 修图工具 MVP | 开发 B | 未开始 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | 基础修图和 AI 占位 |
 | 17 | 实现麻将 Roguelike 消除 MVP | 开发 B | 未开始 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | 规则模型和游戏文档 |
+| 18 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | 提交后本地状态文件不再上传 |
 
 ## 3. 当前活跃任务
 
@@ -68,6 +69,8 @@
 - 已确认不调用模型的能力尽量免费。
 - 已确认双人开发模式和默认负责人边界。
 - 已新增根目录 `AGENTS.md` 和 `CLAUDE.md`，要求 AI 每次任务前读取项目上下文、当前状态、协作规范和实施计划。
+- 已新增 `.gitignore` 和 README 协作入口，减少依赖、构建产物、本地环境和编辑器状态文件误上传。
+- 已从 Git 索引移除 `.claude/settings.local.json` 和 `.obsidian/workspace.json`，本地文件仍保留。
 
 ## 5. 当前阻塞
 

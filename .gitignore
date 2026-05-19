@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build output
+.next/
+out/
+dist/
+build/
+.output/
+.turbo/
+.vercel/
+
+# Test and coverage output
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Local database and generated storage
+*.sqlite
+*.sqlite3
+*.db
+tmp/
+temp/
+uploads/
+storage/tmp/
+
+# Docker and local service data
+postgres_data/
+redis_data/
+redis-data/
+
+# Cocos Creator generated files
+apps/game/**/library/
+apps/game/**/local/
+apps/game/**/temp/
+apps/game/**/build/
+apps/game/**/logs/
+
+# IDE and OS local files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+
+# Local AI/editor state
+.claude/settings.local.json
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
