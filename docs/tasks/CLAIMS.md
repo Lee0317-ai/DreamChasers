@@ -18,6 +18,19 @@
 
 ## 2. 当前领取
 
+### T023：补充 Supabase 数据库交接文档
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-20
+- 状态：进行中
+- 预计完成：2026-05-20
+- 允许修改文件：`docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`
+- 依赖任务：T004
+- 验证命令：文档自审；连接参数说明完整
+- 当前风险：文档只应保留交接所需内容，不应把数据库密码明文写入仓库。
+- 备注：仅补数据库交接说明，不改业务代码。
+
 ### T004：添加数据库和 Prisma 模型（Supabase PostgreSQL）
 
 - 领取人：Codex / 开发 A

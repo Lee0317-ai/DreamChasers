@@ -47,6 +47,7 @@
 | T020 | P1 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 待领取 | T001, T003, T011, T019 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | `npm run build -w apps/web`; 文档自审 |
 | T021 | P2 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | 无 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
 | T022 | P1 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | T002 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查 |
+| T023 | P1 | 补充 Supabase 数据库交接文档 | 开发 A | 待领取 | T004 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；连接参数说明完整 |
 
 ## 4. 新增任务模板
 

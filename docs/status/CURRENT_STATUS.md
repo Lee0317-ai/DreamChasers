@@ -42,32 +42,22 @@
 | 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | 领取后实现统一嵌入和导出规范 |
 | 21 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 规划完成，后续再拆实现任务 |
 | 22 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 迁移静态设计导出的视觉和交互 |
+| 23 | 补充 Supabase 数据库交接文档 | 开发 A | 进行中 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 写清连接方式和接手流程 |
 
 ## 3. 当前活跃任务
 
 ### 当前任务
 
-- 任务编号：T022
-- 任务名称：按 `docs/网站UI.zip` 适配前端门户 UI
+- 任务编号：T023
+- 任务名称：补充 Supabase 数据库交接文档
 - 负责人：Codex / 开发 A
-- 状态：已完成
+- 状态：进行中
 - 开始时间：2026-05-20
-- 允许修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
-- 禁止修改文件：`packages/**`, `apps/game/**`, `docker-compose.yml`, `apps/web/prisma/**`
-- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 允许修改文件：`docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`
+- 验证命令：文档自审；连接参数说明完整
 - 当前阻塞：无
-- 下一步：继续进入后续内容模型、后台和工具能力任务。
-
-- 任务编号：T004
-- 任务名称：添加数据库和 Prisma 模型（Supabase PostgreSQL）
-- 负责人：Codex / 开发 A
-- 状态：已完成
-- 开始时间：2026-05-20
-- 允许修改文件：`apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml`, `.env.example`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
-- 禁止修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `packages/**`, `apps/game/**`
-- 验证命令：`npm exec prisma validate -w apps/web`
-- 当前阻塞：无
-- 下一步：进入 `T005` 第一批种子内容。
+- 下一步：补充 Supabase 数据库交接手册。
 
 领取任务后填写：
 
