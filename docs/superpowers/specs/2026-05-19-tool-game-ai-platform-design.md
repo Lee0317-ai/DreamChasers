@@ -176,9 +176,10 @@ PDF 转 Word 第一版作为免费 Beta：
 
 ### 6.5 技术路线
 
-- 使用 `Cocos Creator`。
-- 同一套逻辑发布 Web。
-- 后续发布微信小游戏和抖音小游戏。
+- 使用 `Cocos Creator` 作为正式小游戏主线。
+- 后续发布微信小游戏和抖音小游戏时优先走 Cocos Creator。
+- `GDevelop` 可作为 Web H5 原型和轻量小游戏生产通道，用于快速验证玩法、关卡节奏和非开发协作。
+- Web 站内试玩通过统一嵌入组件接入，底层可以是 Cocos Web 导出或 GDevelop HTML5 导出。
 - 关卡、牌堆、目标、奖励、难度使用 JSON 配置。
 
 ## 7. 信息架构
@@ -250,12 +251,15 @@ flowchart TD
 ### 8.6 游戏框架
 
 - `Cocos Creator`
+- `GDevelop`
 
 原因：
 
 - 支持 Web、微信小游戏、抖音小游戏发布路径。
 - 适合把 Web 小游戏和真小游戏统一到一套内容体系里。
 - 游戏逻辑、关卡配置、奖励配置可以独立于门户站维护。
+- Cocos Creator 负责正式小程序发布路径。
+- GDevelop 负责 Web H5 原型和轻量游戏快速生产；不替代 Cocos 的微信/抖音小游戏位置。
 
 ### 8.7 部署
 
@@ -275,6 +279,7 @@ flowchart TD
   - 后台管理。
 - `apps/game`
   - Cocos Creator 游戏工程。
+  - GDevelop Web H5 原型工程和导出说明。
 - `packages/shared`
   - 共享类型。
   - 埋点定义。
@@ -306,6 +311,7 @@ flowchart TD
 - AI 修图必须控制成本，默认不要自动调用模型。
 - 去水印功能要避免侵权导向。
 - 麻将 Roguelike 的复杂度要靠配置扩展，不要第一版写死复杂规则。
+- GDevelop 只能作为 Web 原型/轻量 H5 通道，不能默认承诺支持微信小游戏和抖音小游戏发布。
 - 双人开发必须靠文档同步状态，避免两个人和各自 AI 修改同一片文件。
 
 ## 12. 参考
@@ -318,4 +324,3 @@ flowchart TD
 - Cocos Creator 多平台发布: https://docs.cocos.com/creator/3.8/manual/en/editor/publish/publish-mini-game.html
 - Cocos Creator 微信小游戏发布: https://docs.cocos.com/creator/2.4/manual/en/publish/publish-wechatgame.html
 - Cocos Creator 字节小游戏发布: https://docs.cocos.com/creator/3.3/manual/en/editor/publish/publish-bytedance-mini-game.html
-

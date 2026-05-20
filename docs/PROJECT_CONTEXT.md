@@ -100,7 +100,7 @@
 - 数据库：PostgreSQL。
 - ORM：Prisma。
 - 缓存/限流：Redis。
-- 游戏：Cocos Creator。
+- 游戏：Cocos Creator 作为微信/抖音小游戏正式发布主线；GDevelop 可作为 Web H5 原型和轻量小游戏生产通道。
 - 部署：Ubuntu 24.04 + Docker Compose + Nginx。
 
 第一阶段不要做：

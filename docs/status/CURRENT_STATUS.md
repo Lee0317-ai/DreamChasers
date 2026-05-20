@@ -1,7 +1,7 @@
 # 当前项目状态
 
-**最后更新**：2026-05-19  
-**状态维护人**：开发者每次开工和收工时共同维护  
+**最后更新**：2026-05-20
+**状态维护人**：开发者每次开工和收工时共同维护
 **必读**：每个 AI 会话开始前必须读取本文件
 
 ## 1. 当前阶段
@@ -38,6 +38,8 @@
 | 16 | 实现 AI 修图工具 MVP | 开发 B | 未开始 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | 基础修图和 AI 占位 |
 | 17 | 实现麻将 Roguelike 消除 MVP | 开发 B | 未开始 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | 规则模型和游戏文档 |
 | 18 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | 提交后本地状态文件不再上传 |
+| 19 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | `docs/**` | 后续由 T020 接入 Web 原型通道 |
+| 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | 领取后实现统一嵌入和导出规范 |
 
 ## 3. 当前活跃任务
 
@@ -71,6 +73,7 @@
 - 已新增根目录 `AGENTS.md` 和 `CLAUDE.md`，要求 AI 每次任务前读取项目上下文、当前状态、协作规范和实施计划。
 - 已新增 `.gitignore` 和 README 协作入口，减少依赖、构建产物、本地环境和编辑器状态文件误上传。
 - 已从 Git 索引移除 `.claude/settings.local.json` 和 `.obsidian/workspace.json`，本地文件仍保留。
+- 已确认 GDevelop 的游戏模块定位：作为 Web H5 原型和轻量小游戏通道；Cocos Creator 仍作为微信/抖音小游戏正式发布主线。
 
 ## 5. 当前阻塞
 
@@ -98,12 +101,17 @@
 
 每个开发者和各自 AI 必须通过文档同步，状态统一记录在本文件。
 
+### 决策 6：游戏引擎定位
+
+Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖音小游戏。GDevelop 只作为 Web H5 原型、站内试玩和轻量小游戏快速生产通道，不替代 Cocos。
+
 ## 7. 下一步建议
 
 1. 开发 A 领取任务 1：创建 Monorepo 外壳。
 2. 开发 B 并行领取任务 3：添加共享领域类型。
-3. 两人完成后同步更新本文件。
-4. 再进入任务 2、4、8、17。
+3. 开发 B 在游戏发布基础任务前关注 `T020`，把 GDevelop Web 原型通道纳入游戏模块。
+4. 两人完成后同步更新本文件。
+5. 再进入任务 2、4、8、17。
 
 ## 8. 任务池和领取入口
 

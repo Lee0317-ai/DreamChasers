@@ -35,14 +35,16 @@
 | T008 | P1 | 添加 AI 搜索 MVP | 开发 B | 待领取 | T003, T006 | `apps/web/src/lib/ai/**`, `apps/web/src/components/ai/**`, `apps/web/src/app/api/ai/**` | `npm run test -w apps/web -- ai` |
 | T009 | P1 | 添加后台 MVP | 开发 A | 待领取 | T004, T006 | `apps/web/src/app/admin/**`, `apps/web/src/lib/admin/**` | `npm run build -w apps/web` |
 | T010 | P1 | 添加使用模式和变现基础 | 开发 A | 待领取 | T003, T007 | `apps/web/src/lib/billing/**`, `apps/web/src/components/billing/**` | `npm run test -w apps/web -- billing` |
-| T011 | P1 | 添加游戏发布基础 | 开发 B | 待领取 | T003 | `apps/game/**`, `apps/web/src/components/game/**` | `npm run build -w apps/web` |
+| T011 | P1 | 添加游戏发布基础 | 开发 B | 待领取 | T003, T019 | `apps/game/**`, `apps/web/src/components/game/**` | `npm run build -w apps/web` |
 | T012 | P2 | 添加埋点和热门排序 | 开发 B | 待领取 | T006, T007 | `apps/web/src/lib/analytics/**`, `apps/web/src/app/api/events/**` | `npm run test -w apps/web -- analytics` |
 | T013 | P2 | 添加部署文件 | 开发 B | 待领取 | T002, T004 | `deploy/**`, `apps/web/Dockerfile`, `docker-compose.yml` | `docker compose config`, `npm run build -w apps/web` |
 | T014 | P2 | 添加上线清单和运营手册 | 两人协作 | 待领取 | T001 | `docs/checklists/**`, `docs/operations/**` | 文档自审 |
 | T015 | P1 | 实现 PDF 工具箱 MVP | 开发 A | 待领取 | T007, T010 | `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/components/tools/pdf/**`, `apps/web/src/lib/tools/pdf/**` | `npm run test -w apps/web -- pdf` |
 | T016 | P1 | 实现 AI 修图工具 MVP | 开发 B | 待领取 | T007, T010 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | `npm run test -w apps/web -- photo` |
-| T017 | P1 | 实现麻将 Roguelike 消除 MVP | 开发 B | 待领取 | T003, T011 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | `npm run test -w packages/shared -- mahjong` |
+| T017 | P1 | 实现麻将 Roguelike 消除 MVP | 开发 B | 待领取 | T003, T011, T019 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | `npm run test -w packages/shared -- mahjong` |
 | T018 | P0 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | 无 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | `git status --porcelain=v1 -uall`; `git check-ignore`; UTF-8 无 BOM 检查 |
+| T019 | P1 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | 无 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/superpowers/specs/**`, `docs/decisions/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T020 | P1 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 待领取 | T001, T003, T011, T019 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | `npm run build -w apps/web`; 文档自审 |
 
 ## 4. 新增任务模板
 
