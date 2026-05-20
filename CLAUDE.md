@@ -73,3 +73,4 @@
 - 缓存：Redis。
 - 游戏：Cocos Creator。
 - 部署：Ubuntu 24.04 + Docker Compose + Nginx。
+- superbase
