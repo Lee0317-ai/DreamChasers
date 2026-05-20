@@ -42,22 +42,23 @@
 | 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | 领取后实现统一嵌入和导出规范 |
 | 21 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 规划完成，后续再拆实现任务 |
 | 22 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 迁移静态设计导出的视觉和交互 |
-| 23 | 补充 Supabase 数据库交接文档 | 开发 A | 进行中 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 写清连接方式和接手流程 |
+| 23 | 补充 Supabase 数据库交接文档 | 开发 A | 已完成 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 已完成数据库交接文档 |
+| 24 | 修复 Vercel 子目录 Next.js 识别失败 | 开发 A | 已完成 | `apps/web/package.json`, `package-lock.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 已补齐 Web 子应用框架依赖 |
 
 ## 3. 当前活跃任务
 
 ### 当前任务
 
-- 任务编号：T023
-- 任务名称：补充 Supabase 数据库交接文档
+- 任务编号：T024
+- 任务名称：修复 Vercel 子目录 Next.js 识别失败
 - 负责人：Codex / 开发 A
-- 状态：进行中
+- 状态：已完成
 - 开始时间：2026-05-20
-- 允许修改文件：`docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**`
-- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`
-- 验证命令：文档自审；连接参数说明完整
+- 允许修改文件：`apps/web/package.json`, `package-lock.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/src/**`, `apps/web/prisma/**`, `packages/**`, `apps/game/**`, `docker-compose.yml`
+- 验证命令：`npm run build -w apps/web`
 - 当前阻塞：无
-- 下一步：补充 Supabase 数据库交接手册。
+- 下一步：重新触发 Vercel 部署，确认 Root Directory 为 `apps/web` 时能识别 Next.js。
 
 领取任务后填写：
 
@@ -89,6 +90,7 @@
 - 已从 Git 索引移除 `.claude/settings.local.json` 和 `.obsidian/workspace.json`，本地文件仍保留。
 - 已确认 GDevelop 的游戏模块定位：作为 Web H5 原型和轻量小游戏通道；Cocos Creator 仍作为微信/抖音小游戏正式发布主线。
 - 已识别后续候选方向：AI 内容转换工具箱，来源参考 `qiaomu-anything-to-notebooklm` skill。
+- 已修复 Vercel 子目录部署识别问题：`apps/web/package.json` 已声明 `next`、`react`、`react-dom`。
 
 ## 5. 当前阻塞
 

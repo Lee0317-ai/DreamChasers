@@ -18,11 +18,24 @@
 
 ## 2. 当前领取
 
+### T024：修复 Vercel 子目录 Next.js 识别失败
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-20
+- 状态：已完成
+- 预计完成：2026-05-20
+- 允许修改文件：`apps/web/package.json`, `package-lock.json`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/src/**`, `apps/web/prisma/**`, `packages/**`, `apps/game/**`, `docker-compose.yml`
+- 依赖任务：T002
+- 验证命令：`npm run build -w apps/web`
+- 当前风险：Vercel Root Directory 设置为 `apps/web` 时，只读取子应用依赖声明，缺少 `next`、`react`、`react-dom` 会导致框架识别失败。
+- 备注：只补 Web 子应用运行依赖和 lockfile，不调整业务代码。
+
 ### T023：补充 Supabase 数据库交接文档
 
 - 领取人：Codex / 开发 A
 - 领取时间：2026-05-20
-- 状态：进行中
+- 状态：已完成
 - 预计完成：2026-05-20
 - 允许修改文件：`docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
 - 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`
