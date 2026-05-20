@@ -1,6 +1,6 @@
 # 任务领取与冲突登记
 
-**最后更新**：2026-05-20  
+**最后更新**：2026-05-20
 **用途**：记录谁正在做什么，锁定文件范围，避免两个人和各自 AI 冲突。
 
 ## 1. 领取规则
@@ -18,18 +18,7 @@
 
 ## 2. 当前领取
 
-### T019：优化首页门户视觉与信息架构
-
-- 领取人：Codex / 开发 A
-- 领取时间：2026-05-20
-- 状态：进行中
-- 预计完成：2026-05-20
-- 允许修改文件：`apps/web/src/app/page.tsx`, `apps/web/src/app/globals.css`, `apps/web/src/components/AppHeader.tsx`, `apps/web/src/components/AppFooter.tsx`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-19-homepage-optimization.md`
-- 禁止修改文件：`packages/**`, `apps/game/**`, `docker-compose.yml`, `apps/web/prisma/**`, `apps/web/src/lib/**`
-- 依赖任务：T002
-- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`
-- 当前风险：首页信息增多后需要控制首屏密度和移动端换行。
-- 备注：在已完成 Web 应用基础上进行首页门户优化。
+暂无进行中的任务。
 
 领取后按此格式添加：
 
@@ -88,18 +77,31 @@
 
 ## 5. 领取历史
 
-### T001：创建 Monorepo 外壳
+### T021：AI 内容转换工具箱规划
 
-- 领取人：Codex / 开发 A
+- 领取人：Codex / 两人协作
 - 领取时间：2026-05-20
 - 状态：已完成
 - 预计完成：2026-05-20
-- 允许修改文件：`package.json`, `package-lock.json`, `tsconfig.base.json`, `.env.example`, `apps/**`, `packages/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-1-monorepo-shell.md`
-- 禁止修改文件：`apps/web/**` 中除 `.gitkeep` 以外的内容, `docker-compose.yml`, `README.md`, `.gitignore`
+- 允许修改文件：`docs/PROJECT_CONTEXT.md`, `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-21-ai-content-conversion-toolbox-planning.md`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `tsconfig.base.json`
 - 依赖任务：无
-- 验证命令：`npm install`; `npm run test`
+- 验证命令：文档自审；UTF-8 无 BOM 检查
 - 当前风险：无。
-- 备注：已创建根 npm workspaces 配置、基础 TypeScript 配置、环境变量样例和空目录骨架。
+- 备注：来源参考 `qiaomu-anything-to-notebooklm` skill；当前只写规划，不进入实现。
+
+### T019：确认 GDevelop 游戏模块定位
+
+- 领取人：Codex / 开发 B
+- 领取时间：2026-05-20
+- 状态：已完成
+- 预计完成：2026-05-20
+- 允许修改文件：`docs/PROJECT_CONTEXT.md`, `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`, `docs/superpowers/specs/2026-05-19-tool-game-ai-platform-design.md`, `docs/decisions/2026-05-20-gdevelop-game-engine-role.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-19-gdevelop-game-engine-role.md`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `tsconfig.base.json`
+- 依赖任务：无
+- 验证命令：文档自审；UTF-8 无 BOM 检查
+- 当前风险：无。
+- 备注：只确认 GDevelop 的定位，不实现游戏代码。Cocos Creator 仍是微信/抖音小游戏正式发布主线。
 
 ### T018：建立 Git 忽略规则和协作入口
 
@@ -113,16 +115,3 @@
 - 验证命令：`git status --porcelain=v1 -uall`; `git check-ignore`; UTF-8 无 BOM 检查
 - 当前风险：无。
 - 备注：已执行 `git rm --cached .claude/settings.local.json .obsidian/workspace.json`，本地文件保留，仓库提交后将停止跟踪这两个本地状态文件。
-
-### T002：搭建 Web 应用
-
-- 领取人：Codex / 开发 A
-- 领取时间：2026-05-20
-- 状态：已完成
-- 预计完成：2026-05-20
-- 允许修改文件：`apps/web/**`, `package-lock.json`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-2-web-app.md`
-- 禁止修改文件：`packages/**`, `apps/game/**`, `docker-compose.yml`
-- 依赖任务：T001
-- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`
-- 当前风险：Next.js 首次安装会引入依赖和锁文件变更，需要确认构建可通过。
-- 备注：在已完成 Monorepo 外壳基础上创建最小可访问 Web 应用。

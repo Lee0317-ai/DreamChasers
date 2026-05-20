@@ -1,0 +1,30 @@
+# T021 完成记录：AI 内容转换工具箱规划
+
+- 任务编号：T021
+- 任务名称：AI 内容转换工具箱规划
+- 负责人：Codex / 两人协作
+- 完成时间：2026-05-20
+- 修改文件：
+  - `docs/PROJECT_CONTEXT.md`
+  - `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-05-20.md`
+  - `docs/completion/2026-05-20-task-21-ai-content-conversion-toolbox-planning.md`
+- 实现内容：
+  - 将 `qiaomu-anything-to-notebooklm` skill 作为来源参考写入项目规划。
+  - 将 `AI 内容转换工具箱` 明确为后续候选方向，定义为多源输入、结构化输出成知识包、播客脚本、PPT 大纲、思维导图等成品。
+  - 写清楚起步方式：先接用户自有资料和公开链接，先做单文件处理，再做多文件合并。
+  - 明确边界：不做付费墙穿透，不做侵权导向抓取。
+  - 把该方向加入任务池，作为后续候选，不计入第一阶段三大交付。
+- 验证命令：
+  - 文档自审
+  - UTF-8 无 BOM 检查
+- 验证结果：
+  - 规划内容已写入项目上下文与实施计划。
+  - 任务池、状态、进展、领取记录已同步。
+  - 未修改 `apps/**` 或 `packages/**` 代码。
+- 遗留问题：
+  - 后续若要实施，需要再拆成独立功能任务，先定义输入/输出 schema，再做导出和渲染。

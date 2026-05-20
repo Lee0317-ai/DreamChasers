@@ -4,9 +4,9 @@
 
 **目标：** 搭建第一版免费工具/游戏门户，让 `工具` 和 `游戏` 两个频道平级展示，并提供 AI 辅助搜索、内容后台、未来订阅/自带 API/AI 能力池的基础结构。
 
-**架构：** 使用 TypeScript Monorepo。`apps/web` 负责 Next.js 门户、工具、游戏、AI 搜索和后台；`apps/game` 负责 Cocos Creator 真小游戏工程；`packages/shared` 负责共享类型和通用逻辑。第一阶段只保留一个 Web 应用、一个数据库和一个 Redis，不拆微服务。
+**架构：** 使用 TypeScript Monorepo。`apps/web` 负责 Next.js 门户、工具、游戏、AI 搜索和后台；`apps/game` 负责 Cocos Creator 真小游戏工程、GDevelop Web H5 原型工程和发布文档；`packages/shared` 负责共享类型和通用逻辑。第一阶段只保留一个 Web 应用、一个数据库和一个 Redis，不拆微服务。
 
-**技术栈：** Next.js、TypeScript、Tailwind CSS、Prisma、PostgreSQL、Redis、Cocos Creator、Docker Compose、Nginx、Vitest、Playwright。
+**技术栈：** Next.js、TypeScript、Tailwind CSS、Prisma、PostgreSQL、Redis、Cocos Creator、GDevelop、Docker Compose、Nginx、Vitest、Playwright。
 
 ---
 
@@ -16,7 +16,7 @@
 - 新项目根目录建议放在 `D:\DreamChasers`。
 - 最终目录结构建议如下：
   - `apps/web`：主站、工具频道、游戏频道、AI 搜索、后台管理。
-  - `apps/game`：Cocos Creator 游戏工程和发布文档。
+  - `apps/game`：Cocos Creator 游戏工程、GDevelop Web H5 原型工程和发布文档。
   - `packages/shared`：共享类型、枚举、工具函数、埋点定义。
   - `docs`：产品文档、计划、上线清单、运营手册。
 - 第一版目标是验证流量、内容更新速度和用户停留，不做完整支付系统。
@@ -39,6 +39,7 @@
 3. `麻将 Roguelike 消除`
    - 基础规则：点击麻将进入槽位，满足 `碰 / 吃 / 杠` 后消除，槽位满失败，清空牌面过关。
    - Roguelike：每过一关从 3 个随机奖励里选择 1 个，奖励改变本轮规则。
+   - 引擎策略：Web 原型可先用 GDevelop 快速验证；微信/抖音小游戏正式发布优先走 Cocos Creator。
    - 第一版范围：`万 / 条 / 筒` 三类牌、20 个关卡、20 个奖励、不做完整麻将算法、不做多人、不做排行榜。
 
 ## 1. 成功标准
@@ -77,6 +78,7 @@
 ### M3：游戏发布基础
 
 - 添加 Cocos 工作区说明。
+- 添加 GDevelop Web H5 原型通道说明。
 - 定义 Web 游戏嵌入方式。
 - 添加微信小游戏、抖音小游戏发布清单。
 
@@ -803,6 +805,7 @@ git commit -m "feat: add usage mode foundation"
 - 新建：`apps/game/publishing/wechat-mini-game.md`
 - 新建：`apps/game/publishing/douyin-mini-game.md`
 - 新建：`apps/game/publishing/web-export.md`
+- 新建：`apps/game/publishing/gdevelop-web-export.md`
 - 新建：`apps/web/src/components/game/GameEmbed.tsx`
 - 修改：`apps/web/src/app/games/[slug]/page.tsx`
 
@@ -811,6 +814,7 @@ git commit -m "feat: add usage mode foundation"
 需要包含：
 
 - Cocos Creator 版本。
+- GDevelop 推荐版本和项目导出规则。
 - 项目命名规范。
 - 素材大小限制。
 - Web 导出路径。
@@ -1176,6 +1180,7 @@ git commit -m "feat: add photo editor mvp"
 - 奖励配置格式。
 - Web 导出目录。
 - 微信/抖音小游戏发布前置条件。
+- 如果先用 GDevelop 做 Web 原型，需保持关卡和奖励配置可迁移到 Cocos 正式工程。
 
 **步骤 4：加入内容系统**
 
@@ -1249,7 +1254,25 @@ git commit -m "feat: add mahjong roguelike game foundation"
 
 这些都应该等门户证明有使用量和内容更新能力后再做。
 
-## 7. 上线前验证
+## 7. 后续候选方向
+
+### AI 内容转换工具箱
+
+- 来源参考：`qiaomu-anything-to-notebooklm` skill。
+- 核心定位：把多源内容转换成可直接使用的成品，而不是只给摘要。
+- 第一版成品输出优先级：
+  1. NotebookLM 知识包。
+  2. 播客脚本。
+  3. PPT 大纲。
+  4. 思维导图。
+- 起步方式：
+  1. 先只接用户自有资料和公开链接。
+  2. 先做单文件处理，再做多文件合并。
+  3. 先定义统一输入输出 schema，再做渲染和导出。
+  4. 不做付费墙穿透，不做侵权导向抓取。
+- 如果后续要做成产品，优先把它拆成独立工具页，而不是塞进 PDF 工具箱或 AI 修图工具里。
+
+## 8. 上线前验证
 
 上线前运行：
 
