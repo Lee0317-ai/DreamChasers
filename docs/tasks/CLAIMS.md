@@ -18,6 +18,19 @@
 
 ## 2. 当前领取
 
+### T004：添加数据库和 Prisma 模型（Supabase PostgreSQL）
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-20
+- 状态：已完成
+- 预计完成：2026-05-20
+- 允许修改文件：`apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml`, `.env.example`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `packages/**`, `apps/game/**`
+- 依赖任务：T002, T003
+- 验证命令：`npm exec prisma validate -w apps/web`
+- 当前风险：需要确认 Supabase 项目可用并获取连接串；后续还要保持 Prisma schema 与标准 PostgreSQL 兼容，避免绑定 Supabase 专有能力。
+- 备注：数据库底座先使用 Supabase 托管 PostgreSQL，后续可迁移到自有 PostgreSQL。
+
 ### T022：按 `docs/网站UI.zip` 适配前端门户 UI
 
 - 领取人：Codex / 开发 A

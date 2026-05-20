@@ -68,6 +68,24 @@
 - 处理结论：已入任务池
 - 对应任务编号：T022
 
+### IDEA-20260520-04：数据库先使用 Supabase 托管 PostgreSQL
+
+- 提出人：Lee
+- 提出时间：2026-05-20
+- 背景：当前阶段需要尽快上线数据库层，但后期希望可以平迁到自有服务器，不想一开始深度绑定云厂商专有能力。
+- 目标：第一阶段优先使用 Supabase 托管 PostgreSQL 作为数据库底座，业务代码保持 Prisma + 标准 PostgreSQL 兼容，后续可迁移到自有 PostgreSQL。
+- 不做：不把 Supabase Auth、Storage、RLS、Edge Functions 作为第一阶段必选依赖。
+- 用户价值：降低初期运维成本，同时保留后续自建迁移空间。
+- 涉及模块：数据库、Prisma、环境变量、部署文档。
+- 可能影响文件：`docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/decisions/**`, `docs/plans/**`, `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `.env.example`, `docker-compose.yml`
+- 是否影响另一方任务：否
+- 是否需要新增任务：否
+- 建议优先级：P1
+- 验收标准：T004 的数据库方案明确写为 Supabase PostgreSQL；Prisma schema 不依赖 Supabase 专有扩展；迁移到自有 PostgreSQL 时只需更换连接配置和执行迁移。
+- AI 初步方案：把 Supabase 当托管 PostgreSQL 使用，业务层只接 Prisma 和标准 SQL；如需本地开发，继续保留可替换的本地数据库配置说明。
+- 处理结论：已确认
+- 对应任务编号：T004
+
 ### IDEA-20260520-02：首页门户视觉与信息架构优化
 
 - 提出人：Lee

@@ -23,7 +23,7 @@
 | 1 | 创建 Monorepo 外壳 | 开发 A | 已完成 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | 已完成基础 workspace |
 | 2 | 搭建 Web 应用 | 开发 A | 已完成 | `apps/web/**` | 已完成 Next.js 基础应用 |
 | 3 | 添加共享领域类型 | 开发 B | 未开始 | `packages/shared/**` | 建立内容类型和使用模式类型 |
-| 4 | 添加数据库和 Prisma 模型 | 开发 A | 未开始 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | 建立内容模型 |
+| 4 | 添加数据库和 Prisma 模型 | 开发 A | 已完成 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | 建立内容模型 |
 | 5 | 添加第一批种子内容 | 开发 A | 未开始 | `apps/web/src/lib/content/**`, `apps/web/prisma/seed.ts` | 准备工具/游戏初始数据 |
 | 6 | 实现内容查询层 | 开发 A | 未开始 | `apps/web/src/lib/content/**` | 实现热门、星标、最近更新 |
 | 7 | 实现公开门户页面 | 开发 A | 未开始 | `apps/web/src/app/**`, `apps/web/src/components/content/**` | 首页和频道页 |
@@ -57,6 +57,17 @@
 - 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
 - 当前阻塞：无
 - 下一步：继续进入后续内容模型、后台和工具能力任务。
+
+- 任务编号：T004
+- 任务名称：添加数据库和 Prisma 模型（Supabase PostgreSQL）
+- 负责人：Codex / 开发 A
+- 状态：已完成
+- 开始时间：2026-05-20
+- 允许修改文件：`apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml`, `.env.example`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `packages/**`, `apps/game/**`
+- 验证命令：`npm exec prisma validate -w apps/web`
+- 当前阻塞：无
+- 下一步：进入 `T005` 第一批种子内容。
 
 领取任务后填写：
 

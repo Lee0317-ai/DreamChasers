@@ -28,7 +28,7 @@
 | T001 | P0 | 创建 Monorepo 外壳 | 开发 A | 已完成 | 无 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | `npm run test` |
 | T002 | P0 | 搭建 Web 应用 | 开发 A | 已完成 | T001 | `apps/web/**` | `npm run lint -w apps/web`, `npm run build -w apps/web` |
 | T003 | P0 | 添加共享领域类型 | 开发 B | 待领取 | T001 | `packages/shared/**` | `npm run test -w packages/shared` |
-| T004 | P0 | 添加数据库和 Prisma 模型 | 开发 A | 待领取 | T002, T003 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | `npm exec prisma validate -w apps/web` |
+| T004 | P0 | 添加数据库和 Prisma 模型（Supabase PostgreSQL） | 开发 A | 待领取 | T002, T003 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | `npm exec prisma validate -w apps/web` |
 | T005 | P1 | 添加第一批种子内容 | 开发 A | 待领取 | T004 | `apps/web/prisma/seed.ts`, `apps/web/src/lib/content/**` | `npm exec prisma db seed -w apps/web` |
 | T006 | P1 | 实现内容查询层 | 开发 A | 待领取 | T004, T005 | `apps/web/src/lib/content/**` | `npm run test -w apps/web -- content` |
 | T007 | P1 | 实现公开门户页面 | 开发 A | 待领取 | T006 | `apps/web/src/app/**`, `apps/web/src/components/content/**` | `npm run build -w apps/web` |

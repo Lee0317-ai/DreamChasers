@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ContentItem {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  title       String
+  summary     String
+  type        ContentType
+  status      ContentStatus @default(active)
+  featured    Boolean     @default(false)
+  sortOrder   Int         @default(0)
+  publishedAt DateTime?
+  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
+  categories  Category[]
+  tags        ContentTag[]
+  clickEvents ClickEvent[]
+  updateLogs  UpdateLog[]
+
+  @@index([type, status, sortOrder])
+  @@index([featured, sortOrder])
+}
+
+model Category {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  name        String
+  type        ContentType?
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  contents    ContentItem[]
+}
+
+model Tag {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  contents    ContentTag[]
+}
+
+model ContentTag {
+  contentId String
+  tagId     String
+  content   ContentItem @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  tag       Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, tagId])
+}
+
+model ClickEvent {
+  id         String    @id @default(cuid())
+  contentId  String
+  content    ContentItem @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  source     String?
+  createdAt  DateTime  @default(now())
+
+  @@index([contentId, createdAt])
+}
+
+model UpdateLog {
+  id         String    @id @default(cuid())
+  contentId  String
+  content    ContentItem @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  note       String
+  createdAt  DateTime  @default(now())
+}
+
+model AiRequestLog {
+  id         String    @id @default(cuid())
+  prompt     String
+  contentId  String?
+  createdAt  DateTime  @default(now())
+}
+
+model UsageQuota {
+  id         String    @id @default(cuid())
+  scope      String
+  quota      Int       @default(0)
+  used       Int       @default(0)
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([scope])
+}
+
+model ApiCredential {
+  id         String    @id @default(cuid())
+  name       String
+  keyHint    String?
+  active     Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+}
+
+enum ContentType {
+  tool
+  game
+}
+
+enum ContentStatus {
+  active
+  draft
+  archived
+}
