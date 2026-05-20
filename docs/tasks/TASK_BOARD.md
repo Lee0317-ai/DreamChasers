@@ -1,6 +1,6 @@
 # 任务池
 
-**最后更新**：2026-05-19  
+**最后更新**：2026-05-20
 **用途**：统一记录所有待做、进行中、待验收、已完成的任务。  
 **维护规则**：双方都可以新增和修改任务，但必须保留任务编号，不要删除历史任务。
 
@@ -45,6 +45,7 @@
 | T018 | P0 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | 无 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | `git status --porcelain=v1 -uall`; `git check-ignore`; UTF-8 无 BOM 检查 |
 | T019 | P1 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | 无 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/superpowers/specs/**`, `docs/decisions/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
 | T020 | P1 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 待领取 | T001, T003, T011, T019 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | `npm run build -w apps/web`; 文档自审 |
+| T021 | P2 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | 无 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
 
 ## 4. 新增任务模板
 

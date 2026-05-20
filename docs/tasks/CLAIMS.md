@@ -1,6 +1,6 @@
 # 任务领取与冲突登记
 
-**最后更新**：2026-05-19  
+**最后更新**：2026-05-20
 **用途**：记录谁正在做什么，锁定文件范围，避免两个人和各自 AI 冲突。
 
 ## 1. 领取规则
@@ -76,6 +76,19 @@
 ```
 
 ## 5. 领取历史
+
+### T021：AI 内容转换工具箱规划
+
+- 领取人：Codex / 两人协作
+- 领取时间：2026-05-20
+- 状态：已完成
+- 预计完成：2026-05-20
+- 允许修改文件：`docs/PROJECT_CONTEXT.md`, `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-21-ai-content-conversion-toolbox-planning.md`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `tsconfig.base.json`
+- 依赖任务：无
+- 验证命令：文档自审；UTF-8 无 BOM 检查
+- 当前风险：无。
+- 备注：来源参考 `qiaomu-anything-to-notebooklm` skill；当前只写规划，不进入实现。
 
 ### T019：确认 GDevelop 游戏模块定位
 

@@ -40,6 +40,7 @@
 | 18 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | 提交后本地状态文件不再上传 |
 | 19 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | `docs/**` | 后续由 T020 接入 Web 原型通道 |
 | 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | 领取后实现统一嵌入和导出规范 |
+| 21 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 规划完成，后续再拆实现任务 |
 
 ## 3. 当前活跃任务
 
@@ -74,6 +75,7 @@
 - 已新增 `.gitignore` 和 README 协作入口，减少依赖、构建产物、本地环境和编辑器状态文件误上传。
 - 已从 Git 索引移除 `.claude/settings.local.json` 和 `.obsidian/workspace.json`，本地文件仍保留。
 - 已确认 GDevelop 的游戏模块定位：作为 Web H5 原型和轻量小游戏通道；Cocos Creator 仍作为微信/抖音小游戏正式发布主线。
+- 已识别后续候选方向：AI 内容转换工具箱，来源参考 `qiaomu-anything-to-notebooklm` skill。
 
 ## 5. 当前阻塞
 
@@ -110,8 +112,9 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 1. 开发 A 领取任务 1：创建 Monorepo 外壳。
 2. 开发 B 并行领取任务 3：添加共享领域类型。
 3. 开发 B 在游戏发布基础任务前关注 `T020`，把 GDevelop Web 原型通道纳入游戏模块。
-4. 两人完成后同步更新本文件。
-5. 再进入任务 2、4、8、17。
+4. 已补充 `T021`：AI 内容转换工具箱规划，后续再拆实现任务。
+5. 两人完成后同步更新本文件。
+6. 再进入任务 2、4、8、17。
 
 ## 8. 任务池和领取入口
 
