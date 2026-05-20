@@ -1,6 +1,6 @@
 # 当前项目状态
 
-**最后更新**：2026-05-19  
+**最后更新**：2026-05-20  
 **状态维护人**：开发者每次开工和收工时共同维护  
 **必读**：每个 AI 会话开始前必须读取本文件
 
@@ -20,8 +20,8 @@
 
 | 任务 | 名称 | 负责人 | 状态 | 允许修改范围 | 下一步 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 创建 Monorepo 外壳 | 开发 A | 未开始 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | 建立根目录结构 |
-| 2 | 搭建 Web 应用 | 开发 A | 未开始 | `apps/web/**` | 创建 Next.js 应用 |
+| 1 | 创建 Monorepo 外壳 | 开发 A | 已完成 | `package.json`, `package-lock.json`, `tsconfig.base.json`, `.env.example`, `apps/**`, `packages/**` | 进入 Web 应用搭建 |
+| 2 | 搭建 Web 应用 | 开发 A | 已完成 | `apps/web/**` | 进入共享领域类型任务 |
 | 3 | 添加共享领域类型 | 开发 B | 未开始 | `packages/shared/**` | 建立内容类型和使用模式类型 |
 | 4 | 添加数据库和 Prisma 模型 | 开发 A | 未开始 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | 建立内容模型 |
 | 5 | 添加第一批种子内容 | 开发 A | 未开始 | `apps/web/src/lib/content/**`, `apps/web/prisma/seed.ts` | 准备工具/游戏初始数据 |
@@ -41,7 +41,18 @@
 
 ## 3. 当前活跃任务
 
-暂无。
+### 当前任务
+
+- 任务编号：T019
+- 任务名称：优化首页门户视觉与信息架构
+- 负责人：Codex / 开发 A
+- 状态：进行中
+- 开始时间：2026-05-20
+- 允许修改文件：`apps/web/src/app/page.tsx`, `apps/web/src/app/globals.css`, `apps/web/src/components/AppHeader.tsx`, `apps/web/src/components/AppFooter.tsx`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/progress/2026-05-20.md`, `docs/completion/2026-05-20-task-19-homepage-optimization.md`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `docker-compose.yml`, `apps/web/prisma/**`, `apps/web/src/lib/**`
+- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`
+- 当前阻塞：暂无
+- 下一步：优化首页视觉层次、频道入口和分类信息密度
 
 领取任务后填写：
 
@@ -71,6 +82,7 @@
 - 已新增根目录 `AGENTS.md` 和 `CLAUDE.md`，要求 AI 每次任务前读取项目上下文、当前状态、协作规范和实施计划。
 - 已新增 `.gitignore` 和 README 协作入口，减少依赖、构建产物、本地环境和编辑器状态文件误上传。
 - 已从 Git 索引移除 `.claude/settings.local.json` 和 `.obsidian/workspace.json`，本地文件仍保留。
+- 已完成 Monorepo 外壳：根 `package.json`、`package-lock.json`、`tsconfig.base.json`、`.env.example`、`apps/**`、`packages/**`。
 
 ## 5. 当前阻塞
 
@@ -100,10 +112,9 @@
 
 ## 7. 下一步建议
 
-1. 开发 A 领取任务 1：创建 Monorepo 外壳。
-2. 开发 B 并行领取任务 3：添加共享领域类型。
-3. 两人完成后同步更新本文件。
-4. 再进入任务 2、4、8、17。
+1. 开发 B 并行领取任务 3：添加共享领域类型。
+2. 两人完成后同步更新本文件。
+3. 再进入任务 4、8、17。
 
 ## 8. 任务池和领取入口
 

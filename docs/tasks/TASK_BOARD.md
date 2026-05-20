@@ -1,6 +1,6 @@
 # 任务池
 
-**最后更新**：2026-05-19  
+**最后更新**：2026-05-20  
 **用途**：统一记录所有待做、进行中、待验收、已完成的任务。  
 **维护规则**：双方都可以新增和修改任务，但必须保留任务编号，不要删除历史任务。
 
@@ -25,8 +25,8 @@
 
 | 编号 | 优先级 | 任务 | 默认负责人 | 状态 | 依赖 | 主要文件范围 | 验证方式 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T001 | P0 | 创建 Monorepo 外壳 | 开发 A | 待领取 | 无 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | `npm run test` |
-| T002 | P0 | 搭建 Web 应用 | 开发 A | 待领取 | T001 | `apps/web/**` | `npm run lint -w apps/web`, `npm run build -w apps/web` |
+| T001 | P0 | 创建 Monorepo 外壳 | 开发 A | 已完成 | 无 | `package.json`, `package-lock.json`, `tsconfig.base.json`, `.env.example`, `apps/**`, `packages/**` | `npm run test` |
+| T002 | P0 | 搭建 Web 应用 | 开发 A | 已完成 | T001 | `apps/web/**` | `npm run lint -w apps/web`, `npm run typecheck -w apps/web`, `npm run build -w apps/web` |
 | T003 | P0 | 添加共享领域类型 | 开发 B | 待领取 | T001 | `packages/shared/**` | `npm run test -w packages/shared` |
 | T004 | P0 | 添加数据库和 Prisma 模型 | 开发 A | 待领取 | T002, T003 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | `npm exec prisma validate -w apps/web` |
 | T005 | P1 | 添加第一批种子内容 | 开发 A | 待领取 | T004 | `apps/web/prisma/seed.ts`, `apps/web/src/lib/content/**` | `npm exec prisma db seed -w apps/web` |
@@ -43,6 +43,7 @@
 | T016 | P1 | 实现 AI 修图工具 MVP | 开发 B | 待领取 | T007, T010 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | `npm run test -w apps/web -- photo` |
 | T017 | P1 | 实现麻将 Roguelike 消除 MVP | 开发 B | 待领取 | T003, T011 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | `npm run test -w packages/shared -- mahjong` |
 | T018 | P0 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | 无 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | `git status --porcelain=v1 -uall`; `git check-ignore`; UTF-8 无 BOM 检查 |
+| T019 | P1 | 优化首页门户视觉与信息架构 | 开发 A | 进行中 | T002 | `apps/web/src/app/page.tsx`, `apps/web/src/app/globals.css`, `apps/web/src/components/AppHeader.tsx`, `apps/web/src/components/AppFooter.tsx` | `npm run lint -w apps/web`, `npm run typecheck -w apps/web`, `npm run build -w apps/web` |
 
 ## 4. 新增任务模板
 
