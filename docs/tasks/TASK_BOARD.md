@@ -25,8 +25,8 @@
 
 | 编号 | 优先级 | 任务 | 默认负责人 | 状态 | 依赖 | 主要文件范围 | 验证方式 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T001 | P0 | 创建 Monorepo 外壳 | 开发 A | 待领取 | 无 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | `npm run test` |
-| T002 | P0 | 搭建 Web 应用 | 开发 A | 待领取 | T001 | `apps/web/**` | `npm run lint -w apps/web`, `npm run build -w apps/web` |
+| T001 | P0 | 创建 Monorepo 外壳 | 开发 A | 已完成 | 无 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | `npm run test` |
+| T002 | P0 | 搭建 Web 应用 | 开发 A | 已完成 | T001 | `apps/web/**` | `npm run lint -w apps/web`, `npm run build -w apps/web` |
 | T003 | P0 | 添加共享领域类型 | 开发 B | 待领取 | T001 | `packages/shared/**` | `npm run test -w packages/shared` |
 | T004 | P0 | 添加数据库和 Prisma 模型 | 开发 A | 待领取 | T002, T003 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | `npm exec prisma validate -w apps/web` |
 | T005 | P1 | 添加第一批种子内容 | 开发 A | 待领取 | T004 | `apps/web/prisma/seed.ts`, `apps/web/src/lib/content/**` | `npm exec prisma db seed -w apps/web` |
@@ -46,6 +46,7 @@
 | T019 | P1 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | 无 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/superpowers/specs/**`, `docs/decisions/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
 | T020 | P1 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 待领取 | T001, T003, T011, T019 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | `npm run build -w apps/web`; 文档自审 |
 | T021 | P2 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | 无 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T022 | P1 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | T002 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查 |
 
 ## 4. 新增任务模板
 

@@ -4,8 +4,8 @@ import { AppFooter } from "@/components/AppFooter";
 import { AppHeader } from "@/components/AppHeader";
 
 export const metadata: Metadata = {
-  title: "DreamChasers",
-  description: "免费工具和小游戏门户"
+  title: "工具与游戏站",
+  description: "免费实用工具 + 休闲小游戏"
 };
 
 export default function RootLayout({

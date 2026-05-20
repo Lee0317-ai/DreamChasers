@@ -18,7 +18,18 @@
 
 ## 2. 当前领取
 
-暂无进行中的任务。
+### T022：按 `docs/网站UI.zip` 适配前端门户 UI
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-20
+- 状态：已完成
+- 预计完成：2026-05-20
+- 允许修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `docker-compose.yml`, `apps/web/prisma/**`
+- 依赖任务：T002
+- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 当前风险：任务文档曾被覆盖，需按已有完成记录和仓库实际文件修正 T001/T002 状态；`T019` 编号存在历史复用记录，当前新增任务使用 T022 避免继续冲突。
+- 备注：设计来源为 `docs/网站UI.zip`，重点迁移 `index.html`, `tools.html`, `games.html`, `styles.css` 的视觉和交互。
 
 领取后按此格式添加：
 

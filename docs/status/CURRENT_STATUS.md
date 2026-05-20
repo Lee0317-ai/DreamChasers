@@ -20,8 +20,8 @@
 
 | 任务 | 名称 | 负责人 | 状态 | 允许修改范围 | 下一步 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 创建 Monorepo 外壳 | 开发 A | 未开始 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | 建立根目录结构 |
-| 2 | 搭建 Web 应用 | 开发 A | 未开始 | `apps/web/**` | 创建 Next.js 应用 |
+| 1 | 创建 Monorepo 外壳 | 开发 A | 已完成 | `package.json`, `tsconfig.base.json`, `apps/**`, `packages/**` | 已完成基础 workspace |
+| 2 | 搭建 Web 应用 | 开发 A | 已完成 | `apps/web/**` | 已完成 Next.js 基础应用 |
 | 3 | 添加共享领域类型 | 开发 B | 未开始 | `packages/shared/**` | 建立内容类型和使用模式类型 |
 | 4 | 添加数据库和 Prisma 模型 | 开发 A | 未开始 | `apps/web/prisma/**`, `apps/web/src/lib/db.ts`, `docker-compose.yml` | 建立内容模型 |
 | 5 | 添加第一批种子内容 | 开发 A | 未开始 | `apps/web/src/lib/content/**`, `apps/web/prisma/seed.ts` | 准备工具/游戏初始数据 |
@@ -41,10 +41,22 @@
 | 19 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | `docs/**` | 后续由 T020 接入 Web 原型通道 |
 | 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | 领取后实现统一嵌入和导出规范 |
 | 21 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 规划完成，后续再拆实现任务 |
+| 22 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 迁移静态设计导出的视觉和交互 |
 
 ## 3. 当前活跃任务
 
-暂无。
+### 当前任务
+
+- 任务编号：T022
+- 任务名称：按 `docs/网站UI.zip` 适配前端门户 UI
+- 负责人：Codex / 开发 A
+- 状态：已完成
+- 开始时间：2026-05-20
+- 允许修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `docker-compose.yml`, `apps/web/prisma/**`
+- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 当前阻塞：无
+- 下一步：继续进入后续内容模型、后台和工具能力任务。
 
 领取任务后填写：
 
