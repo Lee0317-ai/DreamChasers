@@ -4,7 +4,7 @@ import { gameItems } from "@/components/portal-data";
 export default function GamesPage() {
   return (
     <ChannelPage
-      description="碎片时间玩一局，益智解压不沉迷。全部免费，无需下载。"
+      description="益智解谜、策略挑战、休闲放松……无需下载，打开浏览器就能玩。工作累了？来一局。"
       emptyDescription="换个筛选条件，或使用 AI 搜索描述你想玩的游戏。"
       emptyTitle="未找到匹配的游戏"
       filters={[
@@ -13,9 +13,11 @@ export default function GamesPage() {
         { label: "休闲", value: "casual" },
         { label: "策略", value: "strategy" }
       ]}
+      kicker="独立游戏站"
       items={gameItems}
       searchPlaceholder="搜索游戏，例如：麻将"
-      title="休闲游戏"
+      title="碎片时间，玩个痛快"
+      variant="games"
     />
   );
 }

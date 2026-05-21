@@ -53,7 +53,7 @@ export const toolItems: PortalItem[] = [
     description: "Word、Excel、PPT、图片、PDF 互相转换，批量处理。",
     icon: "CVT",
     tags: ["敬请期待", "文档处理"],
-    categories: ["doc"],
+    categories: ["doc", "convert"],
     status: "coming",
     detailsTitle: "敬请期待",
     details: ["该工具正在开发中，即将上线。", "你可以先体验已上线的 PDF 工具箱和 AI 修图工具。"]

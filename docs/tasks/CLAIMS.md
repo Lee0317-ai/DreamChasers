@@ -1,6 +1,6 @@
 # 任务领取与冲突登记
 
-**最后更新**：2026-05-20
+**最后更新**：2026-05-21
 **用途**：记录谁正在做什么，锁定文件范围，避免两个人和各自 AI 冲突。
 
 ## 1. 领取规则
@@ -17,6 +17,19 @@
 如果这是一个新想法或需求变更，必须先在 `docs/tasks/CHANGE_INTAKE.md` 登记并进入 `docs/tasks/TASK_BOARD.md`，不要直接领取临时口头任务。
 
 ## 2. 当前领取
+
+### T025：拆分独立工具站和游戏站入口体验
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-21
+- 状态：已完成
+- 预计完成：2026-05-21
+- 允许修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `apps/web/prisma/**`, `docker-compose.yml`, `package.json`, `package-lock.json`
+- 依赖任务：T022
+- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 当前风险：无。
+- 备注：已按 `docs/网站UI/` 的 `index.html`、`tools.html`、`games.html` 适配；只调整现有 Next.js 单应用内的体验和视觉区分，不拆部署、不实现具体工具或游戏逻辑。
 
 ### T024：修复 Vercel 子目录 Next.js 识别失败
 

@@ -13,6 +13,8 @@ type Filter = {
 type ChannelPageProps = {
   title: string;
   description: string;
+  kicker: string;
+  variant: "tools" | "games";
   searchPlaceholder: string;
   filters: Filter[];
   items: PortalItem[];
@@ -23,6 +25,8 @@ type ChannelPageProps = {
 export function ChannelPage({
   title,
   description,
+  kicker,
+  variant,
   searchPlaceholder,
   filters,
   items,
@@ -45,9 +49,10 @@ export function ChannelPage({
   }, [activeFilter, items, query]);
 
   return (
-    <>
+    <div className={`station-page ${variant}-station`}>
       <section className="page-header">
         <div className="container">
+          <span className="page-kicker">{kicker}</span>
           <h1>{title}</h1>
           <p>{description}</p>
           <div className="page-actions">
@@ -92,6 +97,6 @@ export function ChannelPage({
       </section>
 
       <PortalModal item={selectedItem} onClose={() => setSelectedItem(null)} />
-    </>
+    </div>
   );
 }

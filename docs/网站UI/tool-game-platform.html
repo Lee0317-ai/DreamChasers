@@ -1,0 +1,707 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工具与游戏站 — 免费实用工具 + 休闲小游戏</title>
+<style>
+:root {
+  --bg: oklch(98% 0.004 240);
+  --surface: oklch(100% 0 0);
+  --fg: oklch(20% 0.02 240);
+  --muted: oklch(50% 0.018 240);
+  --border: oklch(90% 0.006 240);
+  --accent: oklch(56% 0.12 170);
+  --accent-2: oklch(52% 0.14 250);
+  --danger: oklch(55% 0.18 25);
+  --success: oklch(55% 0.14 145);
+  --warn: oklch(70% 0.12 85);
+
+  --font-display: 'Söhne', 'Avenir Next', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.04);
+  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.06);
+  --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+}
+
+/* Navigation */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.3s ease;
+}
+.nav.scrolled { box-shadow: var(--shadow-md); }
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.logo-mark {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  color: #fff; font-size: 14px; font-weight: 800;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+}
+
+.nav-links a {
+  display: flex; align-items: center;
+  height: 40px; padding: 0 16px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-links a:hover, .nav-links a.active {
+  color: var(--fg);
+  background: oklch(95% 0.005 240);
+}
+
+.nav-links a.accent-btn {
+  background: var(--fg);
+  color: #fff;
+  font-weight: 600;
+}
+.nav-links a.accent-btn:hover { background: oklch(30% 0.025 240); }
+
+.hamburger {
+  display: none;
+  width: 44px; height: 44px;
+  border: none; background: none;
+  cursor: pointer; border-radius: var(--radius-sm);
+}
+.hamburger:hover { background: oklch(95% 0.005 240); }
+
+.hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--fg); margin: 5px auto;
+  border-radius: 2px; transition: 0.3s;
+}
+
+/* Hero */
+.hero {
+  padding: clamp(48px, 8vw, 96px) 0 clamp(56px, 6vw, 80px);
+  text-align: center;
+}
+
+.hero-kicker {
+  display: inline-block;
+  font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent);
+  background: oklch(96% 0.04 170);
+  padding: 6px 14px; border-radius: 100px;
+  margin-bottom: 20px;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  max-width: 700px;
+  margin: 0 auto 16px;
+}
+
+.hero p {
+  font-size: clamp(1rem, 1.4vw, 1.2rem);
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto 36px;
+}
+
+/* Search */
+.search-wrap {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto 48px;
+}
+
+.search-box {
+  display: flex; align-items: center;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 6px 6px 6px 20px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.search-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px oklch(56% 0.12 170 / 0.12), var(--shadow-md);
+}
+
+.search-box input {
+  flex: 1;
+  border: none; background: none;
+  font-size: 1.05rem; color: var(--fg);
+  outline: none; padding: 10px 0;
+}
+
+.search-box input::placeholder { color: oklch(70% 0.01 240); }
+
+.search-btn {
+  height: 44px; padding: 0 24px;
+  border: none; border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: background 0.2s;
+}
+.search-btn:hover { background: oklch(48% 0.13 170); }
+
+.search-dropdown {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 8px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(-6px);
+  transition: all 0.2s ease;
+  z-index: 50;
+}
+
+.search-dropdown.open {
+  opacity: 1; pointer-events: auto;
+  transform: translateY(0);
+}
+
+.search-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer; transition: background 0.15s;
+}
+.search-item:hover { background: oklch(97% 0.005 240); }
+
+.search-item .si-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  background: oklch(96% 0.005 240);
+  display: grid; place-items: center;
+  font-size: 1rem;
+}
+.search-item .si-text { flex: 1; text-align: left; }
+.search-item .si-title { font-weight: 600; font-size: 0.95rem; }
+.search-item .si-desc { font-size: 0.8rem; color: var(--muted); }
+.search-item .si-tag {
+  font-size: 0.7rem; font-weight: 600;
+  padding: 3px 8px; border-radius: 100px;
+  background: oklch(96% 0.04 170); color: var(--accent);
+}
+
+/* Sections */
+.section-header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px; flex-wrap: wrap;
+}
+
+.section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.section-header a {
+  font-size: 0.9rem; font-weight: 600;
+  color: var(--accent); text-decoration: none;
+  display: flex; align-items: center; gap: 4px;
+}
+.section-header a:hover { text-decoration: underline; }
+
+/* Cards grid */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: oklch(85% 0.01 240);
+}
+
+.card-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, oklch(96% 0.04 170), oklch(94% 0.06 250));
+  display: grid; place-items: center;
+  font-size: 1.4rem; margin-bottom: 16px;
+}
+
+.card h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.card p {
+  font-size: 0.9rem; color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.card-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; color: var(--muted);
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 10px; border-radius: 100px;
+  font-size: 0.75rem; font-weight: 600;
+  background: oklch(96% 0.005 240);
+  color: var(--muted);
+}
+
+.tag.accent { background: oklch(96% 0.04 170); color: var(--accent); }
+.tag.new { background: oklch(96% 0.03 85); color: oklch(55% 0.1 85); }
+
+/* Channel sections */
+.channel-section { padding: 48px 0; }
+.channel-section:nth-child(even) { background: oklch(99% 0.003 240); }
+
+/* CTA strip */
+.cta-strip {
+  background: linear-gradient(135deg, oklch(22% 0.02 240), oklch(18% 0.025 250));
+  border-radius: var(--radius-lg);
+  padding: clamp(36px, 5vw, 56px);
+  text-align: center;
+  color: #fff;
+  margin: 48px 0;
+}
+.cta-strip h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.cta-strip p { opacity: 0.7; margin-bottom: 20px; }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 48px; padding: 0 28px;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: #fff; font-size: 0.95rem; font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s, background 0.2s;
+}
+.cta-btn:hover { transform: translateY(-1px); background: oklch(50% 0.13 170); }
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Mobile nav drawer */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: oklch(0% 0 0 / 0.3);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+  z-index: 150;
+}
+.drawer-overlay.open { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed; top: 0; right: 0;
+  width: min(320px, 85vw); height: 100%;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  z-index: 160;
+  padding: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer a {
+  display: flex; align-items: center;
+  height: 48px; padding: 0 16px;
+  border-radius: var(--radius-sm);
+  text-decoration: none; color: var(--fg);
+  font-weight: 500; font-size: 1rem;
+}
+.drawer a:hover { background: oklch(97% 0.005 240); }
+.drawer a.accent-btn { background: var(--fg); color: #fff; justify-content: center; margin-top: 8px; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: oklch(0% 0 0 / 0.35);
+  display: grid; place-items: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+  z-index: 200;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 480px;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.96) translateY(10px);
+  transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { font-family: var(--font-display); font-size: 1.15rem; }
+.modal-close {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  border: none; background: oklch(96% 0.005 240);
+  cursor: pointer; font-size: 1.2rem; color: var(--muted);
+  display: grid; place-items: center;
+}
+.modal-close:hover { background: oklch(92% 0.005 240); }
+
+.modal-body { padding: 24px; }
+.modal-body p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 16px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hamburger { display: grid; place-items: center; }
+  .cards-grid { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1025px) {
+  .cards-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-mark">T</span>
+      <span>工具游戏站</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">首页</a></li>
+      <li><a href="tools.html">工具</a></li>
+      <li><a href="games.html">游戏</a></li>
+      <li><a href="#" class="accent-btn">AI 搜索</a></li>
+    </ul>
+    <button class="hamburger" id="menuBtn" aria-label="菜单">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="drawer">
+  <a href="index.html" style="font-weight:700;margin-bottom:8px;">首页</a>
+  <a href="tools.html">工具频道</a>
+  <a href="games.html">游戏频道</a>
+  <a href="#" class="accent-btn">AI 搜索</a>
+</aside>
+
+<section class="hero">
+  <div class="container">
+    <span class="hero-kicker">免费 · 实用 · 有趣</span>
+    <h1>一个站点，满足你的工具与游戏需求</h1>
+    <p>PDF 处理、AI 修图、休闲小游戏……工作学习用工具，碎片时间玩游戏，全部免费开放。</p>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索工具、游戏或输入需求，例如：合并 PDF" autocomplete="off">
+        <button class="search-btn" id="searchBtn">搜索</button>
+      </div>
+      <div class="search-dropdown" id="searchDropdown">
+        <div class="search-item" data-href="tools.html#pdf">
+          <div class="si-icon">📄</div>
+          <div class="si-text">
+            <div class="si-title">PDF 工具箱</div>
+            <div class="si-desc">合并、拆分、转 Word、加水印……</div>
+          </div>
+          <span class="si-tag">工具</span>
+        </div>
+        <div class="search-item" data-href="tools.html#img">
+          <div class="si-icon">🎨</div>
+          <div class="si-text">
+            <div class="si-title">AI 修图工具</div>
+            <div class="si-desc">亮度、对比度、滤镜、AI 美颜……</div>
+          </div>
+          <span class="si-tag">工具</span>
+        </div>
+        <div class="search-item" data-href="games.html#mahjong">
+          <div class="si-icon">🀄</div>
+          <div class="si-text">
+            <div class="si-title">麻将 Roguelike 消除</div>
+            <div class="si-desc">点击消除，组合策略，Roguelike 奖励</div>
+          </div>
+          <span class="si-tag">游戏</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="channel-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>实用工具</h2>
+      <a href="tools.html">查看全部 →</a>
+    </div>
+    <div class="cards-grid">
+      <article class="card" onclick="openModal('pdf')">
+        <div class="card-icon">📄</div>
+        <h3>PDF 工具箱</h3>
+        <p>合并、拆分、旋转、转图片、转 Word、添加水印与签名、基础压缩。全部免费，浏览器内完成。</p>
+        <div class="card-meta">
+          <span class="tag accent">免费</span>
+          <span class="tag">文档处理</span>
+        </div>
+      </article>
+
+      <article class="card" onclick="openModal('img')">
+        <div class="card-icon">🎨</div>
+        <h3>AI 修图工具</h3>
+        <p>亮度、对比度、饱和度、裁剪、滤镜、加贴纸与文字。AI 能力限次免费：美颜、换背景、细节修复。</p>
+        <div class="card-meta">
+          <span class="tag accent">免费</span>
+          <span class="tag new">AI 能力</span>
+        </div>
+      </article>
+
+      <article class="card" style="opacity:0.6;" onclick="openModal('placeholder')">
+        <div class="card-icon" style="background:oklch(96% 0.005 240);">⏳</div>
+        <h3>更多工具</h3>
+        <p>正在开发中……格式转换、图表生成、二维码工具即将上线。</p>
+        <div class="card-meta">
+          <span class="tag">敬请期待</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="channel-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>休闲游戏</h2>
+      <a href="games.html">查看全部 →</a>
+    </div>
+    <div class="cards-grid">
+      <article class="card" onclick="openModal('mahjong')">
+        <div class="card-icon">🀄</div>
+        <h3>麻将 Roguelike 消除</h3>
+        <p>堆叠麻将、点击进槽、碰吃杠消除。每过一关选一个 Roguelike 奖励，20 关等你挑战。</p>
+        <div class="card-meta">
+          <span class="tag accent">免费</span>
+          <span class="tag">益智</span>
+        </div>
+      </article>
+
+      <article class="card" style="opacity:0.6;" onclick="openModal('placeholder')">
+        <div class="card-icon" style="background:oklch(96% 0.005 240);">⏳</div>
+        <h3>更多游戏</h3>
+        <p>正在开发中……消除、塔防、文字冒险等类型即将上线。</p>
+        <div class="card-meta">
+          <span class="tag">敬请期待</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="container">
+  <div class="cta-strip">
+    <h3>有想法？告诉我们</h3>
+    <p>工具和游戏会持续更新，欢迎提交你需要的工具或想玩的游戏类型。</p>
+    <a href="#" class="cta-btn">提交需求</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>工具与游戏站 — 免费实用工具 + 休闲小游戏</p>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modalTitle">详情</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <p>内容加载中……</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 10);
+});
+
+const menuBtn = document.getElementById('menuBtn');
+const drawer = document.getElementById('drawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+function toggleDrawer() {
+  drawer.classList.toggle('open');
+  drawerOverlay.classList.toggle('open');
+}
+menuBtn.addEventListener('click', toggleDrawer);
+drawerOverlay.addEventListener('click', toggleDrawer);
+
+const searchInput = document.getElementById('searchInput');
+const searchDropdown = document.getElementById('searchDropdown');
+searchInput.addEventListener('focus', () => searchDropdown.classList.add('open'));
+searchInput.addEventListener('input', () => {
+  if (searchInput.value.trim()) {
+    searchDropdown.classList.add('open');
+  } else {
+    searchDropdown.classList.remove('open');
+  }
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) {
+    searchDropdown.classList.remove('open');
+  }
+});
+searchDropdown.querySelectorAll('.search-item').forEach(item => {
+  item.addEventListener('click', () => {
+    window.location.href = item.dataset.href;
+  });
+});
+document.getElementById('searchBtn').addEventListener('click', () => {
+  const q = searchInput.value.trim();
+  if (q) window.location.href = 'tools.html?q=' + encodeURIComponent(q);
+});
+searchInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const q = searchInput.value.trim();
+    if (q) window.location.href = 'tools.html?q=' + encodeURIComponent(q);
+  }
+});
+
+const modalData = {
+  pdf: {
+    title: 'PDF 工具箱',
+    body: '<p>PDF 工具箱提供一整套浏览器内 PDF 处理功能，无需上传服务器，保护隐私。</p><p><strong>免费功能：</strong></p><ul style="margin-left:1.2em;color:var(--muted);font-size:0.95rem;line-height:1.8;"><li>PDF 预览、合并、拆分</li><li>删除页面、页面排序、页面旋转</li><li>PDF 转图片、图片转 PDF</li><li>PDF 转 Word（Beta）</li><li>添加水印、添加签名</li><li>基础压缩</li></ul><p style="margin-top:12px;font-size:0.85rem;color:var(--muted);">扫描版 PDF 转 Word 需要 OCR，后续归入 AI 能力支持限次免费。</p>'
+  },
+  img: {
+    title: 'AI 修图工具',
+    body: '<p>在线修图，基础功能完全免费，AI 能力限次免费。</p><p><strong>免费功能：</strong></p><ul style="margin-left:1.2em;color:var(--muted);font-size:0.95rem;line-height:1.8;"><li>亮度、对比度、饱和度、色温</li><li>裁剪、旋转、缩放</li><li>滤镜、加边框、加贴纸、加文字</li><li>马赛克、手动去水印</li></ul><p><strong>AI 能力（限次）：</strong></p><ul style="margin-left:1.2em;color:var(--muted);font-size:0.95rem;line-height:1.8;"><li>AI 美颜、细节修复、局部重绘</li><li>AI 换背景、智能去水印</li><li>高清增强、批量 AI 处理</li></ul>'
+  },
+  mahjong: {
+    title: '麻将 Roguelike 消除',
+    body: '<p>一款融合麻将组合规则与 Roguelike 奖励的消除小游戏。</p><p><strong>玩法：</strong></p><ul style="margin-left:1.2em;color:var(--muted);font-size:0.95rem;line-height:1.8;"><li>点击可选麻将牌进入下方槽位</li><li>三张相同（碰）、同花色连续三张（吃）、四张相同（杠）即可消除</li><li>槽位满了则失败，清空牌面过关</li></ul><p><strong>Roguelike 奖励（每关选 1 个）：</strong></p><ul style="margin-left:1.2em;color:var(--muted);font-size:0.95rem;line-height:1.8;"><li>槽位 +1、自动清一格、碰后返还一步</li><li>吃消除分数翻倍、杠后随机清除一张牌</li><li>花色出现率提高、清一色倍率上限提高</li><li>每 3 次消除触发洗牌、开局透视隐藏牌</li></ul><p style="margin-top:12px;font-size:0.85rem;color:var(--muted);">第一阶段 20 关 + 20 个奖励，持续更新中。</p>'
+  },
+  placeholder: {
+    title: '敬请期待',
+    body: '<p>该内容正在开发中，即将上线。</p><p>你可以先体验已上线的工具和游戏，或者通过 AI 搜索查找你需要的功能。</p>'
+  }
+};
+
+function openModal(key) {
+  const d = modalData[key] || modalData.placeholder;
+  document.getElementById('modalTitle').textContent = d.title;
+  document.getElementById('modalBody').innerHTML = d.body;
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+
+</body>
+</html>
