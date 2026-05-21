@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工具与游戏 — 选择你的空间</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.portal {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Left side — Tools */
+.portal-side.tools {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 6vw, 80px);
+  background: oklch(99% 0.002 250);
+  color: oklch(15% 0.015 250);
+  text-decoration: none;
+  transition: flex 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-side.tools::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, oklch(55% 0.18 255 / 0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.portal-side.tools:hover {
+  flex: 1.15;
+}
+
+/* Right side — Games */
+.portal-side.games {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 6vw, 80px);
+  background: oklch(18% 0.02 260);
+  color: oklch(96% 0.01 260);
+  text-decoration: none;
+  transition: flex 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-side.games::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 30%, oklch(65% 0.22 30 / 0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.portal-side.games:hover {
+  flex: 1.15;
+}
+
+/* Content */
+.portal-content {
+  position: relative;
+  text-align: center;
+  max-width: 380px;
+}
+
+.portal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 auto 24px;
+}
+
+.tools .portal-icon {
+  background: oklch(55% 0.18 255);
+  color: #fff;
+}
+
+.games .portal-icon {
+  background: linear-gradient(135deg, oklch(65% 0.22 30), oklch(60% 0.2 300));
+  color: #fff;
+}
+
+.portal-content h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 10px;
+}
+
+.portal-content p {
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  opacity: 0.7;
+}
+
+.portal-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.tools .portal-cta {
+  background: oklch(15% 0.015 250);
+  color: #fff;
+}
+.tools .portal-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.12);
+}
+
+.games .portal-cta {
+  background: linear-gradient(135deg, oklch(65% 0.22 30), oklch(60% 0.2 300));
+  color: #fff;
+}
+.games .portal-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px oklch(65% 0.22 30 / 0.3);
+}
+
+/* Divider hint */
+.portal-divider {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: oklch(50% 0 0);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+  z-index: 10;
+  box-shadow: 0 4px 16px oklch(0% 0 0 / 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .portal {
+    flex-direction: column;
+  }
+  .portal-side.tools,
+  .portal-side.games {
+    flex: none;
+    min-height: 50vh;
+  }
+  .portal-side.tools:hover,
+  .portal-side.games:hover {
+    flex: none;
+  }
+  .portal-divider {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="portal">
+  <a href="tools.html" class="portal-side tools">
+    <div class="portal-content">
+      <div class="portal-icon">T</div>
+      <h2>效率工具箱</h2>
+      <p>PDF 处理、AI 修图、格式转换……工作学习用工具，免费高效。</p>
+      <span class="portal-cta">进入工具站 →</span>
+    </div>
+  </a>
+
+  <a href="games.html" class="portal-side games">
+    <div class="portal-content">
+      <div class="portal-icon">G</div>
+      <h2>休闲游戏馆</h2>
+      <p>益智解谜、策略挑战、休闲放松……碎片时间，打开即玩。</p>
+      <span class="portal-cta">进入游戏馆 →</span>
+    </div>
+  </a>
+</div>
+
+</body>
+</html>

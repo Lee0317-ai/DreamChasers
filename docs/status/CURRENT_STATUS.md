@@ -1,6 +1,6 @@
 # 当前项目状态
 
-**最后更新**：2026-05-20
+**最后更新**：2026-05-21
 **状态维护人**：开发者每次开工和收工时共同维护
 **必读**：每个 AI 会话开始前必须读取本文件
 
@@ -44,21 +44,22 @@
 | 22 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 迁移静态设计导出的视觉和交互 |
 | 23 | 补充 Supabase 数据库交接文档 | 开发 A | 已完成 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 已完成数据库交接文档 |
 | 24 | 修复 Vercel 子目录 Next.js 识别失败 | 开发 A | 已完成 | `apps/web/package.json`, `package-lock.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 已补齐 Web 子应用框架依赖 |
+| 25 | 拆分独立工具站和游戏站入口体验 | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 已按 `docs/网站UI/` 拆分入口、工具站和游戏站体验 |
 
 ## 3. 当前活跃任务
 
 ### 当前任务
 
-- 任务编号：T024
-- 任务名称：修复 Vercel 子目录 Next.js 识别失败
+- 任务编号：T025
+- 任务名称：拆分独立工具站和游戏站入口体验
 - 负责人：Codex / 开发 A
 - 状态：已完成
-- 开始时间：2026-05-20
-- 允许修改文件：`apps/web/package.json`, `package-lock.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**`
-- 禁止修改文件：`apps/web/src/**`, `apps/web/prisma/**`, `packages/**`, `apps/game/**`, `docker-compose.yml`
-- 验证命令：`npm run build -w apps/web`
+- 开始时间：2026-05-21
+- 允许修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `apps/web/prisma/**`, `docker-compose.yml`, `package.json`, `package-lock.json`
+- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
 - 当前阻塞：无
-- 下一步：重新触发 Vercel 部署，确认 Root Directory 为 `apps/web` 时能识别 Next.js。
+- 下一步：后续进入具体 PDF 工具箱、AI 修图工具和麻将 Roguelike 消除 MVP 任务。
 
 领取任务后填写：
 
@@ -91,6 +92,7 @@
 - 已确认 GDevelop 的游戏模块定位：作为 Web H5 原型和轻量小游戏通道；Cocos Creator 仍作为微信/抖音小游戏正式发布主线。
 - 已识别后续候选方向：AI 内容转换工具箱，来源参考 `qiaomu-anything-to-notebooklm` skill。
 - 已修复 Vercel 子目录部署识别问题：`apps/web/package.json` 已声明 `next`、`react`、`react-dom`。
+- 已按 `docs/网站UI/` 最新设计把首页改为工具站/游戏站左右分流入口，并让 `/tools` 与 `/games` 保持独立导航、独立视觉和顶部单一互跳入口。
 
 ## 5. 当前阻塞
 

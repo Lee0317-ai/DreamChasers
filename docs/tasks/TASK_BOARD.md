@@ -1,6 +1,6 @@
 # 任务池
 
-**最后更新**：2026-05-20
+**最后更新**：2026-05-21
 **用途**：统一记录所有待做、进行中、待验收、已完成的任务。  
 **维护规则**：双方都可以新增和修改任务，但必须保留任务编号，不要删除历史任务。
 
@@ -49,6 +49,7 @@
 | T022 | P1 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | T002 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查 |
 | T023 | P1 | 补充 Supabase 数据库交接文档 | 开发 A | 已完成 | T004 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 文档自审；连接参数说明完整 |
 | T024 | P0 | 修复 Vercel 子目录 Next.js 识别失败 | 开发 A | 已完成 | T002 | `apps/web/package.json`, `package-lock.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | `npm run build -w apps/web` |
+| T025 | P1 | 拆分独立工具站和游戏站入口体验 | 开发 A | 已完成 | T022 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查 |
 
 ## 4. 新增任务模板
 
