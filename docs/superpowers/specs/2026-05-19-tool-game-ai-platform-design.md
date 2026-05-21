@@ -277,9 +277,13 @@ flowchart TD
   - 游戏频道。
   - AI 搜索。
   - 后台管理。
+  - `src/modules/tools/<module-slug>/`：每个 Web 工具的独立代码模块。
+  - `src/modules/games/<module-slug>/`：每个 Web 游戏接入的独立代码模块。
+  - `src/app/**`：只做路由入口、元数据和模块挂载。
 - `apps/game`
   - Cocos Creator 游戏工程。
   - GDevelop Web H5 原型工程和导出说明。
+  - `<module-slug>/`：每个正式游戏工程独立目录。
 - `packages/shared`
   - 共享类型。
   - 埋点定义。
@@ -290,6 +294,32 @@ flowchart TD
   - 双人协作文档。
   - 当前状态文档。
   - 完成记录。
+  - `modules/<module-slug>/`：每个小工具或游戏的独立全过程文档。
+
+### 9.1 模块独立归档规则
+
+每个小工具或游戏必须有独立模块文档文件夹，不能把多个工具或游戏混写在同一个文档里。
+
+模块文档目录：
+
+```text
+docs/modules/<module-slug>/
+  README.md
+  IMPLEMENTATION_PLAN.md
+  PROGRESS.md
+  DECISIONS.md
+  HANDOFF.md
+```
+
+代码目录：
+
+```text
+apps/web/src/modules/tools/<module-slug>/
+apps/web/src/modules/games/<module-slug>/
+apps/game/<module-slug>/
+```
+
+`apps/web/src/app/**` 下的路由只做入口，不承载大量工具或游戏业务逻辑。
 
 ## 10. 暂时不做
 

@@ -31,6 +31,14 @@
 
 如果用户提出新想法、新功能、需求变更，或要求 AI “先规划再实现”，必须先写入 `docs/tasks/CHANGE_INTAKE.md`，再进入 `docs/tasks/TASK_BOARD.md`。没有任务编号、文件范围和领取记录，不要实施。
 
+如果只做某个小工具或游戏，还必须读取对应模块目录：
+
+- PDF 工具箱：`docs/modules/pdf-toolbox/`
+- AI 修图工具：`docs/modules/photo-editor/`
+- 麻将 Roguelike 消除：`docs/modules/mahjong-roguelike/`
+
+每个小工具或游戏都必须有独立模块文档文件夹：`docs/modules/<module-slug>/`。模块目录至少包含 `README.md`、`IMPLEMENTATION_PLAN.md`、`PROGRESS.md`、`DECISIONS.md`、`HANDOFF.md`。
+
 ## 必须后更新
 
 每次开发或文档修改完成后，更新：
@@ -64,6 +72,7 @@
 - 不修改其他负责人范围内的文件。
 - 修改共享文件前先更新 `docs/status/CURRENT_STATUS.md`。
 - 不覆盖其他开发者或 AI 的改动。
+- 每个工具或游戏的代码必须放在独立模块目录。Web 工具使用 `apps/web/src/modules/tools/<module-slug>/`，Web 游戏接入使用 `apps/web/src/modules/games/<module-slug>/`，正式游戏工程使用 `apps/game/<module-slug>/`。`apps/web/src/app/**` 下的路由只做入口。
 
 ## 技术方向
 

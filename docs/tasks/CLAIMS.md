@@ -18,6 +18,58 @@
 
 ## 2. 当前领取
 
+### T028：将独立模块归档规则写入整体架构
+
+- 领取人：Codex / 两人协作
+- 领取时间：2026-05-21
+- 状态：已完成
+- 预计完成：2026-05-21
+- 允许修改文件：`AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/superpowers/specs/**`, `docs/plans/**`, `docs/workflow/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `package-lock.json`
+- 依赖任务：T026
+- 验证命令：文档自审；旧路径扫描；UTF-8 无 BOM 检查
+- 当前风险：如果入口文件不写清规则，其他开发者或 AI 可能绕过模块目录规范。
+- 备注：已将每个工具/游戏独立文档文件夹和独立代码模块规则同步到项目入口和整体架构文档。
+
+### T027：补充 AGENTS.md 文档输出格式规则
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-21
+- 状态：已完成
+- 预计完成：2026-05-21
+- 允许修改文件：`AGENTS.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/2026-05-21-task-27-agents-doc-output-format.md`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `package-lock.json`
+- 依赖任务：无
+- 验证命令：文档自审；UTF-8 无 BOM 检查
+- 当前风险：无。
+- 备注：仅补充 AI 入口文档规范，不修改应用代码。
+
+### T026：建立工具/游戏独立模块归档规范
+
+- 领取人：Codex / 两人协作
+- 领取时间：2026-05-21
+- 状态：已完成
+- 预计完成：2026-05-21
+- 允许修改文件：`docs/modules/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
+- 禁止修改文件：`apps/**`, `packages/**`, `docker-compose.yml`, `package.json`, `package-lock.json`
+- 依赖任务：无
+- 验证命令：文档自审；UTF-8 无 BOM 检查
+- 当前风险：后续任务必须按模块目录创建文档和代码目录，否则工具/游戏数量变多后仍会失控。
+- 备注：已建立 `docs/modules/<module-slug>/` 归档规则，并将 PDF 工具箱文档迁移到独立目录；代码规范改为路由层只做入口，模块实现放独立模块目录。
+
+### T015：实现 PDF 工具箱 MVP
+
+- 领取人：Codex / 开发 A
+- 领取时间：2026-05-21
+- 状态：进行中
+- 预计完成：2026-05-21 起分阶段推进
+- 允许修改文件：`apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/components/portal-data.ts`, `apps/web/package.json`, `package-lock.json`, `docs/modules/pdf-toolbox/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `apps/web/prisma/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**`, `docker-compose.yml`, `package.json`
+- 依赖任务：T025
+- 验证命令：`npm run test -w apps/web -- pdf`; `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 当前风险：PDF.js worker 与 Next.js 构建可能需要单独配置；浏览器内处理大文件有内存限制；PDF 转 Word Beta 质量不可过度承诺。
+- 备注：已完成核心页面级处理第一轮，包含上传、预览、选择、旋转、排序、删除、拆分和下载；已补充文字水印、签名图片、PDF 转 Word Beta、区域遮盖和图片扫描成 PDF；PDF 转图片和基础压缩仍待补齐。
+
 ### T025：拆分独立工具站和游戏站入口体验
 
 - 领取人：Codex / 开发 A

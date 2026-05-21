@@ -48,6 +48,24 @@
 
 ## 4. 文件所有权建议
 
+### 模块独立目录规则
+
+每个小工具或游戏都必须有独立模块文档文件夹：
+
+- `docs/modules/<module-slug>/README.md`
+- `docs/modules/<module-slug>/IMPLEMENTATION_PLAN.md`
+- `docs/modules/<module-slug>/PROGRESS.md`
+- `docs/modules/<module-slug>/DECISIONS.md`
+- `docs/modules/<module-slug>/HANDOFF.md`
+
+每个小工具或游戏的代码也必须放在独立模块目录：
+
+- Web 工具：`apps/web/src/modules/tools/<module-slug>/`
+- Web 游戏接入：`apps/web/src/modules/games/<module-slug>/`
+- 正式游戏工程：`apps/game/<module-slug>/`
+
+`apps/web/src/app/**` 下的路由只做入口、元数据和模块挂载，不承载大量业务逻辑。
+
 ### 开发 A 默认负责
 
 - `package.json`
@@ -58,8 +76,7 @@
 - `apps/web/src/lib/content/**`
 - `apps/web/src/app/admin/**`
 - `apps/web/src/app/tools/pdf-toolbox/**`
-- `apps/web/src/components/tools/pdf/**`
-- `apps/web/src/lib/tools/pdf/**`
+- `apps/web/src/modules/tools/pdf-toolbox/**`
 
 ### 开发 B 默认负责
 

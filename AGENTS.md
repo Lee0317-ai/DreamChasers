@@ -23,11 +23,13 @@
 
 如果只做某个模块，还要读取对应模块文档：
 
-- `docs/modules/pdf-toolbox.md`
-- `docs/modules/photo-editor.md`
-- `docs/modules/mahjong-roguelike.md`
+- PDF 工具箱：`docs/modules/pdf-toolbox/`
+- AI 修图工具：`docs/modules/photo-editor/`
+- 麻将 Roguelike 消除：`docs/modules/mahjong-roguelike/`
 
 模块文档不存在时，先查看实施计划中的对应任务，不要擅自扩大范围。
+
+每个小工具或游戏都必须有独立模块文档文件夹，路径为 `docs/modules/<module-slug>/`。模块目录至少包含 `README.md`、`IMPLEMENTATION_PLAN.md`、`PROGRESS.md`、`DECISIONS.md`、`HANDOFF.md`。
 
 ## 3. 每次任务前必须确认
 
@@ -110,8 +112,19 @@
 - 不覆盖他人或其他 AI 的改动。
 - 每次修改后必须运行计划中对应的验证命令。
 - 前端页面完成后必须检查桌面端和移动端。
+- 每个工具或游戏的代码必须放在独立模块目录。Web 工具使用 `apps/web/src/modules/tools/<module-slug>/`，Web 游戏接入使用 `apps/web/src/modules/games/<module-slug>/`，正式游戏工程使用 `apps/game/<module-slug>/`。`apps/web/src/app/**` 下的路由只做入口，不堆业务逻辑。
 
-## 9. 如果从子目录启动
+## 9. 文档输出格式
+
+不要默认使用 Markdown。根据内容的编辑方式、维护周期和展示需求选择输出格式：
+
+- README、API 文档、PR 描述、长期维护的规范、需要人类频繁手动编辑的文件，使用 Markdown，方便手写修改和查看 Git diff。
+- AI 生成的规划、方案对比、调研报告、对外展示或汇报材料，使用 HTML，优先保证信息密度、可读性和开箱即读的视觉体验。
+- 需要滑块、拖拽、实时预览等交互元素，或一次性协作工具如看板、编辑器，使用 HTML，便于交互和用完即扔。
+
+快速决策：需要人类手写编辑或版本控制 diff 的，用 Markdown；需要信息可视化、交互或一次性阅读的，用 HTML。
+
+## 10. 如果从子目录启动
 
 如果当前工作目录不是 `D:\DreamChasers`，先回到项目根目录再读取文档。
 

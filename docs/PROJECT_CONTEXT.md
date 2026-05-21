@@ -48,11 +48,25 @@
 7. `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`
 8. `docs/workflow/dual-dev-ai-workflow.md`
 
-如果只做某个模块，再读对应模块文档：
+如果只做某个模块，再读对应模块文档目录：
 
-- PDF：后续放在 `docs/modules/pdf-toolbox.md`
-- 修图：后续放在 `docs/modules/photo-editor.md`
-- 游戏：后续放在 `docs/modules/mahjong-roguelike.md`
+- PDF：`docs/modules/pdf-toolbox/`
+- 修图：`docs/modules/photo-editor/`
+- 游戏：`docs/modules/mahjong-roguelike/`
+
+每个小工具或游戏都必须有独立模块文档文件夹，代码也必须放在独立模块目录；路由层只做入口。
+
+模块文档目录规范：
+
+- 文档目录：`docs/modules/<module-slug>/`
+- 必备文件：`README.md`、`IMPLEMENTATION_PLAN.md`、`PROGRESS.md`、`DECISIONS.md`、`HANDOFF.md`
+
+代码目录规范：
+
+- Web 工具：`apps/web/src/modules/tools/<module-slug>/`
+- Web 游戏接入：`apps/web/src/modules/games/<module-slug>/`
+- 正式游戏工程：`apps/game/<module-slug>/`
+- 路由入口：`apps/web/src/app/**` 只做页面入口、元数据和模块挂载，不写大量业务逻辑。
 
 ## 4. 文档位置规范
 

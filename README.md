@@ -14,6 +14,17 @@
 
 开始开发前先在 `docs/tasks/CLAIMS.md` 领取任务，完成后更新状态、进展和完成记录。
 
+## 模块归档规则
+
+每个小工具或游戏都必须独立归档：
+
+- 文档目录：`docs/modules/<module-slug>/`
+- Web 工具代码：`apps/web/src/modules/tools/<module-slug>/`
+- Web 游戏接入代码：`apps/web/src/modules/games/<module-slug>/`
+- 正式游戏工程：`apps/game/<module-slug>/`
+
+模块文档目录至少包含 `README.md`、`IMPLEMENTATION_PLAN.md`、`PROGRESS.md`、`DECISIONS.md`、`HANDOFF.md`。路由目录 `apps/web/src/app/**` 只做入口，不承载大量业务逻辑。
+
 建议分支：
 
 - 开发 A：`feature/platform-foundation`

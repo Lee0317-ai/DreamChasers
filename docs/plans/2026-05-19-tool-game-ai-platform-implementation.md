@@ -6,6 +6,8 @@
 
 **架构：** 使用 TypeScript Monorepo。`apps/web` 负责 Next.js 门户、工具、游戏、AI 搜索和后台；`apps/game` 负责 Cocos Creator 真小游戏工程、GDevelop Web H5 原型工程和发布文档；`packages/shared` 负责共享类型和通用逻辑。第一阶段只保留一个 Web 应用、一个数据库和一个 Redis，不拆微服务。
 
+**模块规则：** 每个小工具或游戏都必须独立归档。文档放在 `docs/modules/<module-slug>/`，Web 工具代码放在 `apps/web/src/modules/tools/<module-slug>/`，Web 游戏接入代码放在 `apps/web/src/modules/games/<module-slug>/`，正式游戏工程放在 `apps/game/<module-slug>/`。`apps/web/src/app/**` 只做路由入口。
+
 **技术栈：** Next.js、TypeScript、Tailwind CSS、Prisma、PostgreSQL、Redis、Cocos Creator、GDevelop、Docker Compose、Nginx、Vitest、Playwright。
 
 ---
@@ -16,9 +18,13 @@
 - 新项目根目录建议放在 `D:\DreamChasers`。
 - 最终目录结构建议如下：
   - `apps/web`：主站、工具频道、游戏频道、AI 搜索、后台管理。
+  - `apps/web/src/modules/tools/<module-slug>`：Web 工具独立代码模块。
+  - `apps/web/src/modules/games/<module-slug>`：Web 游戏接入独立代码模块。
   - `apps/game`：Cocos Creator 游戏工程、GDevelop Web H5 原型工程和发布文档。
+  - `apps/game/<module-slug>`：正式游戏工程独立目录。
   - `packages/shared`：共享类型、枚举、工具函数、埋点定义。
   - `docs`：产品文档、计划、上线清单、运营手册。
+  - `docs/modules/<module-slug>`：每个小工具或游戏的独立全过程文档。
 - 第一版目标是验证流量、内容更新速度和用户停留，不做完整支付系统。
 - AI 搜索第一版可以先做本地匹配：标题、描述、分类、标签、别名、关键词；真实 LLM 接入后续通过同一个接口扩展。
 
@@ -117,6 +123,8 @@
 - 每次开始新会话时，各自 AI 必须先读 `docs/PROJECT_CONTEXT.md`。
 - 修改范围尽量按模块隔离，避免两个人同时改同一批文件。
 - 完成任务后必须更新状态文档，并写清楚验证结果。
+- 每个小工具或游戏必须先建立独立模块文档目录，再进入实现。
+- 每个小工具或游戏的代码必须放在独立模块目录，路由层只做入口。
 
 ## 4. 实施任务
 
@@ -1006,11 +1014,13 @@ git commit -m "docs: add launch and operations playbooks"
 
 **文件：**
 - 新建：`apps/web/src/app/tools/pdf-toolbox/page.tsx`
-- 新建：`apps/web/src/components/tools/pdf/PdfUploader.tsx`
-- 新建：`apps/web/src/components/tools/pdf/PdfPagePreview.tsx`
-- 新建：`apps/web/src/components/tools/pdf/PdfActionPanel.tsx`
-- 新建：`apps/web/src/lib/tools/pdf/pdf-actions.ts`
-- 新建：`apps/web/src/lib/tools/pdf/pdf-actions.test.ts`
+- 新建：`apps/web/src/modules/tools/pdf-toolbox/components/PdfUploader.tsx`
+- 新建：`apps/web/src/modules/tools/pdf-toolbox/components/PdfPageGrid.tsx`
+- 新建：`apps/web/src/modules/tools/pdf-toolbox/components/PdfActionPanel.tsx`
+- 新建：`apps/web/src/modules/tools/pdf-toolbox/lib/pdf-actions.ts`
+- 新建：`apps/web/src/modules/tools/pdf-toolbox/__tests__/pdf-actions.test.ts`
+- 新建：`docs/modules/pdf-toolbox/README.md`
+- 新建：`docs/modules/pdf-toolbox/IMPLEMENTATION_PLAN.md`
 - 修改：`apps/web/src/lib/content/seed-content.ts`
 
 **步骤 1：先写 PDF 操作测试**
@@ -1062,7 +1072,7 @@ npm run build -w apps/web
 **步骤 6：提交**
 
 ```bash
-git add apps/web/src/app/tools/pdf-toolbox apps/web/src/components/tools/pdf apps/web/src/lib/tools/pdf apps/web/src/lib/content
+git add apps/web/src/app/tools/pdf-toolbox apps/web/src/modules/tools/pdf-toolbox apps/web/src/lib/content docs/modules/pdf-toolbox
 git commit -m "feat: add pdf toolbox mvp"
 ```
 

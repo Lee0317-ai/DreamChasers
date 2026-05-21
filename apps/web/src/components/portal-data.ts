@@ -9,6 +9,7 @@ export type PortalItem = {
   detailsTitle: string;
   details: string[];
   footnote?: string;
+  href?: string;
 };
 
 export const toolItems: PortalItem[] = [
@@ -20,6 +21,7 @@ export const toolItems: PortalItem[] = [
     tags: ["免费", "文档处理"],
     categories: ["doc"],
     detailsTitle: "PDF 工具箱",
+    href: "/tools/pdf-toolbox",
     details: [
       "PDF 预览、合并、拆分",
       "删除页面、页面排序、页面旋转",
@@ -159,7 +161,7 @@ export const gameItems: PortalItem[] = [
 
 export const searchItems = [
   {
-    href: "/tools#pdf",
+    href: "/tools/pdf-toolbox",
     icon: "PDF",
     title: "PDF 工具箱",
     description: "合并、拆分、转 Word、加水印",

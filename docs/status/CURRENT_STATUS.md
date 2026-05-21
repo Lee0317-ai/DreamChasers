@@ -34,32 +34,35 @@
 | 12 | 添加埋点和热门排序 | 开发 B | 未开始 | `apps/web/src/lib/analytics/**`, `apps/web/src/app/api/events/**` | 点击统计 |
 | 13 | 添加部署文件 | 开发 B | 未开始 | `deploy/**`, `apps/web/Dockerfile`, `docker-compose.yml` | Docker/Nginx |
 | 14 | 添加上线清单和运营手册 | 两人协作 | 未开始 | `docs/checklists/**`, `docs/operations/**` | 补齐上线流程 |
-| 15 | 实现 PDF 工具箱 MVP | 开发 A | 未开始 | `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/components/tools/pdf/**`, `apps/web/src/lib/tools/pdf/**` | PDF 预览和转换 |
+| 15 | 实现 PDF 工具箱 MVP | Codex / 开发 A | 进行中 | `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/components/portal-data.ts`, `docs/modules/pdf-toolbox/**`, `apps/web/package.json`, `package-lock.json` | 已完成核心页面处理、文字水印、签名、PDF 转 Word Beta、区域遮盖和图片扫描成 PDF；下一步补 PDF 转图片和基础压缩 |
 | 16 | 实现 AI 修图工具 MVP | 开发 B | 未开始 | `apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**` | 基础修图和 AI 占位 |
 | 17 | 实现麻将 Roguelike 消除 MVP | 开发 B | 未开始 | `apps/game/mahjong-roguelike/**`, `packages/shared/src/mahjong-game.ts` | 规则模型和游戏文档 |
 | 18 | 建立 Git 忽略规则和协作入口 | 开发 A | 已完成 | `.gitignore`, `README.md`, `.claude/settings.local.json`, `.obsidian/workspace.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-19.md`, `docs/completion/**` | 提交后本地状态文件不再上传 |
 | 19 | 确认 GDevelop 游戏模块定位 | 开发 B | 已完成 | `docs/**` | 后续由 T020 接入 Web 原型通道 |
-| 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/components/game/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike.md` | 领取后实现统一嵌入和导出规范 |
+| 20 | 添加 GDevelop Web 游戏原型通道 | 开发 B | 未开始 | `apps/game/gdevelop/**`, `apps/game/publishing/gdevelop-web-export.md`, `apps/web/src/modules/games/**`, `apps/web/src/app/games/**`, `packages/shared/src/game-engine.ts`, `docs/modules/mahjong-roguelike/**` | 领取后实现统一嵌入和导出规范 |
 | 21 | AI 内容转换工具箱规划 | 两人协作 | 已完成 | `docs/PROJECT_CONTEXT.md`, `docs/plans/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 规划完成，后续再拆实现任务 |
 | 22 | 按 `docs/网站UI.zip` 适配前端门户 UI | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 迁移静态设计导出的视觉和交互 |
 | 23 | 补充 Supabase 数据库交接文档 | 开发 A | 已完成 | `docs/handoffs/**`, `docs/decisions/**`, `docs/status/CURRENT_STATUS.md`, `docs/tasks/**`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 已完成数据库交接文档 |
 | 24 | 修复 Vercel 子目录 Next.js 识别失败 | 开发 A | 已完成 | `apps/web/package.json`, `package-lock.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-20.md`, `docs/completion/**` | 已补齐 Web 子应用框架依赖 |
 | 25 | 拆分独立工具站和游戏站入口体验 | 开发 A | 已完成 | `apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 已按 `docs/网站UI/` 拆分入口、工具站和游戏站体验 |
+| 26 | 建立工具/游戏独立模块归档规范 | 两人协作 | 已完成 | `docs/modules/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 已明确每个工具/游戏独立文档文件夹和独立代码模块规则 |
+| 27 | 补充 AGENTS.md 文档输出格式规则 | Codex / 开发 A | 已完成 | `AGENTS.md`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 已补充 Markdown / HTML 输出格式选择规则 |
+| 28 | 将独立模块归档规则写入整体架构 | 两人协作 | 已完成 | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/superpowers/specs/**`, `docs/plans/**`, `docs/workflow/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 已把模块归档和独立代码目录规则写入入口与整体架构文档 |
 
 ## 3. 当前活跃任务
 
 ### 当前任务
 
-- 任务编号：T025
-- 任务名称：拆分独立工具站和游戏站入口体验
+- 任务编号：T015
+- 任务名称：实现 PDF 工具箱 MVP
 - 负责人：Codex / 开发 A
-- 状态：已完成
+- 状态：进行中
 - 开始时间：2026-05-21
-- 允许修改文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
-- 禁止修改文件：`packages/**`, `apps/game/**`, `apps/web/prisma/**`, `docker-compose.yml`, `package.json`, `package-lock.json`
-- 验证命令：`npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 允许修改文件：`apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/components/portal-data.ts`, `apps/web/package.json`, `package-lock.json`, `docs/modules/pdf-toolbox/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
+- 禁止修改文件：`packages/**`, `apps/game/**`, `apps/web/prisma/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**`, `docker-compose.yml`, `package.json`
+- 验证命令：`npm run test -w apps/web -- pdf`; `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
 - 当前阻塞：无
-- 下一步：后续进入具体 PDF 工具箱、AI 修图工具和麻将 Roguelike 消除 MVP 任务。
+- 下一步：按 `docs/modules/pdf-toolbox/IMPLEMENTATION_PLAN.md` 继续补 PDF 转图片和基础压缩。
 
 领取任务后填写：
 
@@ -93,6 +96,12 @@
 - 已识别后续候选方向：AI 内容转换工具箱，来源参考 `qiaomu-anything-to-notebooklm` skill。
 - 已修复 Vercel 子目录部署识别问题：`apps/web/package.json` 已声明 `next`、`react`、`react-dom`。
 - 已按 `docs/网站UI/` 最新设计把首页改为工具站/游戏站左右分流入口，并让 `/tools` 与 `/games` 保持独立导航、独立视觉和顶部单一互跳入口。
+- 已领取 `T015`，并补充 PDF 工具箱模块说明与实施计划：`docs/modules/pdf-toolbox/README.md`、`docs/modules/pdf-toolbox/IMPLEMENTATION_PLAN.md`。
+- 已完成 `T026`：以后每个小工具和游戏都必须有独立模块文档文件夹；代码实现也必须放在独立模块目录，路由层只做入口。
+- 已完成 `T027`：在根目录 `AGENTS.md` 中补充文档输出格式规则，明确人工维护和需要 Git diff 的文档用 Markdown，AI 生成方案、调研、汇报、交互或一次性阅读材料用 HTML。
+- 已完成 `T028`：将独立模块归档规则同步到 `AGENTS.md`、`CLAUDE.md`、`README.md`、项目上下文、整体设计稿、实施计划和协作规范。
+- `T015` 已完成 PDF 工具箱核心页面级处理第一轮：上传、预览、选择、旋转、排序、删除、拆分和下载。
+- `T015` 已补充文字水印、签名图片、PDF 转 Word Beta、区域遮盖和图片扫描成 PDF；扫描件 OCR 仍按规划留到后续 AI/OCR 能力。
 
 ## 5. 当前阻塞
 

@@ -1,0 +1,27 @@
+# T027：补充 AGENTS.md 文档输出格式规则
+
+- 完成时间：2026-05-21
+- 任务编号：T027
+- 负责人：Codex / 开发 A
+- 修改文件：
+  - `AGENTS.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-05-21.md`
+  - `docs/completion/2026-05-21-task-27-agents-doc-output-format.md`
+- 实现内容：
+  - 在 `AGENTS.md` 新增“文档输出格式”章节。
+  - 明确 Markdown 用于 README、API 文档、PR 描述、长期维护规范和需要人类频繁手动编辑的文件。
+  - 明确 HTML 用于 AI 生成的规划、方案对比、调研报告、对外展示、汇报材料、交互页面和一次性协作工具。
+  - 补充快速决策规则：需要人类手写编辑或版本控制 diff 的用 Markdown；需要信息可视化、交互或一次性阅读的用 HTML。
+- 验证命令：
+  - 文档自审
+  - `xxd -l 3 AGENTS.md`
+  - `git diff --check -- AGENTS.md docs/tasks/CHANGE_INTAKE.md docs/tasks/TASK_BOARD.md docs/tasks/CLAIMS.md docs/status/CURRENT_STATUS.md docs/progress/2026-05-21.md docs/completion/2026-05-21-task-27-agents-doc-output-format.md`
+- 验证结果：
+  - 文档自审通过。
+  - `AGENTS.md` 文件头不是 UTF-8 BOM。
+  - Git diff 空白检查通过。
+- 遗留问题：无。

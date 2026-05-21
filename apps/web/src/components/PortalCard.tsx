@@ -6,12 +6,21 @@ type PortalCardProps = {
 };
 
 export function PortalCard({ item, onSelect }: PortalCardProps) {
+  const handleClick = () => {
+    if (item.href) {
+      window.location.href = item.href;
+      return;
+    }
+
+    onSelect(item);
+  };
+
   return (
     <article
       className={`card${item.status === "coming" ? " card-muted" : ""}`}
       id={item.id}
     >
-      <button className="card-button" onClick={() => onSelect(item)} type="button">
+      <button className="card-button" onClick={handleClick} type="button">
         <span aria-hidden="true" className="card-icon">
           {item.icon}
         </span>
