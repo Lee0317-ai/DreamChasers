@@ -1,6 +1,6 @@
 # 任务池
 
-**最后更新**：2026-05-21
+**最后更新**：2026-05-23
 **用途**：统一记录所有待做、进行中、待验收、已完成的任务。  
 **维护规则**：双方都可以新增和修改任务，但必须保留任务编号，不要删除历史任务。
 
@@ -53,6 +53,22 @@
 | T026 | P0 | 建立工具/游戏独立模块归档规范 | 两人协作 | 已完成 | 无 | `docs/modules/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
 | T027 | P0 | 补充 AGENTS.md 文档输出格式规则 | Codex / 开发 A | 已完成 | 无 | `AGENTS.md`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
 | T028 | P0 | 将独立模块归档规则写入整体架构 | 两人协作 | 已完成 | T026 | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/PROJECT_CONTEXT.md`, `docs/superpowers/specs/**`, `docs/plans/**`, `docs/workflow/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 文档自审；旧路径扫描；UTF-8 无 BOM 检查 |
+| T029 | P1 | 麻将 Roguelike 消除框架调研和规划 | Codex / 开发 B | 已完成 | T019, T026, T028 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T030 | P1 | 麻将 Roguelike 手动组合和成长系统规划 | Codex / 开发 B | 已完成 | T029 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T031 | P1 | 麻将 Roguelike 最终模式结构定稿 | Codex / 开发 B | 已完成 | T030 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T032 | P1 | 麻将 Roguelike 高阶挑战系统规划 | Codex / 开发 B | 已完成 | T031 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T033 | P1 | 麻将 Roguelike 组合提示和牌堆生成规则 | Codex / 开发 B | 已完成 | T032 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T034 | P1 | 麻将 Roguelike 牌谱记牌器规划 | Codex / 开发 B | 已完成 | T033 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T035 | P1 | 麻将 Roguelike 局内能力池规划 | Codex / 开发 B | 已完成 | T034 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T036 | P0 | 降低多人协作文档冲突的分片同步规范 | Codex / 两人协作 | 已完成 | 无 | `AGENTS.md`, `CLAUDE.md`, `docs/PROJECT_CONTEXT.md`, `docs/workflow/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T037 | P0 | 新增 docs:sync 自动汇总脚本 | Codex / 两人协作 | 已完成 | T036 | `package.json`, `scripts/docs-sync.mjs`, `docs/workflow/doc-sync-policy.md`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T038 | P1 | 麻将 Roguelike 永久固化能力和卡槽系统规划 | Codex / 开发 B | 已完成 | T030, T032, T035 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T039 | P1 | 条件启用 Next.js standalone 自托管构建 | Codex / 开发 A | 已完成 | T024, T025 | `apps/web/next.config.ts`, `apps/web/package.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run build -w apps/web`; `npm run build:standalone -w apps/web`; 检查 `apps/web/.next/standalone` |
+| T040 | P1 | 麻将 Roguelike 完整牌局规则、经济体力和失败救场规划 | Codex / 开发 B | 已完成 | T030, T033, T034, T035, T038 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T041 | P1 | 麻将 Roguelike 团队评审版玩法方案 | Codex / 开发 B | 已完成 | T030, T031, T032, T033, T034, T035, T038, T040 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T042 | P1 | 麻将 Roguelike MVP 玩法验证计划 | Codex / 开发 B | 已完成 | T041 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T043 | P1 | 麻将 Roguelike 最小可玩闭环和 MVP 开发拆分计划 | Codex / 开发 B | 已完成 | T042 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查；`git diff --check` |
+| T044 | P1 | 麻将 Roguelike 最小可玩验证原型 | Codex / 开发 B | 已完成 | T043 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | `npm run docs:sync`; 浏览器桌面端检查；浏览器移动端检查；UTF-8 无 BOM 检查；`git diff --check` |
 
 ## 4. 新增任务模板
 
@@ -82,6 +98,7 @@
 - 不要删除任务。
 - 已完成任务不要改状态回退，除非在 `docs/tasks/CLAIMS.md` 写明原因。
 - 如果任务文件范围冲突，必须先登记领取和冲突。
+- 后续任务过程细节优先写入 `docs/tasks/items/` 的任务分片；本文档只在新增任务、状态变化、阻塞、冲突、交接和完整任务完成时更新。
 
 ## 6. 新想法入池规则
 
@@ -94,6 +111,7 @@
 3. 如果要做，把它写入本任务池，状态设为 `待拆分` 或 `待领取`。
 4. 如果涉及文件冲突，在 `docs/tasks/CLAIMS.md` 登记冲突。
 5. 只有任务进入 `待领取` 并被领取后，才能实施。
+6. 任务执行中的分步记录写入 `docs/tasks/items/`、`docs/tasks/claims/`、模块进展或当天进展；完整任务结束后再汇总回主文档。
 
 新增任务时必须填写：
 
@@ -104,3 +122,22 @@
 - 依赖。
 - 主要文件范围。
 - 验证方式。
+
+<!-- DOCS_SYNC_TASKS_START -->
+## 7. 自动生成任务分片摘要
+
+> 本节由 `npm run docs:sync` 生成。请修改 `docs/tasks/items/` 中的任务分片，不要手工编辑本节。
+
+| 编号 | 优先级 | 任务 | 负责人 | 状态 | 依赖 | 主要文件范围 | 验证方式 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| T013 | P2 | 添加部署文件 | Codex / 开发 B | 已完成 | T002, T004, T039 | `apps/web/Dockerfile`, `docker-compose.prod.yml`, `.env.production.example`, `.dockerignore`, `deploy/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `docker compose -f docker-compose.prod.yml --env-file .env.production.example config`; `npm run build:standalone -w apps/web`; `docker build --platform linux/amd64 -f apps/web/Dockerfile -t dreamchasers-web:latest .` |
+| T036 | P0 | 降低多人协作文档冲突的分片同步规范 | Codex / 两人协作 | 已完成 | 无 | `AGENTS.md`, `CLAUDE.md`, `docs/PROJECT_CONTEXT.md`, `docs/workflow/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/2026-05-22-task-36-doc-sync-policy.md` | 文档自审；UTF-8 无 BOM 检查 |
+| T037 | P0 | 新增 docs:sync 自动汇总脚本 | Codex / 两人协作 | 已完成 | T036 | `package.json`, `scripts/docs-sync.mjs`, `docs/workflow/doc-sync-policy.md`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/2026-05-22-task-37-docs-sync-script.md` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T038 | P1 | 麻将 Roguelike 永久固化能力和卡槽系统规划 | Codex / 开发 B | 已完成 | T030, T032, T035 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | 文档自审；UTF-8 无 BOM 检查 |
+| T039 | P1 | 条件启用 Next.js standalone 自托管构建 | Codex / 开发 A | 已完成 | T024, T025 | `apps/web/next.config.ts`, `apps/web/package.json`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run build -w apps/web`; `npm run build:standalone -w apps/web`; 检查 `apps/web/.next/standalone` |
+| T040 | P1 | 麻将 Roguelike 完整牌局规则、经济体力和失败救场规划 | Codex / 开发 B | 已完成 | T030, T033, T034, T035, T038 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T041 | P1 | 麻将 Roguelike 团队评审版玩法方案 | Codex / 开发 B | 已完成 | T030, T031, T032, T033, T034, T035, T038, T040 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T042 | P1 | 麻将 Roguelike MVP 玩法验证计划 | Codex / 开发 B | 已完成 | T041 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查 |
+| T043 | P1 | 麻将 Roguelike 最小可玩闭环和 MVP 开发拆分计划 | Codex / 开发 B | 已完成 | T042 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | `npm run docs:sync`; 文档自审；UTF-8 无 BOM 检查；`git diff --check` |
+| T044 | P1 | 麻将 Roguelike 最小可玩验证原型 | Codex / 开发 B | 已完成 | T043 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | `npm run docs:sync`; 浏览器桌面端检查；浏览器移动端检查；UTF-8 无 BOM 检查；`git diff --check` |
+<!-- DOCS_SYNC_TASKS_END -->

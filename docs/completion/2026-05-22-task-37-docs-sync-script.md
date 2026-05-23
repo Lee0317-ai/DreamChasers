@@ -1,0 +1,35 @@
+# T037 完成记录：新增 docs:sync 自动汇总脚本
+
+- 任务编号：T037
+- 负责人：Codex / 两人协作
+- 完成时间：2026-05-22
+- 修改文件：
+  - `package.json`
+  - `scripts/docs-sync.mjs`
+  - `AGENTS.md`
+  - `CLAUDE.md`
+  - `docs/workflow/doc-sync-policy.md`
+  - `docs/tasks/items/README.md`
+  - `docs/tasks/items/T037-docs-sync-script.md`
+  - `docs/tasks/claims/README.md`
+  - `docs/tasks/claims/T037-codex.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-05-22.md`
+- 实现内容：
+  - 新增 `scripts/docs-sync.mjs`。
+  - 新增根目录 `npm run docs:sync`。
+  - 从 `docs/tasks/items/*.md` 生成任务分片摘要。
+  - 从 `docs/tasks/claims/*.md` 生成领取分片摘要。
+  - 在主文档中只更新 `<!-- DOCS_SYNC_* -->` 标记包住的自动生成区，避免覆盖历史手写内容。
+- 验证命令：
+  - `npm run docs:sync`
+  - 文档自审
+  - UTF-8 无 BOM 检查
+- 验证结果：
+  - `npm run docs:sync`：通过。
+  - 文档自审：通过。
+  - UTF-8 无 BOM 检查：通过。
+- 遗留问题：
+  - 当前脚本是轻量 Markdown 解析，依赖分片文件中的 `- 字段：值` 格式；如果后续字段复杂化，可以再升级为 YAML front matter 或 JSON 数据源。

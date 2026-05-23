@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>麻将 Roguelike 消除游戏玩法方案 - 团队评审稿</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #231815;
+      --muted: #6f6159;
+      --line: #ded2c8;
+      --paper: #fffaf3;
+      --paper-2: #f5eadb;
+      --tile: #fffdf8;
+      --red: #b83024;
+      --gold: #c98b2c;
+      --green: #2c6e59;
+      --blue: #2e5f7a;
+      --dark: #2a211d;
+      --shadow: 0 10px 28px rgba(64, 43, 28, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+      letter-spacing: 0;
+    }
+
+    .hero {
+      background:
+        linear-gradient(180deg, rgba(42, 33, 29, 0.86), rgba(42, 33, 29, 0.74)),
+        url("../../../output/imagegen/mahjong-roguelike-ui-concept-v1.png") center / cover no-repeat;
+      color: #fff9ef;
+      min-height: 420px;
+      display: flex;
+      align-items: flex-end;
+      padding: 56px 7vw 44px;
+    }
+
+    .hero__inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-size: 13px;
+      color: #ffd48a;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: 1.04;
+      max-width: 920px;
+    }
+
+    .hero p {
+      max-width: 720px;
+      color: #f5dfc0;
+      margin: 18px 0 0;
+      font-size: 18px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 12px;
+      border: 1px solid rgba(255, 212, 138, 0.42);
+      border-radius: 999px;
+      background: rgba(255, 250, 243, 0.08);
+      color: #ffe7b6;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 38px 0 72px;
+    }
+
+    section {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child {
+      border-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin: 26px 0 12px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0 0 14px;
+      color: var(--muted);
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #4f4038;
+      max-width: 920px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid.cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--tile);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .card h3,
+    .card h4 {
+      margin: 0 0 8px;
+      color: var(--ink);
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f4ddbe;
+      color: #7b3c20;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tag.green {
+      background: #dce9df;
+      color: var(--green);
+    }
+
+    .tag.red {
+      background: #f4d9d5;
+      color: var(--red);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .step {
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 98px;
+      padding: 14px;
+      position: relative;
+    }
+
+    .step strong {
+      display: block;
+      color: var(--red);
+      margin-bottom: 6px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .mahjong-action {
+      background: #fffdf8;
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      padding: 22px 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .mahjong-action .glyph {
+      color: var(--red);
+      font-size: 44px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .mahjong-action .rule {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--tile);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #efe0ce;
+      color: #4b3328;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .code {
+      background: #2a211d;
+      color: #ffe5ba;
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .review-list {
+      display: grid;
+      gap: 10px;
+      counter-reset: review;
+    }
+
+    .review-item {
+      counter-increment: review;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      align-items: start;
+      background: var(--tile);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .review-item::before {
+      content: counter(review);
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--red);
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .status {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .status div {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      font-size: 14px;
+    }
+
+    .status strong {
+      color: var(--ink);
+    }
+
+    .status span {
+      color: var(--green);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .note {
+      border-left: 4px solid var(--gold);
+      padding: 12px 14px;
+      background: #fff3dd;
+      border-radius: 0 8px 8px 0;
+      color: #60402b;
+    }
+
+    @media (max-width: 900px) {
+      .grid.cols-2,
+      .grid.cols-3,
+      .grid.cols-4,
+      .flow,
+      .action-row,
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: 360px;
+        padding: 42px 20px 34px;
+      }
+
+      main {
+        width: min(100% - 28px, 1180px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__inner">
+      <p class="eyebrow">团队评审稿 v0.1 · 2026-05-22</p>
+      <h1>麻将 Roguelike 消除游戏玩法方案</h1>
+      <p>堆叠牌山、手动吃碰杠、Roguelike 构筑、局外养成和程序化随机牌局组成一个可长期扩展的小程序游戏。</p>
+      <div class="meta">
+        <span class="pill">不使用 AI 模型实时生成</span>
+        <span class="pill">Cocos 小程序本地运行</span>
+        <span class="pill">主线 20 关 + 无尽 + 高阶周目</span>
+        <span class="pill">关联任务 T041</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. 产品定位</h2>
+      <p class="lead">这不是普通三消换皮，而是把“羊了个羊式堆叠压力”和“麻将吃碰杠选择”结合起来，再用 Roguelike 奖励和局外成长提高复玩。</p>
+      <div class="grid cols-4">
+        <div class="card">
+          <span class="tag">核心体验</span>
+          <h3>手动吃碰杠</h3>
+          <p>系统提示可用组合，玩家选择并点击按钮发动，不自动消除。</p>
+        </div>
+        <div class="card">
+          <span class="tag green">策略来源</span>
+          <h3>槽位压力</h3>
+          <p>主槽、备用槽、满槽护符和孤张判断共同制造决策压力。</p>
+        </div>
+        <div class="card">
+          <span class="tag">复玩来源</span>
+          <h3>Roguelike 构筑</h3>
+          <p>每过关 3 选 1，吃流、碰流、杠流、花色流和信息流形成差异。</p>
+        </div>
+        <div class="card">
+          <span class="tag green">落地方式</span>
+          <h3>程序化随机</h3>
+          <p>小程序本地 seed 生成，不依赖 AI 模型和实时网络。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 一轮牌局循环</h2>
+      <div class="flow">
+        <div class="step"><strong>开始</strong><span>消耗 5 点体力，读取关卡配置和 seed。</span></div>
+        <div class="step"><strong>选牌</strong><span>点击未被覆盖的牌，进入底部主槽。</span></div>
+        <div class="step"><strong>判断</strong><span>查看余牌、槽位和候选组合。</span></div>
+        <div class="step"><strong>发动</strong><span>手动点击吃、碰、杠按钮消除。</span></div>
+        <div class="step"><strong>构筑</strong><span>过关后 3 选 1 局内奖励。</span></div>
+        <div class="step"><strong>成长</strong><span>失败或通关后用铜钱升级。</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. 核心动作：吃 / 碰 / 杠</h2>
+      <div class="action-row">
+        <div class="mahjong-action">
+          <div class="glyph">吃</div>
+          <div class="rule">同花色连续 3 张<br>例如 2条 3条 4条</div>
+        </div>
+        <div class="mahjong-action">
+          <div class="glyph">碰</div>
+          <div class="rule">同花色同点数 3 张<br>例如 5万 5万 5万</div>
+        </div>
+        <div class="mahjong-action">
+          <div class="glyph">杠</div>
+          <div class="rule">同花色同点数 4 张<br>例如 8筒 8筒 8筒 8筒</div>
+        </div>
+      </div>
+      <p class="note">多个组合同时存在时，系统展示候选，但不替玩家选择最优解。玩家点击发动后立即执行，不再二次确认。</p>
+    </section>
+
+    <section>
+      <h2>4. 槽位、孤张和失败前救场</h2>
+      <div class="split">
+        <div>
+          <table>
+            <thead>
+              <tr><th>项目</th><th>建议口径</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>初始主槽</td><td>7 格</td></tr>
+              <tr><td>永久主槽上限</td><td>9 格</td></tr>
+              <tr><td>局内临时上限</td><td>10 或 11 格</td></tr>
+              <tr><td>永久备用槽</td><td>最多 2 格</td></tr>
+              <tr><td>孤张显示</td><td>系统内部判定，不直接贴标签</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div class="code">主槽满
+-> 检测可发动组合
+-> 备用槽自动救场
+-> 满槽护符
+-> 救场道具窗口
+-> 首败保护
+-> 失败结算</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>5. 信息、道具和经济</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <span class="tag">余牌</span>
+          <h3>牌谱记牌器</h3>
+          <p>显示万、条、筒剩余数量，展开后可看 1-9 点数。告诉玩家“还有什么”，不告诉玩家“在哪里”。</p>
+        </div>
+        <div class="card">
+          <span class="tag">道具</span>
+          <h3>洗牌 / 撤回 / 透视</h3>
+          <p>撤回是唯一基础撤销；透视用于规划隐藏牌位置；普通洗牌不直接救满槽。</p>
+        </div>
+        <div class="card">
+          <span class="tag">经济</span>
+          <h3>积分 / 铜钱 / 体力</h3>
+          <p>局内积分本轮购买道具，铜钱用于局外升级，每局正式挑战消耗 5 点体力。</p>
+        </div>
+      </div>
+      <h3>双层收益</h3>
+      <table>
+        <thead>
+          <tr><th>资源</th><th>来源</th><th>用途</th><th>失败后</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>局内积分</td><td>吃、碰、杠、关卡目标、局内奖励</td><td>购买洗牌、撤回、透视等本轮资源</td><td>清空</td></tr>
+          <tr><td>铜钱</td><td>过关、20 关通关、无尽层数、成就、每日</td><td>永久升级、体力、皮肤、称号</td><td>已结算部分保留</td></tr>
+          <tr><td>体力</td><td>时间恢复、铜钱购买、后续付费购买</td><td>进入正式收益牌局</td><td>已消耗不退</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>6. Roguelike 和永久成长</h2>
+      <div class="grid cols-2">
+        <div>
+          <h3>局内奖励方向</h3>
+          <table>
+            <thead>
+              <tr><th>流派</th><th>作用</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>吃流</td><td>顺子提示、连续吃收益、相邻牌补位</td></tr>
+              <tr><td>碰流</td><td>稳定清槽、同点提示、恢复撤回</td></tr>
+              <tr><td>杠流</td><td>高积分、残杠处理、杠后补牌</td></tr>
+              <tr><td>花色流</td><td>万、条、筒偏好和清一色倍率</td></tr>
+              <tr><td>孤张流</td><td>移除、换牌、补牌、延迟失败</td></tr>
+              <tr><td>信息流</td><td>记牌器强化、路线提示、余牌推演</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>永久能力分层</h3>
+          <table>
+            <thead>
+              <tr><th>层级</th><th>占槽</th><th>作用</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>基础成长</td><td>否</td><td>主槽、备用槽、护符、初始道具</td></tr>
+              <tr><td>固化能力</td><td>是</td><td>决定本轮打法偏向</td></tr>
+              <tr><td>起局能力</td><td>是</td><td>改善开局和第一次奖励</td></tr>
+              <tr><td>道具强化</td><td>是</td><td>强化洗牌、撤回、透视、备用槽</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>7. 模式结构</h2>
+      <div class="grid cols-4">
+        <div class="card"><span class="tag green">主线</span><h3>闯关模式</h3><p>固定 20 关，逐步教学、引入目标和构筑。</p></div>
+        <div class="card"><span class="tag">长期</span><h3>无尽牌山</h3><p>20 关后解锁，追求更高层数。</p></div>
+        <div class="card"><span class="tag red">挑战</span><h3>高阶周目</h3><p>东风、南风、西风、北风、雀圣场逐步压缩能力。</p></div>
+        <div class="card"><span class="tag">回访</span><h3>每日牌局</h3><p>固定每日 seed，后续可接排行榜。</p></div>
+        <div class="card"><span class="tag green">收集</span><h3>成就图鉴</h3><p>绑定特殊打法、层数和限制挑战。</p></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>8. 牌局生成方式</h2>
+      <p class="lead">游戏不使用 AI 模型实时生成关卡。小程序本地使用程序化随机、规则护栏和兜底 seed。</p>
+      <div class="code">读取关卡硬约束
+-> 生成 seed
+-> 抽取牌局气质
+-> 生成目标包
+-> 生成吃 / 碰 / 杠包
+-> 添加干扰包和救场包
+-> 选择牌山布局
+-> 轻量校验
+-> 不通过则重试
+-> 多次失败使用 fallbackSeed</div>
+      <h3>第一批牌局气质</h3>
+      <table>
+        <thead>
+          <tr><th>气质</th><th>牌局特征</th><th>奖励联动</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>顺风局</td><td>吃包更多，顺子路线清晰</td><td>吃流、顺子提示</td></tr>
+          <tr><td>刻子局</td><td>碰包更多，清槽稳定</td><td>碰流、同点提示</td></tr>
+          <tr><td>杠火局</td><td>杠包更多，高积分高风险</td><td>杠流、残杠处理</td></tr>
+          <tr><td>清一色局</td><td>某一花色明显偏多</td><td>花色流、清一色</td></tr>
+          <tr><td>混花局</td><td>三花色分布平均</td><td>记牌器、信息流</td></tr>
+          <tr><td>险张局</td><td>干扰包更多</td><td>孤张、备用槽、弃牌符</td></tr>
+          <tr><td>补牌局</td><td>孤张多，但补牌机会也多</td><td>换牌、补牌、看张听路</td></tr>
+          <tr><td>暗山局</td><td>深层关键牌更多</td><td>透视、老雀识路</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>9. MVP 建议范围</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="tag green">必须做</span>
+          <h3>第一版闭环</h3>
+          <p>堆叠点击、主槽 7 格、手动吃碰杠、组合候选、满槽救场、三道具、余牌、双层收益、10 个关卡、10 个局内奖励、3 个局外升级。</p>
+        </div>
+        <div class="card">
+          <span class="tag red">建议后置</span>
+          <h3>扩展内容</h3>
+          <p>每日牌局、排行榜、复杂成就、弃牌符常驻、完整胡牌番型、高阶手动选牌、传说能力、大量事件和深度商业化。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>10. 团队评审问题</h2>
+      <div class="review-list">
+        <div class="review-item">手动吃碰杠是否足够好理解，是否需要更强的新手提示？</div>
+        <div class="review-item">组合候选区应该贴近槽位上方，还是点击按钮后展开？</div>
+        <div class="review-item">局内积分商店是关间出现，还是危局中也允许购买救场资源？</div>
+        <div class="review-item">弃牌符是否进入 MVP，还是只作为稀有奖励？</div>
+        <div class="review-item">胡牌目标是否进入第一版，还是只保留第 20 关 Boss 概念？</div>
+        <div class="review-item">体力系统是否第一版上线，还是先隐藏？</div>
+        <div class="review-item">余牌详细点数是否从第一关开放？</div>
+        <div class="review-item">第一版原型选 GDevelop，还是直接 Cocos？</div>
+        <div class="review-item">主线先做 10 关验证再扩 20 关，团队是否接受？</div>
+        <div class="review-item">程序化随机生成是否第一版就做，还是主线先用固定 seed？</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>11. 评审后进入开发计划</h2>
+      <div class="status">
+        <div><strong>第一步</strong><span>MVP 范围冻结</span></div>
+        <div><strong>第二步</strong><span>规则模型和测试</span></div>
+        <div><strong>第三步</strong><span>牌局配置和生成器</span></div>
+        <div><strong>第四步</strong><span>原型或 Cocos 工程选择</span></div>
+        <div><strong>第五步</strong><span>UI 交互稿和数值表</span></div>
+        <div><strong>第六步</strong><span>小程序发布计划</span></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

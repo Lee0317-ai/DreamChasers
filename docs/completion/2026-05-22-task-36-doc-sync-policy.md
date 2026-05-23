@@ -1,0 +1,34 @@
+# T036 完成记录：降低多人协作文档冲突的分片同步规范
+
+- 任务编号：T036
+- 负责人：Codex / 两人协作
+- 完成时间：2026-05-22
+- 修改文件：
+  - `AGENTS.md`
+  - `CLAUDE.md`
+  - `docs/PROJECT_CONTEXT.md`
+  - `docs/workflow/dual-dev-ai-workflow.md`
+  - `docs/workflow/doc-sync-policy.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/tasks/items/README.md`
+  - `docs/tasks/items/T036-doc-sync-policy.md`
+  - `docs/tasks/claims/README.md`
+  - `docs/tasks/claims/T036-codex.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-05-22.md`
+- 实现内容：
+  - 建立“分步写分片，完整任务完成后再汇总主文档”的规则。
+  - 新增任务分片和领取分片目录说明。
+  - 新增文档同步策略文档。
+  - 将新规则同步到 AI 入口和双人协作流程。
+  - 明确只有任务完成、阻塞、冲突、交接或范围变化时才更新主文档。
+- 验证命令：
+  - 文档自审
+  - UTF-8 无 BOM 检查
+- 验证结果：
+  - 文档自审：通过。
+  - UTF-8 无 BOM 检查：通过。
+- 遗留问题：
+  - 尚未实现 `docs:sync` 自动汇总脚本；后续可以单独新增任务实现脚本化生成 `TASK_BOARD.md` 和 `CLAIMS.md`。

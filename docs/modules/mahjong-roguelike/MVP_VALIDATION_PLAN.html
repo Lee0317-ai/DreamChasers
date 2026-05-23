@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>麻将 Roguelike MVP 玩法验证计划</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #221c18;
+      --muted: #6d5e54;
+      --line: #ddd1c6;
+      --paper: #fffaf4;
+      --tile: #fffdf9;
+      --accent: #9e3c2b;
+      --gold: #c38a2a;
+      --green: #2f6b58;
+      --shadow: 0 10px 26px rgba(64, 45, 28, 0.11);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    header {
+      padding: 34px 7vw 22px;
+      border-bottom: 1px solid var(--line);
+      background: #fff7ed;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(32px, 4.5vw, 56px);
+      line-height: 1.06;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid #e2c7a1;
+      background: #fff;
+      color: #7a4422;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    section {
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child {
+      border-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    .lead {
+      max-width: 920px;
+      color: #4b3c34;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--tile);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f1dfc1;
+      color: #7b4324;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tag.green { background: #d9e8de; color: var(--green); }
+    .tag.red { background: #f4d8d2; color: var(--accent); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--tile);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1e0cb;
+      color: #4d3428;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .code {
+      background: #241d18;
+      color: #ffdca8;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .step {
+      background: #fffdf8;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 98px;
+      padding: 14px;
+    }
+
+    .step strong {
+      display: block;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .review-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .review-item {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      align-items: start;
+      background: var(--tile);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .review-item::before {
+      content: "•";
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .note {
+      border-left: 4px solid var(--gold);
+      padding: 12px 14px;
+      background: #fff4df;
+      border-radius: 0 8px 8px 0;
+      color: #5e402a;
+    }
+
+    @media (max-width: 900px) {
+      .grid.cols-2,
+      .grid.cols-3,
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        padding: 28px 20px 20px;
+      }
+
+      main {
+        width: min(100% - 28px, 1180px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="pill">T042 · 验证稿 v0.1 · 2026-05-23</p>
+    <h1>麻将 Roguelike MVP 玩法验证计划</h1>
+    <p class="lead">先验证核心体验是否成立，再决定是否继续扩关卡、扩模式和扩长期系统。这个版本只看“能不能玩、好不好懂、值不值得做”。</p>
+    <div class="meta">
+      <span class="pill">最小闭环验证</span>
+      <span class="pill">先测 3 个场景</span>
+      <span class="pill">不做完整 20 关</span>
+      <span class="pill">验证通过后再冻结 MVP</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>1. 要验证什么</h2>
+      <div class="grid cols-2">
+        <div class="card">
+          <span class="tag">核心动作</span>
+          <h3>点牌、入槽、手动发动</h3>
+          <p>玩家是否能自然理解 `点牌 -> 入槽 -> 按钮点亮 -> 手动吃碰杠`。</p>
+        </div>
+        <div class="card">
+          <span class="tag green">策略压力</span>
+          <h3>槽位会不会逼出决策</h3>
+          <p>玩家是否会停下来判断，而不是只顾连续点牌。</p>
+        </div>
+        <div class="card">
+          <span class="tag">信息层</span>
+          <h3>余牌是否真的有用</h3>
+          <p>玩家会不会基于余牌改变路线，而不是只看装饰效果。</p>
+        </div>
+        <div class="card">
+          <span class="tag red">构筑感</span>
+          <h3>奖励能不能改打法</h3>
+          <p>3 选 1 之后，玩家是不是会开始记住自己的本局风格。</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>2. 最小闭环</h2>
+      <div class="flow">
+        <div class="step"><strong>1. 选牌</strong><span>点击未被覆盖的牌。</span></div>
+        <div class="step"><strong>2. 入槽</strong><span>进入主槽，输入锁定。</span></div>
+        <div class="step"><strong>3. 识别</strong><span>显示候选组合和余牌。</span></div>
+        <div class="step"><strong>4. 发动</strong><span>玩家手动点吃、碰、杠。</span></div>
+        <div class="step"><strong>5. 反馈</strong><span>过关、奖励、救场或失败。</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. 验证场景</h2>
+      <table>
+        <thead>
+          <tr><th>场景</th><th>要看什么</th><th>如果不成立</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>单一组合</td><td>按钮是否一眼能懂</td><td>先简化按钮文案和高亮规则</td></tr>
+          <tr><td>多组合冲突</td><td>玩家会不会自己选，而不是等系统替他选</td><td>先减少候选类型</td></tr>
+          <tr><td>满槽危局</td><td>救场顺序是否合理，失败是否公平</td><td>先放宽初始槽位或降低密度</td></tr>
+          <tr><td>余牌决策</td><td>玩家是否会拿余牌做判断</td><td>先只保留花色总数</td></tr>
+          <tr><td>奖励选择</td><td>奖励是否改变下一局打法</td><td>先把奖励改成路线型</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>4. 观察标准</h2>
+      <div class="grid cols-3">
+        <div class="card">
+          <span class="tag">理解度</span>
+          <h3>1 分钟内能否复述循环</h3>
+          <p>测试者能不能说出“点牌、入槽、按钮、奖励、失败”的基本流程。</p>
+        </div>
+        <div class="card">
+          <span class="tag green">决策感</span>
+          <h3>会不会真的比较候选</h3>
+          <p>出现多组合时，玩家是否愿意自己做选择。</p>
+        </div>
+        <div class="card">
+          <span class="tag red">构筑感</span>
+          <h3>奖励有没有改变下一步</h3>
+          <p>奖励不是单纯数值，而是让下一局的打法变了。</p>
+        </div>
+      </div>
+      <p class="note">如果玩家完全不看余牌、不看奖励、不看槽位，那说明玩法的策略层还不够清楚，不该直接进正式开发。</p>
+    </section>
+
+    <section>
+      <h2>5. MVP 冻结线</h2>
+      <div class="code">冻结：
+- 万 / 条 / 筒
+- 手动 吃 / 碰 / 杠
+- 主槽、备用槽、满槽护符
+- 局内积分、铜钱、余牌
+- 洗牌 / 撤回 / 透视
+- 10 个验证关卡
+- 10 个局内奖励
+- 3 个局外升级
+
+暂缓：
+- 20 关完整节奏
+- 每日牌局
+- 无尽牌山
+- 高阶周目
+- 排行榜
+- 复杂成就
+- 完整番型</div>
+    </section>
+
+    <section>
+      <h2>6. 验证出口</h2>
+      <div class="review-list">
+        <div class="review-item">通过后，进入正式开发计划拆分，先做规则模型和关卡配置。</div>
+        <div class="review-item">不通过时，回到最弱的一条假设做局部修正，再重新测试。</div>
+        <div class="review-item">验证目标不是把所有功能做完，而是确认这个核心循环值不值得继续投资源。</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -12,6 +12,7 @@
 - 每个任务必须有验证方式。
 - 完成后必须更新状态。
 - 不要让两个 AI 同时改同一批文件。
+- 分步操作优先写分片文件，完整任务完成后再汇总主文档。
 
 ## 2. 每次开工前流程
 
@@ -23,13 +24,14 @@
 4. 读取 `docs/tasks/CLAIMS.md`。
 5. 读取 `docs/tasks/CHANGE_INTAKE.md`。
 6. 读取当前任务对应的计划文档。
-7. 在 `docs/tasks/CLAIMS.md` 中新增领取记录。
-8. 在 `docs/status/CURRENT_STATUS.md` 中确认任务负责人和文件范围。
-9. 如果文件范围不清楚，先补文档，不直接编码。
+7. 在 `docs/tasks/claims/` 中新增领取分片。
+8. 如任务不存在，在 `docs/tasks/items/` 中新增任务分片。
+9. 如果涉及共享文件、冲突、交接或负责人变化，再同步 `docs/tasks/CLAIMS.md` 和 `docs/status/CURRENT_STATUS.md`。
+10. 如果文件范围不清楚，先补文档，不直接编码。
 
 ## 3. 任务领取格式
 
-在 `docs/status/CURRENT_STATUS.md` 中用下面格式记录：
+领取分片优先写在 `docs/tasks/claims/TXXX-<owner>.md`，格式如下。只有任务进入共享协调、阻塞、交接或完成汇总时，才同步到 `docs/status/CURRENT_STATUS.md`。
 
 ```md
 ### 当前任务
@@ -98,8 +100,16 @@
 - `docker-compose.yml`
 - `.env.example`
 - `docs/status/CURRENT_STATUS.md`
+- `docs/tasks/TASK_BOARD.md`
+- `docs/tasks/CLAIMS.md`
 
 修改共享文件前，先在状态文档写明原因和计划。
+
+### 主文档同步规则
+
+`docs/tasks/TASK_BOARD.md`、`docs/tasks/CLAIMS.md`、`docs/status/CURRENT_STATUS.md` 是主文档，只记录任务池、当前占用、冲突、交接和完成摘要。任务执行过程中的细节写入 `docs/tasks/items/`、`docs/tasks/claims/`、模块文档或当天进展。
+
+具体规则见 `docs/workflow/doc-sync-policy.md`。
 
 ## 5. 分支和提交建议
 
@@ -141,7 +151,7 @@
 
 ## 7. 完成任务后的记录要求
 
-每完成一个任务，必须更新：
+每完成一个完整任务，必须更新：
 
 1. `docs/status/CURRENT_STATUS.md`
 2. `docs/tasks/TASK_BOARD.md`
@@ -149,6 +159,8 @@
 4. 如有新想法或需求变更，更新 `docs/tasks/CHANGE_INTAKE.md`
 5. 对应的进展文件：`docs/progress/YYYY-MM-DD.md`
 6. 如果任务完整完成，再写完成记录：`docs/completion/<task-name>.md`
+
+如果只是任务中的分步操作、局部试验或阶段内小修，只更新任务分片、模块进展或当天进展，不要反复更新主文档。
 
 完成记录至少包含：
 
@@ -165,7 +177,7 @@
 如果两个人或两个 AI 都要改同一个文件：
 
 1. 先暂停其中一方。
-2. 在 `docs/status/CURRENT_STATUS.md` 标记冲突。
+2. 在 `docs/status/CURRENT_STATUS.md` 或 `docs/tasks/CLAIMS.md` 标记冲突。
 3. 明确谁先改、谁后改。
 4. 后改的人必须先读前一个人的变更。
 5. 不允许直接覆盖对方改动。
@@ -233,7 +245,7 @@
 1. 不允许直接编码。
 2. 先在 `docs/tasks/CHANGE_INTAKE.md` 新增变更卡。
 3. 评估是否影响现有任务、共享文件、另一方负责人范围。
-4. 如果要做，写入 `docs/tasks/TASK_BOARD.md`。
+4. 如果要做，先写入 `docs/tasks/items/`，再在 `docs/tasks/TASK_BOARD.md` 汇总新增任务。
 5. 如果涉及文件冲突，写入 `docs/tasks/CLAIMS.md`。
 6. 只有任务状态为 `待领取`，且有人在 `CLAIMS.md` 领取后，才能实施。
 

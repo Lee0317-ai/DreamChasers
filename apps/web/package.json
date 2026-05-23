@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
+    "build:standalone": "STANDALONE_BUILD=1 prisma generate && STANDALONE_BUILD=1 next build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"

@@ -48,9 +48,19 @@
 
 如果用户提出新想法、新功能、需求变更，或要求 AI “先规划再实现”，必须先写入 `docs/tasks/CHANGE_INTAKE.md`，再进入 `docs/tasks/TASK_BOARD.md`。没有任务编号、文件范围和领取记录，不要实施。
 
+为减少多人提交冲突，后续任务优先使用分片记录：
+
+- 任务详情写入 `docs/tasks/items/TXXX-<slug>.md`。
+- 领取记录写入 `docs/tasks/claims/TXXX-<owner>.md`。
+- `docs/tasks/TASK_BOARD.md`、`docs/tasks/CLAIMS.md`、`docs/status/CURRENT_STATUS.md` 只在任务领取、任务完成、阻塞、冲突、交接或文件范围变化时更新。
+- 具体规则见 `docs/workflow/doc-sync-policy.md`。
+- 修改任务分片或领取分片后，可运行 `npm run docs:sync` 自动生成主文档摘要区。
+
 ## 4. 每次任务后必须更新
 
-完成任何开发或文档任务后，必须更新：
+完成任何开发或文档任务后，必须更新当前任务相关分片或模块文档。
+
+如果只是任务中的一个分步操作、局部试验或阶段内小修，不需要反复更新主文档。完整任务完成后，再由 AI 或负责人一次性汇总：
 
 1. `docs/status/CURRENT_STATUS.md`
 2. `docs/tasks/TASK_BOARD.md`
@@ -58,6 +68,8 @@
 4. 如有新想法或需求变更，更新 `docs/tasks/CHANGE_INTAKE.md`
 5. 当天进展：`docs/progress/YYYY-MM-DD.md`
 6. 如果任务完成，新增完成记录：`docs/completion/YYYY-MM-DD-task-<number>-<short-name>.md`
+
+任务分片和领取分片更新后，运行 `npm run docs:sync` 生成主文档自动摘要区。
 
 完成记录必须包含：
 

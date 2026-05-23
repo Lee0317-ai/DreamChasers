@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>麻将 Roguelike 最小可玩闭环和 MVP 开发拆分计划</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #231f1b;
+      --muted: #6a6158;
+      --line: #dccfc1;
+      --paper: #fffaf3;
+      --panel: #fffefa;
+      --accent: #a83e2f;
+      --gold: #c58b25;
+      --green: #2d725b;
+      --blue: #315f83;
+      --shadow: 0 14px 32px rgba(70, 46, 25, 0.11);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.62;
+    }
+
+    header {
+      padding: 34px 7vw 26px;
+      background: #fff5e7;
+      border-bottom: 1px solid var(--line);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 26px 0 64px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 4.6vw, 54px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    section {
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    section:last-child { border-bottom: 0; }
+
+    .lead {
+      max-width: 900px;
+      color: #463b32;
+      font-size: 18px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 5px 12px;
+      border: 1px solid #e0c095;
+      border-radius: 999px;
+      background: #fff;
+      color: #7d4323;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 168px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .stage strong {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f2dfbf;
+      color: #7b4421;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .tag.green { background: #dcebdd; color: var(--green); }
+    .tag.blue { background: #dce8ef; color: var(--blue); }
+    .tag.red { background: #f3d7d1; color: var(--accent); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1dfc8;
+      color: #4b3528;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .lane {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+
+    .lane-title {
+      display: grid;
+      place-items: center;
+      min-height: 76px;
+      border-radius: 8px;
+      background: #2b241f;
+      color: #ffd89a;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .lane-body {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #f7ead7;
+      color: #5f3b24;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .note {
+      padding: 16px;
+      border-left: 4px solid var(--gold);
+      border-radius: 8px;
+      background: #fff4df;
+      color: #4d3929;
+    }
+
+    .danger {
+      border-left-color: var(--accent);
+      background: #fff0ed;
+    }
+
+    @media (max-width: 820px) {
+      header { padding: 28px 20px 22px; }
+      main { width: min(100% - 28px, 1180px); }
+      .flow, .cols-2, .cols-3 { grid-template-columns: 1fr; }
+      .lane { grid-template-columns: 1fr; }
+      th, td { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>麻将 Roguelike 最小可玩闭环和 MVP 开发拆分计划</h1>
+    <p class="lead">承接玩法验证计划：先做可玩的最小闭环，验证手动吃碰杠、槽位压力、余牌和奖励是否成立，再拆正式 MVP。</p>
+    <div class="meta">
+      <span class="pill">任务 T043</span>
+      <span class="pill">日期 2026-05-23</span>
+      <span class="pill">验证先于完整开发</span>
+      <span class="pill">Cocos 正式主线</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>推荐路线</h2>
+      <div class="flow">
+        <article class="stage">
+          <strong>1</strong>
+          <h3>最小可玩闭环</h3>
+          <p>用 3-5 个场景跑通点牌、入槽、按钮点亮、手动消除、奖励和失败。</p>
+        </article>
+        <article class="stage">
+          <strong>2</strong>
+          <h3>内部玩法验证</h3>
+          <p>观察玩家是否理解按钮、是否使用余牌、是否觉得槽位压力公平。</p>
+        </article>
+        <article class="stage">
+          <strong>3</strong>
+          <h3>正式 MVP</h3>
+          <p>验证通过后再做规则模型、配置生成器、Cocos 核心场景和站内试玩接入。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>验证闭环必须包含</h2>
+      <div class="grid cols-3">
+        <article class="card">
+          <span class="tag">牌局</span>
+          <h3>牌山、点击、入槽</h3>
+          <p>2-4 层堆叠，未被覆盖牌可点击，入槽动画期间锁定输入。</p>
+        </article>
+        <article class="card">
+          <span class="tag red">核心动作</span>
+          <h3>吃 / 碰 / 杠</h3>
+          <p>系统只提示候选，不自动消除；玩家点击按钮后才发动。</p>
+        </article>
+        <article class="card">
+          <span class="tag blue">信息</span>
+          <h3>余牌</h3>
+          <p>顶部显示花色剩余，必要时展开点数，用来判断孤张和等牌。</p>
+        </article>
+        <article class="card">
+          <span class="tag green">策略</span>
+          <h3>多组合候选</h3>
+          <p>同时出现吃、碰、杠时，候选内容必须展示给玩家选择。</p>
+        </article>
+        <article class="card">
+          <span class="tag">构筑</span>
+          <h3>奖励 3 选 1</h3>
+          <p>过关后选择局内奖励，至少能让下一关打法发生变化。</p>
+        </article>
+        <article class="card">
+          <span class="tag red">失败</span>
+          <h3>满槽救场</h3>
+          <p>满槽先检测组合，再走备用槽、护符、道具窗口、首败保护和失败。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>5 个验证场景</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>场景</th>
+            <th>牌局重点</th>
+            <th>必须验证</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1. 入门场</td>
+            <td>点牌、入槽、单一碰</td>
+            <td>玩家是否理解按钮亮起后要自己点击</td>
+          </tr>
+          <tr>
+            <td>2. 顺子场</td>
+            <td>吃的识别</td>
+            <td>玩家是否能理解同花色连续三张</td>
+          </tr>
+          <tr>
+            <td>3. 杠冲突场</td>
+            <td>碰和杠冲突</td>
+            <td>玩家是否理解先碰会留下孤张</td>
+          </tr>
+          <tr>
+            <td>4. 多组合场</td>
+            <td>吃 / 碰 同时可用</td>
+            <td>玩家是否愿意比较候选</td>
+          </tr>
+          <tr>
+            <td>5. 危局场</td>
+            <td>满槽救场和失败</td>
+            <td>玩家是否觉得失败顺序公平</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>受控随机生成</h2>
+      <p>牌局需要随机，但不能完全随机。先用组合包生成可解骨架，再打散进牌山。</p>
+      <div class="grid cols-3">
+        <article class="card">
+          <span class="tag">chi_pack</span>
+          <h3>吃包</h3>
+          <p>同花色连续三张，提供顺子路线。</p>
+        </article>
+        <article class="card">
+          <span class="tag">peng_pack</span>
+          <h3>碰包</h3>
+          <p>三张同花同点，提供稳定清槽。</p>
+        </article>
+        <article class="card">
+          <span class="tag">gang_pack</span>
+          <h3>杠包</h3>
+          <p>四张同花同点，提供高收益和冲突。</p>
+        </article>
+        <article class="card">
+          <span class="tag blue">bait_pack</span>
+          <h3>干扰包</h3>
+          <p>制造误判、等待和路线选择。</p>
+        </article>
+        <article class="card">
+          <span class="tag green">rescue_pack</span>
+          <h3>补救包</h3>
+          <p>给孤张或危局预留后续处理机会。</p>
+        </article>
+        <article class="card">
+          <span class="tag red">goal_pack</span>
+          <h3>目标包</h3>
+          <p>服务指定关卡目标或后续胡牌目标。</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <h2>正式 MVP 拆分</h2>
+      <div class="lane">
+        <div class="lane-title">M1<br>规则模型</div>
+        <div class="lane-body">
+          <h3>先做规则真相来源</h3>
+          <p>牌结构、遮挡、主槽、候选检测、余牌、救场顺序和局内积分都沉到规则层。</p>
+          <div class="chips">
+            <span class="chip">吃碰杠测试</span>
+            <span class="chip">满槽检测</span>
+            <span class="chip">余牌计数</span>
+          </div>
+        </div>
+      </div>
+      <div class="lane">
+        <div class="lane-title">M2<br>配置生成器</div>
+        <div class="lane-body">
+          <h3>关卡和奖励配置化</h3>
+          <p>定义 tiles、levels、comboPacks、rewards、upgrades 和 seed，相同 seed 生成相同牌局。</p>
+          <div class="chips">
+            <span class="chip">组合包比例</span>
+            <span class="chip">层数</span>
+            <span class="chip">花色范围</span>
+          </div>
+        </div>
+      </div>
+      <div class="lane">
+        <div class="lane-title">M3<br>Cocos 场景</div>
+        <div class="lane-body">
+          <h3>正式小游戏主线</h3>
+          <p>牌山渲染、点击入槽、候选区、吃碰杠按钮、余牌面板、通关失败和奖励选择。</p>
+          <div class="chips">
+            <span class="chip">移动端可玩</span>
+            <span class="chip">输入锁定</span>
+            <span class="chip">按钮不溢出</span>
+          </div>
+        </div>
+      </div>
+      <div class="lane">
+        <div class="lane-title">M4<br>首批内容</div>
+        <div class="lane-body">
+          <h3>先做 10 关，不直接 20 关</h3>
+          <p>5 个验证场景沉淀为新手内容，再补 10 个局内奖励、3 个基础道具和 3 个局外升级。</p>
+          <div class="chips">
+            <span class="chip">10 关</span>
+            <span class="chip">10 奖励</span>
+            <span class="chip">3 升级</span>
+          </div>
+        </div>
+      </div>
+      <div class="lane">
+        <div class="lane-title">M5<br>站内试玩</div>
+        <div class="lane-body">
+          <h3>接入游戏站</h3>
+          <p>Web 导出、iframe 或模块嵌入、基础事件上报、移动端尺寸适配。</p>
+          <div class="chips">
+            <span class="chip">game_start</span>
+            <span class="chip">level_complete</span>
+            <span class="chip">run_failed</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>MVP 冻结线</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>进入 MVP</th>
+            <th>继续后置</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>万 / 条 / 筒，1-9 点</td>
+            <td>风牌、字牌、复杂番型</td>
+          </tr>
+          <tr>
+            <td>手动吃 / 碰 / 杠</td>
+            <td>完整胡牌、听牌、算番</td>
+          </tr>
+          <tr>
+            <td>主槽、备用槽、满槽护符</td>
+            <td>复杂能力卡槽压缩和 Boss 试炼</td>
+          </tr>
+          <tr>
+            <td>洗牌、撤回、透视</td>
+            <td>大量付费道具、广告复活</td>
+          </tr>
+          <tr>
+            <td>10 关、10 奖励、3 升级</td>
+            <td>20 关完整主线、无尽、每日、排行榜</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>决策门槛</h2>
+      <div class="grid cols-2">
+        <article class="card">
+          <span class="tag green">继续</span>
+          <h3>玩法成立时</h3>
+          <p>玩家能理解按钮、愿意比较候选、会使用余牌、觉得失败公平，并愿意再开一局。</p>
+        </article>
+        <article class="card">
+          <span class="tag red">调整</span>
+          <h3>玩法不成立时</h3>
+          <p>先改候选展示、槽位压力、奖励路线和失败提示，不扩大关卡和长期模式。</p>
+        </article>
+      </div>
+      <p class="note danger">建议下一步单独开 T044 做最小可玩验证原型；验证通过后再回到 T017 做正式 MVP 的规则模型和 Cocos 主工程。</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -74,9 +74,12 @@
 - 实施计划：`docs/plans/`
 - 当前状态：`docs/status/CURRENT_STATUS.md`
 - 任务池：`docs/tasks/TASK_BOARD.md`
+- 任务分片：`docs/tasks/items/`
 - 任务领取和冲突：`docs/tasks/CLAIMS.md`
+- 领取分片：`docs/tasks/claims/`
 - 新想法和需求变更入口：`docs/tasks/CHANGE_INTAKE.md`
 - 双人协作规范：`docs/workflow/dual-dev-ai-workflow.md`
+- 文档同步与冲突规避：`docs/workflow/doc-sync-policy.md`
 - 模块设计：`docs/modules/`
 - 每日/阶段进展：`docs/progress/`
 - 完成记录：`docs/completion/`
@@ -141,7 +144,7 @@
 
 `docs/status/CURRENT_STATUS.md`
 
-每完成一个任务，必须更新该文件。
+每完成一个完整任务，必须更新该文件。任务中的分步操作优先写任务分片、领取分片、模块进展或当天进展，不要反复修改主文档。
 
 ## 9. AI 自动入口文件
 
