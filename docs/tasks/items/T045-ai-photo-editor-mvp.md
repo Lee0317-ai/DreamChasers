@@ -1,0 +1,21 @@
+# T045：实现 AI 修图工具 MVP
+
+- 优先级：P1
+- 负责人：Codex / 开发 B
+- 状态：待验收
+- 背景：第一阶段需要提供免费基础 AI 修图工具，覆盖图片上传、基础调整、裁剪旋转、滤镜、文字、贴纸、边框、撤销重做和 PNG 导出。
+- 目标：实现 `/tools/ai-photo-editor` 工作台，支持浏览器内基础修图、装饰贴纸集合、文字编辑、边框预览、历史操作和导出图片。
+- 不做：不调用真实 AI 模型，不做用户体系、付费、批处理、后台素材管理或云端存储。
+- 依赖：T016
+- 允许修改文件：`apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**`, `apps/web/public/stickers/**`, `apps/web/src/components/AppHeader.tsx`, `apps/web/src/components/PortalCard.tsx`, `apps/web/src/components/portal-data.ts`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-22.md`, `docs/progress/2026-05-25.md`, `docs/progress/2026-05-26.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/prisma/**`, `packages/**`, `apps/game/**`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
+- 验证命令：`npm run typecheck -w apps/web`; `npm run lint -w apps/web`; `npx next build`; 贴纸资源访问检查；桌面端和移动端检查
+- 执行记录：
+  - 新增 AI 修图工具页面入口和工作台组件。
+  - 完成基础调整实时预览、画布拖动、裁剪旋转、滤镜预览、文字元素、贴纸元素、边框预设、撤销重做和 PNG 导出。
+  - 贴纸选择区改为紧凑图标网格，并导入用户提供的 6 组装饰贴纸资源。
+  - `bubble-pack` 气泡贴纸已按验收反馈重绘为外部透明、气泡内部实心白底的 PNG，避免方形白底和粗糙遮罩边缘。
+  - 装饰贴纸按生成批次细分为基础装饰、手绘日常、粉色甜心、气泡表情、黑白猫咪、粉彩涂鸦、动物问候。
+  - 修复贴纸画布层外层 `<button>` 嵌套删除 `<button>` 导致的控制台和 hydration 警告。
+  - 默认新增贴纸尺寸从 72 调整为 36，贴纸缩略图预览增加留白，避免竖向素材贴边。
+- 完成摘要：AI 修图工具 MVP 已具备可用的本地修图工作台、112 个新增装饰贴纸、历史操作和 PNG 导出，当前等待验收。

@@ -12,6 +12,10 @@ export function AppHeader() {
     return null;
   }
 
+  if (pathname === "/tools/ai-photo-editor") {
+    return null;
+  }
+
   if (isTools) {
     return (
       <nav className="nav tools-nav" id="nav">
