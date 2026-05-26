@@ -1,0 +1,21 @@
+# T048：胡了卜配置加载验证
+
+- 优先级：P1
+- 负责人：Codex / 开发 B
+- 状态：已完成
+- 背景：T047 已完成胡了卜 10 关和 10 个局内奖励配置草案，进入表现层前需要确认配置能被共享规则模型读取、实例化和基础校验。
+- 目标：在 `packages/shared` 中补充配置加载测试，校验关卡、奖励和规则模型之间的衔接。
+- 不做：不修改关卡和奖励配置内容，不创建 Cocos/GDevelop 工程，不接 Web 站内路由，不做完整可解路径搜索，不做最终数值平衡。
+- 依赖：T047
+- 允许修改文件：`packages/shared/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T048-hulebu-config-loader-validation.md`, `docs/tasks/claims/T048-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/**`, `apps/game/mahjong-roguelike/config/**`, `apps/web/src/components/portal-data.ts`, `package.json`, `package-lock.json`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
+- 验证命令：`npm run test -w packages/shared -- mahjong`; `npm run typecheck -w packages/shared`; `npm run docs:sync`; `git diff --check`
+- 执行记录：
+  - 已新增变更卡 `IDEA-20260523-07`。
+  - 已新增领取分片 `docs/tasks/claims/T048-codex.md`。
+  - 已新增 `packages/shared/src/mahjong-config.test.ts`。
+  - 已读取真实 `levels.json` 和 `rewards.json`，校验 10 关和 10 奖励基础契约。
+  - 已校验关卡 ID、牌 ID、奖励引用、遮挡引用、初始槽位引用、初始状态创建、可点击牌、余牌统计、组合候选样本和奖励 effect 应用。
+  - 已更新模块 README、实施计划、进展、决策和交接说明。
+  - 已通过 `npm run test -w packages/shared -- mahjong`、`npm run typecheck -w packages/shared`、`npm run docs:sync` 和 `git diff --check`。
+- 完成摘要：已完成胡了卜配置加载验证，后续可进入 Cocos/GDevelop/Web 表现层原型。

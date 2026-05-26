@@ -1,0 +1,125 @@
+# T051：胡了卜麻将牌面 UI 参考图
+
+- 优先级：P1
+- 负责人：Codex / 开发 B
+- 状态：待验收
+- 背景：胡了卜规则、配置和密集牌山原型已完成，下一步需要为正式美术资源确定牌面 UI 风格方向。用户希望先使用 `pptoken-imagegen` 生成 `万 / 条 / 筒` 三种花色和 1-9 点数的参考图。
+- 目标：生成至少 3 张麻将牌面 UI 参考 sheet，每张包含 `万 / 条 / 筒` 三种花色和 1-9 点数，用于比较视觉风格、移动端识别度、色彩区分和密集堆叠可读性。
+- 不做：不切最终 sprite atlas，不修改原型代码，不接入 Cocos/GDevelop，不替换配置试玩页牌面，不调整玩法、规则模型、关卡或奖励。
+- 依赖：T050；`PPTOKEN_API_KEY`
+- 允许修改文件：`output/imagegen/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T051-hulebu-tile-ui-references.md`, `docs/tasks/claims/T051-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`
+- 禁止修改文件：`apps/web/**`, `packages/shared/**`, `apps/game/mahjong-roguelike/**`, `apps/web/src/components/portal-data.ts`, `package.json`, `package-lock.json`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
+- 验证命令：`npm run docs:sync`; `git diff --check`; 人工查看生成图片
+- 执行记录：
+  - 已读取项目上下文、任务池、领取记录、变更入口、协作规范、实施计划和胡了卜模块文档。
+  - 已读取 `pptoken-imagegen` skill。
+  - 已生成清爽高可读方向：`output/imagegen/hulebu-tile-ui-reference-clean-readable.png`。
+  - 已生成温润玉牌方向：`output/imagegen/hulebu-tile-ui-reference-warm-jade.png`。
+  - 已生成轻幻想 Roguelike 方向：`output/imagegen/hulebu-tile-ui-reference-fantasy-roguelike.png`。
+  - 已检查三张输出均为 `1536 x 1024` PNG。
+  - 根据用户反馈，确认采用清爽高可读方向，但 AI 生成图中 1-9 牌面存在错误和重复，不能作为准确资源。
+  - 已新增程序化绘制准确版总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v2.png`。
+  - 已新增 27 张单牌 PNG：`output/imagegen/hulebu-tiles-v2/tile-*.png`。
+  - 已新增资源清单：`output/imagegen/hulebu-tiles-v2/manifest.json`。
+  - 已校验 `manifest.json` 包含 27 张牌，且 `wan / tong / tiao` 各为 1-9。
+  - 已抽查输出尺寸：总览图为 `1536 x 1024` PNG，单牌为 `256 x 360` PNG。
+  - 根据用户反馈，v2 中 `7筒` 和 `7条` 的布局观感仍需修正。
+  - 已重新生成完整准确版 v3 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v3.png`。
+  - 已重新生成 v3 单牌 PNG：`output/imagegen/hulebu-tiles-v3/tile-*.png`。
+  - 已新增 v3 资源清单：`output/imagegen/hulebu-tiles-v3/manifest.json`。
+  - 已校验 v3 共 27 张单牌，`wan / tong / tiao` 各为 1-9；`7筒` 和 `7条` 单牌尺寸均为 `256 x 360` PNG。
+  - 根据用户反馈，继续重点修正 `5条 / 6条 / 7条 / 8条` 和 `6筒 / 7筒`。
+  - 已重新生成完整准确版 v4 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v4.png`。
+  - 已重新生成 v4 单牌 PNG：`output/imagegen/hulebu-tiles-v4/tile-*.png`。
+  - 已新增 v4 资源清单：`output/imagegen/hulebu-tiles-v4/manifest.json`。
+  - 已校验 v4 共 27 张单牌，`wan / tong / tiao` 各为 1-9；重点抽查的 `5条 / 6条 / 7条 / 8条 / 6筒 / 7筒` 均为 `256 x 360` PNG。
+  - 根据用户新参考图，重新绘制 `1条 / 2条 / 6条 / 8条`。
+  - 已重新生成完整准确版 v5 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v5.png`。
+  - 已新增 v5 条子重点检查图：`output/imagegen/hulebu-tiao-reference-v5-focus.png`。
+  - 已重新生成 v5 单牌 PNG：`output/imagegen/hulebu-tiles-v5/tile-*.png`。
+  - 已新增 v5 资源清单：`output/imagegen/hulebu-tiles-v5/manifest.json`。
+  - 已校验 v5 共 27 张单牌，`wan / tong / tiao` 各为 1-9；重点抽查的 `1条 / 2条 / 6条 / 8条` 均为 `256 x 360` PNG。
+  - 根据用户提供的完整 `1-9条` 参考图，重新绘制条子整套。
+  - 已重新生成完整准确版 v6 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v6.png`。
+  - 已新增 v6 条子完整检查图：`output/imagegen/hulebu-tiao-reference-v6-focus.png`。
+  - 已重新生成 v6 单牌 PNG：`output/imagegen/hulebu-tiles-v6/tile-*.png`。
+  - 已新增 v6 资源清单：`output/imagegen/hulebu-tiles-v6/manifest.json`。
+  - 已校验 v6 共 27 张单牌，`wan / tong / tiao` 各为 1-9；`1条` 到 `9条` 均为 `256 x 360` PNG。
+  - 根据用户最新 `8条` 参考图，重新绘制 `8条`。
+  - 已重新生成完整准确版 v7 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v7.png`。
+  - 已新增 v7 `8条` 检查图：`output/imagegen/hulebu-tiao-08-v7-focus.png`。
+  - 已重新生成 v7 单牌 PNG：`output/imagegen/hulebu-tiles-v7/tile-*.png`。
+  - 已新增 v7 资源清单：`output/imagegen/hulebu-tiles-v7/manifest.json`。
+  - 已校验 v7 共 27 张单牌，`wan / tong / tiao` 各为 1-9；`8条` 为 `256 x 360` PNG。
+  - 根据用户反馈，后续生成先只出完整总览图，确认没问题后再拆分单牌。
+  - 已重新生成完整准确版 v8 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v8.png`。
+  - v8 仅重画 `8条` 为直线 `W / M` 结构，未拆分单牌目录。
+  - 已检查 v8 总览图为 `1536 x 1024` PNG。
+  - 用户选中 `hulebu-eight-bamboo-celadon-candidate-2.png` 的宋代青瓷、浅玉绿裂纹釉、雕刻符号风格，要求按该风格设计完整麻将牌面，并加入 `东 / 南 / 西 / 北 / 中 / 发 / 白板`。
+  - 已生成完整青瓷风牌面总览图：`output/imagegen/hulebu-complete-celadon-mahjong-face-v1.png`。
+  - 该总览包含 `万 / 筒 / 条` 1-9 和 `东 / 南 / 西 / 北 / 中 / 发 / 白板`，暂未拆分单牌。
+  - 已检查完整青瓷风总览图为 `1600 x 1220` PNG。
+  - 根据用户最新反馈，继续修正 `1条 / 2条 / 3条 / 4条 / 7条` 的条子排布：`1条` 使用小鸟，`2条` 上下两根，`3条` 上一根下两根，`4条` 上二下二，`7条` 顶部竖条放在最上方。
+  - 已生成青瓷风条子 `1-9` 校正版完整预览图：`output/imagegen/hulebu-bamboo-celadon-corrected-layout-v1.png`。
+  - 本轮继续只生成完整预览图，暂未拆分单牌。
+  - 已检查校正版预览图为 `2304 x 760` PNG。
+  - 用户确认后续改为单张审核流，并以 `hulebu-eight-bamboo-celadon-candidate-2.png` 作为 `8条` 基准稿。
+  - 已按该风格生成 `1条` 小鸟单牌：`output/imagegen/hulebu-one-bamboo-celadon-single-v1.png`。
+  - 已检查 `1条` 单牌为 `1024 x 1024` PNG。
+  - 用户确认 `1条` 可用，继续生成 `2条` 单牌：`output/imagegen/hulebu-two-bamboo-celadon-single-v1.png`。
+  - 已检查 `2条` 单牌为 `1024 x 1024` PNG。
+  - 用户确认 `2条` 可用，继续生成 `3条` 单牌：`output/imagegen/hulebu-three-bamboo-celadon-single-v1.png`。
+  - 已检查 `3条` 单牌为 `1024 x 1024` PNG。
+  - 根据用户反馈，重新生成下方两根间距更宽的 `3条` v2：`output/imagegen/hulebu-three-bamboo-celadon-single-v2.png`。
+  - 已检查 `3条` v2 为 `1024 x 1024` PNG。
+  - 用户确认 `3条` v2 可用，继续生成 `4条` 单牌：`output/imagegen/hulebu-four-bamboo-celadon-single-v1.png`。
+  - 已检查 `4条` 单牌为 `1024 x 1024` PNG。
+  - 2026-05-25 用户确认 `4条` 可用，继续生成 `5条` 单牌：`output/imagegen/hulebu-five-bamboo-celadon-single-v1.png`。
+  - 已检查 `5条` 单牌为 `1024 x 1024` PNG。
+  - 用户要求继续生成 `6条`，首次接口请求超时后已重试成功。
+  - 已生成 `6条` 单牌：`output/imagegen/hulebu-six-bamboo-celadon-single-v1.png`。
+  - 已检查 `6条` 单牌为 `1024 x 1024` PNG。
+  - 用户要求继续生成 `7条` 单牌：`output/imagegen/hulebu-seven-bamboo-celadon-single-v1.png`。
+  - 已检查 `7条` 单牌为 `1024 x 1024` PNG。
+  - 用户跳过重新生成 `8条`，要求继续生成 `9条` 单牌：`output/imagegen/hulebu-nine-bamboo-celadon-single-v1.png`。
+  - 已检查 `9条` 单牌为 `1024 x 1024` PNG。
+  - 用户确认条子按单张审核流生成版本使用，开始筒子单张审核流。
+  - 已生成 `1筒` 单牌：`output/imagegen/hulebu-one-dot-celadon-single-v1.png`。
+  - 已检查 `1筒` 单牌为 `1024 x 1024` PNG。
+  - 用户确认 `1筒` 可用，并要求继续设计 `2筒 / 3筒 / 4筒`。
+  - 已生成 `2筒` 单牌：`output/imagegen/hulebu-two-dot-celadon-single-v1.png`；首次接口请求超时后重试成功。
+  - 根据用户纠正，`3筒` 应为左上到右下三颗斜线排列，而不是上一下二。
+  - 已生成斜线排布 `3筒` 单牌：`output/imagegen/hulebu-three-dot-celadon-single-v1.png`；首次接口请求超时后重试成功。
+  - 已检查 `2筒 / 3筒` 单牌均为 `1024 x 1024` PNG。
+  - 已生成 `4筒` 单牌：`output/imagegen/hulebu-four-dot-celadon-single-v1.png`。
+  - 已检查 `4筒` 单牌为 `1024 x 1024` PNG。
+  - 用户要求继续生成 `5筒`。
+  - 已生成 `5筒` 单牌：`output/imagegen/hulebu-five-dot-celadon-single-v1.png`。
+  - 已检查 `5筒` 单牌为 `1024 x 1024` PNG。
+  - 用户要求继续生成 `6筒`。
+  - 已生成 `6筒` 单牌：`output/imagegen/hulebu-six-dot-celadon-single-v1.png`。
+  - 已检查 `6筒` 单牌为 `1024 x 1024` PNG。
+  - 用户要求继续生成 `7筒`；首次接口返回不完整后已重试成功。
+  - 已生成 `7筒` 单牌：`output/imagegen/hulebu-seven-dot-celadon-single-v1.png`。
+  - 已检查 `7筒` 单牌为 `1024 x 1024` PNG。
+  - 根据用户反馈，`7筒` 上方三颗应为左上到右下斜排，而不是横排。
+  - 已重新生成斜排上三颗的 `7筒` v2：`output/imagegen/hulebu-seven-dot-celadon-single-v2.png`；首次接口返回不完整后已重试成功。
+  - 已检查 `7筒` v2 为 `1024 x 1024` PNG。
+  - 2026-05-26 根据用户提供的筒子参考图，继续生成 `7筒 / 8筒 / 9筒` 青瓷风单牌。
+  - 当前环境未读取到 `PPTOKEN_API_KEY`，本轮改用内置 `image_gen` 生成，再复制到项目 `output/imagegen/`。
+  - 已生成并保存 `7筒`：`output/imagegen/hulebu-seven-dot-celadon-single-v1.png`，上方三颗为左上到右下斜排，下方四颗为 2x2 红心排布。
+  - 已生成并保存 `8筒`：`output/imagegen/hulebu-eight-dot-celadon-single-v1.png`，两列各四颗。
+  - 已生成并保存 `9筒`：`output/imagegen/hulebu-nine-dot-celadon-single-v1.png`，3x3 排布。
+  - 已统一检查 `7筒 / 8筒 / 9筒` 新单牌均为 `1024 x 1024` PNG，并人工查看牌面数量和排布。
+  - 2026-05-26 按用户新要求开始 `1-9万` 参考图，先生成 `1万` 样稿：`output/imagegen/hulebu-one-wan-celadon-single-v1.png`。
+  - 已检查 `1万` 样稿为 `1024 x 1024` PNG，作为后续 `2万-9万` 的风格起点。
+  - 2026-05-26 根据用户提供的 `7万 / 8万 / 9万` 参考图，继续生成青瓷风单牌。
+  - 已生成 `7万` 单牌：`output/imagegen/hulebu-seven-wan-celadon-single-v1.png`，上方黑色 `七`、下方红色 `萬`。
+  - 已生成 `8万` 单牌：`output/imagegen/hulebu-eight-wan-celadon-single-v1.png`，上方黑色 `八`、下方红色 `萬`。
+  - 已生成 `9万` 单牌：`output/imagegen/hulebu-nine-wan-celadon-single-v1.png`，上方黑色 `九`、下方红色 `萬`。
+  - 已统一检查 `7万 / 8万 / 9万` 单牌均为 `1024 x 1024` PNG，并人工查看牌面字符和排布。
+  - 2026-05-26 根据用户提供的字牌参考图，生成青瓷风字牌完整预览图：`output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png`。
+  - 字牌预览图从左到右为 `北 / 白板 / 南 / 中 / 發 / 東 / 西`，其中 `中` 为红字、`發` 为绿字、其余为黑字，白板为黑色双框。
+  - 已检查字牌预览图为 `2172 x 724` PNG，并人工查看字牌顺序、颜色和白板排布。
+- 当前阻塞：无。
+- 完成摘要：已完成 3 张 AI 风格参考 sheet、准确版 v2-v8、基于 `candidate-2` 风格的完整青瓷风牌面总览图、条子 `1-9` 青瓷风校正版完整预览图，以及单张审核流的 `1条 / 2条 / 3条 / 4条 / 5条 / 6条 / 7条 / 9条` 单牌；`8条` 使用用户确认的 `hulebu-eight-bamboo-celadon-candidate-2.png` 基准稿；筒子已生成 `1筒 / 2筒 / 3筒 / 4筒 / 5筒 / 6筒 / 7筒 / 8筒 / 9筒`；万子已生成 `1万 / 7万 / 8万 / 9万`；字牌已生成完整预览图 `北 / 白板 / 南 / 中 / 發 / 東 / 西`，当前推荐查看 `output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png`。

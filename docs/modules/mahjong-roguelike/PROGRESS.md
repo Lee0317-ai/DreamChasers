@@ -1,4 +1,4 @@
-# 麻将 Roguelike 消除进展
+# 胡了卜进展
 
 ## 2026-05-21
 
@@ -59,3 +59,260 @@
 - 新增 `PLAYABLE_VALIDATION_PROTOTYPE.html`，用单文件 HTML/CSS/JS 实现 5 个验证场景，覆盖点击、入槽、手动 `吃 / 碰 / 杠`、候选选择、余牌、局内积分、奖励三选一、道具和满槽救场。
 - 已通过浏览器桌面端检查：第一场手动 `碰`、奖励弹层、多组合候选和危局备用槽救场可用。
 - 已通过浏览器移动端检查，并加入牌山坐标缩放，避免窄屏牌面溢出。
+- 完成 T045 胡了卜命名落档和规则模型第一版。
+- 确认游戏显示名为 `胡了卜`，模块 slug 继续使用 `mahjong-roguelike`，避免目录和历史任务大范围迁移。
+- 新增 `packages/shared` 包壳和 `mahjong-game` 规则模型。
+- 规则模型覆盖吃、碰、杠候选检测，满槽前组合检测，执行组合结算，余牌统计，遮挡可点击判断和 Roguelike 奖励效果。
+- 已通过 `npm run test -w packages/shared -- mahjong` 和 `npm run typecheck -w packages/shared`。
+- 完成 T046 胡了卜验证场景配置草案。
+- 新增 `apps/game/mahjong-roguelike/config/tiles.json`、`levels.json`、`rewards.json`。
+- 新增 `apps/game/mahjong-roguelike/README.md` 和 `docs/rules.md`，说明配置和共享规则模型的关系。
+- 已将 T044 的入门、顺子、杠冲突、多组合、危局 5 个验证场景沉淀为引擎无关配置。
+- 已通过 JSON 解析检查、配置引用检查、`npm run docs:sync` 和 `git diff --check`。
+- 完成 T047 胡了卜 MVP 10 关和 10 奖励配置草案。
+- 已在 `levels.json` 中追加 5 个主线关卡草案：三门初会、留杠一手、连吃试手、看余牌、小胡收官。
+- 已在 `rewards.json` 中追加 2 个奖励：碰上开花、洗山，使局内奖励达到 10 个。
+- 新增 `apps/game/mahjong-roguelike/docs/content-plan.md`，说明 MVP 关卡曲线和奖励路线。
+- 已通过 MVP 配置数量和引用检查、`npm run docs:sync` 和 `git diff --check`。
+- 完成 T048 胡了卜配置加载验证。
+- 新增 `packages/shared/src/mahjong-config.test.ts`，读取真实 `levels.json` 和 `rewards.json`，验证 10 关和 10 奖励能被共享规则模型承接。
+- 配置加载测试覆盖基础契约、ID 唯一性、奖励和遮挡引用、初始状态创建、可点击牌、余牌统计、组合候选样本和奖励 effect 应用。
+- 已通过 `npm run test -w packages/shared -- mahjong` 和 `npm run typecheck -w packages/shared`。
+- 完成 T049 胡了卜配置驱动试玩原型。
+- 新增 `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`，直接读取 10 关配置和奖励配置。
+- 原型支持关卡切换、牌面渲染、遮挡点击、槽位、候选组合、手动 `吃 / 碰 / 杠`、余牌、积分、铜钱、工具和奖励选择。
+- 根据反馈增强牌山视觉：加宽牌面、层级偏移、交错偏移、厚度阴影和牌桌背景，让上层牌更明显压住下层牌。
+- 已确认当前仍是配置联调页，不是最终“羊了个羊”式密集牌山；下一步需要牌山生成器和更高牌量布局。
+- 已通过桌面端浏览器检查：指定 3 张 9筒后 `碰` 亮起，消除后下层 2万解锁，第二次 `碰` 后奖励三选一出现。
+- 已通过移动端 390px 检查：无横向溢出，牌山、关卡、槽位可显示。
+- 完成 T050 胡了卜牌山生成器和密集堆叠布局。
+- 在配置试玩页新增 `配置关卡 / 密集牌山` 模式切换，保留原 10 关配置联调能力。
+- 密集牌山模式按关卡组合素材生成 50 张左右的牌，使用 4 层坐标模板和几何重叠自动计算 `blockedBy`。
+- 已修正高牌量下的 z-index 层级命中问题，保证顶层牌真正覆盖下层牌并可优先点击。
+- 已通过浏览器检查：第 1 关密集模式生成 50 张牌，其中 42 张被压住；点击顶层三张 `2万` 后 `碰 1` 亮起，可点击牌从 8 张增加到 11 张。
+- 已通过窄宽度检查：当前 546px 浏览器宽度无横向溢出，顶部模式切换、牌桌和槽位可显示。
+
+## 2026-05-24
+
+- 开始 T051 胡了卜麻将牌面 UI 参考图。
+- 使用 `pptoken-imagegen` 生成 3 张牌面风格参考 sheet：
+  - `output/imagegen/hulebu-tile-ui-reference-clean-readable.png`
+  - `output/imagegen/hulebu-tile-ui-reference-warm-jade.png`
+  - `output/imagegen/hulebu-tile-ui-reference-fantasy-roguelike.png`
+- 三张参考图均为 `1536 x 1024` PNG，用于比较清爽高可读、温润玉牌和轻幻想 Roguelike 三种方向。
+- 本次只生成参考图，不切 sprite atlas，不接入 Cocos/GDevelop，不修改现有玩法原型。
+- 用户确认偏好清爽高可读方向，但指出 AI 生成图中 1-9 牌面不准确且有重复。
+- 已改为程序化绘制准确版 v2：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v2.png`
+  - 单牌目录：`output/imagegen/hulebu-tiles-v2/`
+  - 清单文件：`output/imagegen/hulebu-tiles-v2/manifest.json`
+- 已校验准确版 v2 共 27 张单牌，`wan / tong / tiao` 各 1-9，单牌尺寸为 `256 x 360` PNG。
+- 用户继续反馈 `7条` 和 `7筒` 观感不对。
+- 已重新生成准确版 v3：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v3.png`
+  - 单牌目录：`output/imagegen/hulebu-tiles-v3/`
+  - 清单文件：`output/imagegen/hulebu-tiles-v3/manifest.json`
+- 已校验 v3 共 27 张单牌，`wan / tong / tiao` 各 1-9，`7筒` 和 `7条` 单牌均为 `256 x 360` PNG。
+- 用户继续指定重点观察 `5条 / 6条 / 7条 / 8条` 和 `6筒 / 7筒`。
+- 已重新生成准确版 v4：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v4.png`
+  - 单牌目录：`output/imagegen/hulebu-tiles-v4/`
+  - 清单文件：`output/imagegen/hulebu-tiles-v4/manifest.json`
+- 已校验 v4 共 27 张单牌，`wan / tong / tiao` 各 1-9，重点抽查的 `5条 / 6条 / 7条 / 8条 / 6筒 / 7筒` 均为 `256 x 360` PNG。
+- 用户提供 `1条 / 2条 / 6条 / 8条` 新参考图，要求按新图重写。
+- 已重新生成准确版 v5：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v5.png`
+  - 条子重点检查图：`output/imagegen/hulebu-tiao-reference-v5-focus.png`
+  - 单牌目录：`output/imagegen/hulebu-tiles-v5/`
+  - 清单文件：`output/imagegen/hulebu-tiles-v5/manifest.json`
+- 已校验 v5 共 27 张单牌，`wan / tong / tiao` 各 1-9，重点抽查的 `1条 / 2条 / 6条 / 8条` 均为 `256 x 360` PNG。
+- 用户提供完整 `1-9条` 参考图，要求按完整参考重改条子。
+- 已重新生成准确版 v6：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v6.png`
+  - 条子完整检查图：`output/imagegen/hulebu-tiao-reference-v6-focus.png`
+  - 单牌目录：`output/imagegen/hulebu-tiles-v6/`
+  - 清单文件：`output/imagegen/hulebu-tiles-v6/manifest.json`
+- 已校验 v6 共 27 张单牌，`wan / tong / tiao` 各 1-9，`1条` 到 `9条` 均为 `256 x 360` PNG。
+- 用户继续提供 `8条` 单独参考图，要求修正为上下两个大号结形。
+- 已重新生成准确版 v7：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v7.png`
+  - `8条` 检查图：`output/imagegen/hulebu-tiao-08-v7-focus.png`
+  - 单牌目录：`output/imagegen/hulebu-tiles-v7/`
+  - 清单文件：`output/imagegen/hulebu-tiles-v7/manifest.json`
+- 已校验 v7 共 27 张单牌，`wan / tong / tiao` 各 1-9，`8条` 为 `256 x 360` PNG。
+- 用户反馈 `8条` 仍然需要完全照参考图画，不要弯曲；同时要求后续先只生成完整总览图，确认后再拆分。
+- 已重新生成准确版 v8：
+  - 总览图：`output/imagegen/hulebu-tile-ui-reference-clean-readable-accurate-v8.png`
+- v8 仅重画 `8条` 为直线 `W / M` 结构，未拆分单牌目录。
+- 已检查 v8 总览图为 `1536 x 1024` PNG。
+- 完成 T052 胡了卜 Boss 目标配置化第一版。
+- 第 10 关新增 `bossGoals`，目标为 `吃 1 / 碰 1 / 杠 1 / 积分 80`。
+- 配置试玩页已从单一 `bossGoal` 改为多目标 `bossGoals`，Boss 目标栏会显示多目标进度，清空牌山时必须全部目标完成。
+- 密集牌山生成器已按 Boss 组合目标优先插入目标包，并在生成后校验组合次数和积分目标。
+- 配置加载测试新增 Boss 目标契约校验，避免后续 Boss 关缺少目标或使用未知目标类型。
+- 完成 T053 胡了卜 Boss 牌型目标第一版。
+- 新增 `suit_set` 目标类型，第 10 关现在要求 `万 / 筒 / 条` 都至少完成 1 次组合。
+- 配置试玩页会展示 `三门齐 万 0/1 · 筒 0/1 · 条 0/1`，并把该目标纳入 Boss 通关校验。
+- 密集牌山生成器会为第 10 关 Boss 目标包分配 `wan / tong / tiao` 花色队列，保证三门齐目标理论可完成。
+- 完成 T054 胡了卜 Boss 目标反馈和通关提示优化。
+- Boss 目标栏已从纯文本改为目标标签，支持未完成、完成和刚推进三种状态。
+- 执行组合后会短暂高亮对应组合目标、花色目标和积分目标。
+- 清空牌山但 Boss 目标未完成时，提示改为 `牌山已清空，但 Boss 目标未完成`，并列出缺少的目标。
+- 用户选中 `hulebu-eight-bamboo-celadon-candidate-2.png` 的宋代青瓷风格，并要求新增 `东 / 南 / 西 / 北 / 中 / 发 / 白板`。
+- 已生成完整青瓷风牌面总览图：`output/imagegen/hulebu-complete-celadon-mahjong-face-v1.png`。
+- 总览图包含 `万 / 筒 / 条` 1-9 和 `东 / 南 / 西 / 北 / 中 / 发 / 白板`，暂未拆分单牌。
+- 已检查完整青瓷风总览图为 `1600 x 1220` PNG。
+- 用户继续反馈 `1条 / 2条 / 3条 / 4条 / 7条` 排布需按参考图修正：`1条` 使用小鸟，`2条` 上下两根，`3条` 上一根下两根，`4条` 上二下二，`7条` 顶部竖条放在最上方。
+- 已生成青瓷风条子 `1-9` 校正版完整预览图：`output/imagegen/hulebu-bamboo-celadon-corrected-layout-v1.png`。
+- 本轮只生成完整预览图，暂未拆分单牌。
+- 已检查校正版预览图为 `2304 x 760` PNG。
+- 用户确认后续改为单张审核流，并以 `hulebu-eight-bamboo-celadon-candidate-2.png` 作为 `8条` 基准稿。
+- 已按该风格生成 `1条` 小鸟单牌：`output/imagegen/hulebu-one-bamboo-celadon-single-v1.png`。
+- 已检查 `1条` 单牌为 `1024 x 1024` PNG。
+- 用户确认 `1条` 可用，继续生成 `2条` 单牌：`output/imagegen/hulebu-two-bamboo-celadon-single-v1.png`。
+- 已检查 `2条` 单牌为 `1024 x 1024` PNG。
+- 用户确认 `2条` 可用，继续生成 `3条` 单牌：`output/imagegen/hulebu-three-bamboo-celadon-single-v1.png`。
+- 已检查 `3条` 单牌为 `1024 x 1024` PNG。
+- 根据用户反馈，重新生成下方两根间距更宽的 `3条` v2：`output/imagegen/hulebu-three-bamboo-celadon-single-v2.png`。
+- 已检查 `3条` v2 为 `1024 x 1024` PNG。
+- 用户确认 `3条` v2 可用，继续生成 `4条` 单牌：`output/imagegen/hulebu-four-bamboo-celadon-single-v1.png`。
+- 已检查 `4条` 单牌为 `1024 x 1024` PNG。
+- 完成 T056 胡了卜固定 8 格主槽和胡牌基础支持。
+- 主槽默认从 7 格调整为 8 格，旧扩槽奖励和旧 effect 会被限制在 8 格以内，不再把主槽推到 9 格或更多。
+- 新增 `胡` 组合类型：主槽 8 张能拆成两个 3 张组合和一个对子时，可以点击 `胡` 一次消除 8 张。
+- 备用槽继续作为救场，不参与 `胡` 的 `3 + 3 + 2` 判定。
+- 通关条件继续以牌山清空为准，槽位中残留孤张不阻止过关。
+- 配置试玩页已新增 `胡` 按钮、候选展示、分数和铜钱结算，并保留 `吃 / 碰 / 杠` 原有逻辑。
+
+## 2026-05-25
+
+- 用户确认 `4条` 可用，继续单张审核流生成 `5条`。
+- 已生成 `5条` 单牌：`output/imagegen/hulebu-five-bamboo-celadon-single-v1.png`。
+- 已检查 `5条` 单牌为 `1024 x 1024` PNG。
+- 用户要求继续生成 `6条`，首次接口请求超时后已重试成功。
+- 已生成 `6条` 单牌：`output/imagegen/hulebu-six-bamboo-celadon-single-v1.png`。
+- 已检查 `6条` 单牌为 `1024 x 1024` PNG。
+- 用户要求继续生成 `7条`。
+- 已生成 `7条` 单牌：`output/imagegen/hulebu-seven-bamboo-celadon-single-v1.png`。
+- 已检查 `7条` 单牌为 `1024 x 1024` PNG。
+- 用户跳过重新生成 `8条`，要求继续生成 `9条`。
+- 已生成 `9条` 单牌：`output/imagegen/hulebu-nine-bamboo-celadon-single-v1.png`。
+- 已检查 `9条` 单牌为 `1024 x 1024` PNG。
+- 用户确认条子按单张审核流生成版本使用，开始筒子单张审核流。
+- 已生成 `1筒` 单牌：`output/imagegen/hulebu-one-dot-celadon-single-v1.png`。
+- 已检查 `1筒` 单牌为 `1024 x 1024` PNG。
+- 用户确认 `1筒` 可用，并要求继续设计 `2筒 / 3筒 / 4筒`。
+- 已生成 `2筒` 单牌：`output/imagegen/hulebu-two-dot-celadon-single-v1.png`；首次接口请求超时后重试成功。
+- 根据用户纠正，`3筒` 应为左上到右下三颗斜线排列，而不是上一下二。
+- 已生成斜线排布 `3筒` 单牌：`output/imagegen/hulebu-three-dot-celadon-single-v1.png`；首次接口请求超时后重试成功。
+- 已检查 `2筒 / 3筒` 单牌均为 `1024 x 1024` PNG。
+- 已生成 `4筒` 单牌：`output/imagegen/hulebu-four-dot-celadon-single-v1.png`。
+- 已检查 `4筒` 单牌为 `1024 x 1024` PNG。
+- 用户要求继续生成 `5筒`。
+- 已生成 `5筒` 单牌：`output/imagegen/hulebu-five-dot-celadon-single-v1.png`。
+- 已检查 `5筒` 单牌为 `1024 x 1024` PNG。
+- 用户要求继续生成 `6筒`。
+- 已生成 `6筒` 单牌：`output/imagegen/hulebu-six-dot-celadon-single-v1.png`。
+- 已检查 `6筒` 单牌为 `1024 x 1024` PNG。
+- 用户要求继续生成 `7筒`；首次接口返回不完整后已重试成功。
+- 已生成 `7筒` 单牌：`output/imagegen/hulebu-seven-dot-celadon-single-v1.png`。
+- 已检查 `7筒` 单牌为 `1024 x 1024` PNG。
+- 根据用户反馈，`7筒` 上方三颗应为左上到右下斜排，而不是横排。
+
+## 2026-05-26
+
+- 完成 T067 胡了卜 Cocos 首屏目标图视觉壳。
+- Cocos 运行时首屏已从黑底占位推进为目标图方向的视觉壳：绿色牌桌、顶部关卡/分数/进度牌、右侧洗牌/撤回/提示按钮、底部木质 8 格槽。
+- 修复 Cocos Web Preview 只显示默认启动图的问题：`GameSceneController` 启动时会自动创建 `RuntimeCamera`，绑定到 `Canvas.cameraComponent`，并设置正交投影、清屏色和可见层。
+- 已在 Chrome 的 Cocos Web Preview 手机视口中确认首屏显示胡了卜牌山、绿色桌面、右侧工具按钮和 8 格卡槽。
+- 用户已安装 Cocos Dashboard 和 Cocos Creator 3.8.8。
+- 完成 T062 胡了卜 Cocos Creator 3.8.8 工程接入。
+- 已确认本机编辑器路径：`/Applications/Cocos/Creator/3.8.8/CocosCreator.app`。
+- 已新增 `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/` 工程壳，可在 Cocos Dashboard 中添加/打开。
+- 工程壳基于 Creator 3.8.8 自带 `empty-2d` 模板结构，包含 `package.json`、`tsconfig.json`、`.creator/`、`settings/`、`profiles/`。
+- 已新增 Cocos 首场景脚本边界：`GameSceneController`、`BoardLayerBinder`、`SlotLayerBinder`、`ComboBarBinder`、`HudBinder` 和 `HulebuSceneModel` DTO。
+- 已新增 `assets/scenes/README.md` 和 `assets/resources/config/README.md`，说明真实 `HulebuGameScene.scene` 创建、脚本挂载和配置导入边界。
+- 已新增 `packages/shared/src/mahjong-cocos-project.test.ts`，用测试保护工程壳关键文件。
+- 真实 `.scene`、prefab、资源 atlas、动画和配置同步仍需后续任务在 Creator 中完成。
+- 已重新生成斜排上三颗的 `7筒` v2：`output/imagegen/hulebu-seven-dot-celadon-single-v2.png`；首次接口返回不完整后已重试成功。
+- 已检查 `7筒` v2 为 `1024 x 1024` PNG。
+- 完成 T060 胡了卜 Cocos/GDevelop 正式表现层桥接第一版。
+- 新增 `packages/shared/src/mahjong-presentation.ts`，把 `MahjongGameState` 转换为引擎无关的表现层快照。
+- 表现层快照覆盖牌山可点/遮挡状态、8 格主槽、备用槽、`胡 / 杠 / 碰 / 吃` 按钮、余牌和 HUD。
+- 新增 `packages/shared/src/mahjong-presentation.test.ts`，用测试保护 Cocos/GDevelop 可消费的数据契约。
+- 新增 `apps/game/mahjong-roguelike/docs/formal-presentation-bridge.md`，说明 Cocos 场景结构、GDevelop 对象变量映射、输入回传和本任务边界。
+- 完成 T057 胡了卜胡牌节奏配置和密集牌山胡牌包。
+- 新增 `featuredCombos` 关卡重点组合字段，第 6 关和第 10 关已标记 `胡`。
+- 配置试玩页已展示“本关重点”，密集牌山模式会优先生成一个可胡的 `3 + 3 + 2` 8 张组合包。
+- 已修正密集牌山生成器遮挡写入口径，超过 5% 遮挡才写入 `blockedBy`，与点击禁用规则保持一致。
+- 已通过共享配置测试、脚本语法检查、桌面端第 6 关胡牌包试玩和 390px 移动端检查。
+- 完成 T058 胡了卜 20 关节奏骨架和第二 Boss。
+- `levels.json` 已扩展到 20 关，新增第 11-20 关二阶段草案。
+- 奖励节点已固定为第 3/6/9/13/16/19 关，Boss 节点为第 10/20 关。
+- 第 20 关 Boss 已加入 `吃 / 碰 / 杠 / 胡 / 万筒条字 / 积分` 复合目标。
+- 配置试玩页 Boss 目标和密集牌山解法校验已支持 `胡` 目标。
+- 已修复第 20 关密集牌山中 `featuredCombos: ["hu"]` 与 Boss `胡 1` 目标重复占用 8 张可用牌的问题；现在重点胡牌包会复用为 Boss 胡牌目标。
+- 配置试玩页已支持 `?level=20&mode=mountain` 深链接，方便直接验收第 20 关密集牌山。
+- 完成 T059 胡了卜随机牌山调参面板。
+- 配置试玩页密集牌山模式已新增开发用 `牌山调参` 面板，支持调整随机种子、牌量、同列堆叠深度、`胡` 包数量和字牌权重，并可一键重新生成当前关卡牌山。
+- 密集牌山生成器已支持 URL 参数：`seed`、`tiles`、`stack`、`hu`、`honor`；例如 `?level=20&mode=mountain&seed=calibrate&tiles=58&stack=6&hu=2&honor=90`。
+- 已补充共享配置回归测试，确认调参参数能进入生成器并改变牌量、同列堆叠、胡包数量和字牌数量。
+- 完成 T061 胡了卜 Cocos 场景骨架第一版。
+- 新增 `packages/shared/src/mahjong-cocos-scene.ts`，把表现层快照转换为 Cocos 友好的节点、控件和 HUD 视图模型。
+- 新增 `packages/shared/src/mahjong-cocos-scene.test.ts`，用测试保护 Cocos 绑定数据契约。
+- 新增 `apps/game/mahjong-roguelike/cocos/`，包含场景节点结构、脚本边界和 prefab key 绑定清单。
+
+## 2026-05-26
+
+- 继续 T051 胡了卜麻将牌面 UI 参考图。
+- 根据用户新参考图，先生成 `1万` 样稿，作为后续 `2-9万` 的风格起点：
+  - `output/imagegen/hulebu-one-wan-celadon-single-v1.png`
+- 已统一检查该样稿为 `1024 x 1024` PNG；本轮仍只生成图片参考资产，不接入 Cocos/GDevelop 工程。
+- 继续 T051 胡了卜麻将牌面 UI 参考图。
+- 根据用户提供的筒子参考图，补齐青瓷风 `7筒 / 8筒 / 9筒` 单牌：
+  - `output/imagegen/hulebu-seven-dot-celadon-single-v1.png`
+  - `output/imagegen/hulebu-eight-dot-celadon-single-v1.png`
+  - `output/imagegen/hulebu-nine-dot-celadon-single-v1.png`
+- 已统一检查三张新筒子单牌均为 `1024 x 1024` PNG；本轮只生成图片参考资产，不接入 Cocos/GDevelop 工程。
+- 完成 T063 胡了卜 Cocos 首屏自动渲染。
+- 新增 `assets/scripts/bootstrap/HulebuSampleSceneModel.ts`，提供 Creator 播放验证用的占位 scene model。
+- `GameSceneController` 默认加载测试 scene model，并在需要时自动补 `Canvas` / `UITransform`。
+- `BoardLayerBinder` 可自动生成占位牌节点并绘制牌面、可点态和暗化态。
+- `SlotLayerBinder` 可自动绘制 8 格主槽。
+- `ComboBarBinder` 可自动绘制 `胡 / 杠 / 碰 / 吃` 按钮。
+- `HudBinder` 可按节点名自动查找或创建 HUD Label。
+- Cocos 工程 `tsconfig.json` 已补 `ignoreDeprecations` 和 `skipLibCheck`，便于本地 `npx tsc` 对项目脚本做检查。
+- 完成 T065 胡了卜 Cocos 手机竖屏首屏适配。
+- Cocos 工程设计分辨率已设置为 390x844。
+- 测试牌山、8 格主槽、组合按钮和 HUD 已按手机竖屏重排，解决 iPhone 预览时牌山过小且靠下的问题。
+- 完成 T066 胡了卜 Cocos 真实可见尺寸自适应。
+- `HulebuSampleSceneModel` 新增运行时布局解析：读取 `game.canvas.clientWidth/clientHeight`、`view.getVisibleSize()` 和 DPR，输出统一布局尺寸。
+- `GameSceneController`、`BoardLayerBinder`、`SlotLayerBinder`、`ComboBarBinder`、`HudBinder` 已统一使用运行时尺寸和缩放值，避免 Cocos Web Preview 的物理像素尺寸把首屏内容缩小。
+- 处理了 Cocos 预览中新增 `utils` 目录导致的资产缓存残留问题，最终把布局工具收回既有脚本，浏览器预览不再出现新的 `Missing class`。
+- 已在 iPhone 预览中确认 HUD 顶部显示、牌山居中、组合按钮和 8 格主槽位于底部且可读。
+- 开始并完成 T068 胡了卜麻将 UI 图片资源归档和切图。
+- 已新增 Cocos UI 图片资源目录：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/`。
+- 已按 `牌面 / 字牌 / 参考图 / 中间稿` 分类：
+  - 27 张数牌单图：`tiles/numbered/wan/`、`tiles/numbered/tiao/`、`tiles/numbered/tong/`。
+  - 7 张字牌单图：`tiles/honors/`，从 `output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png` 切出。
+  - 2 张参考图：`references/`。
+  - 7 张中间稿：`drafts/`。
+- 已新增 `manifest.json` 和 `README.md`，记录每张图的来源、分类、尺寸、`tileKey` 和后续绑定口径。
+- 完成 T069 胡了卜 Cocos 首条点击可玩链路。
+- 已为 Cocos 首屏测试牌增加触摸回调，可点击牌会进入 8 格主槽。
+- 已为 `胡 / 杠 / 碰 / 吃` 组合按钮增加触摸回调，候选满足时按钮可执行基础消除。
+- `GameSceneController` 已持有测试用主槽状态，点击和消除后会刷新牌山、槽位、HUD、分数和组合按钮。
+- 本任务只跑通 Cocos 测试 scene model 的首条互动链路，真实关卡配置、最终图片 prefab、动画、奖励和关卡流转仍留给后续任务。
+- 已通过 `npm run test -w packages/shared -- mahjong-cocos-project`。
+- 已通过 `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`。
+- 已通过 `npm run test -w packages/shared -- mahjong`。
+- 已通过 `npm run typecheck -w packages/shared`。
+- 已通过 `npm run docs:sync`，同步 35 个任务分片和 35 个领取分片。
+- 已通过 `git diff --check`。
+- 已在 Cocos Web Preview 手机视口手动验证点击入槽和 `7条 / 8条 / 9条 -> 吃` 消除链路。
+- 完成 T070 胡了卜 Cocos 点击后遮挡解锁和槽位牌名显示。
+- `GameSceneController` 已在每次刷新测试首屏时按剩余牌重新计算遮挡状态，超过 5% 面积被更高层剩余牌遮挡时保持不可点。
+- 点击移走上层牌后，下层牌会重新变亮并恢复可点，避免“上面拿走了，下面还是点不了”的反馈断层。
+- `SlotLayerBinder` 已为每个槽位稳定创建直接子级 `Label`，入槽牌会显示当前牌名。
+- 已修正 Cocos `resources.meta` 的 Asset Bundle 配置，避免 Web Preview 构建 settings 查询报错。
+- 已通过 Cocos Web Preview 手机视口手动验证：`7条 / 8条 / 9条` 入槽显示牌名，`吃` 消除后中层 `西` 重新解锁并可入槽。

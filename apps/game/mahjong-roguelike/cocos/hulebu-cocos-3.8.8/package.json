@@ -1,0 +1,10 @@
+{
+  "name": "hulebu-cocos-3.8.8",
+  "displayName": "胡了卜",
+  "description": "胡了卜 Cocos Creator 3.8.8 formal game project shell.",
+  "creator": {
+    "version": "3.8.8",
+    "template": "empty-2d"
+  },
+  "uuid": "3728237a-c469-4649-b314-0dce26474558"
+}

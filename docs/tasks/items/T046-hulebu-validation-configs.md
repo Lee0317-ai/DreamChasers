@@ -1,0 +1,21 @@
+# T046：胡了卜验证场景配置草案
+
+- 优先级：P1
+- 负责人：Codex / 开发 B
+- 状态：已完成
+- 背景：T044 已完成 HTML 验证原型，T045 已完成共享规则模型；现在需要把验证场景从 HTML 临时代码沉淀为后续工程可读取的配置。
+- 目标：新增胡了卜牌定义、验证关卡和局内奖励配置草案，覆盖 5 个验证场景和第一批奖励效果。
+- 不做：不创建 Cocos/GDevelop 正式工程，不接站内游戏路由，不修改 `apps/web/**`，不做最终 20 关和完整数值平衡。
+- 依赖：T045
+- 允许修改文件：`apps/game/mahjong-roguelike/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T046-hulebu-validation-configs.md`, `docs/tasks/claims/T046-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/**`, `packages/shared/**`, `apps/web/src/components/portal-data.ts`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
+- 验证命令：`node -e "for (const f of ['apps/game/mahjong-roguelike/config/tiles.json','apps/game/mahjong-roguelike/config/levels.json','apps/game/mahjong-roguelike/config/rewards.json']) JSON.parse(require('fs').readFileSync(f, 'utf8')); console.log('configs ok')"`; `npm run docs:sync`; `git diff --check`
+- 执行记录：
+  - 已新增变更卡 `IDEA-20260523-05`。
+  - 已新增领取分片 `docs/tasks/claims/T046-codex.md`。
+  - 已新增 `apps/game/mahjong-roguelike/config/tiles.json`。
+  - 已新增 `apps/game/mahjong-roguelike/config/levels.json`，覆盖 5 个验证场景。
+  - 已新增 `apps/game/mahjong-roguelike/config/rewards.json`，覆盖 8 个局内奖励草案。
+  - 已新增 `apps/game/mahjong-roguelike/README.md` 和 `apps/game/mahjong-roguelike/docs/rules.md`。
+  - 已更新模块 README、实施计划、进展、决策和交接说明。
+- 完成摘要：已完成胡了卜验证场景配置草案，后续可继续扩展 MVP 主线 10 关和 10 个奖励。

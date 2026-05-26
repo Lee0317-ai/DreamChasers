@@ -1,0 +1,21 @@
+# T049：胡了卜配置驱动试玩原型
+
+- 优先级：P1
+- 负责人：Codex / 开发 B
+- 状态：已完成
+- 背景：T048 已确认 10 关和 10 奖励配置能被共享规则模型承接，下一步需要把配置渲染成可操作界面，验证表现层接入手感。
+- 目标：在 `apps/game/mahjong-roguelike/` 下新增静态试玩原型，直接读取 `config/levels.json` 与 `config/rewards.json`，支持切换 10 关、点击可用牌、槽位、候选组合、手动 `吃 / 碰 / 杠`、余牌和奖励选择。
+- 不做：不创建 Cocos/GDevelop 正式工程，不接 Next.js 路由，不修改 `apps/web/**`，不做完整可解路径搜索，不做最终美术、音效、埋点、付费或排行榜。
+- 依赖：T048
+- 允许修改文件：`apps/game/mahjong-roguelike/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T049-hulebu-config-playable-prototype.md`, `docs/tasks/claims/T049-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/**`, `packages/shared/**`, `apps/web/src/components/portal-data.ts`, `package.json`, `package-lock.json`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
+- 验证命令：`npm run test -w packages/shared -- mahjong`; `npm run docs:sync`; 浏览器桌面端检查；浏览器移动端检查；`git diff --check`
+- 执行记录：
+  - 已新增变更卡 `IDEA-20260523-08`。
+  - 已新增领取分片 `docs/tasks/claims/T049-codex.md`。
+  - 已新增 `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`。
+  - 已实现读取 `levels.json` 和 `rewards.json` 的静态试玩页。
+  - 已支持 10 关切换、牌面渲染、遮挡点击、槽位、候选组合、手动 `吃 / 碰 / 杠`、余牌、积分、铜钱、工具和奖励选择。
+  - 已根据反馈增强牌山视觉堆叠，但明确当前仍不是最终“羊了个羊”式密集牌山。
+  - 已通过桌面端浏览器检查和 390px 移动端检查。
+- 完成摘要：已完成胡了卜配置驱动试玩原型，后续建议做牌山生成器和高密度堆叠布局。

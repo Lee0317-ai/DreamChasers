@@ -1,0 +1,35 @@
+# T068：胡了卜麻将 UI 图片资源归档和切图完成记录
+
+- 完成时间：2026-05-26
+- 负责人：Codex / 开发 B
+- 任务编号：T068
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/**`
+  - `apps/game/mahjong-roguelike/cocos/scene-binding.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/items/T068-hulebu-ui-image-assets.md`
+  - `docs/tasks/claims/T068-codex.md`
+  - `docs/progress/2026-05-26.md`
+- 实现内容：
+  - 新增胡了卜 Cocos UI 图片资源目录。
+  - 按 `牌面 / 字牌 / 参考图 / 中间稿` 分类归档现有图片。
+  - 复制 27 张数牌单图。
+  - 从字牌横向参考图切出 7 张字牌单图。
+  - 新增 `README.md` 和 `manifest.json`，记录图片来源、类别、尺寸和 `tileKey`。
+- 验证命令：
+  - 图片 contact sheet 人工查看
+  - `node -e` 检查 `manifest.json` 数量和 key
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 图片归档数量符合预期：数牌 27、字牌 7、参考图 2、中间稿 7。
+  - 字牌切片已重切为干净单图。
+  - `manifest.json` 可解析并包含资源映射。
+  - `npm run docs:sync` 已通过。
+  - `git diff --check` 已通过。
+- 遗留问题：
+  - 当前只做资源归档，不接运行时代码。
+  - PNG 的 Cocos texture meta 未手写，后续打开 Cocos Creator 后由编辑器生成权威 `.png.meta`。

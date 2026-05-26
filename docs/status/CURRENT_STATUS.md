@@ -1,6 +1,6 @@
 # 当前项目状态
 
-**最后更新**：2026-05-23
+**最后更新**：2026-05-25
 **状态维护人**：开发者每次开工和收工时共同维护
 **必读**：每个 AI 会话开始前必须读取本文件
 
@@ -64,6 +64,7 @@
 | 42 | 麻将 Roguelike MVP 玩法验证计划 | Codex / 开发 B | 已完成 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | 已明确最小验证闭环、核心假设、观察指标和 MVP 冻结线 |
 | 43 | 麻将 Roguelike 最小可玩闭环和 MVP 开发拆分计划 | Codex / 开发 B | 已完成 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | 已明确验证原型、受控随机、观察记录、正式 MVP 拆分和下一步 T044 |
 | 44 | 麻将 Roguelike 最小可玩验证原型 | Codex / 开发 B | 已完成 | `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**` | 已完成可试玩 HTML 原型，覆盖 5 个验证场景和桌面/移动端检查 |
+| 64 | 打工人弹射解压模块文档落档 | Codex / 开发 B | 已完成 | `docs/modules/angry-worker/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-25.md`, `docs/completion/**` | 完成模块文档创建，包含完整产品方案、实施计划、关键决策和团队交接信息 |
 
 ## 3. 当前活跃任务
 
@@ -131,6 +132,7 @@
 - 已完成 `T044`：新增麻将 Roguelike 最小可玩验证原型 HTML，支持 5 个验证场景、手动吃碰杠、余牌、奖励选择和满槽救场。
 - `T015` 已完成 PDF 工具箱核心页面级处理第一轮：上传、预览、选择、旋转、排序、删除、拆分和下载。
 - `T015` 已补充文字水印、签名图片、PDF 转 Word Beta、区域遮盖和图片扫描成 PDF；扫描件 OCR 仍按规划留到后续 AI/OCR 能力。
+- 已新增 `T064`：完成「打工人弹射解压」Roguelike 物理弹射小游戏完整方案设计（6 阶段）和模块文档落档，`docs/modules/angry-worker/` 已建立，覆盖产品定位、核心循环、关卡生成算法、Buff 系统、Boss 设计、留存策略、广告方案和迭代路线。
 
 ## 5. 当前阻塞
 
@@ -206,18 +208,31 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 
 ### 任务分片
 
-- 已扫描任务分片：10 个。
-- 已扫描领取分片：10 个。
+- 已扫描任务分片：36 个。
+- 已扫描领取分片：36 个。
 
 ### 当前未完成领取
 
-- 暂无未完成领取分片。
+- T051：胡了卜麻将牌面 UI 参考图，Codex / 开发 B，状态：待验收
+- T052：胡了卜 Boss 目标配置化，Codex / 开发 B，状态：待验收
+- T053：胡了卜 Boss 牌型目标第一版，Codex / 开发 B，状态：待验收
+- T054：胡了卜 Boss 目标反馈和通关提示优化，Codex / 开发 B，状态：待验收
+- T055：胡了卜加入字牌基础支持，Codex / 开发 B，状态：待验收
+- T056：胡了卜固定 8 格主槽和胡牌基础支持，Codex / 开发 B，状态：待验收
+- T057：胡了卜胡牌节奏配置和密集牌山胡牌包，Codex / 开发 B，状态：待验收
+- T058：胡了卜 20 关节奏骨架和第二 Boss，Codex / 开发 B，状态：待验收
+- T059：胡了卜随机牌山调参面板，Codex / 开发 B，状态：待验收
+- T060：胡了卜 Cocos/GDevelop 正式表现层桥接，Codex / 开发 B，状态：待验收
+- T061：胡了卜 Cocos 场景骨架第一版，Codex / 开发 B，状态：待验收
+- T067：胡了卜 Cocos 首屏目标图视觉壳，Codex / 开发 B，状态：待验收
+- T069：胡了卜 Cocos 首条点击可玩链路，Codex / 开发 B，状态：待验收
+- T070：胡了卜 Cocos 点击后遮挡解锁和槽位牌名显示，Codex / 开发 B，状态：待验收
 
 ### 最近完成任务分片
 
-- T040：麻将 Roguelike 完整牌局规则、经济体力和失败救场规划，负责人：Codex / 开发 B
-- T041：麻将 Roguelike 团队评审版玩法方案，负责人：Codex / 开发 B
-- T042：麻将 Roguelike MVP 玩法验证计划，负责人：Codex / 开发 B
-- T043：麻将 Roguelike 最小可玩闭环和 MVP 开发拆分计划，负责人：Codex / 开发 B
-- T044：麻将 Roguelike 最小可玩验证原型，负责人：Codex / 开发 B
+- T063：胡了卜 Cocos 首屏自动渲染，负责人：未填写
+- T064：打工人弹射解压模块文档落档，负责人：Codex / 开发 B
+- T065：胡了卜 Cocos 手机竖屏首屏适配，负责人：未填写
+- T066：胡了卜 Cocos 真实可见尺寸自适应，负责人：未填写
+- T068：胡了卜麻将 UI 图片资源归档和切图，负责人：未填写
 <!-- DOCS_SYNC_STATUS_END -->

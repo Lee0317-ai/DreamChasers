@@ -1,0 +1,25 @@
+# T050：胡了卜牌山生成器和密集堆叠布局
+
+- 优先级：P1
+- 负责人：Codex / 开发 B
+- 状态：已完成
+- 背景：T049 已完成配置驱动试玩页，但当前仍是手写低牌量配置联调，不足以验证“羊了个羊”式密集牌山的空间压力。
+- 目标：在 `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` 中新增可切换的“密集牌山”生成模式，用受控组合包自动生成更多牌、多层坐标和遮挡关系，并保留原配置关卡模式。
+- 不做：不创建 Cocos/GDevelop 正式工程，不接 Next.js 路由，不修改 `apps/web/**`，不做最终美术、音效、埋点、付费、排行榜或完整可解路径搜索。
+- 依赖：T049
+- 允许修改文件：`apps/game/mahjong-roguelike/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T050-hulebu-tile-mountain-generator.md`, `docs/tasks/claims/T050-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/**`, `packages/shared/**`, `apps/web/src/components/portal-data.ts`, `package.json`, `package-lock.json`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
+- 验证命令：`npm run test -w packages/shared -- mahjong`; `npm run docs:sync`; 浏览器桌面端检查；浏览器移动端检查；`git diff --check`
+- 执行记录：
+  - 已新增变更卡 `IDEA-20260523-09`。
+  - 已新增领取分片 `docs/tasks/claims/T050-codex.md`。
+  - 已在 `config-playable` 试玩页新增 `配置关卡 / 密集牌山` 模式切换。
+  - 已新增确定性牌山生成器：按关卡 `id/order` 作为种子，从关卡牌面收集 `吃 / 碰 / 杠` 组合包。
+  - 已新增 4 层坐标模板，密集模式每关生成 50 张左右的牌。
+  - 已新增几何重叠遮挡计算，自动生成 `blockedBy`，不再手写密集牌山遮挡引用。
+  - 已修正高牌量下的 z-index 规则，保证顶层牌优先命中。
+  - 已新增 `apps/game/mahjong-roguelike/docs/tile-mountain-generator.md`。
+  - 已通过浏览器检查：密集模式第 1 关生成 50 张牌，42 张被压住；点击顶层三张 `2万` 后 `碰 1` 亮起，下层牌可继续解锁。
+  - 已通过原配置模式回归：切回配置关卡后，点击三张 `9筒` 仍能触发 `碰 1`。
+  - 已通过窄宽度检查：当前 546px 浏览器宽度无横向溢出。
+- 完成摘要：已完成胡了卜密集牌山生成器原型，后续建议组织试玩后调整生成器参数或进入 Cocos/GDevelop 工程承接。
