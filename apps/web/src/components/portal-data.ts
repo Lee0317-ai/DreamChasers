@@ -3,13 +3,13 @@ export type PortalItem = {
   title: string;
   description: string;
   icon: string;
+  href?: string;
   tags: string[];
   categories: string[];
   status?: "ready" | "coming";
   detailsTitle: string;
   details: string[];
   footnote?: string;
-  href?: string;
 };
 
 export const toolItems: PortalItem[] = [
@@ -37,6 +37,7 @@ export const toolItems: PortalItem[] = [
     title: "AI 修图工具",
     description: "亮度、对比度、饱和度、裁剪、滤镜、加贴纸与文字。AI 能力限次免费：美颜、换背景、细节修复。",
     icon: "IMG",
+    href: "/tools/ai-photo-editor",
     tags: ["免费", "AI 能力", "图像处理"],
     categories: ["img", "ai"],
     detailsTitle: "AI 修图工具",
@@ -168,7 +169,7 @@ export const searchItems = [
     tag: "工具"
   },
   {
-    href: "/tools#photo",
+    href: "/tools/ai-photo-editor",
     icon: "IMG",
     title: "AI 修图工具",
     description: "亮度、对比度、滤镜、AI 美颜",

@@ -1,0 +1,47 @@
+# T045：实现 AI 修图工具 MVP
+
+- 完成时间：2026-05-26
+- 负责人：Codex / 开发 B
+- 任务编号：T045
+- 修改文件：
+  - `apps/web/src/app/tools/ai-photo-editor/**`
+  - `apps/web/src/components/tools/photo/**`
+  - `apps/web/src/lib/tools/photo/**`
+  - `apps/web/public/stickers/**`
+  - `apps/web/src/components/AppHeader.tsx`
+  - `apps/web/src/components/PortalCard.tsx`
+  - `apps/web/src/components/portal-data.ts`
+  - `docs/tasks/items/T045-ai-photo-editor-mvp.md`
+  - `docs/tasks/claims/T045-codex.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-05-22.md`
+  - `docs/progress/2026-05-25.md`
+  - `docs/progress/2026-05-26.md`
+  - `docs/completion/2026-05-21-task-45-ai-photo-editor-mvp.md`
+  - `docs/completion/2026-05-26-task-45-ai-photo-editor-mvp.md`
+- 实现内容：
+  - 新增 `/tools/ai-photo-editor` 工作台页面，工具首页 AI 修图卡片可进入该页面。
+  - 支持上传图片、基础调整、画布拖动、裁剪旋转、滤镜预览、文字元素、贴纸元素、边框预设、撤销重做和 PNG 导出。
+  - 导出链路按当前编辑状态重绘图片、裁剪、滤镜/调整、旋转缩放平移、边框、文字和贴纸；彩色渐变文字使用 Canvas 渐变导出。
+  - 贴纸选择区改为紧凑图标网格，导入 112 个装饰贴纸 PNG，并按基础装饰、手绘日常、粉色甜心、气泡表情、黑白猫咪、粉彩涂鸦、动物问候细分展示。
+  - 使用 `imagegen` 重绘 `bubble-pack` 气泡贴纸，生成外部透明、心形气泡内部实心白底、浅灰柔和边框和 emoji 内容的 PNG。
+  - 修复贴纸画布层 `<button>` 嵌套导致的控制台和 hydration 警告。
+  - 默认新增贴纸尺寸从 72 调整为 36，贴纸选择区缩略图增加留白。
+- 验证命令：
+  - `npm run typecheck -w apps/web`
+  - `npm run lint -w apps/web`
+  - `npx next build`（在 `apps/web` 内执行）
+  - `curl` 检查页面和新增贴纸资源访问
+- 验证结果：
+  - `npm run typecheck -w apps/web` 通过。
+  - `npm run lint -w apps/web` 通过，存在既有 `apps/web/src/generated/prisma/**` unused eslint-disable 警告。
+  - `npx next build` 通过。
+  - `http://127.0.0.1:3001/tools/ai-photo-editor` 返回 200。
+  - `/stickers/decor-pack/girl-ponytail.png`、`/stickers/love-pack/headphone-bunny.png`、`/stickers/bubble-pack/bubble-party.png` 和 `/stickers/animal-pack/xo-kangaroo.png` 返回 200 image/png。
+  - 抽查 `bubble-pack` PNG：角落 alpha 为 0，气泡区域保留大量不透明白色像素；灰底接触表检查边缘顺滑、气泡白底实心、无方形白底。
+- 遗留问题：
+  - Codex 内置浏览器访问本地地址被 `ERR_BLOCKED_BY_CLIENT` 拦截，未完成真实桌面/移动截图检查。
+  - 本地未安装 Playwright，未额外安装依赖。
+  - PNG 导出使用 Canvas 重绘实现，字体抗锯齿和 CSS 阴影等浏览器渲染细节可能与 DOM 预览有轻微像素差异。

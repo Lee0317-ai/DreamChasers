@@ -896,6 +896,24 @@
 
 ## 5. 已处理想法
 
+### IDEA-20260526-01：AI 修图工具 MVP 和装饰贴纸增强
+
+- 提出人：Lee
+- 提出时间：2026-05-26
+- 背景：第一阶段需要 AI 修图工具具备可用的本地基础编辑能力，并按用户反馈补齐贴纸选择、装饰贴纸集合、贴纸尺寸、白底气泡贴纸和批次分组体验。
+- 目标：实现 `/tools/ai-photo-editor` 工作台，支持图片上传、基础调整、裁剪旋转、滤镜、文字、贴纸、边框、撤销重做、PNG 导出和装饰贴纸集合。
+- 不做：不调用真实 AI 模型，不做用户体系、付费、后台素材管理、批处理或云端存储。
+- 用户价值：用户可以在浏览器内完成常见图片装饰和导出，并获得更丰富、更易查找的贴纸素材。
+- 涉及模块：AI 修图工具、门户入口、贴纸素材、导出合成链路。
+- 可能影响文件：`apps/web/src/app/tools/ai-photo-editor/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**`, `apps/web/public/stickers/**`, `apps/web/src/components/AppHeader.tsx`, `apps/web/src/components/PortalCard.tsx`, `apps/web/src/components/portal-data.ts`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/**`, `docs/completion/**`
+- 是否影响另一方任务：可能与工具入口和 PDF 工具箱入口同处门户卡片文件，合并时需保留双方入口。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：AI 修图工作台可访问；基础编辑、边框、文字、贴纸、撤销重做和导出可用；新增贴纸资源可访问；类型检查、lint 和 Next build 通过。
+- AI 初步方案：将 AI 修图相关增量统一归档为 `T045`，避免与远端已占用的麻将任务编号冲突，并使用任务分片同步主文档。
+- 处理结论：已入任务池
+- 对应任务编号：T045
+
 ### IDEA-20260520-02：AI 内容转换工具箱
 
 - 提出人：Lee
