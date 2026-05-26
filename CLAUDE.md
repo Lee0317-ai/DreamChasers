@@ -19,16 +19,19 @@
 
 ## 必须先读
 
-按顺序读取：
+按顺序执行：
 
-1. `docs/PROJECT_CONTEXT.md`
-2. `docs/status/CURRENT_STATUS.md`
-3. `docs/tasks/TASK_BOARD.md`
-4. `docs/tasks/CLAIMS.md`
-5. `docs/tasks/CHANGE_INTAKE.md`
-6. `docs/workflow/dual-dev-ai-workflow.md`
-7. `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`
-8. `docs/superpowers/specs/2026-05-19-tool-game-ai-platform-design.md`
+1. **`git pull origin main`** — 确保看到最新任务 ID、领取记录和进度分片。
+2. 按顺序读取：
+   - `docs/PROJECT_CONTEXT.md`
+   - `docs/status/CURRENT_STATUS.md`
+   - `docs/tasks/TASK_BOARD.md`
+   - `docs/tasks/CLAIMS.md`
+   - `docs/tasks/CHANGE_INTAKE.md`
+   - `docs/tasks/NEXT_ID.md`（创建新任务前必须读取并按规则分配 ID）
+   - `docs/workflow/dual-dev-ai-workflow.md`
+   - `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`
+   - `docs/superpowers/specs/2026-05-19-tool-game-ai-platform-design.md`
 
 然后复述：
 

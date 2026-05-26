@@ -18,7 +18,7 @@
 - 任务详情：`docs/tasks/items/TXXX-<slug>.md`
 - 领取记录：`docs/tasks/claims/TXXX-<owner>.md`
 - 模块进展：`docs/modules/<module-slug>/PROGRESS.md`
-- 当天进展：`docs/progress/YYYY-MM-DD.md`
+- 当天进展（个人分片）：`docs/progress/YYYY-MM-DD-lee.md`、`docs/progress/YYYY-MM-DD-jaspon.md`
 - 完成记录：`docs/completion/YYYY-MM-DD-task-<number>-<short-name>.md`
 
 `docs/tasks/TASK_BOARD.md`、`docs/tasks/CLAIMS.md`、`docs/status/CURRENT_STATUS.md` 只在任务领取、任务完成、阻塞、交接或冲突时更新。
@@ -49,7 +49,7 @@
 1. 更新 `docs/tasks/TASK_BOARD.md` 的状态、范围或下一步。
 2. 更新 `docs/tasks/CLAIMS.md` 的领取状态和备注。
 3. 更新 `docs/status/CURRENT_STATUS.md` 的快照摘要。
-4. 更新 `docs/progress/YYYY-MM-DD.md`。
+4. 更新个人当天进展分片 `docs/progress/YYYY-MM-DD-<owner>.md`（如 `2026-05-26-lee.md`）。
 5. 新增 `docs/completion/YYYY-MM-DD-task-<number>-<short-name>.md`。
 
 这一步是主文档同步点。分步开发、局部试验、临时修正文案时，不需要反复同步主文档。
@@ -85,11 +85,20 @@ npm run docs:sync
 
 - `docs/tasks/items/*.md`
 - `docs/tasks/claims/*.md`
+- `docs/progress/YYYY-MM-DD-*.md`
 
 并更新这些主文档中的自动生成摘要区：
 
 - `docs/tasks/TASK_BOARD.md`
 - `docs/tasks/CLAIMS.md`
 - `docs/status/CURRENT_STATUS.md`
+- `docs/progress/YYYY-MM-DD.md`（汇总 lee / jaspon 个人分片）
 
 脚本只改 `<!-- DOCS_SYNC_* -->` 标记包住的区域，不覆盖历史手写内容。需要调整任务细节时，优先修改分片文件，然后重新运行脚本。
+
+**个人进度分片规则**：
+- 各自只写自己的分片，命名固定为 `YYYY-MM-DD-lee.md` 或 `YYYY-MM-DD-jaspon.md`。
+- 不动他人的分片。
+- 主文件 `YYYY-MM-DD.md` 由 `docs:sync` 自动生成，不手写。
+- 如果某天只有一人工作，只生成对应个人的分片，`docs:sync` 仍会正确生成主文件。
+- 历史已有 `2026-05-19.md` 至 `2026-05-26.md` 保留不变，从 2026-05-27 起执行新规则。

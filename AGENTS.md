@@ -10,7 +10,10 @@
 
 ## 2. 每次任务前必须读取
 
-开始任何开发、修改、重构、调试、文档更新前，按顺序读取：
+开始任何开发、修改、重构、调试、文档更新前，按顺序执行：
+
+1. **`git pull origin main`** — 确保看到最新任务 ID、领取记录和进度分片。
+2. 按顺序读取：
 
 1. `docs/PROJECT_CONTEXT.md`
 2. `docs/status/CURRENT_STATUS.md`
@@ -18,8 +21,9 @@
 4. `docs/tasks/CLAIMS.md`
 5. `docs/tasks/CHANGE_INTAKE.md`
 6. `docs/workflow/dual-dev-ai-workflow.md`
-7. `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`
-8. `docs/superpowers/specs/2026-05-19-tool-game-ai-platform-design.md`
+7. `docs/tasks/NEXT_ID.md`（创建新任务前必须读取并按规则分配 ID）
+8. `docs/plans/2026-05-19-tool-game-ai-platform-implementation.md`
+9. `docs/superpowers/specs/2026-05-19-tool-game-ai-platform-design.md`
 
 如果只做某个模块，还要读取对应模块文档：
 
@@ -85,8 +89,8 @@
 
 默认分工以 `docs/status/CURRENT_STATUS.md` 为准。
 
-- 开发 A：平台基础、Next.js、数据库、内容模型、后台、PDF 工具箱。
-- 开发 B：AI 搜索、AI 修图、麻将 Roguelike 消除、游戏接入、埋点、部署协助。
+- 开发 A（Lee）：平台基础、Next.js、数据库、内容模型、后台、PDF 工具箱、麻将 Roguelike 消除、游戏工程、共享包。
+- 开发 B（Jaspon）：AI 搜索、AI 修图、埋点、部署协助。
 
 共享文件修改前，必须先在 `docs/status/CURRENT_STATUS.md` 中说明计划。
 

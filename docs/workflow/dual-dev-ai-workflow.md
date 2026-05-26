@@ -18,18 +18,32 @@
 
 开发者或 AI 开始工作前，必须按顺序执行：
 
-1. 读取 `docs/PROJECT_CONTEXT.md`。
-2. 读取 `docs/status/CURRENT_STATUS.md`。
-3. 读取 `docs/tasks/TASK_BOARD.md`。
-4. 读取 `docs/tasks/CLAIMS.md`。
-5. 读取 `docs/tasks/CHANGE_INTAKE.md`。
-6. 读取当前任务对应的计划文档。
-7. 在 `docs/tasks/claims/` 中新增领取分片。
-8. 如任务不存在，在 `docs/tasks/items/` 中新增任务分片。
-9. 如果涉及共享文件、冲突、交接或负责人变化，再同步 `docs/tasks/CLAIMS.md` 和 `docs/status/CURRENT_STATUS.md`。
-10. 如果文件范围不清楚，先补文档，不直接编码。
+1. **`git pull origin main`** — 确保看到最新任务 ID、领取记录和进度分片，避免 ID 重复。
+2. 读取 `docs/PROJECT_CONTEXT.md`。
+3. 读取 `docs/status/CURRENT_STATUS.md`。
+4. 读取 `docs/tasks/TASK_BOARD.md`。
+5. 读取 `docs/tasks/CLAIMS.md`。
+6. 读取 `docs/tasks/CHANGE_INTAKE.md`。
+7. 读取当前任务对应的计划文档。
+8. 在 `docs/tasks/claims/` 中新增领取分片。
+9. 如任务不存在，在 `docs/tasks/items/` 中新增任务分片（见下方「任务 ID 分配规则」）。
+10. 如果涉及共享文件、冲突、交接或负责人变化，再同步 `docs/tasks/CLAIMS.md` 和 `docs/status/CURRENT_STATUS.md`。
+11. 如果文件范围不清楚，先补文档，不直接编码。
 
-## 3. 任务领取格式
+## 3. 任务领取格式与 ID 分配规则
+
+### 3.1 任务 ID 分配
+
+**核心原则**：两人异步协作，不能各自独立决定 ID，必须通过中心化分配器避免重复。
+
+1. 创建新任务前，先读取 `docs/tasks/NEXT_ID.md`。该文件只存一个数字，表示下一个可用 ID（如 `072`）。
+2. 使用该数字作为新任务编号（如 `072` → `T072`）。
+3. 创建完任务分片 `docs/tasks/items/T072-<slug>.md` 和领取分片 `docs/tasks/claims/T072-<owner>.md` 后，把 `NEXT_ID.md` 中的数字加 1 写回。
+4. 如果 `git push` 时 `NEXT_ID.md` 发生冲突（单行文件），取较大值保留即可。
+
+**历史遗留**：`T045` 已出现重复（`T045-ai-photo-editor-mvp.md` 和 `T045-hulebu-rules-model.md`），后续由集成负责人手动把后创建者重命名为新可用 ID。
+
+### 3.2 领取分片格式
 
 领取分片优先写在 `docs/tasks/claims/TXXX-<owner>.md`，格式如下。只有任务进入共享协调、阻塞、交接或完成汇总时，才同步到 `docs/status/CURRENT_STATUS.md`。
 
@@ -68,7 +82,7 @@
 
 `apps/web/src/app/**` 下的路由只做入口、元数据和模块挂载，不承载大量业务逻辑。
 
-### 开发 A 默认负责
+### Lee（开发 A）默认负责
 
 - `package.json`
 - `tsconfig.base.json`
@@ -79,8 +93,11 @@
 - `apps/web/src/app/admin/**`
 - `apps/web/src/app/tools/pdf-toolbox/**`
 - `apps/web/src/modules/tools/pdf-toolbox/**`
+- `apps/game/**`
+- `apps/web/src/components/game/**`
+- `packages/shared/**`（Lee 创建的部分，如 `mahjong-*.ts`）
 
-### 开发 B 默认负责
+### Jaspon（开发 B）默认负责
 
 - `packages/shared/**`
 - `apps/web/src/lib/ai/**`
@@ -88,8 +105,6 @@
 - `apps/web/src/app/tools/ai-photo-editor/**`
 - `apps/web/src/components/tools/photo/**`
 - `apps/web/src/lib/tools/photo/**`
-- `apps/game/**`
-- `apps/web/src/components/game/**`
 - `apps/web/src/lib/analytics/**`
 
 ### 共享但需要提前沟通的文件
@@ -115,8 +130,8 @@
 
 如果使用 Git，建议：
 
-- 开发 A 分支：`feature/platform-foundation`
-- 开发 B 分支：`feature/ai-photo-game`
+- Lee（开发 A）分支：`feature/platform-foundation`
+- Jaspon（开发 B）分支：`feature/ai-photo-game`
 - 文档同步分支：`docs/planning-sync`
 
 提交粒度：
@@ -135,18 +150,22 @@
 每个开发者可以把下面内容发给自己的 AI：
 
 ```md
-请先读取并遵守以下文档：
+请先执行以下步骤：
 
-1. docs/PROJECT_CONTEXT.md
-2. docs/status/CURRENT_STATUS.md
-3. docs/tasks/TASK_BOARD.md
-4. docs/tasks/CLAIMS.md
-5. docs/tasks/CHANGE_INTAKE.md
-6. docs/plans/2026-05-19-tool-game-ai-platform-implementation.md
-7. docs/workflow/dual-dev-ai-workflow.md
+1. `git pull origin main` — 确保看到最新任务 ID 和领取记录。
+2. 读取并遵守以下文档：
+   - docs/PROJECT_CONTEXT.md
+   - docs/status/CURRENT_STATUS.md
+   - docs/tasks/TASK_BOARD.md
+   - docs/tasks/CLAIMS.md
+   - docs/tasks/CHANGE_INTAKE.md
+   - docs/tasks/NEXT_ID.md
+   - docs/plans/2026-05-19-tool-game-ai-platform-implementation.md
+   - docs/workflow/dual-dev-ai-workflow.md
 
 本次只执行我领取的任务，不要修改其他负责人范围内的文件。
 开始前请先复述任务目标、允许修改文件、验证命令和完成后需要更新的文档。
+创建新任务前必须先读取 docs/tasks/NEXT_ID.md 并按规则分配 ID。
 ```
 
 ## 7. 完成任务后的记录要求
@@ -157,10 +176,15 @@
 2. `docs/tasks/TASK_BOARD.md`
 3. `docs/tasks/CLAIMS.md`
 4. 如有新想法或需求变更，更新 `docs/tasks/CHANGE_INTAKE.md`
-5. 对应的进展文件：`docs/progress/YYYY-MM-DD.md`
+5. 对应的个人进展文件：`docs/progress/YYYY-MM-DD-<owner>.md`（如 `2026-05-26-lee.md`）
 6. 如果任务完整完成，再写完成记录：`docs/completion/<task-name>.md`
 
-如果只是任务中的分步操作、局部试验或阶段内小修，只更新任务分片、模块进展或当天进展，不要反复更新主文档。
+如果只是任务中的分步操作、局部试验或阶段内小修，只更新任务分片、模块进展或个人当天进展分片，不要反复更新主文档。
+
+**每日进度规则**：
+- 各自只写自己的分片：`docs/progress/YYYY-MM-DD-lee.md` 和 `docs/progress/YYYY-MM-DD-jaspon.md`。
+- 不动他人的分片。
+- 主文件 `docs/progress/YYYY-MM-DD.md` 由 `docs:sync` 自动扫描 `-lee.md` / `-jaspon.md` 汇总生成，不手写。
 
 完成记录至少包含：
 
