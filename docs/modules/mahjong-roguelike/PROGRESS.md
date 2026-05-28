@@ -1,5 +1,23 @@
 # 胡了卜进展
 
+## 2026-05-28
+
+- 完成 T083 胡了卜模板注册表和 8 个核心模板共享实现。
+- `packages/shared/src/mahjong-mountain-generator.ts` 已从模板分支升级为模板 definition 注册表，提供 `listHulebuMountainTemplateDefinitions`、`getHulebuMountainTemplateDefinition` 和 `normalizeHulebuMountainGeneratorConfig`。
+- 第一批 8 个核心模板已可生成：`center-tower`、`two-wings`、`cross`、`ring`、`long-wall`、`islands`、`canyon`、`staircase`。
+- `ExperienceReport` 已新增模板摘要、参数快照、通用校验器、窗口曲线和释放事件，方便后续调关卡解释“为什么这局有压力”。
+- 本任务只修改共享层生成器和文档，不接 Cocos；后续需要另起任务把 Graph-based `levelTiles` 转成 Cocos 当前关卡配置。
+- 完成 T079 胡了卜 Graph-based 牌山生成器地基设计。
+- 确认当前 Cocos 随机柱式牌山不适合作为长期地基，后续应以 `牌山骨架图 -> 理论解法路径 -> 牌面发牌 -> 难度/体验评估` 为主线。
+- 完成 T080 胡了卜 Graph-based 牌山生成器共享实现第一版。
+- 新增 `packages/shared/src/mahjong-mountain-generator.ts`，支持 seed 稳定的中心塔/双翼模板、5% 遮挡图、理论解法路径、`碰 / 吃 / 杠 / 胡` 牌面分配、干扰节点、体验报告和 Cocos 后续可消费的 `levelTiles`。
+- 完成 T081 胡了卜地图模板语法系统设计。
+- 用户已确认采用“模板语法系统”路线，并选择“8 个核心模板 + 第二批 backlog 预留”。第一期核心模板为中心塔、双翼、十字、环形、长墙、岛屿、峡谷、阶梯；第二批 backlog 为花瓣、堡垒、棋盘、迷雾外圈。
+- T081 只做正式设计落档，不修改生成器代码和 Cocos；后续建议先做 T082 模板注册表和参数系统，再做 T083 8 个核心模板实现。
+- 完成 T082 胡了卜模板注册表和参数系统实施计划。
+- 新增 `docs/superpowers/plans/2026-05-28-hulebu-template-registry-parameter-system.md`，将后续共享生成器重构拆为注册表类型、参数归一化、现有两模板迁移、ExperienceReport 扩展、导出与文档、验证六段。
+- T082 只写实施计划，不修改 `packages/shared` 代码、不接 Cocos；后续进入实现时应先保留 `center-tower` 和 `two-wings` 行为，再扩 8 个核心模板。
+
 ## 2026-05-21
 
 - 完成 T029 框架调研和规划。
@@ -316,3 +334,44 @@
 - `SlotLayerBinder` 已为每个槽位稳定创建直接子级 `Label`，入槽牌会显示当前牌名。
 - 已修正 Cocos `resources.meta` 的 Asset Bundle 配置，避免 Web Preview 构建 settings 查询报错。
 - 已通过 Cocos Web Preview 手机视口手动验证：`7条 / 8条 / 9条` 入槽显示牌名，`吃` 消除后中层 `西` 重新解锁并可入槽。
+
+## 2026-05-27
+
+- 完成 T072 胡了卜 Cocos 真实配置首关接入。
+- Cocos 工程新增 `HulebuLevelConfig`、`HulebuRuntimeState` 和 `HulebuConfiguredSceneModel`，默认从真实第 1 关 `validation_intro_peng` 创建首屏 scene model。
+- `GameSceneController` 新增 `loadConfiguredLevelOnStart`，启动时优先加载真实配置；点击牌和点击 `胡 / 杠 / 碰 / 吃` 组合按钮会通过 runtime state 刷新牌山、卡槽、HUD 和按钮状态。
+- 旧测试 `HulebuSampleSceneModel` 作为 fallback 保留，方便后续定位表现层问题。
+- 已补充 Cocos 工程结构测试，校验 Cocos 内嵌首关配置与 `apps/game/mahjong-roguelike/config/levels.json` 第 1 关关键字段一致。
+- 已在 Cocos Web Preview 手机视口手动验证：真实第 1 关显示 3 张上层 `9筒` 和 3 张下层 `2万`；三张 `9筒` 入槽后 `碰 1` 激活；执行 `碰` 后卡槽清空，下层 `2万` 继续可点。
+- 当前仍使用程序化占位牌面，尚未绑定最终 SpriteFrame prefab、奖励三选一、Boss 目标进度或关卡流。
+- 完成 T073 胡了卜 Cocos 牌面 SpriteFrame 绑定第一版。
+- 新增 `HulebuTileSpriteCatalog`，把 T068 归档的 27 张数牌和 7 张字牌映射到 Cocos `resources.load(.../spriteFrame)` 路径，并加入缓存和 pending callback 合并。
+- `BoardLayerBinder` 新增 `TileArt` 图片层，优先按 `model.prefabKey` 加载青瓷麻将 SpriteFrame；图片加载成功后隐藏文字标签，缺图或加载失败时继续显示程序化占位牌和文字 fallback。
+- 已在 Cocos Web Preview 手机视口手动验证：真实第 1 关上层 `9筒` 和下层 `2万` 显示图片牌面；三张 `9筒` 仍可点击入槽，`碰 1` 激活后可消除；消除后下层 `2万` 图片牌面保留并可继续点击。
+- 当前图片源为 1024x1024 生成图，牌体四周仍有背景留白，第一版只验证资源绑定链路；后续需要做正式裁切、Tile prefab、图集、槽位图片和动画表现。
+- 完成 T074 胡了卜无边框麻将牌面资源。
+- 已从 T068 的带框青瓷牌面中派生 34 张透明无边框 PNG：27 张数牌位于 `tiles/borderless/numbered/`，7 张字牌位于 `tiles/borderless/honors/`。
+- 无边框 PNG 保持 1024x1024 SpriteFrame 尺寸，但边缘 alpha 清空，只保留牌面符号，便于叠在 Cocos 自绘牌体或后续 Tile prefab 底板上。
+- `manifest.json` 已升级记录 `borderlessNumberedTiles` 和 `borderlessHonorTiles`；`README.md` 与 `scene-binding.md` 已明确运行时优先使用无边框资源，原带框资源只做回退和美术复核。
+- `HulebuTileSpriteCatalog` 已把 34 个 `tileKey` 的加载路径切换到 `tiles/borderless/**/spriteFrame`。
+- 完成 T075 胡了卜新牌面 UI 重新应用。
+- 已从 `tiles/borderless/` 透明来源图派生 34 张运行时留白版 PNG：27 张数牌位于 `tiles/refreshed/numbered/`，7 张字牌位于 `tiles/refreshed/honors/`。
+- 根据目标概念图反馈，留白版 v2 将符号有效内容高度控制在约 61%-62% 画布，保留牌面四周空白，避免麻将符号贴边。
+- `manifest.json` 已记录 `assetSetVersion: cocos-refreshed-ui-v2-whitespace-2026-05-27` 和 `runtimeTileSet: refreshed`，并新增 `refreshedNumberedTiles` / `refreshedHonorTiles`。
+- `HulebuTileSpriteCatalog` 已把 34 个 `tileKey` 的加载路径切换到 `tiles/refreshed/**/spriteFrame`，Cocos 牌山当前优先显示留白版新牌面。
+- 完成 T076 胡了卜 Cocos 通关提示和下一关流转。
+- Cocos runtime 已新增 20 关轻量流程配置，`GameSceneController` 持有当前关卡索引和 `playing / cleared / reward` 状态。
+- 牌山清空后会弹出通关提示；点击继续进入下一关；第 3/6/9/13/16/19 关在继续时进入奖励三选一；选择奖励后进入下一关；20 关后显示本轮通关。
+- 顶部关卡牌匾会按关卡序号显示 `1-1` 到 `2-10`。
+- 牌、组合按钮和 overlay 按钮均同时绑定 `TOUCH_END` 与 `Button.EventType.CLICK`，便于浏览器鼠标和移动端触摸验证。
+- 当前奖励选择只推进流程，尚未真正应用奖励效果；Boss 目标进度和完整 20 关平衡留给后续任务。
+- 完成 T077 胡了卜 Cocos 随机堆叠牌山恢复。
+- Cocos 默认 20 关已从 T076 的 6 张流程关恢复为确定性随机堆叠牌山：首关 42 张起步，后续递增到 60 张，支持 9-16 个随机列、4-6 层同列完全覆盖、字牌权重和 5% 遮挡阈值。
+- `BoardLayerBinder` 新增 `StackDepthHint` 横条提示，同一列下层牌不再错位露出整张，只通过顶部横条表达下面还有层数。
+- 已保留通关提示、继续下一关、奖励节点三选一和 20 关通关流程；新增回归测试确保默认首关不少于 36 张且初始可点牌大于 6，避免再次退化为低牌量流程关。
+- 已通过 `npm run test -w packages/shared -- mahjong-cocos-project`、Cocos `tsc` 和 Cocos Web Preview 手机视口目检，预览刷新后首屏显示随机堆叠牌山和堆叠横条提示。
+- 完成 T078 胡了卜 Cocos 牌山铺开和遮挡点击一致性。
+- 已将随机列布局从紧凑网格改为横向 68、纵向 88 的铺开布局，首关配置跨度从约 `210x102` 扩大到 `300x186`，Cocos 手机预览中牌山不再挤成小团。
+- `applyStackBlockers` 已修正为任意更高层牌只要覆盖低层牌超过 5% 就写入 blocker，同列所有上层牌都会阻挡下层牌。
+- `HulebuRuntimeState` 已做测试环境可加载的轻量解耦，新增回归测试验证被盖住的下层牌不可入槽，移走 blocker 后才恢复可选。
+- 已通过 `npm run test -w packages/shared -- mahjong-cocos-project`，当前 1 个测试文件、11 个测试通过；已通过 Cocos `tsc`；已通过 Cocos Web Preview 手机视口目检，顶层牌可入槽，被同列完全覆盖的下层牌连点不入槽。

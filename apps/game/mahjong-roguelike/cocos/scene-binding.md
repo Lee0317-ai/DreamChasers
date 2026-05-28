@@ -13,15 +13,17 @@
 | `tile.tiao.1` - `tile.tiao.9` | 条子牌 |
 | `tile.honor.1` - `tile.honor.7` | 东、南、西、北、中、发、白 |
 
-T068 已把当前可用图片整理到 Cocos 资源目录：
+T068 已把当前可用图片整理到 Cocos 资源目录，T074 已追加透明无边框派生图：
 
 - 资源根目录：`assets/resources/ui/mahjong-tiles/`
-- 数牌：`tiles/numbered/wan/wan-01.png` 到 `wan-09.png`、`tiles/numbered/tiao/tiao-01.png` 到 `tiao-09.png`、`tiles/numbered/tong/tong-01.png` 到 `tong-09.png`
-- 字牌：`tiles/honors/honor-east.png`、`honor-south.png`、`honor-west.png`、`honor-north.png`、`honor-red.png`、`honor-green.png`、`honor-white.png`
+- 运行时优先数牌：`tiles/refreshed/numbered/wan/`、`tiles/refreshed/numbered/tiao/`、`tiles/refreshed/numbered/tong/`
+- 运行时优先字牌：`tiles/refreshed/honors/honor-east.png`、`honor-south.png`、`honor-west.png`、`honor-north.png`、`honor-red.png`、`honor-green.png`、`honor-white.png`
+- 原始带框数牌：`tiles/numbered/wan/wan-01.png` 到 `wan-09.png`、`tiles/numbered/tiao/tiao-01.png` 到 `tiao-09.png`、`tiles/numbered/tong/tong-01.png` 到 `tong-09.png`
+- 原始带框字牌：`tiles/honors/`
 - 参考图和中间稿：`references/`、`drafts/`
 - 资源索引：`manifest.json`
 
-后续接 Tile prefab 时，优先读取 `manifest.json` 中的 `tileKey` 和 `path` 映射；`drafts/` 只作为人工复核和替换候选。
+后续接 Tile prefab 时，优先读取 `manifest.json` 中的 `refreshedNumberedTiles` / `refreshedHonorTiles` 映射，并让 Cocos 自绘或 prefab 自带牌体底板；`borderlessNumberedTiles` / `borderlessHonorTiles` 只作为透明来源图；带框 `numberedTiles` / `honorTiles` 只作为回退和美术复核；`drafts/` 只作为人工复核和替换候选。
 
 ## BoardRoot
 

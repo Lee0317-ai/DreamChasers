@@ -125,6 +125,7 @@ export class ComboBarBinder extends Component {
     const existing = this.comboTouchHandlers.get(node);
     if (existing) {
       node.off(Node.EventType.TOUCH_END, existing, this);
+      node.off(Button.EventType.CLICK, existing, this);
     }
 
     const handler = (): void => {
@@ -136,6 +137,7 @@ export class ComboBarBinder extends Component {
     };
 
     node.on(Node.EventType.TOUCH_END, handler, this);
+    node.on(Button.EventType.CLICK, handler, this);
     this.comboTouchHandlers.set(node, handler);
   }
 

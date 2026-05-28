@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "0adde7d7-f8db-459f-9690-280a0b21c315",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "0adde7d7-f8db-459f-9690-280a0b21c315@6c48a",
+      "displayName": "honor-north",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "imageUuidOrDatabaseUri": "0adde7d7-f8db-459f-9690-280a0b21c315",
+        "isUuid": true,
+        "visible": false,
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "0adde7d7-f8db-459f-9690-280a0b21c315@f9941",
+      "displayName": "honor-north",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 197,
+        "trimY": 199,
+        "width": 630,
+        "height": 626,
+        "rawWidth": 1024,
+        "rawHeight": 1024,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -315,
+            -313,
+            0,
+            315,
+            -313,
+            0,
+            -315,
+            313,
+            0,
+            315,
+            313,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            197,
+            825,
+            827,
+            825,
+            197,
+            199,
+            827,
+            199
+          ],
+          "nuv": [
+            0.1923828125,
+            0.1943359375,
+            0.8076171875,
+            0.1943359375,
+            0.1923828125,
+            0.8056640625,
+            0.8076171875,
+            0.8056640625
+          ],
+          "minPos": [
+            -315,
+            -313,
+            0
+          ],
+          "maxPos": [
+            315,
+            313,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "0adde7d7-f8db-459f-9690-280a0b21c315@6c48a",
+        "atlasUuid": "",
+        "trimType": "auto"
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": true,
+    "redirect": "0adde7d7-f8db-459f-9690-280a0b21c315@6c48a"
+  }
+}

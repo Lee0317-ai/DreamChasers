@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-05-26
+**最后更新**：2026-05-28
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,222 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260528-05：胡了卜模板注册表和 8 个核心模板共享实现
+
+- 提出人：Lee
+- 提出时间：2026-05-28
+- 背景：T080 已完成 Graph-based 牌山生成器第一版，T081 已确认地图模板语法系统，T082 已完成模板注册表和参数系统实施计划。当前共享生成器仍只支持 `center-tower` 和 `two-wings` 两个模板分支，继续扩模板前需要先把模板 definition、注册表和参数归一化落到代码。
+- 目标：新增 T083，在 `packages/shared` 中实现模板注册表、参数默认值、参数边界、参数归一化、通用校验器、ExperienceReport 模板字段，并落地第一期 8 个核心模板：中心塔、双翼、十字、环形、长墙、岛屿、峡谷、阶梯。
+- 不做：不修改 Cocos 工程、不替换当前 Cocos 默认关卡、不做 Web 接入、不做调参面板、不生成新美术、不做奖励效果、Boss 目标 UI、动画音效或发布包。
+- 用户价值：让胡了卜的牌山生成器从“少量分支模板”升级为可长期扩展、可校验、可解释的地图模板系统，确保后续难度来自“该先拿哪张”的读图选择，而不是不可控随机或天然死局。
+- 涉及模块：胡了卜 / 牌山生成器 / 地图模板 / 共享规则地基。
+- 可能影响文件：`packages/shared/src/mahjong-mountain-generator.ts`, `packages/shared/src/mahjong-mountain-generator.test.ts`, `packages/shared/src/index.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T083-hulebu-template-registry-core-templates.md`, `docs/tasks/claims/T083-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/GENERATOR_FOUNDATION.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-28.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 本地负责的胡了卜共享生成器和模块文档，不修改 `apps/web/**`、PDF 工具箱、平台部署、Cocos 表现层或资源文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：共享生成器提供模板注册表查询、参数归一化、边界裁剪和未知模板错误；8 个核心模板都能 seed 稳定生成、理论可解并输出 `levelTiles`；ExperienceReport 包含模板标签、参数快照、窗口曲线、释放事件和通用校验结果；共享测试、类型检查、文档同步、占位符扫描和 diff 检查通过。
+- AI 初步方案：按 TDD 先补生成器测试；把模板定义为带参数、体验标签和坐标/权重/角色回调的 registered definition；把旧配置归一化为内部配置后进入原有 `SolutionTrace`、`FaceAssignment`、5% 遮挡图和 `levelTiles` 链路；现有两模板行为保留，新增六个模板只扩 shape callbacks，不动 Cocos。
+- 处理结论：已入任务池
+- 对应任务编号：T083
+
+### IDEA-20260528-04：胡了卜模板注册表和参数系统实施计划
+
+- 提出人：Lee
+- 提出时间：2026-05-28
+- 背景：T081 已完成地图模板语法系统设计，用户确认可以继续推进。T080 当前共享生成器已有 `center-tower` 和 `two-wings` 两个模板，但仍是分支式模板生成；如果直接开始写代码，容易把 T083 的 8 个核心模板和 T084 的 Cocos 接入混在一起。
+- 目标：新增 T082，只写实施计划，不修改生成器代码。计划需明确如何把 T080 重构为模板注册表和参数系统，如何保留当前两模板行为，如何定义模板 schema、参数默认值、参数边界、体验标签、校验器和 ExperienceReport 扩展策略，并为 T083 8 个核心模板实现预留接口。
+- 不做：不修改 `packages/shared/**`、不修改 Cocos 工程、不替换当前 Cocos 默认关卡、不做 Web 接入、不做调参面板、不生成新美术、不做奖励效果、Boss 目标 UI、动画音效或发布包。
+- 用户价值：先把实现路径写清楚，确保后续共享生成器重构是可验证、可回退、可继续扩展的，而不是在当前生成器里继续堆临时模板分支。
+- 涉及模块：胡了卜 / 牌山生成器 / 地图模板 / 共享规则地基。
+- 可能影响文件：`AGENTS.md`, `docs/tasks/LOCAL_OWNER.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T082-hulebu-template-registry-plan.md`, `docs/tasks/claims/T082-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/plans/2026-05-28-hulebu-template-registry-parameter-system.md`, `docs/modules/mahjong-roguelike/GENERATOR_FOUNDATION.md`, `docs/modules/mahjong-roguelike/DECISIONS.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`, `docs/progress/2026-05-28.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 本地负责的胡了卜实施计划、任务分片和模块文档，不修改 `apps/web/**`、PDF 工具箱、平台部署、Cocos 表现层或共享代码。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：完成 T082 任务分片和领取分片；写出模板注册表和参数系统实施计划；计划覆盖注册表类型、参数归一化、现有两模板迁移、ExperienceReport 扩展、测试策略、文档更新和 T083 交接；文档同步、占位符扫描和 diff 检查通过。
+- AI 初步方案：用 writing-plans 流程产出 `docs/superpowers/plans/2026-05-28-hulebu-template-registry-parameter-system.md`，把后续实现拆成注册表元数据、配置归一化、现有模板迁移、体验报告扩展、导出与文档、验证六段；明确 T082 不改代码，T083 再实现 8 个核心模板。
+- 处理结论：已入任务池
+- 对应任务编号：T082
+
+### IDEA-20260528-03：胡了卜地图模板语法系统
+
+- 提出人：Lee
+- 提出时间：2026-05-28
+- 背景：T080 已把 Graph-based 牌山生成器第一版落到共享层，但当前只实现 `center-tower` 和 `two-wings` 两个模板。用户明确表示胡了卜是朝完整游戏推进，地图模板地基不能只做 MVP，需要把中心塔、双翼、十字、环形、长墙、岛屿等模板扩展成可长期产关的模板语法系统。
+- 目标：新增 T081，先不改代码，完成胡了卜地图模板语法系统设计稿。设计需明确第一期 8 个核心模板家族、第二批 backlog、模板参数层、体验标签、校验指标、与 T080 生成器的接口边界，以及后续 T082/T083/T084 的实施拆分。
+- 不做：不修改 `packages/shared` 生成器代码、不修改 Cocos 工程、不接入关卡配置、不做调参面板、不生成新美术、不做动画音效或发布包。
+- 用户价值：让胡了卜从“能生成一座牌山”升级为“能长期生产不同风格、不同节奏、可验证关卡”的完整游戏地基，避免后续模板散落成不可维护的 if 分支。
+- 涉及模块：胡了卜 / 地图模板 / 牌山生成器 / 关卡生产系统。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T081-hulebu-map-template-grammar-design.md`, `docs/tasks/claims/T081-codex.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-05-28-hulebu-map-template-grammar-design.md`, `docs/modules/mahjong-roguelike/GENERATOR_FOUNDATION.md`, `docs/modules/mahjong-roguelike/DECISIONS.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-28.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜设计文档和任务分片，不修改 `apps/web/**`、PDF 工具箱、平台部署、Cocos 表现层或共享代码。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：完成地图模板语法系统设计稿；明确采用“8 个核心模板 + 第二批 backlog 预留”路线；定义模板家族、参数、体验标签、校验器和后续实施拆分；文档同步、占位符扫描和 diff 检查通过。
+- AI 初步方案：把模板系统拆成 `Archetype`、`Footprint`、`LayerProfile`、`OcclusionGrammar`、`ExperienceTags` 和 `Validators`；第一期实现中心塔、双翼、十字、环形、长墙、岛屿、峡谷、阶梯 8 个核心模板，第二批 backlog 保留花瓣、堡垒、棋盘、迷雾外圈；后续另拆实现任务重构生成器模板注册表并补测试。
+- 处理结论：已入任务池
+- 对应任务编号：T081
+
+### IDEA-20260528-02：胡了卜 Graph-based 牌山生成器共享实现
+
+- 提出人：Lee
+- 提出时间：2026-05-28
+- 背景：T079 已完成底层方案评估，确认胡了卜不应继续把“纯随机堆叠柱”作为主生成器。用户进一步确认可以开始下一步，但要求先不改 Cocos，先把底层地基搭建好，并希望难度来自“我该先拿哪张”，同时保留 B 路线的随机堆叠压力。
+- 目标：新增 T080，在 `packages/shared` 实现引擎无关的 Graph-based 牌山生成器第一版，输出牌山骨架、遮挡图、理论解法、牌面分配、难度评分和体验报告，并生成可被后续 Cocos 接入消费的 `levelTiles` 数据。
+- 不做：不修改 Cocos 工程、不替换当前 Cocos 关卡、不做 Web 接入、不做调参面板、不生成新美术、不做奖励效果、Boss UI、动画音效或发布包。
+- 用户价值：让胡了卜先拥有可测试、可解释、可迭代的生成地基；后续再接 Cocos 时，不再靠临场调随机数判断好不好玩。
+- 涉及模块：胡了卜 / 牌山生成器 / 共享规则地基。
+- 可能影响文件：`packages/shared/src/mahjong-mountain-generator.ts`, `packages/shared/src/mahjong-mountain-generator.test.ts`, `packages/shared/src/index.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T080-hulebu-graph-generator-shared-implementation.md`, `docs/tasks/claims/T080-codex.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/GENERATOR_FOUNDATION.md`, `docs/progress/2026-05-28.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜共享逻辑和模块文档，不修改 `apps/web/**`、PDF 工具箱、平台部署或 Cocos 表现层。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：共享模块能生成确定性的多层牌山骨架和 5% 遮挡图；生成结果包含至少一条理论可解路径；牌面分配支持 `碰 / 吃 / 杠 / 胡` 组合包；体验报告包含节奏阶段、槽位压力、干扰牌和难度评分；测试、类型检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 `mahjong-mountain-generator` 测试，再实现 `buildBlockerGraph`、模板骨架、解法 trace、face assignment 和 `ExperienceReport`；第一版先提供 `center-tower` 与 `two-wings` 两个模板，并让随机扰动受 seed 控制。
+- 处理结论：已入任务池
+- 对应任务编号：T080
+
+### IDEA-20260528-01：胡了卜 Graph-based 牌山生成器地基
+
+- 提出人：Lee
+- 提出时间：2026-05-28
+- 背景：用户在分析《羊了个羊》源码和胡了卜当前实现后指出，当前底层牌山生成方式不太行。T077-T078 虽然恢复了随机堆叠、铺开、跨列遮挡和 5% 遮挡不可点，但生成主脑仍是随机柱子和顶层顺序发牌，缺少解法路径和难度评估。
+- 目标：新增 T079，先不改 Cocos 表现层，重新设计胡了卜底层牌山生成器地基，采用“牌山骨架图 + 理论解法路径 + 牌面发牌 + 难度评估器”的 Graph-based Generator，为后续共享逻辑实现做准备。
+- 不做：不修改 Cocos 工程代码、不替换当前 Cocos 关卡配置、不生成新美术、不做奖励效果、Boss 目标 UI、动画音效、发布包、Web 站点接入或完整实现代码。
+- 用户价值：让胡了卜的难度来自“我该先拿哪张”的设计取舍，而不是随机生成导致的太简单或纯死局；同时保留偏羊了个羊的牌山模板和 Roguelike 随机扰动。
+- 涉及模块：胡了卜 / 牌山生成器 / 共享规则地基。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T079-hulebu-graph-generator-foundation.md`, `docs/tasks/claims/T079-codex.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-05-28-hulebu-mountain-generator-foundation-design.md`, `docs/superpowers/plans/2026-05-28-hulebu-mountain-generator-foundation.md`, `docs/modules/mahjong-roguelike/GENERATOR_FOUNDATION.md`, `docs/progress/2026-05-28.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`
+- 是否影响另一方任务：否。本任务只新增和同步文档，不修改 `apps/web/**`、PDF 工具箱、平台部署或 Cocos 表现层代码。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：完成生成器地基设计稿和实施计划；明确旧随机柱方案的问题、Graph-based Generator 的核心类型、与 Cocos 的边界、后续实现文件范围和验证命令；文档同步、占位符扫描和 diff 检查通过。
+- AI 初步方案：先把生成器拆为 `MountainSkeleton`、`SolutionTrace`、`FaceAssignment`、`DifficultyReport` 和 `GeneratorConfig` 五个单元；实现层后续落到 `packages/shared`，由 Vitest 验证骨架、遮挡、理论路径、牌面发牌和难度评分；Cocos 后续只消费兼容 `HulebuLevelTileConfig` 的输出。
+- 处理结论：已入任务池
+- 对应任务编号：T079
+
+### IDEA-20260527-07：胡了卜 Cocos 牌山铺开和遮挡点击一致性
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：T077 已把 Cocos 默认关卡从 6 张流程关恢复为随机堆叠牌山，但用户继续反馈牌山整体仍挤在中间，未充分利用手机画面；同时测试发现部分被上层牌盖住的牌仍能点击，不符合“超过 5% 遮挡不可点击”的核心规则。
+- 目标：新增 T078，扩大 Cocos 随机牌山生成范围，让牌山更铺开；修正遮挡生成规则，保证任意更高层牌只要覆盖低层牌面积超过 5%，低层牌就写入 `blockedBy` 并不可点击。
+- 不做：不做完整可解路径搜索、不做最终关卡数值平衡、不做新的美术资源、不做 Boss 目标 UI、奖励效果、动画音效、发布包或 Web 站点接入。
+- 用户价值：让 Cocos 首屏更接近“整张牌桌铺开”的目标图，同时恢复“被盖住的牌不能点”的核心操作直觉。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 随机牌山布局与遮挡判定。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T078-hulebu-cocos-spread-locking.md`, `docs/tasks/claims/T078-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜 Cocos 工程、共享结构测试和模块文档，不修改 `apps/web/**`、PDF 工具箱或平台部署文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：首关随机牌山配置横向和纵向跨度明显扩大；测试校验任意高层牌覆盖低层牌超过 5% 时低层牌都包含该 blocker；Cocos runtime 的可点态与 `blockedBy` 一致；Cocos 工程测试、Cocos 类型检查、文档同步、diff 检查和 Cocos Web Preview 手机视口目检通过。
+- AI 初步方案：在 `mahjong-cocos-project.test.ts` 新增失败断言，校验首关坐标跨度和 5% 遮挡 blocker 完整性；调整 `createStackColumns` 的网格间距、行列布局和 jitter，让 42-60 张牌覆盖更大的桌面区域；将 `applyStackBlockers` 改为所有更高层重叠超过阈值即阻挡，避免相邻高层盖住低层但仍可点；必要时在 runtime 中增加可点态防御检查。
+- 处理结论：已入任务池
+- 对应任务编号：T078
+
+### IDEA-20260527-06：胡了卜 Cocos 随机堆叠牌山恢复
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：T076 为了快速验证 Cocos 的“通关提示 -> 下一关 -> 奖励节点”流转，在 Cocos 关卡配置中临时使用了 6 张牌的轻量流程关。用户反馈当前 Cocos 预览只剩 6 张牌，缺少此前 HTML 原型中的随机轮廓、多列堆叠和难度压力。
+- 目标：新增 T077，把 Cocos 默认关卡恢复为随机轮廓、多列堆叠、同列完全覆盖的牌山；首关和后续关卡不再使用 6 张轻量关卡作为默认内容，同时保留 T076 的通关提示、下一关和奖励节点流转。
+- 不做：不做完整 20 关数值平衡、不做完整可解路径搜索、不做 Boss 目标 UI 完整落地、不做最终 Tile prefab、动画音效、发布包或 Web 站点接入。
+- 用户价值：让 Cocos 正式工程重新拥有接近“羊了个羊”的牌山密度和遮挡压力，避免正式玩法因为流程验证脚手架变得过于简单。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 随机牌山生成与遮挡。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T077-hulebu-cocos-random-stacked-mountain.md`, `docs/tasks/claims/T077-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜 Cocos 工程、共享结构测试和模块文档，不修改 `apps/web/**`、PDF 工具箱或平台部署文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 默认首关不再是 6 张牌，而是 30 张以上随机堆叠牌山；生成器包含确定性随机种子、牌量、最大堆叠深度、字牌权重和 5% 遮挡规则；同列下层牌完全被上层牌遮挡并只通过顶层横条提示层数；通关提示、下一关和奖励节点流转仍可用；Cocos 工程测试、Cocos 类型检查、文档同步、diff 检查和 Cocos Web Preview 手机视口目检通过。
+- AI 初步方案：在 `HulebuLevelConfig.ts` 中加入确定性随机密集牌山生成器，按关卡元数据生成 36-60 张左右的三张组合包，并把同列牌用 `blockedBy` 链式遮挡；在 `BoardLayerBinder` 中根据 `stackDepth` 绘制堆叠横条提示；用 `mahjong-cocos-project.test.ts` 保护随机牌山接入和非 6 张回归；最后用 Cocos Web Preview 检查手机视口首屏。
+- 处理结论：已入任务池
+- 对应任务编号：T077
+
+### IDEA-20260527-05：胡了卜 Cocos 通关提示和下一关流转
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：Cocos 真实首关已经能点击、入槽、组合消除和显示牌面，但清空牌山后只显示“牌山已清空”，没有明确弹出过关提示，也不能进入下一关。用户希望后续补齐“先提示通关，再进入下一关；奖励节点进入下一关时再 3 选 1 奖励”的流程。
+- 目标：新增 T076，在 Cocos runtime 中加入清空牌山后的通关状态、通关提示 overlay、下一关按钮和最小关卡流转；奖励节点和 Boss 节点先按已定节奏预留状态，不在本任务做完整奖励池数值。
+- 不做：不做完整 20 关内容平衡、不做最终奖励卡美术、不做 Boss 多目标 UI 完整版、不做动画音效、不做发布包和 Web 站点接入。
+- 用户价值：让 Cocos 工程从“单关可点”推进到“有一关结束反馈和下一关节奏”，开始形成真正局内闭环。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 通关与关卡流。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T076-hulebu-cocos-clear-level-flow.md`, `docs/tasks/claims/T076-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜 Cocos 工程、共享结构测试和模块文档，不修改 `apps/web/**`、PDF 工具箱或部署文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：清空牌山后出现明确通关提示；点击下一关后可进入下一关占位或配置关；奖励节点能先进入奖励选择状态再继续下一关；普通关、奖励关和 Boss 关的状态入口有测试保护；Cocos 工程测试、Cocos 类型检查、文档同步、diff 检查和 Cocos Web Preview 手机视口手动检查通过。
+- AI 初步方案：先让 `HulebuRuntimeState` 输出 `isBoardCleared` / `levelComplete`；`GameSceneController` 在刷新时打开 `RewardOverlay` 或通关 overlay；新增 `goToNextLevel` 最小入口，优先嵌入前 2-3 个关卡配置做流转验证；奖励节点先显示 3 张占位奖励，后续再接正式奖励池。
+- 处理结论：已入任务池
+- 对应任务编号：T076
+
+### IDEA-20260527-04：胡了卜新牌面 UI 重新应用
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：用户重新生成了一批胡了卜麻将牌面 UI，希望替换当前 Cocos 牌山中显示的无边框派生牌面。当前 Cocos 已能加载真实第 1 关、点击入槽、遮挡解锁和基础组合消除，但美术仍需要继续按最新牌面资源迭代。
+- 目标：新增 T075，定位最新生成的牌面 UI 资源，确认 `万 / 筒 / 条 / 东南西北中发白` 的牌键映射完整后，重新应用到 Cocos `mahjong-tiles` 资源清单和 `HulebuTileSpriteCatalog`；保留缺图 fallback 和现有点击链路。
+- 不做：不改通关弹窗、下一关流转、奖励三选一、Boss 目标进度、槽位图片、动画、音效、图集打包、Web 站点接入或发布包。通关提示和下一关流转另拆后续任务。
+- 用户价值：让正式 Cocos 工程尽快吃到用户新确认的牌面 UI，先把牌山视觉向最终目标图靠近，再进入胜负流程和关卡流细节。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 牌面 UI 资源。
+- 可能影响文件：`output/imagegen/**`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/**`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/assets/HulebuTileSpriteCatalog.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `apps/game/mahjong-roguelike/cocos/scene-binding.md`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T075-hulebu-refresh-tile-ui-assets.md`, `docs/tasks/claims/T075-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜 Cocos 资源、资源映射测试和模块文档，不修改 `apps/web/**`、PDF 工具箱或部署文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：能定位并记录最新牌面资源来源；Cocos 资源目录中 27 张数牌和 7 张字牌都使用最新牌面版本或明确 fallback；`manifest.json` 记录刷新版本和来源；`HulebuTileSpriteCatalog` 映射完整；牌面符号保留类似目标图的四周留白；资源检查、Cocos 工程测试、Cocos 类型检查、文档同步、diff 检查和 Cocos Web Preview 手机视口目检通过。
+- AI 初步方案：先扫描 `output/imagegen/` 和 Cocos 资源库中的最新 PNG，优先使用完整单牌目录或清单；若资源完整，则复制/转换到 `tiles/refreshed/` 并更新 manifest/catalog；若只提供部分牌，则保留现有无边框图作为缺失牌 fallback，并在 manifest 中标注。根据用户反馈，运行时 `refreshed` 图不应把符号撑满牌体，而应从透明来源图按 alpha 边界归一到约 62% 画布高度，保留目标图式留白。
+- 处理结论：已入任务池
+- 对应任务编号：T075
+
+### IDEA-20260527-03：胡了卜无边框麻将牌面资源
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：T073 已把 T068 归档的青瓷麻将图片接入 Cocos 牌山，但现有图片带完整牌体、边框和留白；放进 Cocos 当前牌节点后会出现边框叠边、牌面偏小和观感粗糙的问题。用户明确要求“完全没有边框”的麻将图片。
+- 目标：新增 T074，从现有 27 张数牌和 7 张字牌派生透明背景、只保留牌面符号的无边框 PNG，并让 Cocos 牌面 SpriteFrame 映射优先使用这套资源。
+- 不做：不重新生成 AI 图片，不删除或覆盖原带框资源，不做最终图集打包，不替换槽位图片，不做动画、音效、奖励、Boss、关卡流、Web 站点接入或发布包。
+- 用户价值：让牌面符号直接贴在 Cocos 自绘牌体上，避免双重边框和留白造成的廉价感，同时保留原图作为回退。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 牌面 UI 资源。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/**`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/assets/HulebuTileSpriteCatalog.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `apps/game/mahjong-roguelike/cocos/scene-binding.md`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T074-hulebu-borderless-mahjong-assets.md`, `docs/tasks/claims/T074-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜 Cocos 资源和模块文档，不修改 `apps/web/**`、PDF 工具箱或部署文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 资源目录中存在 27 张数牌和 7 张字牌的透明无边框 PNG；图片没有牌体边框、外缘 alpha 清空且内容非空；`manifest.json` 记录无边框资源来源；`HulebuTileSpriteCatalog` 优先映射到无边框 SpriteFrame；资源检查、Cocos 工程测试、Cocos 类型检查、文档同步和 diff 检查通过。
+- AI 初步方案：用 `sharp` 从现有带框 PNG 中按中心区域和颜色阈值提取红/绿/蓝/黑牌面符号，输出同尺寸透明 PNG 到 `tiles/borderless/`；更新资源清单和 README；将 `tileKey -> SpriteFrame` 路径切到无边框目录，原带框目录保留给人工复核和 fallback。
+- 处理结论：已入任务池
+- 对应任务编号：T074
+
+### IDEA-20260527-02：胡了卜 Cocos 牌面 SpriteFrame 绑定第一版
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：Cocos Web Preview 已能默认加载真实第 1 关并完成点击入槽、遮挡解锁和 `碰` 消除链路，但牌山仍是程序化占位牌；用户已将麻将 UI 图片放入 Cocos 资源目录，T068 也生成了 `manifest.json`。
+- 目标：新增 T073，让 `BoardLayerBinder` 优先按 `prefabKey` / `tileKey` 加载 `assets/resources/ui/mahjong-tiles/` 中的 SpriteFrame，首关可看到真实牌面图片；图片缺失或加载失败时继续显示当前文字占位牌。
+- 不做：不做完整 Tile prefab 池，不做图集打包，不做槽位图片替换，不做动画、音效、奖励三选一、Boss 目标、关卡流、Web 站点接入或发布包。
+- 用户价值：让正式 Cocos 工程的第一屏从“能玩但像调试 UI”推进到“开始接近最终美术”，同时不牺牲当前可点击验证链路。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 牌面资源绑定。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T073-hulebu-cocos-tile-sprite-binding.md`, `docs/tasks/claims/T073-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`, `docs/superpowers/plans/2026-05-27-hulebu-cocos-tile-sprite-binding.md`
+- 是否影响另一方任务：否。本任务只修改胡了卜 Cocos 工程、共享结构测试和模块文档，不修改 `apps/web/**`、PDF 工具箱或平台部署文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos `BoardLayerBinder` 能按 `prefabKey` 加载已归档麻将 SpriteFrame；首关的 `9筒` 和 `2万` 使用图片牌面或在加载失败时保留文字 fallback；点击、入槽、`碰` 消除和下层解锁链路不回退；共享结构测试、Cocos 类型检查、麻将回归、文档同步和 diff 检查通过。
+- AI 初步方案：新增 Cocos `HulebuTileSpriteCatalog`，从 T068 资源清单固化 `tileKey -> resources.load SpriteFrame path`；`BoardLayerBinder` 增加 `TileArt` 子节点并异步加载图片，使用 WeakMap 避免旧异步结果覆盖复用节点；加载成功隐藏 label，失败保留当前程序化占位牌。
+- 处理结论：已入任务池
+- 对应任务编号：T073
+
+### IDEA-20260527-01：胡了卜 Cocos 真实配置首关接入
+
+- 提出人：Lee
+- 提出时间：2026-05-27
+- 背景：Cocos 测试首屏已经能点击、入槽、消除和重新解锁下层牌，但仍默认加载本地手写测试牌山，没有真正验证 `levels.json` 第 1 关配置到 Cocos 表现层的承接链路。
+- 目标：新增 T072，让 Cocos Web Preview 默认从真实第 1 关配置创建首屏，并继续支持点击可用牌进入 8 格主槽、刷新 HUD/按钮和执行基础组合消除。
+- 不做：不做 20 关选择器，不做奖励三选一，不做 Boss 目标进度，不接最终 SpriteFrame prefab，不做动画、音效、发布包、Web 站点接入或完整可解路径搜索。
+- 用户价值：把 Cocos 正式工程从“测试牌山可点”推进到“真实关卡配置可跑”，后续才能继续接关卡流、奖励、Boss 和最终美术。
+- 涉及模块：胡了卜 / Cocos Creator 正式工程 / 真实配置承接。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/items/T072-hulebu-cocos-real-config-level.md`, `docs/tasks/claims/T072-codex.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-27.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改开发 B 范围内的胡了卜 Cocos 工程、共享结构测试和模块文档，不修改 `apps/web/**`、PDF 工具箱或平台共享逻辑。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos Web Preview 手机视口默认显示真实第 1 关的 3 张上层 `9筒` 和 3 张下层 `2万`；下层 `2万` 初始不可点；点击三张 `9筒` 后下层 `2万` 恢复可点；`碰` 能消除三张 `9筒` 并刷新卡槽、HUD 和按钮；共享测试、Cocos 脚本检查、模块回归、文档同步和 diff 检查通过。
+- AI 初步方案：新增 Cocos 本地 level config、runtime state 和 configured scene bootstrap；`GameSceneController` 默认加载真实首关，点击和组合通过 runtime state 重新生成 scene model；保留原 sample scene 作为 fallback。
+- 处理结论：已入任务池
+- 对应任务编号：T072
 
 ### IDEA-20260526-06：胡了卜 Cocos 点击后遮挡解锁和槽位牌名显示
 

@@ -1,15 +1,19 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 3,
   "moduleSlug": "mahjong-roguelike",
   "displayName": "胡了卜",
-  "generatedAt": "2026-05-26T06:00:25.504Z",
+  "generatedAt": "2026-05-27T01:30:37.307Z",
   "sourceRoot": "output/imagegen",
   "assetRoot": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles",
   "categories": {
     "numberedTiles": "牌面：万 / 条 / 筒单张牌面，后续 prefab 可按 tileKey 绑定。",
     "honorTiles": "字牌：从字牌横向参考图切出的单张牌面。",
     "references": "参考图：目标图、横向参考图等整图资料。",
-    "drafts": "中间稿：可复核或备用的候选图，不建议直接接正式 prefab。"
+    "drafts": "中间稿：可复核或备用的候选图，不建议直接接正式 prefab。",
+    "borderlessNumberedTiles": "无边框牌面：透明背景，只保留万 / 条 / 筒牌面符号，供 Cocos 自绘牌体叠加使用。",
+    "borderlessHonorTiles": "无边框字牌：透明背景，只保留东 / 南 / 西 / 北 / 中 / 发 / 白符号，供 Cocos 自绘牌体叠加使用。",
+    "refreshedNumberedTiles": "运行时牌面：由无边框透明牌面按 alpha 边界归一到约 62% 画布高度，保留类似目标图的牌体留白。",
+    "refreshedHonorTiles": "运行时字牌：由无边框透明字牌按 alpha 边界归一到约 62% 画布高度，保留类似目标图的牌体留白。"
   },
   "numberedTiles": [
     {
@@ -663,6 +667,2726 @@
     "Original files under output/imagegen are kept untouched.",
     "Cocos .png.meta files are intentionally not handwritten; Cocos Creator can import textures from these PNGs and generate authoritative texture metadata.",
     "Honor tiles are cut from hulebu-honor-tiles-celadon-reference-v1.png in visual order: 北 / 白 / 南 / 中 / 发 / 东 / 西.",
-    "Honor crop revised in T068 to use a narrow vertical crop, avoiding neighboring tile edges."
+    "Honor crop revised in T068 to use a narrow vertical crop, avoiding neighboring tile edges.",
+    "T074 borderless variants are transparent glyph-only derivatives. Keep original numberedTiles and honorTiles for rollback and art review."
+  ],
+  "borderlessNumberedTiles": [
+    {
+      "tileKey": "tile.tiao.1",
+      "suit": "tiao",
+      "rank": 1,
+      "label": "1条",
+      "source": "hulebu-one-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-01.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-01.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-01.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-01.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 107,
+        "nonTransparentPixels": 23582,
+        "contentBounds": {
+          "minX": 389,
+          "minY": 307,
+          "maxX": 666,
+          "maxY": 731
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.2",
+      "suit": "tiao",
+      "rank": 2,
+      "label": "2条",
+      "source": "hulebu-two-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-02.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-02.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-02.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-02.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 95,
+        "nonTransparentPixels": 14934,
+        "contentBounds": {
+          "minX": 476,
+          "minY": 201,
+          "maxX": 548,
+          "maxY": 805
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.3",
+      "suit": "tiao",
+      "rank": 3,
+      "label": "3条",
+      "source": "hulebu-three-bamboo-celadon-single-v2.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-03.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-03.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-03.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-03.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 37,
+        "nonTransparentPixels": 23722,
+        "contentBounds": {
+          "minX": 361,
+          "minY": 202,
+          "maxX": 666,
+          "maxY": 798
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.4",
+      "suit": "tiao",
+      "rank": 4,
+      "label": "4条",
+      "source": "hulebu-four-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-04.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-04.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-04.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-04.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 48,
+        "nonTransparentPixels": 32582,
+        "contentBounds": {
+          "minX": 366,
+          "minY": 188,
+          "maxX": 658,
+          "maxY": 797
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.5",
+      "suit": "tiao",
+      "rank": 5,
+      "label": "5条",
+      "source": "hulebu-five-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-05.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-05.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-05.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-05.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 132,
+        "nonTransparentPixels": 42648,
+        "contentBounds": {
+          "minX": 365,
+          "minY": 190,
+          "maxX": 657,
+          "maxY": 797
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.6",
+      "suit": "tiao",
+      "rank": 6,
+      "label": "6条",
+      "source": "hulebu-six-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-06.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-06.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-06.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-06.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 118,
+        "nonTransparentPixels": 47268,
+        "contentBounds": {
+          "minX": 350,
+          "minY": 194,
+          "maxX": 673,
+          "maxY": 803
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.7",
+      "suit": "tiao",
+      "rank": 7,
+      "label": "7条",
+      "source": "hulebu-seven-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-07.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-07.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-07.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-07.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 127,
+        "nonTransparentPixels": 40175,
+        "contentBounds": {
+          "minX": 353,
+          "minY": 169,
+          "maxX": 665,
+          "maxY": 835
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.8",
+      "suit": "tiao",
+      "rank": 8,
+      "label": "8条",
+      "source": "hulebu-eight-bamboo-celadon-candidate-2.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-08.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-08.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-08.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-08.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 431,
+        "nonTransparentPixels": 53964,
+        "contentBounds": {
+          "minX": 366,
+          "minY": 211,
+          "maxX": 661,
+          "maxY": 783
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tiao.9",
+      "suit": "tiao",
+      "rank": 9,
+      "label": "9条",
+      "source": "hulebu-nine-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tiao/tiao-09.png",
+      "target": "tiles/borderless/numbered/tiao/tiao-09.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-09.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-09.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 161,
+        "nonTransparentPixels": 59616,
+        "contentBounds": {
+          "minX": 351,
+          "minY": 167,
+          "maxX": 671,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.1",
+      "suit": "tong",
+      "rank": 1,
+      "label": "1筒",
+      "source": "hulebu-one-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-01.png",
+      "target": "tiles/borderless/numbered/tong/tong-01.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-01.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-01.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 379,
+        "nonTransparentPixels": 37837,
+        "contentBounds": {
+          "minX": 355,
+          "minY": 332,
+          "maxX": 668,
+          "maxY": 665
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.2",
+      "suit": "tong",
+      "rank": 2,
+      "label": "2筒",
+      "source": "hulebu-two-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-02.png",
+      "target": "tiles/borderless/numbered/tong/tong-02.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-02.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-02.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 204,
+        "nonTransparentPixels": 18202,
+        "contentBounds": {
+          "minX": 428,
+          "minY": 265,
+          "maxX": 595,
+          "maxY": 750
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.3",
+      "suit": "tong",
+      "rank": 3,
+      "label": "3筒",
+      "source": "hulebu-three-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-03.png",
+      "target": "tiles/borderless/numbered/tong/tong-03.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-03.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-03.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 109,
+        "nonTransparentPixels": 37825,
+        "contentBounds": {
+          "minX": 327,
+          "minY": 205,
+          "maxX": 695,
+          "maxY": 801
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.4",
+      "suit": "tong",
+      "rank": 4,
+      "label": "4筒",
+      "source": "hulebu-four-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-04.png",
+      "target": "tiles/borderless/numbered/tong/tong-04.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-04.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-04.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 155,
+        "nonTransparentPixels": 53791,
+        "contentBounds": {
+          "minX": 313,
+          "minY": 286,
+          "maxX": 704,
+          "maxY": 739
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.5",
+      "suit": "tong",
+      "rank": 5,
+      "label": "5筒",
+      "source": "hulebu-five-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-05.png",
+      "target": "tiles/borderless/numbered/tong/tong-05.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-05.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-05.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 155,
+        "nonTransparentPixels": 55529,
+        "contentBounds": {
+          "minX": 309,
+          "minY": 225,
+          "maxX": 709,
+          "maxY": 765
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.6",
+      "suit": "tong",
+      "rank": 6,
+      "label": "6筒",
+      "source": "hulebu-six-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-06.png",
+      "target": "tiles/borderless/numbered/tong/tong-06.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-06.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-06.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 106,
+        "nonTransparentPixels": 65519,
+        "contentBounds": {
+          "minX": 325,
+          "minY": 221,
+          "maxX": 695,
+          "maxY": 795
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.7",
+      "suit": "tong",
+      "rank": 7,
+      "label": "7筒",
+      "source": "hulebu-seven-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-07.png",
+      "target": "tiles/borderless/numbered/tong/tong-07.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-07.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-07.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 175,
+        "nonTransparentPixels": 69686,
+        "contentBounds": {
+          "minX": 319,
+          "minY": 184,
+          "maxX": 705,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.8",
+      "suit": "tong",
+      "rank": 8,
+      "label": "8筒",
+      "source": "hulebu-eight-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-08.png",
+      "target": "tiles/borderless/numbered/tong/tong-08.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-08.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-08.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 93,
+        "nonTransparentPixels": 74467,
+        "contentBounds": {
+          "minX": 328,
+          "minY": 198,
+          "maxX": 691,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.tong.9",
+      "suit": "tong",
+      "rank": 9,
+      "label": "9筒",
+      "source": "hulebu-nine-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/tong/tong-09.png",
+      "target": "tiles/borderless/numbered/tong/tong-09.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-09.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-09.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 306,
+        "nonTransparentPixels": 84031,
+        "contentBounds": {
+          "minX": 298,
+          "minY": 238,
+          "maxX": 722,
+          "maxY": 759
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.1",
+      "suit": "wan",
+      "rank": 1,
+      "label": "1万",
+      "source": "hulebu-one-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/wan/wan-01.png",
+      "target": "tiles/borderless/numbered/wan/wan-01.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-01.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-01.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 3,
+        "nonTransparentPixels": 52043,
+        "contentBounds": {
+          "minX": 352,
+          "minY": 257,
+          "maxX": 667,
+          "maxY": 754
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.2",
+      "suit": "wan",
+      "rank": 2,
+      "label": "2万",
+      "source": "ig_0c348a0fbfe485db016a150105785c8199a9ee5e53e06c4de8.png",
+      "sourceTarget": "tiles/numbered/wan/wan-02.png",
+      "target": "tiles/borderless/numbered/wan/wan-02.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-02.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-02.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 6,
+        "nonTransparentPixels": 59403,
+        "contentBounds": {
+          "minX": 350,
+          "minY": 222,
+          "maxX": 665,
+          "maxY": 783
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.3",
+      "suit": "wan",
+      "rank": 3,
+      "label": "3万",
+      "source": "ig_0c348a0fbfe485db016a15016b79a08199a2d42db0ee0f32fc.png",
+      "sourceTarget": "tiles/numbered/wan/wan-03.png",
+      "target": "tiles/borderless/numbered/wan/wan-03.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-03.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-03.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 22,
+        "nonTransparentPixels": 64697,
+        "contentBounds": {
+          "minX": 346,
+          "minY": 205,
+          "maxX": 662,
+          "maxY": 790
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.4",
+      "suit": "wan",
+      "rank": 4,
+      "label": "4万",
+      "source": "ig_0c348a0fbfe485db016a1501f206188199a71d5cb4d484726e.png",
+      "sourceTarget": "tiles/numbered/wan/wan-04.png",
+      "target": "tiles/borderless/numbered/wan/wan-04.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-04.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-04.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 6,
+        "nonTransparentPixels": 77249,
+        "contentBounds": {
+          "minX": 336,
+          "minY": 224,
+          "maxX": 665,
+          "maxY": 814
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.5",
+      "suit": "wan",
+      "rank": 5,
+      "label": "5万",
+      "source": "ig_0c348a0fbfe485db016a15024c08a08199ab0efc27bc7506b4.png",
+      "sourceTarget": "tiles/numbered/wan/wan-05.png",
+      "target": "tiles/borderless/numbered/wan/wan-05.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-05.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-05.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 2,
+        "nonTransparentPixels": 78435,
+        "contentBounds": {
+          "minX": 345,
+          "minY": 191,
+          "maxX": 679,
+          "maxY": 801
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.6",
+      "suit": "wan",
+      "rank": 6,
+      "label": "6万",
+      "source": "ig_0c348a0fbfe485db016a1502b1dffc8199a1bcfc14aeff40bb.png",
+      "sourceTarget": "tiles/numbered/wan/wan-06.png",
+      "target": "tiles/borderless/numbered/wan/wan-06.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-06.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-06.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 13,
+        "nonTransparentPixels": 71403,
+        "contentBounds": {
+          "minX": 337,
+          "minY": 202,
+          "maxX": 654,
+          "maxY": 809
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.7",
+      "suit": "wan",
+      "rank": 7,
+      "label": "7万",
+      "source": "hulebu-seven-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/wan/wan-07.png",
+      "target": "tiles/borderless/numbered/wan/wan-07.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-07.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-07.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 1,
+        "nonTransparentPixels": 59498,
+        "contentBounds": {
+          "minX": 347,
+          "minY": 196,
+          "maxX": 665,
+          "maxY": 785
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.8",
+      "suit": "wan",
+      "rank": 8,
+      "label": "8万",
+      "source": "hulebu-eight-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/wan/wan-08.png",
+      "target": "tiles/borderless/numbered/wan/wan-08.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-08.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-08.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 2,
+        "nonTransparentPixels": 50039,
+        "contentBounds": {
+          "minX": 292,
+          "minY": 219,
+          "maxX": 732,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.wan.9",
+      "suit": "wan",
+      "rank": 9,
+      "label": "9万",
+      "source": "hulebu-nine-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/numbered/wan/wan-09.png",
+      "target": "tiles/borderless/numbered/wan/wan-09.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-09.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-09.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 1,
+        "nonTransparentPixels": 62187,
+        "contentBounds": {
+          "minX": 340,
+          "minY": 198,
+          "maxX": 661,
+          "maxY": 755
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    }
+  ],
+  "borderlessHonorTiles": [
+    {
+      "tileKey": "tile.honor.1",
+      "label": "东",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-east.png",
+      "target": "tiles/borderless/honors/honor-east.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-east.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-east.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 28236,
+        "nonTransparentPixels": 40672,
+        "contentBounds": {
+          "minX": 351,
+          "minY": 197,
+          "maxX": 689,
+          "maxY": 634
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.honor.2",
+      "label": "南",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-south.png",
+      "target": "tiles/borderless/honors/honor-south.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-south.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-south.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 27786,
+        "nonTransparentPixels": 40979,
+        "contentBounds": {
+          "minX": 292,
+          "minY": 201,
+          "maxX": 676,
+          "maxY": 695
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.honor.3",
+      "label": "西",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-west.png",
+      "target": "tiles/borderless/honors/honor-west.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-west.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-west.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 27749,
+        "nonTransparentPixels": 39428,
+        "contentBounds": {
+          "minX": 349,
+          "minY": 266,
+          "maxX": 658,
+          "maxY": 588
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024",
+        "sideShadowCleanup": {
+          "requestedByUser": "西右侧，北左侧，发左侧还有阴影",
+          "removed": [
+            {
+              "count": 2071,
+              "minX": 724,
+              "minY": 164,
+              "maxX": 730,
+              "maxY": 695,
+              "meanAvg": 112.4,
+              "meanSat": 24.1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tileKey": "tile.honor.4",
+      "label": "北",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-north.png",
+      "target": "tiles/borderless/honors/honor-north.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-north.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-north.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 28230,
+        "nonTransparentPixels": 33889,
+        "contentBounds": {
+          "minX": 380,
+          "minY": 248,
+          "maxX": 695,
+          "maxY": 561
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024",
+        "sideShadowCleanup": {
+          "requestedByUser": "西右侧，北左侧，发左侧还有阴影",
+          "removed": [
+            {
+              "count": 3121,
+              "minX": 299,
+              "minY": 164,
+              "maxX": 308,
+              "maxY": 695,
+              "meanAvg": 104.8,
+              "meanSat": 21.9
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tileKey": "tile.honor.5",
+      "label": "中",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-red.png",
+      "target": "tiles/borderless/honors/honor-red.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-red.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-red.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 26803,
+        "nonTransparentPixels": 33500,
+        "contentBounds": {
+          "minX": 379,
+          "minY": 199,
+          "maxX": 645,
+          "maxY": 648
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    },
+    {
+      "tileKey": "tile.honor.6",
+      "label": "发",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-green.png",
+      "target": "tiles/borderless/honors/honor-green.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-green.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-green.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 26902,
+        "nonTransparentPixels": 50725,
+        "contentBounds": {
+          "minX": 358,
+          "minY": 221,
+          "maxX": 723,
+          "maxY": 612
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024",
+        "sideShadowCleanup": {
+          "requestedByUser": "西右侧，北左侧，发左侧还有阴影",
+          "removed": [
+            {
+              "count": 4166,
+              "minX": 298,
+              "minY": 171,
+              "maxX": 311,
+              "maxY": 695,
+              "meanAvg": 113.6,
+              "meanSat": 24.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tileKey": "tile.honor.7",
+      "label": "白",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/honors/honor-white.png",
+      "target": "tiles/borderless/honors/honor-white.png",
+      "status": "usable-borderless-transparent",
+      "category": "borderless-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-white.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-white.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 27077,
+        "nonTransparentPixels": 60816,
+        "contentBounds": {
+          "minX": 355,
+          "minY": 194,
+          "maxX": 672,
+          "maxY": 666
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      }
+    }
+  ],
+  "assetSetVersion": "cocos-refreshed-ui-v2-whitespace-2026-05-27",
+  "runtimeTileSet": "refreshed",
+  "refreshedAt": "2026-05-27T02:13:21.781Z",
+  "refreshedNumberedTiles": [
+    {
+      "tileKey": "tile.tiao.1",
+      "suit": "tiao",
+      "rank": 1,
+      "label": "1条",
+      "source": "hulebu-one-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-01.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-01.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-01.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-01.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 107,
+        "nonTransparentPixels": 23582,
+        "contentBounds": {
+          "minX": 389,
+          "minY": 307,
+          "maxX": 666,
+          "maxY": 731
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 412,
+        "height": 630,
+        "widthRatio": 0.4023,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0542
+      }
+    },
+    {
+      "tileKey": "tile.tiao.2",
+      "suit": "tiao",
+      "rank": 2,
+      "label": "2条",
+      "source": "hulebu-two-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-02.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-02.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-02.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-02.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 95,
+        "nonTransparentPixels": 14934,
+        "contentBounds": {
+          "minX": 476,
+          "minY": 201,
+          "maxX": 548,
+          "maxY": 805
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 76,
+        "height": 630,
+        "widthRatio": 0.0742,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0181
+      }
+    },
+    {
+      "tileKey": "tile.tiao.3",
+      "suit": "tiao",
+      "rank": 3,
+      "label": "3条",
+      "source": "hulebu-three-bamboo-celadon-single-v2.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-03.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-03.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-03.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-03.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 37,
+        "nonTransparentPixels": 23722,
+        "contentBounds": {
+          "minX": 361,
+          "minY": 202,
+          "maxX": 666,
+          "maxY": 798
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 323,
+        "height": 630,
+        "widthRatio": 0.3154,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0278
+      }
+    },
+    {
+      "tileKey": "tile.tiao.4",
+      "suit": "tiao",
+      "rank": 4,
+      "label": "4条",
+      "source": "hulebu-four-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-04.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-04.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-04.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-04.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 48,
+        "nonTransparentPixels": 32582,
+        "contentBounds": {
+          "minX": 366,
+          "minY": 188,
+          "maxX": 658,
+          "maxY": 797
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 303,
+        "height": 630,
+        "widthRatio": 0.2959,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0365
+      }
+    },
+    {
+      "tileKey": "tile.tiao.5",
+      "suit": "tiao",
+      "rank": 5,
+      "label": "5条",
+      "source": "hulebu-five-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-05.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-05.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-05.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-05.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 132,
+        "nonTransparentPixels": 42648,
+        "contentBounds": {
+          "minX": 365,
+          "minY": 190,
+          "maxX": 657,
+          "maxY": 797
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 304,
+        "height": 630,
+        "widthRatio": 0.2969,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0474
+      }
+    },
+    {
+      "tileKey": "tile.tiao.6",
+      "suit": "tiao",
+      "rank": 6,
+      "label": "6条",
+      "source": "hulebu-six-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-06.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-06.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-06.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-06.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 118,
+        "nonTransparentPixels": 47268,
+        "contentBounds": {
+          "minX": 350,
+          "minY": 194,
+          "maxX": 673,
+          "maxY": 803
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 335,
+        "height": 630,
+        "widthRatio": 0.3271,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0535
+      }
+    },
+    {
+      "tileKey": "tile.tiao.7",
+      "suit": "tiao",
+      "rank": 7,
+      "label": "7条",
+      "source": "hulebu-seven-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-07.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-07.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-07.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-07.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 127,
+        "nonTransparentPixels": 40175,
+        "contentBounds": {
+          "minX": 353,
+          "minY": 169,
+          "maxX": 665,
+          "maxY": 835
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 296,
+        "height": 630,
+        "widthRatio": 0.2891,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0387
+      }
+    },
+    {
+      "tileKey": "tile.tiao.8",
+      "suit": "tiao",
+      "rank": 8,
+      "label": "8条",
+      "source": "hulebu-eight-bamboo-celadon-candidate-2.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-08.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-08.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-08.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-08.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 431,
+        "nonTransparentPixels": 53964,
+        "contentBounds": {
+          "minX": 366,
+          "minY": 211,
+          "maxX": 661,
+          "maxY": 783
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 325,
+        "height": 630,
+        "widthRatio": 0.3174,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0721
+      }
+    },
+    {
+      "tileKey": "tile.tiao.9",
+      "suit": "tiao",
+      "rank": 9,
+      "label": "9条",
+      "source": "hulebu-nine-bamboo-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tiao/tiao-09.png",
+      "target": "tiles/refreshed/numbered/tiao/tiao-09.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tiao/tiao-09.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tiao/tiao-09.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 161,
+        "nonTransparentPixels": 59616,
+        "contentBounds": {
+          "minX": 351,
+          "minY": 167,
+          "maxX": 671,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 300,
+        "height": 630,
+        "widthRatio": 0.293,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0543
+      }
+    },
+    {
+      "tileKey": "tile.tong.1",
+      "suit": "tong",
+      "rank": 1,
+      "label": "1筒",
+      "source": "hulebu-one-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-01.png",
+      "target": "tiles/refreshed/numbered/tong/tong-01.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-01.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-01.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 379,
+        "nonTransparentPixels": 37837,
+        "contentBounds": {
+          "minX": 355,
+          "minY": 332,
+          "maxX": 668,
+          "maxY": 665
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 592,
+        "height": 630,
+        "widthRatio": 0.5781,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.146
+      }
+    },
+    {
+      "tileKey": "tile.tong.2",
+      "suit": "tong",
+      "rank": 2,
+      "label": "2筒",
+      "source": "hulebu-two-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-02.png",
+      "target": "tiles/refreshed/numbered/tong/tong-02.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-02.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-02.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 204,
+        "nonTransparentPixels": 18202,
+        "contentBounds": {
+          "minX": 428,
+          "minY": 265,
+          "maxX": 595,
+          "maxY": 750
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 218,
+        "height": 630,
+        "widthRatio": 0.2129,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0345
+      }
+    },
+    {
+      "tileKey": "tile.tong.3",
+      "suit": "tong",
+      "rank": 3,
+      "label": "3筒",
+      "source": "hulebu-three-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-03.png",
+      "target": "tiles/refreshed/numbered/tong/tong-03.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-03.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-03.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 109,
+        "nonTransparentPixels": 37825,
+        "contentBounds": {
+          "minX": 327,
+          "minY": 205,
+          "maxX": 695,
+          "maxY": 801
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 389,
+        "height": 630,
+        "widthRatio": 0.3799,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0461
+      }
+    },
+    {
+      "tileKey": "tile.tong.4",
+      "suit": "tong",
+      "rank": 4,
+      "label": "4筒",
+      "source": "hulebu-four-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-04.png",
+      "target": "tiles/refreshed/numbered/tong/tong-04.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-04.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-04.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 155,
+        "nonTransparentPixels": 53791,
+        "contentBounds": {
+          "minX": 313,
+          "minY": 286,
+          "maxX": 704,
+          "maxY": 739
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 544,
+        "height": 630,
+        "widthRatio": 0.5313,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.1127
+      }
+    },
+    {
+      "tileKey": "tile.tong.5",
+      "suit": "tong",
+      "rank": 5,
+      "label": "5筒",
+      "source": "hulebu-five-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-05.png",
+      "target": "tiles/refreshed/numbered/tong/tong-05.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-05.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-05.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 155,
+        "nonTransparentPixels": 55529,
+        "contentBounds": {
+          "minX": 309,
+          "minY": 225,
+          "maxX": 709,
+          "maxY": 765
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 467,
+        "height": 630,
+        "widthRatio": 0.4561,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0831
+      }
+    },
+    {
+      "tileKey": "tile.tong.6",
+      "suit": "tong",
+      "rank": 6,
+      "label": "6筒",
+      "source": "hulebu-six-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-06.png",
+      "target": "tiles/refreshed/numbered/tong/tong-06.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-06.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-06.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 106,
+        "nonTransparentPixels": 65519,
+        "contentBounds": {
+          "minX": 325,
+          "minY": 221,
+          "maxX": 695,
+          "maxY": 795
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 406,
+        "height": 630,
+        "widthRatio": 0.3965,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0861
+      }
+    },
+    {
+      "tileKey": "tile.tong.7",
+      "suit": "tong",
+      "rank": 7,
+      "label": "7筒",
+      "source": "hulebu-seven-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-07.png",
+      "target": "tiles/refreshed/numbered/tong/tong-07.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-07.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-07.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 175,
+        "nonTransparentPixels": 69686,
+        "contentBounds": {
+          "minX": 319,
+          "minY": 184,
+          "maxX": 705,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 372,
+        "height": 630,
+        "widthRatio": 0.3633,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0721
+      }
+    },
+    {
+      "tileKey": "tile.tong.8",
+      "suit": "tong",
+      "rank": 8,
+      "label": "8筒",
+      "source": "hulebu-eight-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-08.png",
+      "target": "tiles/refreshed/numbered/tong/tong-08.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-08.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-08.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 93,
+        "nonTransparentPixels": 74467,
+        "contentBounds": {
+          "minX": 328,
+          "minY": 198,
+          "maxX": 691,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 357,
+        "height": 630,
+        "widthRatio": 0.3486,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0805
+      }
+    },
+    {
+      "tileKey": "tile.tong.9",
+      "suit": "tong",
+      "rank": 9,
+      "label": "9筒",
+      "source": "hulebu-nine-dot-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/tong/tong-09.png",
+      "target": "tiles/refreshed/numbered/tong/tong-09.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/tong/tong-09.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/tong/tong-09.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 306,
+        "nonTransparentPixels": 84031,
+        "contentBounds": {
+          "minX": 298,
+          "minY": 238,
+          "maxX": 722,
+          "maxY": 759
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 513,
+        "height": 630,
+        "widthRatio": 0.501,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.1354
+      }
+    },
+    {
+      "tileKey": "tile.wan.1",
+      "suit": "wan",
+      "rank": 1,
+      "label": "1万",
+      "source": "hulebu-one-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-01.png",
+      "target": "tiles/refreshed/numbered/wan/wan-01.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-01.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-01.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 3,
+        "nonTransparentPixels": 52043,
+        "contentBounds": {
+          "minX": 352,
+          "minY": 257,
+          "maxX": 667,
+          "maxY": 754
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 400,
+        "height": 630,
+        "widthRatio": 0.3906,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0823
+      }
+    },
+    {
+      "tileKey": "tile.wan.2",
+      "suit": "wan",
+      "rank": 2,
+      "label": "2万",
+      "source": "ig_0c348a0fbfe485db016a150105785c8199a9ee5e53e06c4de8.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-02.png",
+      "target": "tiles/refreshed/numbered/wan/wan-02.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-02.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-02.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 6,
+        "nonTransparentPixels": 59403,
+        "contentBounds": {
+          "minX": 350,
+          "minY": 222,
+          "maxX": 665,
+          "maxY": 783
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 352,
+        "height": 630,
+        "widthRatio": 0.3438,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0684
+      }
+    },
+    {
+      "tileKey": "tile.wan.3",
+      "suit": "wan",
+      "rank": 3,
+      "label": "3万",
+      "source": "ig_0c348a0fbfe485db016a15016b79a08199a2d42db0ee0f32fc.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-03.png",
+      "target": "tiles/refreshed/numbered/wan/wan-03.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-03.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-03.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 22,
+        "nonTransparentPixels": 64697,
+        "contentBounds": {
+          "minX": 346,
+          "minY": 205,
+          "maxX": 662,
+          "maxY": 790
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 339,
+        "height": 630,
+        "widthRatio": 0.3311,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.068
+      }
+    },
+    {
+      "tileKey": "tile.wan.4",
+      "suit": "wan",
+      "rank": 4,
+      "label": "4万",
+      "source": "ig_0c348a0fbfe485db016a1501f206188199a71d5cb4d484726e.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-04.png",
+      "target": "tiles/refreshed/numbered/wan/wan-04.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-04.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-04.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 6,
+        "nonTransparentPixels": 77249,
+        "contentBounds": {
+          "minX": 336,
+          "minY": 224,
+          "maxX": 665,
+          "maxY": 814
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 350,
+        "height": 630,
+        "widthRatio": 0.3418,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0805
+      }
+    },
+    {
+      "tileKey": "tile.wan.5",
+      "suit": "wan",
+      "rank": 5,
+      "label": "5万",
+      "source": "ig_0c348a0fbfe485db016a15024c08a08199ab0efc27bc7506b4.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-05.png",
+      "target": "tiles/refreshed/numbered/wan/wan-05.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-05.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-05.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 2,
+        "nonTransparentPixels": 78435,
+        "contentBounds": {
+          "minX": 345,
+          "minY": 191,
+          "maxX": 679,
+          "maxY": 801
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 344,
+        "height": 630,
+        "widthRatio": 0.3359,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0765
+      }
+    },
+    {
+      "tileKey": "tile.wan.6",
+      "suit": "wan",
+      "rank": 6,
+      "label": "6万",
+      "source": "ig_0c348a0fbfe485db016a1502b1dffc8199a1bcfc14aeff40bb.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-06.png",
+      "target": "tiles/refreshed/numbered/wan/wan-06.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-06.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-06.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 13,
+        "nonTransparentPixels": 71403,
+        "contentBounds": {
+          "minX": 337,
+          "minY": 202,
+          "maxX": 654,
+          "maxY": 809
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 328,
+        "height": 630,
+        "widthRatio": 0.3203,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0703
+      }
+    },
+    {
+      "tileKey": "tile.wan.7",
+      "suit": "wan",
+      "rank": 7,
+      "label": "7万",
+      "source": "hulebu-seven-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-07.png",
+      "target": "tiles/refreshed/numbered/wan/wan-07.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-07.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-07.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 1,
+        "nonTransparentPixels": 59498,
+        "contentBounds": {
+          "minX": 347,
+          "minY": 196,
+          "maxX": 665,
+          "maxY": 785
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 341,
+        "height": 630,
+        "widthRatio": 0.333,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0669
+      }
+    },
+    {
+      "tileKey": "tile.wan.8",
+      "suit": "wan",
+      "rank": 8,
+      "label": "8万",
+      "source": "hulebu-eight-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-08.png",
+      "target": "tiles/refreshed/numbered/wan/wan-08.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-08.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-08.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 2,
+        "nonTransparentPixels": 50039,
+        "contentBounds": {
+          "minX": 292,
+          "minY": 219,
+          "maxX": 732,
+          "maxY": 839
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 447,
+        "height": 630,
+        "widthRatio": 0.4365,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.051
+      }
+    },
+    {
+      "tileKey": "tile.wan.9",
+      "suit": "wan",
+      "rank": 9,
+      "label": "9万",
+      "source": "hulebu-nine-wan-celadon-single-v1.png",
+      "sourceTarget": "tiles/borderless/numbered/wan/wan-09.png",
+      "target": "tiles/refreshed/numbered/wan/wan-09.png",
+      "status": "runtime",
+      "category": "refreshed-numbered-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/numbered/wan/wan-09.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/numbered/wan/wan-09.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "none",
+        "removedComponents": 1,
+        "nonTransparentPixels": 62187,
+        "contentBounds": {
+          "minX": 340,
+          "minY": 198,
+          "maxX": 661,
+          "maxY": 755
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 364,
+        "height": 630,
+        "widthRatio": 0.3555,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0782
+      }
+    }
+  ],
+  "refreshedHonorTiles": [
+    {
+      "tileKey": "tile.honor.1",
+      "label": "东",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-east.png",
+      "target": "tiles/refreshed/honors/honor-east.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-east.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-east.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 28236,
+        "nonTransparentPixels": 40672,
+        "contentBounds": {
+          "minX": 351,
+          "minY": 197,
+          "maxX": 689,
+          "maxY": 634
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 488,
+        "height": 630,
+        "widthRatio": 0.4766,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.083
+      }
+    },
+    {
+      "tileKey": "tile.honor.2",
+      "label": "南",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-south.png",
+      "target": "tiles/refreshed/honors/honor-south.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-south.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-south.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 27786,
+        "nonTransparentPixels": 40979,
+        "contentBounds": {
+          "minX": 292,
+          "minY": 201,
+          "maxX": 676,
+          "maxY": 695
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 490,
+        "height": 630,
+        "widthRatio": 0.4785,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0658
+      }
+    },
+    {
+      "tileKey": "tile.honor.3",
+      "label": "西",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-west.png",
+      "target": "tiles/refreshed/honors/honor-west.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-west.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-west.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 27749,
+        "nonTransparentPixels": 39428,
+        "contentBounds": {
+          "minX": 349,
+          "minY": 266,
+          "maxX": 658,
+          "maxY": 588
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024",
+        "sideShadowCleanup": {
+          "requestedByUser": "西右侧，北左侧，发左侧还有阴影",
+          "removed": [
+            {
+              "count": 2071,
+              "minX": 724,
+              "minY": 164,
+              "maxX": 730,
+              "maxY": 695,
+              "meanAvg": 112.4,
+              "meanSat": 24.1
+            }
+          ]
+        }
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 605,
+        "height": 630,
+        "widthRatio": 0.5908,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.1478
+      }
+    },
+    {
+      "tileKey": "tile.honor.4",
+      "label": "北",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-north.png",
+      "target": "tiles/refreshed/honors/honor-north.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-north.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-north.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 28230,
+        "nonTransparentPixels": 33889,
+        "contentBounds": {
+          "minX": 380,
+          "minY": 248,
+          "maxX": 695,
+          "maxY": 561
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024",
+        "sideShadowCleanup": {
+          "requestedByUser": "西右侧，北左侧，发左侧还有阴影",
+          "removed": [
+            {
+              "count": 3121,
+              "minX": 299,
+              "minY": 164,
+              "maxX": 308,
+              "maxY": 695,
+              "meanAvg": 104.8,
+              "meanSat": 21.9
+            }
+          ]
+        }
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 630,
+        "height": 626,
+        "widthRatio": 0.6152,
+        "heightRatio": 0.6113,
+        "alphaCoverage": 0.1322
+      }
+    },
+    {
+      "tileKey": "tile.honor.5",
+      "label": "中",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-red.png",
+      "target": "tiles/refreshed/honors/honor-red.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-red.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-red.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 26803,
+        "nonTransparentPixels": 33500,
+        "contentBounds": {
+          "minX": 379,
+          "minY": 199,
+          "maxX": 645,
+          "maxY": 648
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 374,
+        "height": 630,
+        "widthRatio": 0.3652,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.0642
+      }
+    },
+    {
+      "tileKey": "tile.honor.6",
+      "label": "发",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-green.png",
+      "target": "tiles/refreshed/honors/honor-green.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-green.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-green.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 26902,
+        "nonTransparentPixels": 50725,
+        "contentBounds": {
+          "minX": 358,
+          "minY": 221,
+          "maxX": 723,
+          "maxY": 612
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024",
+        "sideShadowCleanup": {
+          "requestedByUser": "西右侧，北左侧，发左侧还有阴影",
+          "removed": [
+            {
+              "count": 4166,
+              "minX": 298,
+              "minY": 171,
+              "maxX": 311,
+              "maxY": 695,
+              "meanAvg": 113.6,
+              "meanSat": 24.5
+            }
+          ]
+        }
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 588,
+        "height": 630,
+        "widthRatio": 0.5742,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.1286
+      }
+    },
+    {
+      "tileKey": "tile.honor.7",
+      "label": "白",
+      "source": "hulebu-honor-tiles-celadon-reference-v1.png",
+      "sourceTarget": "tiles/borderless/honors/honor-white.png",
+      "target": "tiles/refreshed/honors/honor-white.png",
+      "status": "runtime",
+      "category": "refreshed-honor-tile",
+      "sourcePath": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/honors/honor-white.png",
+      "path": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/honors/honor-white.png",
+      "width": 1024,
+      "height": 1024,
+      "hasAlpha": true,
+      "transparentBackground": true,
+      "extraction": {
+        "method": "center-ink-color-mask-v6",
+        "removed": "tile body, outer border, drop shadow, pale background, low-contrast glaze texture",
+        "preserved": "red, green, blue, and dark glyph strokes",
+        "postprocess": "hard-clear-lower-honor-shadow",
+        "removedComponents": 27077,
+        "nonTransparentPixels": 60816,
+        "contentBounds": {
+          "minX": 355,
+          "minY": 194,
+          "maxX": 672,
+          "maxY": 666
+        },
+        "edgeAlpha": 0,
+        "normalizedSize": "1024x1024"
+      },
+      "refresh": {
+        "from": "borderless",
+        "mode": "alpha-bounds-fit-inside-630-with-whitespace",
+        "generatedAt": "2026-05-27T02:13:21.781Z"
+      },
+      "contentBounds": {
+        "width": 424,
+        "height": 630,
+        "widthRatio": 0.4141,
+        "heightRatio": 0.6152,
+        "alphaCoverage": 0.1069
+      }
+    }
   ]
 }

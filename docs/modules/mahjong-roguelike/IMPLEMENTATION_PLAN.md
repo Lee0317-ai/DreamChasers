@@ -1,7 +1,7 @@
 # 胡了卜实施计划
 
-**状态**：规则模型、验证配置、20 关内容骨架、配置加载验证、配置驱动试玩原型、密集牌山生成器原型、Boss 目标配置化、Boss 牌型目标、Boss 目标反馈、字牌基础支持、固定 8 格主槽和 `胡` 牌型基础支持、胡牌节奏配置和密集牌山胡牌包、随机牌山调参面板第一版、Cocos/GDevelop 正式表现层桥接第一版、Cocos 场景骨架第一版、Cocos Creator 3.8.8 工程壳、Cocos 首屏自动渲染、Cocos 手机竖屏首屏适配、Cocos 真实可见尺寸自适应、Cocos 首条点击可玩链路已完成，待做真实配置状态接入、遮挡解锁、奖励和最终资源绑定
-**关联任务**：T017, T020, T043, T045, T046, T047, T048, T049, T050, T052, T053, T054, T055, T056, T057, T058, T059, T060, T061, T062, T063, T065, T066
+**状态**：规则模型、验证配置、20 关内容骨架、配置加载验证、配置驱动试玩原型、密集牌山生成器原型、Boss 目标配置化、Boss 牌型目标、Boss 目标反馈、字牌基础支持、固定 8 格主槽和 `胡` 牌型基础支持、胡牌节奏配置和密集牌山胡牌包、随机牌山调参面板第一版、Cocos/GDevelop 正式表现层桥接第一版、Cocos 场景骨架第一版、Cocos Creator 3.8.8 工程壳、Cocos 首屏自动渲染、Cocos 手机竖屏首屏适配、Cocos 真实可见尺寸自适应、Cocos 首条点击可玩链路、真实配置首关接入、牌面 SpriteFrame 绑定、无边框麻将牌面资源、新牌面 UI 留白版、Cocos 最小关卡流、Cocos 随机堆叠牌山恢复、Cocos 牌山铺开和遮挡点击一致性、Graph-based 牌山生成器共享实现、地图模板语法系统设计、模板注册表和参数系统实施计划、模板注册表和 8 个核心模板共享实现已完成，待做 Graph-based 生成结果接回 Cocos、奖励效果、Boss 进度、槽位图片和最终动效
+**关联任务**：T017, T020, T043, T045, T046, T047, T048, T049, T050, T052, T053, T054, T055, T056, T057, T058, T059, T060, T061, T062, T063, T065, T066, T068, T069, T070, T072, T073, T074, T075, T076, T077, T078, T079, T080, T081, T082, T083
 
 ## 1. 前置条件
 
@@ -29,6 +29,9 @@
 - 已完成 Cocos 手机竖屏首屏适配：工程设计分辨率为 390x844，首屏占位 UI 改为移动优先布局。
 - 已完成 Cocos 真实可见尺寸自适应：首屏占位 UI 不再依赖固定 390x844 常量，而是按运行时 canvas CSS 尺寸、Cocos 可见尺寸和 DPR 统一缩放。
 - 已完成 Cocos 首条点击可玩链路：测试首屏可点击牌进入 8 格主槽，组合按钮按候选刷新，并可执行基础 `胡 / 杠 / 碰 / 吃` 消除。
+- 已完成 Cocos 真实配置首关、牌面 SpriteFrame 绑定、无边框牌面资源和留白版运行时牌面：真实第 1 关默认加载；牌山优先使用 `assets/resources/ui/mahjong-tiles/tiles/refreshed/` 中的留白版 SpriteFrame，`tiles/borderless/` 保留为透明来源图，原带框资源保留为回退。
+- 已完成 Cocos 最小关卡流、随机堆叠牌山恢复和铺开/遮挡点击一致性：默认 20 关支持清空牌山通关、继续下一关、奖励节点三选一和最终通关；首屏不再使用 6 张流程关，改为 42-60 张确定性随机堆叠牌山，保留 5% 遮挡阈值和同列堆叠横条提示；首关牌山跨度扩大到约 `300x186`，任意更高层牌超过 5% 覆盖低层牌都会写入 blocker，低层牌不可点击。
+- 已完成 Graph-based 牌山生成器共享实现、地图模板语法系统设计、模板注册表实施计划和 T083 代码落地：共享层已有模板注册表、参数归一化、8 个核心模板、理论解法、发牌、干扰节点、体验报告、窗口曲线和通用校验器；后续应另起任务把 `levelTiles` 接回 Cocos。
 - 已确认原型优先路线：GDevelop 原型或 Cocos 直做。
 - 已确认 Cocos Creator 版本。
 
@@ -320,7 +323,7 @@ npm run test -w packages/shared -- mahjong
 
 状态：
 
-- 已由 T068 完成第一版。
+- 已由 T068 完成第一版，并由 T074 追加无边框透明牌面资源，由 T075 追加运行时留白版牌面。
 
 范围：
 
@@ -331,13 +334,79 @@ npm run test -w packages/shared -- mahjong
 
 - 27 张数牌单图：万、条、筒各 1-9。
 - 7 张字牌单图：东、南、西、北、中、发、白。
+- 27 张无边框透明数牌符号和 7 张无边框透明字牌符号，目录为 `tiles/borderless/`。
+- 27 张运行时留白版数牌和 7 张运行时留白版字牌，目录为 `tiles/refreshed/`，当前 Cocos 优先加载。
 - 参考图和中间稿分类归档。
-- `manifest.json` 记录来源、分类、尺寸和 `tileKey`。
+- `manifest.json` 记录来源、分类、尺寸、透明通道、提取方式、运行时资源版本和 `tileKey`。
 
 限制：
 
-- 当前只是资源归档，不接运行时代码。
-- 暂不手写 PNG 的 Cocos texture meta；打开 Cocos Creator 后由编辑器生成权威 `.png.meta`。
+- 无边框图是从现有生成图自动提取的派生资源，后续最终美术仍可人工重绘或换图。
+- 留白版运行时图当前只替换牌山牌面，槽位图片、图集打包和最终 Tile prefab 仍待后续任务。
+
+## 5.6 阶段 4.6：Cocos 最小关卡流闭环
+
+目标：
+
+- 先把正式 Cocos 工程的整局流程走通，避免继续只停留在单关点击验证。
+
+状态：
+
+- 已由 T076 完成第一版。
+
+范围：
+
+- `assets/scripts/GameSceneController.ts`
+- `assets/scripts/config/HulebuLevelConfig.ts`
+- `assets/scripts/runtime/HulebuRuntimeState.ts`
+- `assets/scripts/bootstrap/HulebuConfiguredSceneModel.ts`
+- `assets/scripts/BoardLayerBinder.ts`
+- `assets/scripts/ComboBarBinder.ts`
+
+已覆盖：
+
+- Cocos runtime 内嵌 20 关轻量流程配置。
+- 牌山清空后弹出通关提示。
+- 点击继续进入下一关。
+- 第 3/6/9/13/16/19 关在继续时出现 3 选 1 奖励。
+- 20 关后显示本轮通关。
+- 牌、组合按钮和 overlay 按钮同时绑定 `TOUCH_END` 与 Cocos `Button.EventType.CLICK`，方便浏览器鼠标和移动端触摸验证。
+
+限制：
+
+- 奖励选择当前只推进流程，尚未真正应用奖励效果。
+- Boss 关目标进度尚未接入 Cocos runtime。
+- 20 关配置是轻量流程验证版，不是最终内容平衡。
+- 通关和奖励 overlay 是程序化临时 UI，不是最终美术。
+
+## 5.7 阶段 4.7：Cocos 随机牌山铺开和遮挡点击一致性
+
+目标：
+
+- 让 Cocos 随机牌山充分利用手机牌桌区域，并保证 5% 遮挡规则和点击可用态完全一致。
+
+状态：
+
+- 已由 T078 完成第一版。
+
+范围：
+
+- `assets/scripts/config/HulebuLevelConfig.ts`
+- `assets/scripts/runtime/HulebuRuntimeState.ts`
+- `packages/shared/src/mahjong-cocos-project.test.ts`
+
+已覆盖：
+
+- 首关随机牌山配置跨度扩大到约 `300x186`，不再挤在中间小团。
+- `applyStackBlockers` 会把任意更高层牌超过 5% 的覆盖写入低层牌 `blockedBy`。
+- 同列所有上层牌都会阻挡同列下层牌，避免深层牌因只记录相邻层而提前可点。
+- Cocos runtime 回归测试验证被盖住的下层牌不能入槽，移走 blocker 后才恢复可选。
+- Cocos Web Preview 手机视口已目检顶层牌可入槽、被同列完全覆盖的下层牌连点不入槽。
+
+限制：
+
+- 本阶段只修牌山布局与可点规则，不做完整可解路径搜索和数值平衡。
+- 奖励效果、Boss 目标进度、槽位同款图片、最终 Tile prefab、动画音效和发布包仍待后续任务。
 
 ## 6. 阶段 5：Web 游戏站接入
 

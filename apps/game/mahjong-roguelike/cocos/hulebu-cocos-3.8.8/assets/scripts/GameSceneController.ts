@@ -1,8 +1,10 @@
-import { _decorator, Camera, Canvas, Color, Component, Graphics, Label, Layers, Node, UITransform, Vec3 } from "cc";
+import { _decorator, Button, Camera, Canvas, Color, Component, Graphics, Label, Layers, Node, UITransform, Vec3 } from "cc";
 import { BoardLayerBinder } from "./BoardLayerBinder";
 import { ComboBarBinder } from "./ComboBarBinder";
 import { HudBinder } from "./HudBinder";
 import { SlotLayerBinder } from "./SlotLayerBinder";
+import { createHulebuConfiguredSceneModelForLayout } from "./bootstrap/HulebuConfiguredSceneModel";
+import { HULEBU_LEVEL_CONFIGS, HULEBU_REWARD_LABELS, HULEBU_REWARD_LEVEL_ORDERS } from "./config/HulebuLevelConfig";
 import {
   centerLayoutX,
   centerLayoutY,
@@ -11,6 +13,7 @@ import {
   scaleLayoutValue,
 } from "./bootstrap/HulebuSampleSceneModel";
 import type { HulebuLayoutSize } from "./bootstrap/HulebuSampleSceneModel";
+import type { HulebuRuntimeState } from "./runtime/HulebuRuntimeState";
 import type {
   HulebuBoardNodeModel,
   HulebuCellNodeModel,
@@ -21,6 +24,7 @@ import type {
 
 const { ccclass, property } = _decorator;
 type RuntimeLayout = Required<HulebuLayoutSize>;
+type HulebuGamePhase = "playing" | "cleared" | "reward";
 
 const RUNTIME_CAMERA_NAME = "RuntimeCamera";
 const SHELL_ROOT_NAME = "VisualShellRoot";
@@ -35,6 +39,7 @@ const JADE_FILL = new Color(42, 134, 103, 255);
 const WOOD_FILL = new Color(99, 59, 35, 255);
 const WOOD_STROKE = new Color(177, 116, 65, 255);
 const TOOL_FILL = new Color(49, 116, 87, 255);
+const OVERLAY_BACKDROP = new Color(10, 25, 22, 220);
 const HULEBU_TILE_WIDTH = 52;
 const HULEBU_TILE_HEIGHT = 70;
 const HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.05;
@@ -59,12 +64,21 @@ export class GameSceneController extends Component {
   @property
   autoLoadSampleScene = true;
 
+  @property
+  loadConfiguredLevelOnStart = true;
+
   private latestSceneModel: HulebuCocosSceneModel | null = null;
+  private latestLayout: RuntimeLayout | null = null;
+  private runtimeState: HulebuRuntimeState | null = null;
+  private currentLevelIndex = 0;
+  private gamePhase: HulebuGamePhase = "playing";
+  private pendingRewardLevelIndex: number | null = null;
   private readonly selectedSlots: HulebuBoardNodeModel[] = [];
   private score = 0;
 
   start(): void {
     const visibleSize = this.ensureCanvasHost();
+    this.latestLayout = visibleSize;
     this.ensureVisualShell(visibleSize);
     this.ensureLayerReferences();
     this.rewardOverlay?.setPosition(0, 0, 0);
@@ -74,6 +88,11 @@ export class GameSceneController extends Component {
 
     if (this.latestSceneModel) {
       this.applySceneModel(this.latestSceneModel);
+      return;
+    }
+
+    if (this.loadConfiguredLevelOnStart) {
+      this.startLevel(this.currentLevelIndex);
       return;
     }
 
@@ -108,6 +127,12 @@ export class GameSceneController extends Component {
   }
 
   pickReward(rewardId: string): void {
+    if (this.gamePhase === "reward") {
+      console.log(`[Hulebu] pick reward: ${rewardId}`);
+      this.startNextLevel(this.pendingRewardLevelIndex ?? this.currentLevelIndex + 1);
+      return;
+    }
+
     console.log(`[Hulebu] pick reward: ${rewardId}`);
   }
 
@@ -125,6 +150,17 @@ export class GameSceneController extends Component {
   }
 
   private handleTileClick(tileId: string): void {
+    if (this.gamePhase !== "playing") {
+      return;
+    }
+
+    if (this.runtimeState) {
+      if (this.runtimeState.moveTileToSlot(tileId)) {
+        this.refreshRuntimeScene();
+      }
+      return;
+    }
+
     const sceneModel = this.latestSceneModel;
     if (!sceneModel || this.selectedSlots.length >= 8) {
       return;
@@ -141,6 +177,18 @@ export class GameSceneController extends Component {
   }
 
   private handleComboClick(combo: HulebuComboType): void {
+    if (this.gamePhase !== "playing") {
+      return;
+    }
+
+    if (this.runtimeState) {
+      const control = this.latestSceneModel?.comboControls.find((item) => item.combo === combo);
+      if (this.runtimeState.executeComboByKey(control?.candidateKey ?? null)) {
+        this.refreshRuntimeScene();
+      }
+      return;
+    }
+
     const selectedIndexes = this.findComboCandidate(combo);
     if (!selectedIndexes) {
       return;
@@ -149,6 +197,212 @@ export class GameSceneController extends Component {
     this.removeSelectedSlots(selectedIndexes);
     this.score += this.getComboScore(combo);
     this.refreshPlayableScene();
+  }
+
+  private refreshRuntimeScene(): void {
+    if (!this.runtimeState) {
+      return;
+    }
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.applySceneModel(this.runtimeState.toSceneModel(layout));
+    if (this.runtimeState.isBoardCleared()) {
+      this.gamePhase = "cleared";
+      this.showClearOverlay();
+      return;
+    }
+
+    this.hideFlowOverlay();
+  }
+
+  private startLevel(levelIndex: number): void {
+    const maxIndex = HULEBU_LEVEL_CONFIGS.length - 1;
+    this.currentLevelIndex = Math.min(Math.max(0, levelIndex), maxIndex);
+    this.gamePhase = "playing";
+    this.pendingRewardLevelIndex = null;
+    this.hideFlowOverlay();
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const configured = createHulebuConfiguredSceneModelForLayout(layout, this.currentLevelIndex);
+    this.runtimeState = configured.runtimeState;
+    this.ensureVisualShell(layout, this.runtimeState.getLevelOrder());
+    this.applySceneModel(configured.sceneModel);
+  }
+
+  private startNextLevel(levelIndex = this.currentLevelIndex + 1): void {
+    if (levelIndex >= HULEBU_LEVEL_CONFIGS.length) {
+      this.showRunCompleteOverlay();
+      return;
+    }
+
+    this.startLevel(levelIndex);
+  }
+
+  private continueAfterClear(): void {
+    if (this.gamePhase !== "cleared") {
+      return;
+    }
+
+    if (this.runtimeState && HULEBU_REWARD_LEVEL_ORDERS.has(this.runtimeState.getLevelOrder())) {
+      this.pendingRewardLevelIndex = this.currentLevelIndex + 1;
+      this.gamePhase = "reward";
+      this.showRewardOverlay();
+      return;
+    }
+
+    this.startNextLevel();
+  }
+
+  private showClearOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const level = this.runtimeState?.getLevelConfig();
+    const title = level ? `第 ${level.order} 关通关` : "通关";
+    const subtitle = level ? `${level.name} / ${level.subtitle}` : "牌山已清空";
+
+    this.drawOverlayPanel(overlay, layout);
+    this.writeOverlayLabel(overlay, "OverlayTitle", title, 24, new Color(255, 246, 216, 255), 48);
+    this.writeOverlayLabel(overlay, "OverlaySubtitle", subtitle, 15, new Color(232, 207, 166, 255), 12);
+    this.createOverlayButton(overlay, "ContinueButton", "继续", 0, -48, () => this.continueAfterClear());
+  }
+
+  private showRewardOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.drawOverlayPanel(overlay, layout, 318, 252);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "选择本局获得的奖励", 20, new Color(255, 246, 216, 255), 88);
+    this.writeOverlayLabel(overlay, "OverlaySubtitle", "三选一后进入下一关", 14, new Color(232, 207, 166, 255), 58);
+    this.drawRewardChoices(overlay);
+  }
+
+  private showRunCompleteOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.gamePhase = "cleared";
+    this.drawOverlayPanel(overlay, layout);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "本轮通关", 24, new Color(255, 246, 216, 255), 38);
+    this.writeOverlayLabel(overlay, "OverlaySubtitle", "20 关流程已走通", 15, new Color(232, 207, 166, 255), 2);
+    this.createOverlayButton(overlay, "ContinueButton", "从第 1 关再来", 0, -54, () => this.startNextLevel(0));
+  }
+
+  private drawRewardChoices(overlay: Node): void {
+    const choices = this.runtimeState?.getRewardChoices() ?? [];
+    const startX = -94;
+    choices.forEach((rewardId, index) => {
+      const rewardName = HULEBU_REWARD_LABELS[rewardId] ?? rewardId;
+      this.createOverlayButton(
+        overlay,
+        `RewardChoice_${index}`,
+        rewardName,
+        startX + index * 94,
+        -30,
+        () => this.pickReward(rewardId),
+        84,
+        92,
+      );
+    });
+  }
+
+  private prepareFlowOverlay(): Node {
+    const overlay = this.rewardOverlay ?? this.ensureChild(this.node, "RewardOverlay");
+    this.rewardOverlay = overlay;
+    overlay.active = true;
+    overlay.layer = this.node.layer;
+    overlay.setPosition(new Vec3(0, 0, 100));
+    overlay.children.slice().forEach((child) => {
+      child.removeFromParent();
+      child.destroy();
+    });
+    return overlay;
+  }
+
+  private hideFlowOverlay(): void {
+    if (this.rewardOverlay) {
+      this.rewardOverlay.active = false;
+    }
+  }
+
+  private drawOverlayPanel(overlay: Node, layout: RuntimeLayout, width = 300, height = 186): void {
+    this.drawRoundedPanel(
+      overlay,
+      "OverlayBackdrop",
+      layout.width / 2,
+      layout.height / 2,
+      layout.width,
+      layout.height,
+      0,
+      OVERLAY_BACKDROP,
+      OVERLAY_BACKDROP,
+      0,
+      layout,
+    );
+    this.drawRoundedPanel(
+      overlay,
+      "OverlayPanel",
+      layout.width / 2,
+      layout.height / 2,
+      scaleLayoutValue(width, layout.scale),
+      scaleLayoutValue(height, layout.scale),
+      scaleLayoutValue(16, layout.scale),
+      PLAQUE_FILL,
+      PLAQUE_STROKE,
+      scaleLayoutValue(4, layout.scale),
+      layout,
+    );
+  }
+
+  private writeOverlayLabel(
+    overlay: Node,
+    name: string,
+    text: string,
+    fontSize: number,
+    color: Color,
+    yOffset: number,
+  ): void {
+    const labelNode = this.ensureChild(overlay, name);
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    labelNode.layer = overlay.layer;
+    labelNode.setPosition(new Vec3(0, scaleLayoutValue(yOffset, layout.scale), 1));
+    const labelTransform = labelNode.getComponent(UITransform) ?? labelNode.addComponent(UITransform);
+    labelTransform.setContentSize(scaleLayoutValue(280, layout.scale), scaleLayoutValue(36, layout.scale));
+    const label = labelNode.getComponent(Label) ?? labelNode.addComponent(Label);
+    label.string = text;
+    label.fontSize = scaleLayoutValue(fontSize, layout.scale);
+    label.lineHeight = scaleLayoutValue(fontSize + 5, layout.scale);
+    label.horizontalAlign = Label.HorizontalAlign.CENTER;
+    label.verticalAlign = Label.VerticalAlign.CENTER;
+    label.color = color;
+  }
+
+  private createOverlayButton(
+    overlay: Node,
+    name: string,
+    text: string,
+    x: number,
+    y: number,
+    handler: () => void,
+    width = 116,
+    height = 44,
+  ): Node {
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const node = this.drawRoundedPanel(
+      overlay,
+      name,
+      layout.width / 2 + scaleLayoutValue(x, layout.scale),
+      layout.height / 2 + scaleLayoutValue(y, layout.scale),
+      scaleLayoutValue(width, layout.scale),
+      scaleLayoutValue(height, layout.scale),
+      scaleLayoutValue(9, layout.scale),
+      TOOL_FILL,
+      PLAQUE_STROKE,
+      scaleLayoutValue(3, layout.scale),
+      layout,
+    );
+    node.getComponent(Button) ?? node.addComponent(Button);
+    node.on(Node.EventType.TOUCH_END, handler, this);
+    node.on(Button.EventType.CLICK, handler, this);
+    this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), new Color(255, 246, 216, 255));
+    return node;
   }
 
   private refreshPlayableScene(): void {
@@ -413,14 +667,14 @@ export class GameSceneController extends Component {
     return target.getComponent(componentType) ?? target.addComponent(componentType);
   }
 
-  private ensureVisualShell(layout: RuntimeLayout): void {
+  private ensureVisualShell(layout: RuntimeLayout, levelOrder = 1): void {
     const shellRoot = this.ensureChild(this.node, SHELL_ROOT_NAME);
     shellRoot.active = true;
     shellRoot.layer = this.node.layer;
     shellRoot.setSiblingIndex(0);
 
     this.drawGreenTableFelt(shellRoot, layout);
-    this.drawTopPlaques(shellRoot, layout);
+    this.drawTopPlaques(shellRoot, layout, levelOrder);
     this.drawRightToolButtons(shellRoot, layout);
     this.drawSlotTray(shellRoot, layout);
   }
@@ -469,13 +723,28 @@ export class GameSceneController extends Component {
     );
   }
 
-  private drawTopPlaques(root: Node, layout: RuntimeLayout): void {
+  private drawTopPlaques(root: Node, layout: RuntimeLayout, levelOrder: number): void {
     const y = layout.height - scaleLayoutValue(44, layout.scale);
-    this.drawTopPlaque(root, "LevelPlaque", scaleLayoutValue(70, layout.scale), y, 112, 56, "关卡\n1-1", layout);
+    this.drawTopPlaque(
+      root,
+      "LevelPlaque",
+      scaleLayoutValue(70, layout.scale),
+      y,
+      112,
+      56,
+      `关卡\n${this.formatLevelLabel(levelOrder)}`,
+      layout,
+    );
     this.drawTopPlaque(root, "ScorePlaque", scaleLayoutValue(195, layout.scale), y, 100, 52, "分数\n0", layout);
     this.drawTopPlaque(root, "ProgressPlaque", scaleLayoutValue(304, layout.scale), y, 162, 52, "本局进度", layout);
 
     this.drawProgressDots(root, layout);
+  }
+
+  private formatLevelLabel(levelOrder: number): string {
+    const chapter = Math.floor((levelOrder - 1) / 10) + 1;
+    const stage = ((levelOrder - 1) % 10) + 1;
+    return `${chapter}-${stage}`;
   }
 
   private drawTopPlaque(

@@ -37,6 +37,17 @@
 - 已完成 T068：现有青瓷风麻将图片已整理进 Cocos UI 资源目录，包含 27 张数牌、7 张切分字牌、参考图和中间稿；后续接 prefab 时优先查看 `assets/resources/ui/mahjong-tiles/manifest.json`。
 - 已完成 T069：Cocos 测试首屏已跑通首条点击可玩链路，可点击牌进入 8 格主槽，组合按钮按候选刷新，并可执行基础消除。
 - 已完成 T070：Cocos 测试首屏点击后会按剩余牌重新计算 5% 遮挡解锁，入槽牌会在 8 格主槽显示牌名；Web Preview 的 `resources.meta` settings 查询错误已修正。
+- 已完成 T072：Cocos Web Preview 默认加载真实第 1 关 `validation_intro_peng`，通过 Cocos 本地 runtime state 支持点击入槽、`胡 / 杠 / 碰 / 吃` 按钮刷新和基础组合消除；旧测试 scene model 作为 fallback 保留。
+- 已完成 T073：Cocos 牌山节点已优先按 `prefabKey` 加载 `assets/resources/ui/mahjong-tiles/` 中的 SpriteFrame；真实首关的 `9筒 / 2万` 会显示青瓷麻将图片，缺图或加载失败时保留程序化占位牌 fallback。
+- 已完成 T074：`assets/resources/ui/mahjong-tiles/tiles/borderless/` 已生成 27 张数牌和 7 张字牌透明无边框 PNG；`HulebuTileSpriteCatalog` 当前优先加载无边框 SpriteFrame，原带框资源保留为回退和美术复核。
+- 已完成 T075：`assets/resources/ui/mahjong-tiles/tiles/refreshed/` 已生成 27 张数牌和 7 张字牌运行时留白版 PNG；`HulebuTileSpriteCatalog` 当前优先加载 `refreshed` SpriteFrame，`borderless` 保留为透明来源图。
+- 已完成 T076：Cocos runtime 已补最小关卡流闭环；牌山清空后弹出通关提示，继续进入下一关，3/6/9/13/16/19 关在继续时进入奖励三选一，20 关后显示本轮通关。奖励效果和 Boss 目标进度尚未真正落地。
+- 已完成 T077：Cocos 默认关卡已从 6 张流程关恢复为确定性随机堆叠牌山；首关 42 张起步，后续 42-60 张，支持同列完全覆盖、顶部横条层数提示、字牌权重和 5% 遮挡阈值，并保留 T076 的通关和奖励节点流转。
+- 已完成 T078：Cocos 随机牌山已扩大铺开范围，首关配置跨度约 `300x186`；遮挡规则已修正为任意更高层牌超过 5% 覆盖即写入 `blockedBy`，runtime 测试验证被盖住牌不可入槽、移走 blocker 后恢复可选。
+- 已完成 T079/T080：胡了卜底层牌山生成器从随机柱思路升级为 Graph-based 地基，并在 `packages/shared/src/mahjong-mountain-generator.ts` 落地第一版，包含中心塔/双翼模板、5% 遮挡图、理论解法、组合发牌、干扰节点和体验报告。
+- 已完成 T081：胡了卜地图模板语法系统设计定稿。后续不应继续只加写死模板分支，而应先做模板注册表和参数系统；第一期实现 8 个核心模板：中心塔、双翼、十字、环形、长墙、岛屿、峡谷、阶梯；第二批 backlog：花瓣、堡垒、棋盘、迷雾外圈。
+- 已完成 T082：胡了卜模板注册表和参数系统实施计划。计划要求后续先保留 `center-tower` / `two-wings` 现有行为，再落地模板 definition、参数归一化、参数边界、体验标签、通用校验器和 ExperienceReport 模板字段；8 个核心模板仍由 T083 实现。
+- 已完成 T083：共享生成器已落地模板注册表、参数归一化、8 个核心模板、通用校验器和扩展后的 `ExperienceReport`。当前仍未接 Cocos，后续需要单独把 Graph-based `levelTiles` 转成 Cocos 关卡配置。
 
 ## 新负责人需要先读
 
@@ -75,8 +86,29 @@
 33. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/bootstrap/HulebuSampleSceneModel.ts`
 34. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/README.md`
 35. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/manifest.json`
-36. `docs/tasks/TASK_BOARD.md` 中 T017、T020、T029、T030、T038、T040、T041、T042、T043、T044、T045、T046、T047、T048、T049、T050、T052、T053、T054、T055、T056、T057、T058、T059、T060、T061、T062、T063、T065、T066、T068、T069、T070
+36. `docs/tasks/TASK_BOARD.md` 中 T017、T020、T029、T030、T038、T040、T041、T042、T043、T044、T045、T046、T047、T048、T049、T050、T052、T053、T054、T055、T056、T057、T058、T059、T060、T061、T062、T063、T065、T066、T068、T069、T070、T072
 37. `docs/decisions/2026-05-20-gdevelop-game-engine-role.md`
+38. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`
+39. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+40. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/bootstrap/HulebuConfiguredSceneModel.ts`
+41. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/assets/HulebuTileSpriteCatalog.ts`
+42. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/borderless/`
+43. `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/refreshed/`
+44. `docs/tasks/items/T076-hulebu-cocos-clear-level-flow.md`
+45. `docs/tasks/claims/T076-codex.md`
+46. `docs/tasks/items/T077-hulebu-cocos-random-stacked-mountain.md`
+47. `docs/tasks/claims/T077-codex.md`
+48. `docs/tasks/items/T078-hulebu-cocos-spread-locking.md`
+49. `docs/tasks/claims/T078-codex.md`
+50. `docs/superpowers/specs/2026-05-28-hulebu-map-template-grammar-design.md`
+51. `docs/modules/mahjong-roguelike/GENERATOR_FOUNDATION.md`
+52. `packages/shared/src/mahjong-mountain-generator.ts`
+53. `packages/shared/src/mahjong-mountain-generator.test.ts`
+54. `docs/superpowers/plans/2026-05-28-hulebu-template-registry-parameter-system.md`
+55. `docs/tasks/items/T082-hulebu-template-registry-plan.md`
+56. `docs/tasks/claims/T082-lee.md`
+57. `docs/tasks/items/T083-hulebu-template-registry-core-templates.md`
+58. `docs/tasks/claims/T083-lee.md`
 
 ## 推荐下一步
 
@@ -105,3 +137,9 @@ Cocos 首屏自动渲染、手机竖屏适配和真实可见尺寸自适应已�
 麻将 UI 图片资源已整理完成。下一步接正式牌面时，先用 `manifest.json` 建立 `tileKey -> SpriteFrame` 映射；`drafts/` 不要直接接 prefab，除非人工确认替换。
 Cocos 测试首屏点击链路已完成。下一步建议把 Cocos `GameSceneController` 从本地测试 scene model 切到真实配置和共享规则状态，重点补“点击后重新计算遮挡解锁、清空牌山通关、奖励三选一、Boss 目标进度”和最终牌面 prefab 绑定。
 Cocos 点击后遮挡解锁和槽位牌名显示已补齐。下一步更建议先把 Cocos 运行时接到真实 20 关配置和共享规则状态，再接最终牌面 SpriteFrame；否则继续打磨测试 scene model 的收益会越来越小。
+Cocos 真实第 1 关配置接入已完成。下一步建议优先二选一：要么接最终牌面 SpriteFrame prefab，把程序化占位牌替换为已归档青瓷麻将图；要么继续扩 Cocos runtime 的关卡流，支持从 1-20 关配置切换、通关提示、奖励节点和 Boss 目标进度。
+Cocos 牌面 SpriteFrame 绑定第一版已完成。下一步如果继续美术表现，应先处理图片裁切和 Tile prefab，让牌面占满当前 52x70 牌体，并把 8 格槽位中的牌也替换为同一套图片；如果继续玩法流程，则应扩 Cocos runtime 的关卡流、奖励三选一和 Boss 目标进度。
+无边框牌面资源已完成。下一步美术表现可以优先调整 Cocos 牌体底板、符号缩放比例和槽位里的同款 SpriteFrame；不要再把带框原图直接叠在自绘牌体上。
+新牌面 UI 留白版、Cocos 最小通关闭环、随机堆叠牌山恢复、牌山铺开和遮挡点击一致性已完成。下一步建议继续补奖励效果真正落地、Boss 目标进度、关卡 HUD 动态进度和槽位同款图片；完整 20 关内容平衡、最终 Tile prefab、图集和动画可以在流程稳定后继续接。
+地图模板语法系统已完成设计。若下一步继续牌山地基，应先开 T082 做模板注册表和参数系统，保留 T080 当前行为，再开 T083 实现 8 个核心模板和对应 ExperienceReport 校验；不要直接把十字、环形等写成更多临时 if 分支。
+模板注册表和 8 个核心模板共享实现已完成。下一步如果继续牌山地基，建议另起 Cocos 接入任务，把 Graph-based `levelTiles` 转成现有 Cocos `HulebuLevelTileConfig`，先用于 1-2 个测试关卡目检读牌压力，再决定是否替换默认 20 关随机堆叠生成。
