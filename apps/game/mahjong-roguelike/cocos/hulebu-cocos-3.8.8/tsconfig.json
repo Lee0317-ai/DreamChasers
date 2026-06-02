@@ -3,6 +3,10 @@
   "compilerOptions": {
     "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+    "lib": [
+      "DOM",
+      "ES2019"
+    ]
   }
 }

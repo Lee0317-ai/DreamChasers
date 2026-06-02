@@ -1,0 +1,9 @@
+# T085：胡了卜玩家试玩页和调牌器分离完成记录
+
+- 完成时间：2026-05-30
+- 负责人：Lee
+- 修改文件：`AGENTS.md`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/game/mahjong-roguelike/prototypes/config-playable/tuner.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T085-hulebu-play-page-tuner-split.md`, `docs/tasks/claims/T085-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-30.md`, `docs/completion/2026-05-30-task-T085-hulebu-play-page-tuner-split.md`
+- 实现内容：`index.html` 默认成为玩家试玩页，隐藏配置模式切换、关卡标签和调参面板；新增 `play` / `tuner` 视图分支和页面标题/元信息同步；玩家页提供新窗口“调牌器”入口；新增 `tuner.html` 独立入口跳转到 `view=tuner&mode=mountain` 并保留调参参数；移动端玩家页首屏优先展示牌桌。
+- 验证命令：`npm run test -w packages/shared -- mahjong-config-playable-prototype`; `npm run test -w packages/shared -- mahjong-config`; `node --check /private/tmp/hulebu-config-playable-script.js`; `node --check /private/tmp/hulebu-config-playable-tuner-script.js`; `~/.kimi-webbridge/bin/kimi-webbridge status`; `~/.kimi-webbridge/bin/kimi-webbridge start`; `npm run docs:sync`; `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T085-hulebu-play-page-tuner-split.md docs/tasks/claims/T085-lee.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-05-30.md docs/completion/2026-05-30-task-T085-hulebu-play-page-tuner-split.md`; `git diff --check`
+- 验证结果：原型分离回归测试通过，1 个测试文件、3 个测试；配置相关测试通过，2 个测试文件、17 个测试；玩家页和调牌器内联脚本语法检查通过；`npm run docs:sync` 通过并同步 52 个任务分片和 51 个领取分片；T085 文档占位符扫描无匹配；`git diff --check` 通过。Kimi WebBridge `start` 返回 daemon 已在运行，但 `status` 仍返回 `running:false` 和 HTTP probe 失败，因此浏览器自动截图/移动端实际页面复核未完成。
+- 遗留问题：需要另起工具排障或在 WebBridge 恢复后补做浏览器桌面/移动端自动复核；奖励效果真实生效、Boss 目标进度、槽位同款图片、Cocos Web Preview 多模板目检和最终动效继续后置。

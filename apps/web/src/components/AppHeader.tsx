@@ -16,6 +16,10 @@ export function AppHeader() {
     return null;
   }
 
+  if (pathname.startsWith("/games/hulebu")) {
+    return null;
+  }
+
   if (isTools) {
     return (
       <nav className="nav tools-nav" id="nav">

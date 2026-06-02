@@ -326,7 +326,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("HULEBU_REWARD_LEVEL_ORDERS.has");
   });
 
-  test("uses random stacked Cocos mountains instead of six-card flow levels", async () => {
+  test("uses generated stacked Cocos mountains instead of six-card flow levels", async () => {
     const levelConfigPath = "assets/scripts/config/HulebuLevelConfig.ts";
     const levelConfig = readText(levelConfigPath);
     const boardLayerBinder = readText("assets/scripts/BoardLayerBinder.ts");
@@ -346,8 +346,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
       }>;
     };
 
-    expect(levelConfig).toContain("createHulebuRandomMountainLevelConfig");
-    expect(levelConfig).toContain("createSeededRandom");
+    expect(levelConfig).toContain("createHulebuGraphMountainLevelConfig");
+    expect(levelConfig).toContain("generateHulebuMountain");
     expect(levelConfig).toContain("targetTileCount");
     expect(levelConfig).toContain("maxStackDepth");
     expect(levelConfig).toContain("honorWeight");
@@ -366,13 +366,6 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const yValues = firstLevel.tiles.map((tile) => tile.y);
     const xSpan = Math.max(...xValues) - Math.min(...xValues);
     const ySpan = Math.max(...yValues) - Math.min(...yValues);
-    const columnCounts = new Map<string, number>();
-    firstLevel.tiles.forEach((tile) => {
-      const key = `${tile.x}:${tile.y}`;
-      columnCounts.set(key, (columnCounts.get(key) ?? 0) + 1);
-    });
-
-    const stackedColumns = [...columnCounts.values()].filter((count) => count > 1);
     const initiallyFreeTiles = firstLevel.tiles.filter((tile) => tile.blockedBy.length === 0);
     const crossColumnBlockers = firstLevel.tiles.flatMap((tile) => (
       tile.blockedBy.filter((blockerId) => {
@@ -386,6 +379,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
         return Boolean(blocker && (blocker.x !== tile.x || blocker.y !== tile.y));
       })
     ));
+    const maxLayer = Math.max(...firstLevel.tiles.map((tile) => tile.layer));
+    const blockedTiles = firstLevel.tiles.filter((tile) => tile.blockedBy.length > 0);
     const missingHigherLayerBlockers = levels.flatMap((level) => (
       level.tiles.flatMap((tile) => (
         level.tiles
@@ -400,8 +395,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     ));
     expect(xSpan).toBeGreaterThanOrEqual(270);
     expect(ySpan).toBeGreaterThanOrEqual(170);
-    expect(stackedColumns.length).toBeGreaterThanOrEqual(6);
-    expect(Math.max(...stackedColumns)).toBeGreaterThanOrEqual(3);
+    expect(maxLayer).toBeGreaterThanOrEqual(3);
+    expect(blockedTiles.length).toBeGreaterThanOrEqual(20);
     expect(initiallyFreeTiles.length).toBeGreaterThan(6);
     expect(initiallyFreeTiles.length).toBeLessThanOrEqual(16);
     expect(crossColumnBlockers.length).toBeGreaterThanOrEqual(12);
@@ -410,18 +405,50 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(firstLevel.tiles.some((tile) => tile.suit === "honor")).toBe(true);
     expect(firstLevel.tiles.some((tile) => tile.blockedBy.length > 0)).toBe(true);
 
-    const stackedLowerTile = firstLevel.tiles.find((tile) => {
-      const sameColumnBlocker = firstLevel.tiles.find((candidate) => (
-        candidate.x === tile.x
-        && candidate.y === tile.y
-        && candidate.layer === tile.layer + 1
-      ));
-      return sameColumnBlocker ? tile.blockedBy.includes(sameColumnBlocker.id) : false;
-    });
-    expect(stackedLowerTile).toBeTruthy();
-
     expect(boardLayerBinder).toContain("drawStackDepthHint");
     expect(boardLayerBinder).toContain("StackDepthHint");
+  });
+
+  test("feeds Cocos levels from the shared Graph-based mountain generator", async () => {
+    const levelConfigPath = "assets/scripts/config/HulebuLevelConfig.ts";
+    const levelConfig = readText(levelConfigPath);
+    const moduleUrl = pathToFileURL(path.join(cocosRoot, levelConfigPath)).href;
+    const levelModule = await import(moduleUrl) as {
+      HULEBU_LEVEL_CONFIGS: Array<{
+        id: string;
+        tiles: Array<{
+          id: string;
+          suit: string;
+          rank: number;
+          x: number;
+          y: number;
+          layer: number;
+          blockedBy: string[];
+        }>;
+      }>;
+    };
+
+    expect(levelConfig).toContain("generateHulebuMountain");
+    expect(levelConfig).toContain("HULEBU_GRAPH_TEMPLATE_ROTATION");
+    expect(levelConfig).toContain("createHulebuGraphMountainLevelConfig");
+    expect(levelConfig).toContain("mapGraphTileToCocosTile");
+    expect(levelConfig).not.toContain("createStackColumns(");
+    expect(levelConfig).not.toContain("createTopFirstPlacements");
+
+    const levels = levelModule.HULEBU_LEVEL_CONFIGS;
+    expect(levels).toHaveLength(20);
+    expect(levels[0]?.tiles[0]?.id).toContain("center-tower");
+    expect(levels[1]?.tiles[0]?.id).toContain("two-wings");
+    expect(levels[2]?.tiles[0]?.id).toContain("cross");
+    expect(levels[3]?.tiles[0]?.id).toContain("ring");
+
+    const allLevelIds = levels.flatMap((level) => level.tiles.map((tile) => tile.id));
+    expect(allLevelIds.some((id) => id.includes("long-wall"))).toBe(true);
+    expect(allLevelIds.some((id) => id.includes("islands"))).toBe(true);
+    expect(allLevelIds.some((id) => id.includes("canyon"))).toBe(true);
+    expect(allLevelIds.some((id) => id.includes("staircase"))).toBe(true);
+    expect(Math.min(...levels.map((level) => level.tiles.length))).toBeGreaterThanOrEqual(42);
+    expect(Math.max(...levels.map((level) => Math.max(...level.tiles.map((tile) => tile.layer))))).toBeGreaterThanOrEqual(4);
   });
 
   test("keeps covered Cocos mountain tiles locked until their blockers leave the board", async () => {
@@ -506,15 +533,13 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const stackedPair = levelModule.HULEBU_LEVEL_CONFIGS
       .flatMap((level) => level.tiles.map((tile) => ({ level, tile })))
       .find(({ level, tile }) => {
-        if (tile.blockedBy.length !== 1) {
+        if (tile.blockedBy.length < 1) {
           return false;
         }
 
         const blocker = level.tiles.find((candidate) => candidate.id === tile.blockedBy[0]);
         return Boolean(
           blocker
-          && blocker.x === tile.x
-          && blocker.y === tile.y
           && blocker.layer > tile.layer,
         );
       });
@@ -528,8 +553,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
 
     expect(blockedNode).toBeTruthy();
     expect(blockerNode).toBeTruthy();
-    expect(blockerNode!.position.x).toBeGreaterThan(blockedNode!.position.x);
-    expect(blockerNode!.position.y).toBeGreaterThan(blockedNode!.position.y);
+    expect(blockerNode!.position.x).not.toBe(blockedNode!.position.x);
+    expect(blockerNode!.position.y).not.toBe(blockedNode!.position.y);
   });
 
   test("binds board tiles to archived Mahjong SpriteFrame resources with fallback", () => {

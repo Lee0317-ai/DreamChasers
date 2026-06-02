@@ -1,8 +1,8 @@
 # 胡了卜牌山生成器地基
 
 **对应任务**：T079, T080, T081, T082, T083  
-**状态**：共享层第一版已实现；地图模板语法系统已完成设计；模板注册表、参数系统和 8 个核心模板已在共享层落地，待 Cocos 接入  
-**范围**：底层生成器地基，不改 Cocos 表现层。
+**状态**：共享层第一版已实现；地图模板语法系统已完成设计；模板注册表、参数系统和 8 个核心模板已在共享层落地；Cocos 默认关卡已接入 Graph-based `levelTiles`
+**范围**：底层生成器地基和 Cocos 关卡配置接入。
 
 ## 1. 当前判断
 
@@ -137,11 +137,19 @@ T083 已落地：
 
 本任务仍不接 Cocos。Cocos 默认关卡尚未消费 Graph-based 生成器输出，后续应另起任务把 `levelTiles` 转为现有 Cocos `HulebuLevelTileConfig`。
 
-## 11. 下一步
+## 11. T084 已完成内容
 
-后续另起任务接回 Cocos：
+Cocos 默认关卡已开始消费 Graph-based 生成器输出：
 
-- 将 `levelTiles` 转为现有 Cocos `HulebuLevelTileConfig`。
-- 保留当前 Cocos 渲染、点击、槽位和组合按钮逻辑。
-- 基于 `ExperienceReport` 调首关窗口、槽位压力和干扰强度。
-- 用 Cocos Web Preview 验证桌面和手机视口的读牌压力。
+- `HulebuLevelConfig.ts` 通过 `generateHulebuMountain` 生成默认 20 关牌山。
+- 8 个核心模板按关卡顺序轮换：中心塔、双翼、十字、环形、长墙、岛屿、峡谷、阶梯。
+- `levelTiles` 已映射为现有 Cocos `HulebuLevelTileConfig`，保留 `id / suit / rank / x / y / layer / blockedBy / location` 契约。
+- Cocos 渲染、点击、8 格主槽、`胡 / 杠 / 碰 / 吃`、通关提示和奖励节点流转继续沿用原 runtime。
+- Cocos 工程 `tsconfig` 已补 ES2019 lib，保证共享生成器在 Cocos 工程 typecheck 中可编译。
+- 结构测试已覆盖模板接入、20 关数量、模板轮换、多层遮挡、被 blocker 移走后解锁和 Cocos typecheck。
+
+## 12. 下一步
+
+- 用 Cocos Web Preview 手机视口目检 1-2 个模板关卡的读牌压力。
+- 基于 `ExperienceReport` 把每关模板、窗口、干扰强度和 Boss/奖励节点语义做成更明确的关卡参数。
+- 继续补奖励效果真正落地、Boss 目标进度和槽位同款图片。

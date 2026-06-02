@@ -1,0 +1,2594 @@
+{
+  "schemaVersion": 1,
+  "moduleSlug": "mahjong-roguelike",
+  "displayName": "胡了卜",
+  "levelSet": "mvp_v1",
+  "coordinateSystem": {
+    "baseWidth": 620,
+    "baseHeight": 360,
+    "tileWidth": 64,
+    "tileHeight": 86,
+    "origin": "top_left"
+  },
+  "defaults": {
+    "slotLimit": 8,
+    "reserveLimit": 1,
+    "shields": 1,
+    "firstProtect": true,
+    "tools": {
+      "shuffle": 1,
+      "undo": 1,
+      "vision": 1
+    },
+    "clearGoal": "clear_board"
+  },
+  "levels": [
+    {
+      "id": "validation_intro_peng",
+      "order": 1,
+      "name": "入门场",
+      "subtitle": "单一碰",
+      "type": "validation",
+      "validationFocus": [
+        "按钮亮起后是否会主动点击",
+        "上层牌移除后下层牌是否自然可点"
+      ],
+      "rewardPool": [
+        "first_protect_shield",
+        "shield_plus_1",
+        "vision_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "p1a",
+          "suit": "tong",
+          "rank": 9,
+          "x": 210,
+          "y": 116,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "p1b",
+          "suit": "tong",
+          "rank": 9,
+          "x": 300,
+          "y": 116,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "p1c",
+          "suit": "tong",
+          "rank": 9,
+          "x": 390,
+          "y": 116,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "p2a",
+          "suit": "wan",
+          "rank": 2,
+          "x": 222,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "p1a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "p2b",
+          "suit": "wan",
+          "rank": 2,
+          "x": 312,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "p1b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "p2c",
+          "suit": "wan",
+          "rank": 2,
+          "x": 402,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "p1c"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "validation_chi_line",
+      "order": 2,
+      "name": "顺子场",
+      "subtitle": "吃的识别",
+      "type": "validation",
+      "validationFocus": [
+        "玩家是否理解同花色连续三张",
+        "吃和碰按钮的状态差异是否清楚"
+      ],
+      "rewardPool": [
+        "reserve_plus_1",
+        "chi_score_plus_8",
+        "coin_plus_20"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "c2",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 190,
+          "y": 110,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "c3",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 280,
+          "y": 110,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "c4",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 370,
+          "y": 110,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "c6",
+          "suit": "wan",
+          "rank": 6,
+          "x": 210,
+          "y": 205,
+          "layer": 0,
+          "blockedBy": [
+            "c2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "c7",
+          "suit": "wan",
+          "rank": 7,
+          "x": 300,
+          "y": 205,
+          "layer": 0,
+          "blockedBy": [
+            "c3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "c8",
+          "suit": "wan",
+          "rank": 8,
+          "x": 390,
+          "y": 205,
+          "layer": 0,
+          "blockedBy": [
+            "c4"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "validation_gang_conflict",
+      "order": 3,
+      "name": "杠冲突场",
+      "subtitle": "碰还是杠",
+      "type": "validation",
+      "validationFocus": [
+        "玩家是否注意到碰和杠同时可用",
+        "留下孤张是否能被余牌解释"
+      ],
+      "rewardPool": [
+        "shield_plus_1",
+        "undo_plus_1",
+        "gang_score_plus_25"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "g5a",
+          "suit": "tong",
+          "rank": 5,
+          "x": 172,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "g5b",
+          "suit": "tong",
+          "rank": 5,
+          "x": 254,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "g5c",
+          "suit": "tong",
+          "rank": 5,
+          "x": 336,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "g5d",
+          "suit": "tong",
+          "rank": 5,
+          "x": 418,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "g5e",
+          "suit": "tong",
+          "rank": 5,
+          "x": 190,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "g5a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "g5f",
+          "suit": "tong",
+          "rank": 5,
+          "x": 280,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "g5b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "g5g",
+          "suit": "tong",
+          "rank": 5,
+          "x": 370,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "g5c"
+          ],
+          "location": "board"
+        }
+      ],
+      "designGoal": "reward_checkpoint: 奖励节点，观察玩家是否理解三选一节奏。"
+    },
+    {
+      "id": "validation_multi_choice",
+      "order": 4,
+      "name": "多组合场",
+      "subtitle": "吃碰同现",
+      "type": "validation",
+      "validationFocus": [
+        "候选区是否能支撑真实选择",
+        "玩家是否愿意比较先吃还是先碰"
+      ],
+      "rewardPool": [
+        "first_protect_shield",
+        "chi_score_plus_8",
+        "gang_score_plus_25"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "m3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 172,
+          "y": 112,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "m4",
+          "suit": "wan",
+          "rank": 4,
+          "x": 254,
+          "y": 112,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "m5a",
+          "suit": "wan",
+          "rank": 5,
+          "x": 336,
+          "y": 112,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "m5b",
+          "suit": "wan",
+          "rank": 5,
+          "x": 418,
+          "y": 112,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "m5c",
+          "suit": "wan",
+          "rank": 5,
+          "x": 500,
+          "y": 112,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "m2",
+          "suit": "wan",
+          "rank": 2,
+          "x": 238,
+          "y": 214,
+          "layer": 0,
+          "blockedBy": [
+            "m3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "m5d",
+          "suit": "wan",
+          "rank": 5,
+          "x": 420,
+          "y": 214,
+          "layer": 0,
+          "blockedBy": [
+            "m5b"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "validation_danger",
+      "order": 5,
+      "name": "危局场",
+      "subtitle": "满槽救场",
+      "type": "validation",
+      "validationFocus": [
+        "满槽时是否先检测组合",
+        "备用槽、护符、首败保护的顺序是否能被理解"
+      ],
+      "rewardPool": [
+        "reserve_plus_1",
+        "shield_plus_1",
+        "undo_plus_1"
+      ],
+      "initialSlotOrder": [
+        "d1",
+        "d3",
+        "d5",
+        "d7",
+        "b2",
+        "b4"
+      ],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "d1",
+          "suit": "wan",
+          "rank": 1,
+          "x": 80,
+          "y": 90,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "d3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 160,
+          "y": 90,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "d5",
+          "suit": "wan",
+          "rank": 5,
+          "x": 240,
+          "y": 90,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "d7",
+          "suit": "wan",
+          "rank": 7,
+          "x": 320,
+          "y": 90,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "b2",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 400,
+          "y": 90,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "b4",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 480,
+          "y": 90,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "x9",
+          "suit": "tong",
+          "rank": 9,
+          "x": 220,
+          "y": 120,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "x1",
+          "suit": "tong",
+          "rank": 1,
+          "x": 310,
+          "y": 120,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "x3",
+          "suit": "tiao",
+          "rank": 8,
+          "x": 400,
+          "y": 120,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "z6a",
+          "suit": "wan",
+          "rank": 6,
+          "x": 250,
+          "y": 220,
+          "layer": 0,
+          "blockedBy": [
+            "x9"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "z6b",
+          "suit": "wan",
+          "rank": 6,
+          "x": 340,
+          "y": 220,
+          "layer": 0,
+          "blockedBy": [
+            "x1"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "z6c",
+          "suit": "wan",
+          "rank": 6,
+          "x": 430,
+          "y": 220,
+          "layer": 0,
+          "blockedBy": [
+            "x3"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_006_three_suits",
+      "order": 6,
+      "name": "三门初会",
+      "subtitle": "三花色切换",
+      "type": "campaign",
+      "difficulty": "easy",
+      "designGoal": "reward_checkpoint: 从单花色验证过渡到三花色识别，训练玩家看清万、条、筒。",
+      "validationFocus": [
+        "是否能区分不同花色顺子",
+        "是否会优先处理明显碰组"
+      ],
+      "featuredCombos": [
+        "hu"
+      ],
+      "rewardPool": [
+        "first_protect_shield",
+        "peng_score_plus_10",
+        "vision_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l6_w1",
+          "suit": "wan",
+          "rank": 1,
+          "x": 150,
+          "y": 92,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l6_w2",
+          "suit": "wan",
+          "rank": 2,
+          "x": 232,
+          "y": 92,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l6_w3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 314,
+          "y": 92,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l6_t7a",
+          "suit": "tiao",
+          "rank": 7,
+          "x": 396,
+          "y": 92,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l6_t7b",
+          "suit": "tiao",
+          "rank": 7,
+          "x": 478,
+          "y": 92,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l6_t7c",
+          "suit": "tiao",
+          "rank": 7,
+          "x": 170,
+          "y": 196,
+          "layer": 0,
+          "blockedBy": [
+            "l6_w1"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l6_o4",
+          "suit": "tong",
+          "rank": 4,
+          "x": 260,
+          "y": 196,
+          "layer": 0,
+          "blockedBy": [
+            "l6_w2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l6_o5",
+          "suit": "tong",
+          "rank": 5,
+          "x": 350,
+          "y": 196,
+          "layer": 0,
+          "blockedBy": [
+            "l6_w3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l6_o6",
+          "suit": "tong",
+          "rank": 6,
+          "x": 440,
+          "y": 196,
+          "layer": 0,
+          "blockedBy": [
+            "l6_t7b"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_007_keep_gang",
+      "order": 7,
+      "name": "留杠一手",
+      "subtitle": "等四张还是先碰",
+      "type": "campaign",
+      "difficulty": "normal",
+      "designGoal": "强化碰和杠的收益冲突，让玩家开始根据槽位压力做选择。",
+      "validationFocus": [
+        "玩家是否愿意等第 4 张杠",
+        "玩家是否理解提前碰会留下孤张"
+      ],
+      "rewardPool": [
+        "gang_score_plus_25",
+        "shield_plus_1",
+        "shuffle_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l7_o6a",
+          "suit": "tong",
+          "rank": 6,
+          "x": 132,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l7_o6b",
+          "suit": "tong",
+          "rank": 6,
+          "x": 214,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l7_o6c",
+          "suit": "tong",
+          "rank": 6,
+          "x": 296,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l7_w4",
+          "suit": "wan",
+          "rank": 4,
+          "x": 378,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l7_w5",
+          "suit": "wan",
+          "rank": 5,
+          "x": 460,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l7_o6d",
+          "suit": "tong",
+          "rank": 6,
+          "x": 176,
+          "y": 194,
+          "layer": 0,
+          "blockedBy": [
+            "l7_o6a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l7_w6",
+          "suit": "wan",
+          "rank": 6,
+          "x": 266,
+          "y": 194,
+          "layer": 0,
+          "blockedBy": [
+            "l7_o6b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l7_t2a",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 356,
+          "y": 194,
+          "layer": 0,
+          "blockedBy": [
+            "l7_o6c"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l7_t2b",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 446,
+          "y": 194,
+          "layer": 0,
+          "blockedBy": [
+            "l7_w5"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l7_t2c",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 536,
+          "y": 194,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_008_chain_chi",
+      "order": 8,
+      "name": "连吃试手",
+      "subtitle": "多条顺子选择",
+      "type": "campaign",
+      "difficulty": "normal",
+      "designGoal": "让玩家在两个吃候选之间做顺序选择，观察候选区和槽位高亮是否够用。",
+      "validationFocus": [
+        "玩家是否能比较 2-3-4 与 4-5-6",
+        "玩家是否意识到共享 4 条会破坏另一组吃"
+      ],
+      "rewardPool": [
+        "chi_score_plus_8",
+        "reserve_plus_1",
+        "coin_plus_20"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l8_t2",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 140,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l8_t3",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 222,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l8_t4",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 304,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l8_t5",
+          "suit": "tiao",
+          "rank": 5,
+          "x": 386,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l8_t6",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 468,
+          "y": 96,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l8_w8a",
+          "suit": "wan",
+          "rank": 8,
+          "x": 188,
+          "y": 202,
+          "layer": 0,
+          "blockedBy": [
+            "l8_t2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l8_w8b",
+          "suit": "wan",
+          "rank": 8,
+          "x": 278,
+          "y": 202,
+          "layer": 0,
+          "blockedBy": [
+            "l8_t3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l8_w8c",
+          "suit": "wan",
+          "rank": 8,
+          "x": 368,
+          "y": 202,
+          "layer": 0,
+          "blockedBy": [
+            "l8_t4"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l8_o1",
+          "suit": "tong",
+          "rank": 1,
+          "x": 458,
+          "y": 202,
+          "layer": 0,
+          "blockedBy": [
+            "l8_t5"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_009_counter_reading",
+      "order": 9,
+      "name": "看余牌",
+      "subtitle": "等补牌还是先清槽",
+      "type": "campaign",
+      "difficulty": "normal",
+      "designGoal": "reward_checkpoint: 让玩家通过余牌判断是否继续等一张牌补成碰或吃。",
+      "validationFocus": [
+        "玩家是否查看余牌",
+        "玩家是否能判断 7 万还有补牌机会"
+      ],
+      "rewardPool": [
+        "vision_plus_1",
+        "shuffle_plus_1",
+        "peng_score_plus_10"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l9_w7a",
+          "suit": "wan",
+          "rank": 7,
+          "x": 126,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l9_w7b",
+          "suit": "wan",
+          "rank": 7,
+          "x": 208,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l9_t3",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 290,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l9_t4",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 372,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l9_t5",
+          "suit": "tiao",
+          "rank": 5,
+          "x": 454,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l9_w7c",
+          "suit": "wan",
+          "rank": 7,
+          "x": 168,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "l9_w7a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l9_o2",
+          "suit": "tong",
+          "rank": 2,
+          "x": 258,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "l9_w7b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l9_o3",
+          "suit": "tong",
+          "rank": 3,
+          "x": 348,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "l9_t3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l9_o4",
+          "suit": "tong",
+          "rank": 4,
+          "x": 438,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [
+            "l9_t4"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l9_w1",
+          "suit": "wan",
+          "rank": 1,
+          "x": 528,
+          "y": 190,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_010_final_mix",
+      "order": 10,
+      "name": "小胡收官",
+      "subtitle": "吃碰杠混合",
+      "type": "campaign",
+      "difficulty": "hard",
+      "designGoal": "用一个小型混合关验证前 9 关学到的吃、碰、杠、余牌和救场。",
+      "validationFocus": [
+        "玩家是否会规划组合顺序",
+        "玩家是否能在满槽前主动清组合"
+      ],
+      "featuredCombos": [
+        "hu"
+      ],
+      "bossGoals": [
+        {
+          "type": "combo_count",
+          "combo": "chi",
+          "target": 1
+        },
+        {
+          "type": "combo_count",
+          "combo": "peng",
+          "target": 1
+        },
+        {
+          "type": "combo_count",
+          "combo": "gang",
+          "target": 1
+        },
+        {
+          "type": "suit_set",
+          "suits": [
+            "wan",
+            "tong",
+            "tiao"
+          ],
+          "eachTarget": 1
+        },
+        {
+          "type": "score_target",
+          "target": 80
+        }
+      ],
+      "rewardPool": [
+        "first_protect_shield",
+        "reserve_plus_1",
+        "gang_score_plus_25"
+      ],
+      "initialSlotOrder": [
+        "l10_w1",
+        "l10_t9"
+      ],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l10_w1",
+          "suit": "wan",
+          "rank": 1,
+          "x": 86,
+          "y": 84,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "l10_t9",
+          "suit": "tiao",
+          "rank": 9,
+          "x": 166,
+          "y": 84,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "slot"
+        },
+        {
+          "id": "l10_w2",
+          "suit": "wan",
+          "rank": 2,
+          "x": 144,
+          "y": 90,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l10_w3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 226,
+          "y": 90,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l10_o4a",
+          "suit": "tong",
+          "rank": 4,
+          "x": 308,
+          "y": 90,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l10_o4b",
+          "suit": "tong",
+          "rank": 4,
+          "x": 390,
+          "y": 90,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l10_o4c",
+          "suit": "tong",
+          "rank": 4,
+          "x": 472,
+          "y": 90,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l10_t6a",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 170,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l10_w2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l10_t6b",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 260,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l10_w3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l10_t6c",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 350,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l10_o4a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l10_t6d",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 440,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l10_o4b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l10_w4",
+          "suit": "wan",
+          "rank": 4,
+          "x": 530,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_011_honor_pressure",
+      "order": 11,
+      "name": "字牌入局",
+      "subtitle": "字牌和数牌混合",
+      "type": "campaign",
+      "difficulty": "normal",
+      "designGoal": "让玩家开始把字牌碰牌纳入余牌判断。",
+      "validationFocus": [
+        "观察字牌是否清晰",
+        "确认字牌不会被误认为可以吃"
+      ],
+      "rewardPool": [
+        "reserve_plus_1",
+        "shield_plus_1",
+        "vision_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l11_e1a",
+          "suit": "honor",
+          "rank": 1,
+          "x": 126,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l11_e1b",
+          "suit": "honor",
+          "rank": 1,
+          "x": 208,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l11_e1c",
+          "suit": "honor",
+          "rank": 1,
+          "x": 290,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l11_w4",
+          "suit": "wan",
+          "rank": 4,
+          "x": 372,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l11_w5",
+          "suit": "wan",
+          "rank": 5,
+          "x": 454,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l11_w6",
+          "suit": "wan",
+          "rank": 6,
+          "x": 536,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l11_t3a",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 190,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l11_e1a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l11_t3b",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 280,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l11_e1b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l11_t3c",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 370,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l11_e1c"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_012_pair_wait",
+      "order": 12,
+      "name": "等对子",
+      "subtitle": "胡前对子压力",
+      "type": "campaign",
+      "difficulty": "normal",
+      "designGoal": "让玩家在 8 格主槽下处理对子等待和吃碰冲突。",
+      "validationFocus": [
+        "玩家是否会保留对子",
+        "胡牌前槽位压力是否明显"
+      ],
+      "rewardPool": [
+        "chi_score_plus_8",
+        "peng_score_plus_10",
+        "undo_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "featuredCombos": [
+        "hu"
+      ],
+      "tiles": [
+        {
+          "id": "l12_w2",
+          "suit": "wan",
+          "rank": 2,
+          "x": 110,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l12_w3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 192,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l12_w4",
+          "suit": "wan",
+          "rank": 4,
+          "x": 274,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l12_h5a",
+          "suit": "honor",
+          "rank": 5,
+          "x": 356,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l12_h5b",
+          "suit": "honor",
+          "rank": 5,
+          "x": 438,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l12_h5c",
+          "suit": "honor",
+          "rank": 5,
+          "x": 520,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l12_o7a",
+          "suit": "tong",
+          "rank": 7,
+          "x": 206,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l12_w2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l12_o7b",
+          "suit": "tong",
+          "rank": 7,
+          "x": 296,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l12_w3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l12_o8",
+          "suit": "tong",
+          "rank": 8,
+          "x": 386,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l12_h5a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l12_o9",
+          "suit": "tong",
+          "rank": 9,
+          "x": 476,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l12_h5b"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_013_reward_checkpoint",
+      "order": 13,
+      "name": "二段起势",
+      "subtitle": "奖励节点",
+      "type": "campaign",
+      "difficulty": "medium",
+      "designGoal": "reward_checkpoint: 进入第二段后的第一处奖励节点，检查玩家是否形成构筑方向。",
+      "validationFocus": [
+        "奖励三选一是否仍有吸引力",
+        "备用和护符是否像救场资源"
+      ],
+      "rewardPool": [
+        "gang_score_plus_25",
+        "shuffle_plus_1",
+        "first_protect_shield"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l13_t1",
+          "suit": "tiao",
+          "rank": 1,
+          "x": 112,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l13_t2",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 194,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l13_t3",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 276,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l13_w8a",
+          "suit": "wan",
+          "rank": 8,
+          "x": 358,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l13_w8b",
+          "suit": "wan",
+          "rank": 8,
+          "x": 440,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l13_w8c",
+          "suit": "wan",
+          "rank": 8,
+          "x": 522,
+          "y": 88,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l13_h7a",
+          "suit": "honor",
+          "rank": 7,
+          "x": 180,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l13_t1"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l13_h7b",
+          "suit": "honor",
+          "rank": 7,
+          "x": 270,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l13_t2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l13_h7c",
+          "suit": "honor",
+          "rank": 7,
+          "x": 360,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l13_t3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l13_h7d",
+          "suit": "honor",
+          "rank": 7,
+          "x": 450,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l13_w8a"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_014_cross_suit_chains",
+      "order": 14,
+      "name": "错门连吃",
+      "subtitle": "多花色顺子",
+      "type": "campaign",
+      "difficulty": "medium",
+      "designGoal": "用多花色顺子制造候选选择，避免只按同一花色机械点击。",
+      "validationFocus": [
+        "候选区是否能解释多组吃",
+        "玩家是否会误点破坏另一组"
+      ],
+      "rewardPool": [
+        "coin_plus_20",
+        "vision_plus_1",
+        "shield_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l14_w3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 100,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l14_w4",
+          "suit": "wan",
+          "rank": 4,
+          "x": 182,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l14_w5",
+          "suit": "wan",
+          "rank": 5,
+          "x": 264,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l14_o5",
+          "suit": "tong",
+          "rank": 5,
+          "x": 346,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l14_o6",
+          "suit": "tong",
+          "rank": 6,
+          "x": 428,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l14_o7",
+          "suit": "tong",
+          "rank": 7,
+          "x": 510,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l14_t6a",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 174,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l14_w3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l14_t6b",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 264,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l14_w4"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l14_t6c",
+          "suit": "tiao",
+          "rank": 6,
+          "x": 354,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l14_o5"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_015_honor_triplets",
+      "order": 15,
+      "name": "风字三碰",
+      "subtitle": "字牌碰压缩",
+      "type": "campaign",
+      "difficulty": "medium",
+      "designGoal": "提高字牌出现感，验证字牌碰牌是否能形成麻将辨识度。",
+      "validationFocus": [
+        "字牌比例是否过高",
+        "碰牌收益是否足够明显"
+      ],
+      "rewardPool": [
+        "reserve_plus_1",
+        "undo_plus_1",
+        "peng_score_plus_10"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l15_h2a",
+          "suit": "honor",
+          "rank": 2,
+          "x": 96,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l15_h2b",
+          "suit": "honor",
+          "rank": 2,
+          "x": 178,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l15_h2c",
+          "suit": "honor",
+          "rank": 2,
+          "x": 260,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l15_h6a",
+          "suit": "honor",
+          "rank": 6,
+          "x": 342,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l15_h6b",
+          "suit": "honor",
+          "rank": 6,
+          "x": 424,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l15_h6c",
+          "suit": "honor",
+          "rank": 6,
+          "x": 506,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l15_w6",
+          "suit": "wan",
+          "rank": 6,
+          "x": 160,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l15_h2a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l15_w7",
+          "suit": "wan",
+          "rank": 7,
+          "x": 250,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l15_h2b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l15_w8",
+          "suit": "wan",
+          "rank": 8,
+          "x": 340,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l15_h2c"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_016_reward_checkpoint",
+      "order": 16,
+      "name": "小胡转折",
+      "subtitle": "奖励节点 · 胡",
+      "type": "campaign",
+      "difficulty": "medium",
+      "designGoal": "reward_checkpoint: 第 16 关再次强调胡牌，观察 8 格主槽在中后段是否仍有压力。",
+      "validationFocus": [
+        "胡牌包是否过于稳定",
+        "奖励是否缓解但不消除压力"
+      ],
+      "rewardPool": [
+        "chi_score_plus_8",
+        "shuffle_plus_1",
+        "gang_score_plus_25"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "featuredCombos": [
+        "hu"
+      ],
+      "tiles": [
+        {
+          "id": "l16_w5",
+          "suit": "wan",
+          "rank": 5,
+          "x": 96,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l16_w6",
+          "suit": "wan",
+          "rank": 6,
+          "x": 178,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l16_w7",
+          "suit": "wan",
+          "rank": 7,
+          "x": 260,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l16_h3a",
+          "suit": "honor",
+          "rank": 3,
+          "x": 342,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l16_h3b",
+          "suit": "honor",
+          "rank": 3,
+          "x": 424,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l16_h3c",
+          "suit": "honor",
+          "rank": 3,
+          "x": 506,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l16_o2a",
+          "suit": "tong",
+          "rank": 2,
+          "x": 184,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l16_w5"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l16_o2b",
+          "suit": "tong",
+          "rank": 2,
+          "x": 274,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l16_w6"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l16_t8a",
+          "suit": "tiao",
+          "rank": 8,
+          "x": 364,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l16_h3a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l16_t8b",
+          "suit": "tiao",
+          "rank": 8,
+          "x": 454,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l16_h3b"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_017_gang_tax",
+      "order": 17,
+      "name": "杠税",
+      "subtitle": "杠与孤张",
+      "type": "campaign",
+      "difficulty": "hard",
+      "designGoal": "让杠目标和孤张风险同场出现，观察玩家是否愿意等第四张。",
+      "validationFocus": [
+        "玩家是否提前碰掉杠",
+        "孤张是否需要更多救场提示"
+      ],
+      "rewardPool": [
+        "first_protect_shield",
+        "reserve_plus_1",
+        "coin_plus_20"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l17_o9a",
+          "suit": "tong",
+          "rank": 9,
+          "x": 90,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_o9b",
+          "suit": "tong",
+          "rank": 9,
+          "x": 172,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_o9c",
+          "suit": "tong",
+          "rank": 9,
+          "x": 254,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_o9d",
+          "suit": "tong",
+          "rank": 9,
+          "x": 336,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_t2",
+          "suit": "tiao",
+          "rank": 2,
+          "x": 418,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_t3",
+          "suit": "tiao",
+          "rank": 3,
+          "x": 500,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_t4",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 582,
+          "y": 82,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l17_h4a",
+          "suit": "honor",
+          "rank": 4,
+          "x": 184,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l17_o9a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l17_h4b",
+          "suit": "honor",
+          "rank": 4,
+          "x": 274,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l17_o9b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l17_h4c",
+          "suit": "honor",
+          "rank": 4,
+          "x": 364,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l17_o9c"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_018_counter_mix",
+      "order": 18,
+      "name": "记牌混战",
+      "subtitle": "余牌判断",
+      "type": "campaign",
+      "difficulty": "hard",
+      "designGoal": "把字牌、顺子和对子放在同一局，验证余牌信息是否还可读。",
+      "validationFocus": [
+        "余牌栏信息密度是否过高",
+        "玩家是否能判断继续等哪张"
+      ],
+      "rewardPool": [
+        "vision_plus_1",
+        "undo_plus_1",
+        "shield_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l18_w7",
+          "suit": "wan",
+          "rank": 7,
+          "x": 100,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l18_w8",
+          "suit": "wan",
+          "rank": 8,
+          "x": 182,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l18_w9",
+          "suit": "wan",
+          "rank": 9,
+          "x": 264,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l18_h1a",
+          "suit": "honor",
+          "rank": 1,
+          "x": 346,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l18_h1b",
+          "suit": "honor",
+          "rank": 1,
+          "x": 428,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l18_h1c",
+          "suit": "honor",
+          "rank": 1,
+          "x": 510,
+          "y": 86,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l18_t4a",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 174,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l18_w7"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l18_t4b",
+          "suit": "tiao",
+          "rank": 4,
+          "x": 264,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l18_w8"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l18_o1",
+          "suit": "tong",
+          "rank": 1,
+          "x": 354,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l18_h1a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l18_o2",
+          "suit": "tong",
+          "rank": 2,
+          "x": 444,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l18_h1b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l18_o3",
+          "suit": "tong",
+          "rank": 3,
+          "x": 534,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l18_h1c"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_019_final_reward",
+      "order": 19,
+      "name": "终局备战",
+      "subtitle": "奖励节点 · Boss 前",
+      "type": "campaign",
+      "difficulty": "hard",
+      "designGoal": "reward_checkpoint: 第 20 关前最后一次奖励，检查玩家是否理解救场资源价值。",
+      "validationFocus": [
+        "Boss 前奖励是否有仪式感",
+        "救场和道具是否比纯分数更有价值"
+      ],
+      "rewardPool": [
+        "gang_score_plus_25",
+        "peng_score_plus_10",
+        "shuffle_plus_1"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "tiles": [
+        {
+          "id": "l19_t7a",
+          "suit": "tiao",
+          "rank": 7,
+          "x": 92,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l19_t7b",
+          "suit": "tiao",
+          "rank": 7,
+          "x": 174,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l19_t7c",
+          "suit": "tiao",
+          "rank": 7,
+          "x": 256,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l19_w1",
+          "suit": "wan",
+          "rank": 1,
+          "x": 338,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l19_w2",
+          "suit": "wan",
+          "rank": 2,
+          "x": 420,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l19_w3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 502,
+          "y": 84,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l19_h5a",
+          "suit": "honor",
+          "rank": 5,
+          "x": 170,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l19_t7a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l19_h5b",
+          "suit": "honor",
+          "rank": 5,
+          "x": 260,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l19_t7b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l19_h5c",
+          "suit": "honor",
+          "rank": 5,
+          "x": 350,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l19_t7c"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l19_h5d",
+          "suit": "honor",
+          "rank": 5,
+          "x": 440,
+          "y": 198,
+          "layer": 0,
+          "blockedBy": [
+            "l19_w1"
+          ],
+          "location": "board"
+        }
+      ]
+    },
+    {
+      "id": "mvp_020_boss_hulebu",
+      "order": 20,
+      "name": "胡了卜王",
+      "subtitle": "终章 Boss",
+      "type": "campaign",
+      "difficulty": "hard",
+      "designGoal": "第二 Boss：要求吃碰杠、字牌、三门齐和胡牌共同完成。",
+      "validationFocus": [
+        "复合目标是否清楚",
+        "胡牌是否像终章目标而不是普通消除"
+      ],
+      "rewardPool": [
+        "first_protect_shield",
+        "reserve_plus_1",
+        "gang_score_plus_25"
+      ],
+      "initialSlotOrder": [],
+      "initialReserveOrder": [],
+      "featuredCombos": [
+        "hu"
+      ],
+      "bossGoals": [
+        {
+          "type": "combo_count",
+          "combo": "chi",
+          "target": 1
+        },
+        {
+          "type": "combo_count",
+          "combo": "peng",
+          "target": 2
+        },
+        {
+          "type": "combo_count",
+          "combo": "gang",
+          "target": 1
+        },
+        {
+          "type": "combo_count",
+          "combo": "hu",
+          "target": 1
+        },
+        {
+          "type": "suit_set",
+          "suits": [
+            "wan",
+            "tong",
+            "tiao",
+            "honor"
+          ],
+          "eachTarget": 1
+        },
+        {
+          "type": "score_target",
+          "target": 180
+        }
+      ],
+      "tiles": [
+        {
+          "id": "l20_w1",
+          "suit": "wan",
+          "rank": 1,
+          "x": 82,
+          "y": 76,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l20_w2",
+          "suit": "wan",
+          "rank": 2,
+          "x": 164,
+          "y": 76,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l20_w3",
+          "suit": "wan",
+          "rank": 3,
+          "x": 246,
+          "y": 76,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l20_o6a",
+          "suit": "tong",
+          "rank": 6,
+          "x": 328,
+          "y": 76,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l20_o6b",
+          "suit": "tong",
+          "rank": 6,
+          "x": 410,
+          "y": 76,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l20_o6c",
+          "suit": "tong",
+          "rank": 6,
+          "x": 492,
+          "y": 76,
+          "layer": 1,
+          "blockedBy": [],
+          "location": "board"
+        },
+        {
+          "id": "l20_t9a",
+          "suit": "tiao",
+          "rank": 9,
+          "x": 122,
+          "y": 188,
+          "layer": 0,
+          "blockedBy": [
+            "l20_w1"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l20_t9b",
+          "suit": "tiao",
+          "rank": 9,
+          "x": 212,
+          "y": 188,
+          "layer": 0,
+          "blockedBy": [
+            "l20_w2"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l20_t9c",
+          "suit": "tiao",
+          "rank": 9,
+          "x": 302,
+          "y": 188,
+          "layer": 0,
+          "blockedBy": [
+            "l20_w3"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l20_t9d",
+          "suit": "tiao",
+          "rank": 9,
+          "x": 392,
+          "y": 188,
+          "layer": 0,
+          "blockedBy": [
+            "l20_o6a"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l20_h7a",
+          "suit": "honor",
+          "rank": 7,
+          "x": 482,
+          "y": 188,
+          "layer": 0,
+          "blockedBy": [
+            "l20_o6b"
+          ],
+          "location": "board"
+        },
+        {
+          "id": "l20_h7b",
+          "suit": "honor",
+          "rank": 7,
+          "x": 572,
+          "y": 188,
+          "layer": 0,
+          "blockedBy": [
+            "l20_o6c"
+          ],
+          "location": "board"
+        }
+      ]
+    }
+  ],
+  "contentSummary": {
+    "totalLevels": 20,
+    "validationLevels": 5,
+    "campaignLevels": 15,
+    "totalRewards": 10,
+    "mvpStatus": "20_level_skeleton_draft",
+    "rewardCheckpoints": [
+      3,
+      6,
+      9,
+      13,
+      16,
+      19
+    ],
+    "bossLevels": [
+      10,
+      20
+    ]
+  }
+}

@@ -7,6 +7,7 @@
 - 当前本机使用者是 Lee。
 - 后续 AI 在本地领取或记录任务时，负责人统一写 `Lee`，不要写 `开发 B`。
 - 历史任务记录不需要因为本备注回改。
+- 后续 AI 需要调用浏览器、打开网页、截图、检查本地页面或做网页交互时，优先使用 Kimi WebBridge（`/Users/lee/.codex/skills/kimi-webbridge/SKILL.md`）或 Codex App 右侧内置浏览器；不要优先绕到系统 Chrome GUI、macOS `open` 或临时 headless 方案，除非前两者不可用并说明原因。
 
 ## 1. 文件编码规范
 

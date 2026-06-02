@@ -99,20 +99,21 @@ export const toolItems: PortalItem[] = [
 export const gameItems: PortalItem[] = [
   {
     id: "mahjong",
-    title: "麻将 Roguelike 消除",
-    description: "堆叠麻将、点击进槽、碰吃杠消除。每过一关选一个 Roguelike 奖励，20 关等你挑战。",
+    title: "胡了卜",
+    description: "堆叠麻将、点击进槽、有限牌河、碰吃杠胡组合消除。网页打开就能试玩。",
     icon: "M",
+    href: "/games/hulebu",
     tags: ["免费", "益智", "策略"],
     categories: ["puzzle", "strategy"],
-    detailsTitle: "麻将 Roguelike 消除",
+    detailsTitle: "胡了卜",
     details: [
       "点击可选麻将牌进入下方槽位",
-      "三张相同（碰）、同花色连续三张（吃）、四张相同（杠）即可消除",
-      "槽位满了则失败，清空牌面过关",
-      "每关从 3 个 Roguelike 奖励中选择 1 个",
-      "第一阶段规划 20 关和 20 个奖励"
+      "三张相同（碰）、同花色连续三张（吃）、四张相同（杠）即可发动组合",
+      "有限牌河、明牌区、补杠和胡牌奖励提供恢复路线",
+      "前 4 关教学，第 5 关后进入渐进密集牌山",
+      "当前版本用于朋友网页试玩"
     ],
-    footnote: "Web 试玩会先接入站内入口，正式小游戏发布优先走 Cocos Creator。"
+    footnote: "当前是 HTML 试玩 Demo；正式小游戏发布仍优先走 Cocos Creator。"
   },
   {
     id: "sudoku",
@@ -176,10 +177,10 @@ export const searchItems = [
     tag: "工具"
   },
   {
-    href: "/games#mahjong",
+    href: "/games/hulebu",
     icon: "M",
-    title: "麻将 Roguelike 消除",
-    description: "组合消除、局内奖励、轻策略",
+    title: "胡了卜",
+    description: "组合消除、有限牌河、轻策略",
     tag: "游戏"
   }
 ];

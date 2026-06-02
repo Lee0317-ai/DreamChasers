@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>胡了卜配置试玩</title>
+    <title>胡了卜玩家试玩</title>
     <style>
       :root {
         color-scheme: light;
@@ -21,6 +21,7 @@
         --slot: #4a2d1f;
         --shadow: 0 18px 42px rgba(87, 55, 29, 0.18);
         --tile-w: 12.5806451613%;
+        --overlay-z: 1000000;
       }
 
       * {
@@ -61,9 +62,17 @@
       .app {
         min-height: 100vh;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-columns: minmax(0, 500px) 320px;
+        justify-content: center;
         gap: 18px;
         padding: 18px;
+      }
+
+      body.play-view .app {
+        grid-template-columns: minmax(0, 480px) 72px;
+        align-items: start;
+        gap: 8px;
+        padding: 3px;
       }
 
       .play {
@@ -73,9 +82,19 @@
         min-width: 0;
       }
 
+      body.play-view .play {
+        grid-template-rows: auto auto auto auto auto;
+        grid-auto-rows: auto;
+        align-content: start;
+        gap: 3px;
+      }
+
       .topbar,
+      .play-hud,
       .side,
       .board-wrap,
+      .counter-section,
+      .meld-river-panel,
       .slot-area {
         border: 1px solid rgba(90, 54, 22, 0.2);
         background: rgba(255, 250, 240, 0.9);
@@ -90,6 +109,10 @@
         padding: 14px 16px;
       }
 
+      body.play-view .topbar {
+        display: none;
+      }
+
       .brand {
         display: grid;
         gap: 2px;
@@ -101,9 +124,35 @@
         letter-spacing: 0;
       }
 
+      body.play-view .brand strong {
+        font-size: clamp(16px, 1.9vw, 20px);
+      }
+
+      body.play-view .brand span {
+        display: none;
+      }
+
+      body.play-view .brand span {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
       .brand span {
         color: var(--muted);
         font-size: 13px;
+      }
+
+      body.play-view .brand span {
+        font-size: 10px;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
       }
 
       .top-controls {
@@ -111,6 +160,16 @@
         width: min(680px, 62vw);
         display: grid;
         gap: 8px;
+      }
+
+      body.play-view .top-controls,
+      body.play-view .tuning-panel,
+      body.tuner-view .topbar-actions {
+        display: none !important;
+      }
+
+      [hidden] {
+        display: none !important;
       }
 
       .mode-switch {
@@ -163,10 +222,14 @@
         padding: 14px;
       }
 
+      body.play-view .board-wrap {
+        padding: 4px;
+      }
+
       .board {
         position: relative;
         width: 100%;
-        max-width: 980px;
+        max-width: 720px;
         margin: 0 auto;
         aspect-ratio: 620 / 360;
         overflow: hidden;
@@ -189,7 +252,66 @@
       }
 
       .board[data-mode="mountain"] {
-        background-size: 24px 24px, 24px 24px, auto;
+        width: min(100%, 560px, 68vh);
+        max-width: 560px;
+        aspect-ratio: 560 / 640;
+        background-size: 18px 18px, 18px 18px, auto;
+      }
+
+      body.play-view .board[data-mode="mountain"] {
+        width: min(100%, 330px);
+        max-width: 330px;
+      }
+
+      .play-hud {
+        display: none;
+      }
+
+      body.play-view .play-hud {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 2px;
+        padding: 2px;
+      }
+
+      body.play-view .hud-chip {
+        min-height: 24px;
+        padding: 2px 3px;
+      }
+
+      body.play-view .hud-chip span {
+        font-size: 8px;
+      }
+
+      body.play-view .hud-chip strong {
+        font-size: 11px;
+      }
+
+      .hud-chip {
+        min-width: 0;
+        min-height: 42px;
+        display: grid;
+        align-content: center;
+        gap: 2px;
+        border: 1px solid rgba(90, 54, 22, 0.18);
+        background: rgba(255, 245, 223, 0.86);
+        padding: 5px 7px;
+      }
+
+      .hud-chip span {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .hud-chip strong {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 15px;
+        line-height: 1.2;
       }
 
       .board.boss {
@@ -200,8 +322,14 @@
       }
 
       .board[data-mode="mountain"] .tile {
-        width: 11.6%;
-        font-size: clamp(13px, 2.35vw, 24px);
+        width: 11.4285714286%;
+        aspect-ratio: 52 / 70;
+        border-width: 1px;
+        border-bottom-width: 3px;
+        font-size: clamp(11px, 1.65vw, 18px);
+        box-shadow:
+          0 5px 0 rgba(107, 72, 38, 0.34),
+          0 9px 12px rgba(23, 15, 9, 0.22);
       }
 
       .tile {
@@ -234,6 +362,10 @@
         pointer-events: none;
       }
 
+      .board[data-mode="mountain"] .tile::before {
+        inset: 4px;
+      }
+
       .tile.stack-top::after {
         content: "";
         position: absolute;
@@ -252,6 +384,36 @@
         pointer-events: none;
       }
 
+      .board[data-mode="mountain"] .tile.stack-top::after {
+        content: "";
+        top: -4px;
+        left: auto;
+        right: -3px;
+        width: 9px;
+        height: 9px;
+        border: 1px solid rgba(67, 42, 23, 0.42);
+        border-radius: 999px;
+        background: rgba(255, 212, 108, 0.84);
+        color: #3b210f;
+        display: grid;
+        place-items: center;
+        font-size: 0;
+        line-height: 1;
+        text-shadow: none;
+        box-shadow: 0 1px 3px rgba(23, 15, 9, 0.2);
+      }
+
+      body.tuner-view .board[data-mode="mountain"] .tile.stack-top::after {
+        content: attr(data-stack-depth);
+        top: -6px;
+        right: -5px;
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        font-size: 9px;
+        background: #ffd46c;
+      }
+
       .tile.available:hover {
         transform: translate(var(--lift-x), calc(var(--lift-y) - 5px));
         filter: brightness(1.08);
@@ -262,11 +424,68 @@
         filter: grayscale(0.55);
       }
 
+      .board[data-mode="mountain"] .tile.stack-preview.blocked {
+        opacity: 0.64;
+        filter: grayscale(0.36) saturate(0.74) brightness(0.86);
+      }
+
+      .board[data-mode="mountain"] .tile.stack-preview::after {
+        content: "";
+        position: absolute;
+        inset: 5px 5px auto;
+        height: 2px;
+        background: rgba(67, 42, 23, 0.18);
+        pointer-events: none;
+      }
+
+      .board[data-mode="mountain"] .tile.stack-bridge {
+        border-color: #d59a2f;
+        background:
+          linear-gradient(180deg, rgba(255, 249, 220, 0.94), rgba(250, 221, 147, 0.9)),
+          var(--tile);
+        box-shadow:
+          0 7px 0 rgba(120, 72, 29, 0.34),
+          0 12px 18px rgba(23, 15, 9, 0.25);
+      }
+
+      .board[data-mode="mountain"] .tile.stack-bridge::after {
+        content: attr(data-bridge-unlocks);
+        position: absolute;
+        top: -7px;
+        right: -6px;
+        width: 16px;
+        height: 16px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(67, 42, 23, 0.42);
+        border-radius: 999px;
+        background: #ffd46c;
+        color: #3b210f;
+        font-size: 9px;
+        line-height: 1;
+        text-shadow: none;
+        pointer-events: none;
+      }
+
+      .board[data-mode="mountain"] .tile.loose-mountain {
+        border-color: rgba(213, 154, 47, 0.86);
+        background:
+          linear-gradient(180deg, rgba(255, 252, 230, 0.96), rgba(255, 235, 177, 0.94)),
+          var(--tile);
+        box-shadow:
+          0 5px 0 rgba(120, 72, 29, 0.32),
+          0 10px 20px rgba(213, 154, 47, 0.24);
+      }
+
       .board.vision-on .tile.blocked {
         opacity: 0.72;
         filter: none;
         outline: 2px solid rgba(255, 212, 108, 0.8);
         outline-offset: 2px;
+      }
+
+      .board[data-mode="mountain"].vision-on .tile.stack-preview.blocked {
+        opacity: 0.9;
       }
 
       .tile.removed {
@@ -281,33 +500,57 @@
         color: var(--vermilion);
       }
 
+      .board[data-mode="mountain"] .tile .suit {
+        right: 4px;
+        bottom: 4px;
+        font-size: 0.52em;
+      }
+
       .slot-area {
         display: grid;
-        gap: 12px;
-        padding: 14px;
+        gap: 10px;
+        padding: 12px;
+      }
+
+      body.play-view .slot-area {
+        gap: 3px;
+        padding: 4px;
       }
 
       .slot-line {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 12px;
-        align-items: end;
+        min-width: 0;
+      }
+
+      .action-strip {
+        min-width: 0;
+        display: flex;
+        justify-content: center;
       }
 
       .slot-grid {
         display: grid;
-        grid-template-columns: repeat(var(--slot-count), minmax(38px, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(var(--slot-count), minmax(34px, 1fr));
+        gap: 6px;
         min-width: 0;
       }
 
+      body.play-view .slot-grid {
+        grid-template-columns: repeat(var(--slot-count), minmax(26px, 1fr));
+        gap: 4px;
+      }
+
       .slot-cell {
-        min-height: 72px;
+        min-height: 60px;
         display: grid;
         place-items: center;
         border: 1px dashed rgba(255, 250, 240, 0.5);
         background: linear-gradient(180deg, #68412c, var(--slot));
         color: #fff7e4;
+      }
+
+      body.play-view .slot-cell {
+        min-height: 44px;
       }
 
       .slot-cell.filled {
@@ -318,11 +561,19 @@
         font-weight: 900;
       }
 
+      .slot-cell.selectable {
+        border-color: var(--vermilion);
+        background: #fff1df;
+        color: #7c241b;
+        box-shadow: inset 0 0 0 2px rgba(200, 61, 47, 0.2);
+      }
+
       .combo-actions {
-        display: flex;
-        gap: 8px;
-        justify-content: flex-end;
-        flex-wrap: wrap;
+        width: min(100%, 360px);
+        display: grid;
+        grid-template-columns: repeat(5, minmax(48px, 64px));
+        gap: 6px;
+        justify-content: center;
       }
 
       .combo-button,
@@ -331,9 +582,9 @@
       .ghost-button,
       .tool-button,
       .reward-button {
-        min-height: 40px;
+        min-height: 36px;
         border: 1px solid rgba(90, 54, 22, 0.24);
-        padding: 0 14px;
+        padding: 0 12px;
         background: #efe0c5;
         color: var(--muted);
         font-weight: 800;
@@ -374,6 +625,36 @@
         color: var(--ink);
       }
 
+      .candidate[data-type="bugang"] {
+        border-color: rgba(200, 61, 47, 0.58);
+        background: #fff1df;
+        color: #7c241b;
+      }
+
+      .hu-hint {
+        display: none;
+        min-height: 28px;
+        align-items: center;
+        border: 1px solid rgba(213, 154, 47, 0.36);
+        background: #fff5d8;
+        color: #5a3616;
+        padding: 4px 8px;
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1.25;
+      }
+
+      .hu-hint.show {
+        display: flex;
+      }
+
+      .rank-dot.hu-wait {
+        border-color: rgba(213, 154, 47, 0.82);
+        background: #ffd46c;
+        color: #3b210f;
+        box-shadow: 0 0 0 2px rgba(213, 154, 47, 0.16);
+      }
+
       .side {
         min-width: 0;
         display: grid;
@@ -381,6 +662,23 @@
         gap: 14px;
         padding: 16px;
         overflow: auto;
+      }
+
+      body.play-view .side {
+        align-self: start;
+        position: sticky;
+        top: 12px;
+        gap: 8px;
+        max-height: calc(100vh - 24px);
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      body.play-view .side > :not(.tools-section) {
+        display: none;
       }
 
       .level-title {
@@ -484,7 +782,8 @@
         font-weight: 800;
       }
 
-      .tuning-field input {
+      .tuning-field input,
+      .tuning-field select {
         min-width: 0;
         height: 36px;
         border: 1px solid rgba(90, 54, 22, 0.22);
@@ -528,15 +827,106 @@
         gap: 8px;
       }
 
+      .meld-river-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 6px;
+        padding: 6px;
+      }
+
+      .meld-river-panel .section {
+        min-width: 0;
+        padding: 6px;
+        border: 1px solid rgba(90, 54, 22, 0.16);
+        background: rgba(255, 245, 223, 0.76);
+      }
+
+      .meld-list,
+      .river-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+      }
+
+      .meld-chip,
+      .river-cell {
+        min-height: 30px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(90, 54, 22, 0.2);
+        background: #fff8e7;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .meld-chip.gang {
+        border-color: rgba(200, 61, 47, 0.45);
+        background: #fff1df;
+        color: #7c241b;
+      }
+
+      .river-cell.empty {
+        border-style: dashed;
+        background: #f3ddaf;
+        color: var(--muted);
+      }
+
+      .river-capacity {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .counter-section {
+        padding: 10px 12px;
+      }
+
+      body.play-view .meld-river-panel {
+        gap: 2px;
+        padding: 3px;
+      }
+
+      body.play-view .meld-river-panel .section {
+        gap: 2px;
+        padding: 2px;
+      }
+
+      body.play-view .counter-section {
+        gap: 2px;
+        padding: 4px 5px;
+      }
+
       .section h2 {
         margin: 0;
         font-size: 15px;
         letter-spacing: 0;
       }
 
+      body.play-view .counter-section h2,
+      body.play-view .meld-river-panel h2 {
+        font-size: 10px;
+      }
+
+      body.play-view .counter-section h2 {
+        display: none;
+      }
+
+      body.play-view .meld-chip,
+      body.play-view .river-cell {
+        min-height: 18px;
+        font-size: 9px;
+      }
+
       .counts {
         display: grid;
         gap: 8px;
+      }
+
+      body.play-view .counts {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 3px;
       }
 
       .count-row {
@@ -546,10 +936,23 @@
         align-items: center;
       }
 
+      body.play-view .count-row {
+        grid-template-columns: 22px minmax(0, 1fr);
+        gap: 2px;
+      }
+
+      body.play-view .count-row strong {
+        font-size: 10px;
+      }
+
       .rank-dots {
         display: grid;
         grid-template-columns: repeat(9, minmax(0, 1fr));
         gap: 3px;
+      }
+
+      body.play-view .rank-dots {
+        gap: 1px;
       }
 
       .rank-dot {
@@ -560,6 +963,31 @@
         color: var(--muted);
         font-size: 11px;
         font-weight: 800;
+      }
+
+      body.play-view .rank-dot {
+        min-height: 24px;
+        grid-template-rows: 1fr 1fr;
+        gap: 1px;
+        padding: 2px 1px;
+        font-size: 9px;
+      }
+
+      .rank-face,
+      .rank-count {
+        display: block;
+        line-height: 1;
+      }
+
+      .rank-count {
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 900;
+      }
+
+      .rank-dot.has .rank-count,
+      .rank-dot.hu-wait .rank-count {
+        color: currentColor;
       }
 
       .rank-dot.has {
@@ -591,14 +1019,34 @@
         gap: 8px;
       }
 
+      body.play-view .tools-section {
+        gap: 4px;
+      }
+
+      body.play-view .tools-section h2,
+      body.play-view .tools-section .metrics {
+        display: none;
+      }
+
+      body.play-view .tool-actions {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
       .tool-button {
-        min-height: 48px;
+        min-height: 42px;
         display: grid;
         gap: 2px;
         place-items: center;
         padding: 6px 8px;
         background: #fff5df;
         color: var(--ink);
+      }
+
+      body.play-view .tool-button {
+        width: 100%;
+        min-height: 48px;
+        padding: 5px 3px;
       }
 
       .tool-button strong {
@@ -608,6 +1056,14 @@
       .tool-button span {
         color: var(--muted);
         font-size: 12px;
+      }
+
+      body.play-view .tool-button strong {
+        font-size: 13px;
+      }
+
+      body.play-view .tool-button span {
+        font-size: 11px;
       }
 
       .primary-button {
@@ -620,10 +1076,29 @@
         color: var(--ink);
       }
 
+      .tuner-link {
+        min-height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      body.play-view .tuner-link {
+        min-height: 30px;
+        padding: 0 8px;
+      }
+
       .status {
         min-height: 24px;
         color: var(--muted);
         font-size: 14px;
+      }
+
+      body.play-view .status {
+        min-height: 18px;
+        font-size: 12px;
       }
 
       .overlay {
@@ -634,7 +1109,7 @@
         justify-content: center;
         padding: 18px;
         background: rgba(24, 16, 10, 0.58);
-        z-index: 100;
+        z-index: var(--overlay-z);
       }
 
       .overlay.show {
@@ -697,6 +1172,13 @@
         color: white;
       }
 
+      body.play-view .reward-button,
+      body.play-view .primary-button,
+      body.play-view .ghost-button {
+        min-width: 0;
+        white-space: normal;
+      }
+
       .reward-summary .reward-button {
         justify-self: start;
       }
@@ -715,9 +1197,23 @@
           grid-template-columns: 1fr;
         }
 
+        body.play-view .app {
+          grid-template-columns: minmax(0, 1fr) 56px;
+          max-width: 540px;
+          margin: 0 auto;
+          gap: 8px;
+          padding: 10px;
+        }
+
         .side {
           order: -1;
           max-height: none;
+        }
+
+        body.play-view .side {
+          order: 0;
+          top: 10px;
+          max-height: calc(100vh - 20px);
         }
 
         .metrics {
@@ -727,8 +1223,57 @@
 
       @media (max-width: 640px) {
         .app {
+          width: 100%;
+          max-width: 100vw;
           padding: 10px;
           gap: 10px;
+          overflow-x: hidden;
+        }
+
+        body.play-view .app {
+          grid-template-columns: 1fr;
+          width: 100vw;
+          max-width: 100vw;
+          margin: 0;
+          padding: 10px 10px 70px;
+        }
+
+        .play,
+        .side {
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+        }
+
+        body.play-view .side {
+          position: fixed;
+          left: 10px;
+          right: 10px;
+          bottom: 10px;
+          top: auto;
+          z-index: 40;
+          width: auto;
+          min-width: 0;
+          max-width: calc(100vw - 20px);
+          max-height: none;
+        }
+
+        body.play-view .tool-actions {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 4px;
+        }
+
+        body.play-view .tool-button {
+          min-height: 36px;
+          padding: 3px;
+        }
+
+        body.play-view .tool-button strong {
+          font-size: 12px;
+        }
+
+        body.play-view .tool-button span {
+          font-size: 10px;
         }
 
         .topbar,
@@ -742,14 +1287,103 @@
           display: grid;
         }
 
+        body.play-view .topbar {
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          padding: 8px;
+        }
+
+        body.play-view .brand strong {
+          font-size: 17px;
+        }
+
+        body.play-view .tuner-link {
+          min-height: 32px;
+          padding: 0 8px;
+          max-width: 44px;
+          overflow: hidden;
+          padding: 0;
+          color: transparent;
+          font-size: 0;
+        }
+
+        body.play-view .tuner-link::before {
+          content: "调";
+          color: var(--ink);
+          font-size: 13px;
+        }
+
+        body.play-view .play-hud {
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 2px;
+          padding: 2px;
+        }
+
+        body.play-view .hud-goal {
+          grid-column: auto;
+        }
+
+        body.play-view .hud-chip {
+          min-height: 24px;
+          padding: 2px 3px;
+        }
+
+        body.play-view .hud-chip strong {
+          font-size: 11px;
+        }
+
         .top-controls {
           width: 100%;
         }
 
+        .board {
+          max-width: 100%;
+        }
+
+        .board[data-mode="mountain"] {
+          width: 100%;
+          max-width: min(100%, 420px);
+        }
+
+        body.play-view .board[data-mode="mountain"] {
+          width: min(100%, 350px);
+          max-width: 350px;
+        }
+
+        body.play-view .counts {
+          grid-template-columns: 1fr;
+        }
+
+        body.play-view .count-row {
+          grid-template-columns: 30px minmax(0, 1fr);
+          gap: 3px;
+        }
+
+        body.play-view .rank-dots {
+          gap: 2px;
+        }
+
+        body.play-view .rank-dot {
+          min-height: 28px;
+          font-size: 10px;
+        }
+
+        body.play-view .rank-count {
+          font-size: 10px;
+        }
+
         .board-wrap,
+        .counter-section,
+        .meld-river-panel,
         .slot-area,
         .side {
-          padding: 10px;
+          padding: 6px;
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        body.play-view .slot-area {
+          margin-bottom: 76px;
         }
 
         .metrics {
@@ -760,17 +1394,28 @@
           gap: 5px;
         }
 
+        body.play-view .slot-grid {
+          gap: 4px;
+          grid-template-columns: repeat(var(--slot-count), minmax(0, 1fr));
+        }
+
         .slot-cell {
           min-height: 52px;
           font-size: 13px;
         }
 
+        body.play-view .slot-cell {
+          min-height: 40px;
+          font-size: 12px;
+        }
+
         .combo-actions {
-          justify-content: stretch;
+          width: 100%;
+          grid-template-columns: repeat(5, minmax(44px, 1fr));
+          justify-content: center;
         }
 
         .combo-button {
-          flex: 1 1 30%;
           padding: 0 8px;
         }
 
@@ -784,7 +1429,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="play-view" data-prototype-view="play">
     <main class="app" data-testid="app">
       <section class="play" aria-label="胡了卜牌局">
         <header class="topbar">
@@ -799,18 +1444,63 @@
             </div>
             <nav class="level-tabs" id="levelTabs" aria-label="关卡"></nav>
           </div>
+          <div class="topbar-actions">
+            <a class="ghost-button tuner-link" id="tunerLink" href="./tuner.html" target="_blank" rel="noopener">调牌器</a>
+          </div>
         </header>
+
+        <section class="play-hud" aria-label="局内状态">
+          <div class="hud-chip">
+            <span>关卡</span>
+            <strong id="hudLevel">--</strong>
+          </div>
+          <div class="hud-chip hud-goal">
+            <span>目标</span>
+            <strong id="hudGoal">清空牌山</strong>
+          </div>
+          <div class="hud-chip">
+            <span>余牌</span>
+            <strong id="hudRemaining">0</strong>
+          </div>
+          <div class="hud-chip">
+            <span>积分</span>
+            <strong id="hudScore">0</strong>
+          </div>
+          <div class="hud-chip">
+            <span>铜钱</span>
+            <strong id="hudCoins">0</strong>
+          </div>
+        </section>
 
         <section class="board-wrap">
           <div class="board" id="board" data-testid="board"></div>
         </section>
 
+        <section class="section counter-section" aria-label="记牌器">
+          <h2>记牌器</h2>
+          <div class="counts" id="counts"></div>
+        </section>
+
+        <section class="meld-river-panel" aria-label="明牌和牌河">
+          <section class="section meld-section" aria-label="明牌区">
+            <h2>明牌</h2>
+            <div class="meld-list" id="openMelds"></div>
+          </section>
+          <section class="section river-section" aria-label="牌河">
+            <h2>牌河 <span class="river-capacity" id="riverCapacity">0/0</span></h2>
+            <div class="river-list" id="river"></div>
+          </section>
+        </section>
+
         <section class="slot-area">
-          <div class="slot-line">
-            <div class="slot-grid" id="slotGrid" data-testid="slot"></div>
+          <div class="action-strip">
             <div class="combo-actions" id="comboActions" aria-label="组合按钮"></div>
           </div>
+          <div class="slot-line">
+            <div class="slot-grid" id="slotGrid" data-testid="slot"></div>
+          </div>
           <div class="candidates" id="candidateList" aria-label="候选组合"></div>
+          <div class="hu-hint" id="huHint" aria-live="polite"></div>
           <div class="status" id="status" data-testid="status"></div>
         </section>
       </section>
@@ -823,7 +1513,7 @@
         <div class="featured-combos" id="featuredCombos"></div>
         <div class="boss-goal" id="bossGoal"></div>
 
-        <section class="section tuning-panel" id="mountainTuningPanel" aria-label="密集牌山调参">
+        <section class="section tuning-panel" id="mountainTuningPanel" aria-label="密集牌山调参" hidden>
           <h2>牌山调参</h2>
           <div class="tuning-grid">
             <label class="tuning-field">
@@ -831,12 +1521,16 @@
               <input id="mountainSeed" type="text" autocomplete="off" />
             </label>
             <label class="tuning-field">
+              <span>模板</span>
+              <select id="mountainTemplate"></select>
+            </label>
+            <label class="tuning-field">
               <span>牌量</span>
-              <input id="mountainTileCount" type="number" min="36" max="72" step="1" placeholder="自动" />
+              <input id="mountainTileCount" type="number" min="120" max="420" step="1" placeholder="240" />
             </label>
             <label class="tuning-field">
               <span>同列</span>
-              <input id="mountainStackDepth" type="number" min="2" max="8" step="1" />
+              <input id="mountainStackDepth" type="number" min="2" max="10" step="1" />
             </label>
             <label class="tuning-field">
               <span>胡包</span>
@@ -870,29 +1564,24 @@
         </div>
 
         <section class="section">
-          <h2>余牌</h2>
-          <div class="counts" id="counts"></div>
-        </section>
-
-        <section class="section">
           <h2>已选奖励</h2>
           <div class="reward-list" id="pickedRewards"></div>
         </section>
 
-        <section class="section">
+        <section class="section tools-section">
           <h2>工具</h2>
           <div class="tool-actions" aria-label="工具">
             <button class="tool-button" id="shuffleButton" type="button">
-              <strong>洗山</strong>
+              <strong>洗牌</strong>
               <span id="shuffleCount">0</span>
             </button>
             <button class="tool-button" id="undoButton" type="button">
-              <strong>回手</strong>
+              <strong>撤回</strong>
               <span id="undoCount">0</span>
             </button>
-            <button class="tool-button" id="visionButton" type="button">
-              <strong>看山</strong>
-              <span id="visionCount">0</span>
+            <button class="tool-button" id="discardButton" type="button">
+              <strong>丢弃</strong>
+              <span id="discardCount">0</span>
             </button>
           </div>
           <div class="metrics">
@@ -941,47 +1630,126 @@
         peng: "碰",
         gang: "杠",
         hu: "胡",
+        bugang: "补杠",
       };
       const BASE_SCORE = {
         chi: 10,
         peng: 20,
         gang: 50,
         hu: 120,
+        bugang: 15,
       };
       const COIN_REWARD = {
         chi: 3,
         peng: 3,
         gang: 6,
         hu: 12,
+        bugang: 2,
       };
       const COMBO_ORDER = {
         hu: 0,
         gang: 1,
-        peng: 2,
-        chi: 3,
+        bugang: 2,
+        peng: 3,
+        chi: 4,
       };
-      const ACTION_TYPES = ["chi", "peng", "gang", "hu"];
+      const ACTION_TYPES = ["chi", "peng", "gang", "bugang", "hu"];
       const MAX_SLOT_LIMIT = 8;
-      const BLOCKED_COVER_RATIO = 0.05;
+      const DEFAULT_RIVER_LIMIT = 3;
+      const KONG_SHAKE_LOOSE_COUNT = 1;
+      const HU_SHAKE_LOOSE_COUNT = 3;
+      const BLOCKED_COVER_RATIO = 0.08;
+      const TILE_Z_INDEX_BASE = 10;
+      const OVERLAY_Z_INDEX = 1000000;
+      const FRIEND_DEMO_LEVEL_COUNT = 10;
+      const FRIEND_DEMO_TUTORIAL_SLOT_LIMIT = 6;
+      const FRIEND_DEMO_FULL_SLOT_LIMIT = 8;
+      const FRIEND_DEMO_FIRST_REWARD_ID = "demo_slot_plus_2";
+      const FRIEND_DEMO_DISCARD_REWARD_ID = "discard_plus_1";
+      const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
+      const FRIEND_DEMO_TOOLS = [
+        { key: "shuffle", label: "洗牌" },
+        { key: "undo", label: "撤回" },
+        { key: "discard", label: "丢弃" },
+      ];
+      const FRIEND_DEMO_DEFAULT_TOOLS = { shuffle: 1, undo: 1, discard: 1 };
+      const FRIEND_DEMO_DIFFICULTY_PROFILES = [
+        { levelIndex: 4, label: "正式入门", tileCount: 72, stackDepth: 3, huPacks: 0, gangPacks: 2, orphanBudget: 1, numberSuits: ["wan"], honorRanks: [], honorWeight: 0 },
+        { levelIndex: 5, label: "轻压练习", tileCount: 96, stackDepth: 3, huPacks: 0, gangPacks: 2, orphanBudget: 2, numberSuits: ["wan", "tiao"], honorRanks: [], honorWeight: 0 },
+        { levelIndex: 6, label: "混合窗口", tileCount: 132, stackDepth: 4, huPacks: 1, gangPacks: 2, orphanBudget: 3, numberSuits: ["wan", "tiao", "tong"], honorRanks: [], honorWeight: 0 },
+        { levelIndex: 7, label: "多堆判断", tileCount: 168, stackDepth: 5, huPacks: 1, gangPacks: 2, orphanBudget: 3, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 5], honorWeight: 12 },
+        { levelIndex: 8, label: "高压预备", tileCount: 210, stackDepth: 6, huPacks: 1, gangPacks: 2, orphanBudget: 4, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 3, 5, 7], honorWeight: 24 },
+        { levelIndex: 9, label: "综合高压", tileCount: 240, stackDepth: 6, huPacks: 0, gangPacks: 2, orphanBudget: 4, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 40 },
+      ];
+      const MOUNTAIN_DEFAULT_TILE_COUNT = 240;
+      const MOUNTAIN_TILE_COUNT_RANGE = { min: 120, max: 420 };
+      const MOUNTAIN_TEMPLATE_SOURCE_COORDINATE_SYSTEM = { baseWidth: 640, baseHeight: 860 };
+      const MOUNTAIN_COORDINATE_SYSTEM = { baseWidth: 560, baseHeight: 640 };
+      const MOUNTAIN_RULE_TILE_SIZE = { width: 52, height: 70 };
+      const MOUNTAIN_INITIAL_AVAILABLE_TARGET = 8;
+      const MOUNTAIN_STACK_PREVIEW_DEPTH = 4;
+      const MOUNTAIN_MERGED_STACK_COUNT = 2;
+      const MOUNTAIN_ACTIVE_STACK_COUNT = 10;
+      const MOUNTAIN_PRIMARY_STACK_COUNT = 4;
+      const MOUNTAIN_PRIMARY_STACK_WEIGHT_MULTIPLIER = 2.45;
+      const MOUNTAIN_STACK_CLUSTER_PULL = 0.78;
+      const MOUNTAIN_STACK_OVERLAP_RANGE = { min: 0.05, max: 1 };
+      const MOUNTAIN_TEMPLATE_IDS = [
+        "center-tower",
+        "two-wings",
+        "cross",
+        "ring",
+        "long-wall",
+        "islands",
+        "canyon",
+        "staircase",
+      ];
+      const MOUNTAIN_AUTO_TEMPLATE_IDS = [
+        "ring",
+        "islands",
+        "canyon",
+      ];
+      const MOUNTAIN_TEMPLATE_LABELS = {
+        "center-tower": "中心塔",
+        "two-wings": "双翼",
+        cross: "十字",
+        ring: "环形",
+        "long-wall": "长墙",
+        islands: "群岛",
+        canyon: "峡谷",
+        staircase: "阶梯",
+      };
       const DEFAULT_MOUNTAIN_TUNING = {
         seed: "",
-        tileCount: null,
-        stackDepth: 4,
+        templateId: "auto",
+        tileCount: MOUNTAIN_DEFAULT_TILE_COUNT,
+        stackDepth: 6,
         huPacks: null,
+        gangPacks: 0,
         honorWeight: 35,
       };
+      const PROTOTYPE_VIEW_MODES = new Set(["play", "tuner"]);
+      document.documentElement?.style?.setProperty("--overlay-z", String(OVERLAY_Z_INDEX));
 
       const view = {
         board: document.querySelector("#board"),
+        topControls: document.querySelector(".top-controls"),
+        tunerLink: document.querySelector("#tunerLink"),
         modeSwitch: document.querySelector("#modeSwitch"),
         levelTabs: document.querySelector("#levelTabs"),
         levelMeta: document.querySelector("#levelMeta"),
+        hudLevel: document.querySelector("#hudLevel"),
+        hudGoal: document.querySelector("#hudGoal"),
+        hudRemaining: document.querySelector("#hudRemaining"),
+        hudScore: document.querySelector("#hudScore"),
+        hudCoins: document.querySelector("#hudCoins"),
         levelName: document.querySelector("#levelName"),
         levelSubtitle: document.querySelector("#levelSubtitle"),
         featuredCombos: document.querySelector("#featuredCombos"),
         bossGoal: document.querySelector("#bossGoal"),
         mountainTuningPanel: document.querySelector("#mountainTuningPanel"),
         mountainSeed: document.querySelector("#mountainSeed"),
+        mountainTemplate: document.querySelector("#mountainTemplate"),
         mountainTileCount: document.querySelector("#mountainTileCount"),
         mountainStackDepth: document.querySelector("#mountainStackDepth"),
         mountainHuPacks: document.querySelector("#mountainHuPacks"),
@@ -990,19 +1758,23 @@
         slotGrid: document.querySelector("#slotGrid"),
         comboActions: document.querySelector("#comboActions"),
         candidateList: document.querySelector("#candidateList"),
+        huHint: document.querySelector("#huHint"),
         status: document.querySelector("#status"),
         score: document.querySelector("#score"),
         coins: document.querySelector("#coins"),
         shields: document.querySelector("#shields"),
         reserve: document.querySelector("#reserve"),
         counts: document.querySelector("#counts"),
+        openMelds: document.querySelector("#openMelds"),
+        river: document.querySelector("#river"),
+        riverCapacity: document.querySelector("#riverCapacity"),
         pickedRewards: document.querySelector("#pickedRewards"),
         shuffleButton: document.querySelector("#shuffleButton"),
         undoButton: document.querySelector("#undoButton"),
-        visionButton: document.querySelector("#visionButton"),
+        discardButton: document.querySelector("#discardButton"),
         shuffleCount: document.querySelector("#shuffleCount"),
         undoCount: document.querySelector("#undoCount"),
-        visionCount: document.querySelector("#visionCount"),
+        discardCount: document.querySelector("#discardCount"),
         slotLimit: document.querySelector("#slotLimit"),
         restartButton: document.querySelector("#restartButton"),
         nextButton: document.querySelector("#nextButton"),
@@ -1016,15 +1788,18 @@
         levelsConfig: null,
         rewardsConfig: null,
         levelIndex: 0,
-        mode: "config",
+        mode: "mountain",
+        prototypeView: "play",
         mountainTuning: { ...DEFAULT_MOUNTAIN_TUNING },
+        activeMountainTemplate: getMountainTemplateDefinition("center-tower"),
+        autoMountainTemplateSeed: "",
         state: null,
         run: {
           slotDelta: 0,
           reserveDelta: 0,
           shieldsDelta: 0,
           coins: 0,
-          tools: { shuffle: 0, undo: 0, vision: 0 },
+          tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
           bonuses: { chi: 0, peng: 0, gang: 0, hu: 0 },
           pickedRewards: [],
         },
@@ -1045,6 +1820,7 @@
         model.levelsConfig = levelsConfig;
         model.rewardsConfig = rewardsConfig;
         applyInitialRouteState();
+        syncPrototypeViewShell();
         for (const button of view.modeSwitch.querySelectorAll("[data-mode]")) {
           button.addEventListener("click", () => {
             model.mode = button.dataset.mode;
@@ -1061,7 +1837,7 @@
         });
         view.shuffleButton.addEventListener("click", useShuffleTool);
         view.undoButton.addEventListener("click", useUndoTool);
-        view.visionButton.addEventListener("click", useVisionTool);
+        view.discardButton.addEventListener("click", useDiscardTool);
         view.mountainRegenerateButton.addEventListener("click", () => {
           model.mountainTuning = readMountainTuningForm();
           loadLevel(model.levelIndex);
@@ -1072,8 +1848,13 @@
 
       function applyInitialRouteState() {
         const params = new URLSearchParams(window.location.search);
+        const requestedView = params.get("view");
         const requestedMode = params.get("mode");
         const requestedLevel = Number.parseInt(params.get("level") ?? "", 10);
+
+        if (PROTOTYPE_VIEW_MODES.has(requestedView)) {
+          model.prototypeView = requestedView;
+        }
 
         if (requestedMode === "mountain" || requestedMode === "config") {
           model.mode = requestedMode;
@@ -1087,9 +1868,28 @@
         }
       }
 
+      function syncPrototypeViewShell() {
+        const isTunerView = model.prototypeView === "tuner";
+        document.body.dataset.prototypeView = model.prototypeView;
+        document.body.classList.toggle("play-view", !isTunerView);
+        document.body.classList.toggle("tuner-view", isTunerView);
+        document.title = isTunerView ? "胡了卜调牌器" : "胡了卜玩家试玩";
+        view.topControls.hidden = !isTunerView;
+        view.tunerLink.hidden = isTunerView;
+
+        if (!isTunerView) {
+          const tunerParams = new URLSearchParams();
+          tunerParams.set("level", String(currentLevel().order));
+          tunerParams.set("mode", model.mode);
+          tunerParams.set("template", model.mountainTuning.templateId);
+          view.tunerLink.href = `./tuner.html?${tunerParams.toString()}`;
+        }
+      }
+
       function readMountainTuningFromParams(params, fallback) {
         return normalizeMountainTuning({
           seed: params.get("seed") ?? fallback.seed,
+          templateId: params.has("template") ? params.get("template") : fallback.templateId,
           tileCount: params.has("tiles") ? params.get("tiles") : fallback.tileCount,
           stackDepth: params.has("stack") ? params.get("stack") : fallback.stackDepth,
           huPacks: params.has("hu") ? params.get("hu") : fallback.huPacks,
@@ -1100,6 +1900,7 @@
       function readMountainTuningForm() {
         return normalizeMountainTuning({
           seed: view.mountainSeed.value,
+          templateId: view.mountainTemplate.value,
           tileCount: view.mountainTileCount.value,
           stackDepth: view.mountainStackDepth.value,
           huPacks: view.mountainHuPacks.value,
@@ -1110,11 +1911,18 @@
       function normalizeMountainTuning(raw) {
         return {
           seed: String(raw.seed ?? "").trim(),
-          tileCount: normalizeOptionalInteger(raw.tileCount, 36, 72),
-          stackDepth: normalizeInteger(raw.stackDepth, 2, 8, DEFAULT_MOUNTAIN_TUNING.stackDepth),
+          templateId: normalizeMountainTemplateId(raw.templateId ?? DEFAULT_MOUNTAIN_TUNING.templateId),
+          tileCount: normalizeOptionalInteger(raw.tileCount, MOUNTAIN_TILE_COUNT_RANGE.min, MOUNTAIN_TILE_COUNT_RANGE.max),
+          stackDepth: normalizeInteger(raw.stackDepth, 2, 10, DEFAULT_MOUNTAIN_TUNING.stackDepth),
           huPacks: normalizeOptionalInteger(raw.huPacks, 0, 4),
           honorWeight: normalizeInteger(raw.honorWeight, 0, 100, DEFAULT_MOUNTAIN_TUNING.honorWeight),
         };
+      }
+
+      function normalizeMountainTemplateId(value) {
+        const templateId = String(value ?? DEFAULT_MOUNTAIN_TUNING.templateId).trim();
+        if (templateId === "auto" || MOUNTAIN_TEMPLATE_IDS.includes(templateId)) return templateId;
+        return DEFAULT_MOUNTAIN_TUNING.templateId;
       }
 
       function normalizeOptionalInteger(value, min, max) {
@@ -1134,31 +1942,219 @@
         return Math.max(min, Math.min(max, value));
       }
 
-      function loadLevel(index) {
-        model.levelIndex = index;
+      function resetMountainTemplateForLevelTransition(index, options = {}) {
+        const shouldReset = options.resetFixedMountainTemplate && (options.forceResetMountainTemplate || index !== model.levelIndex);
+        if (!shouldReset || model.mode !== "mountain" || model.mountainTuning.templateId === DEFAULT_MOUNTAIN_TUNING.templateId) return;
+        model.mountainTuning = {
+          ...model.mountainTuning,
+          templateId: DEFAULT_MOUNTAIN_TUNING.templateId,
+        };
+      }
+
+      function refreshAutoMountainTemplateSeedForLoad(options = {}) {
+        if (!shouldUseVolatileAutoMountainTemplateSeed()) return;
+        refreshAutoMountainTemplateSeed(`${currentLevel().id}:${options.reason ?? "load"}`);
+      }
+
+      function shouldUseVolatileAutoMountainTemplateSeed() {
+        return (
+          model.mode === "mountain"
+          && model.prototypeView === "play"
+          && model.mountainTuning.templateId === "auto"
+          && !model.mountainTuning.seed
+        );
+      }
+
+      function refreshAutoMountainTemplateSeed(reason = "") {
+        model.autoMountainTemplateSeed = `${reason}:${Date.now()}:${Math.random()}`;
+      }
+
+      function isFriendDemoMode() {
+        return model.prototypeView === "play";
+      }
+
+      function getPlayableLevelCount() {
+        return isFriendDemoMode()
+          ? Math.min(FRIEND_DEMO_LEVEL_COUNT, model.levelsConfig.levels.length)
+          : model.levelsConfig.levels.length;
+      }
+
+      function getPlayableLevels() {
+        return model.levelsConfig.levels.slice(0, getPlayableLevelCount());
+      }
+
+      function getFriendDemoSlotLimit(levelIndex) {
+        return levelIndex < 3 ? FRIEND_DEMO_TUTORIAL_SLOT_LIMIT : FRIEND_DEMO_FULL_SLOT_LIMIT;
+      }
+
+      function getFriendDemoLevelMode(levelIndex) {
+        return levelIndex < FRIEND_DEMO_TUTORIAL_COMBOS.length ? "tutorial" : "mountain";
+      }
+
+      function getFriendDemoDifficultyProfile(levelIndex = model.levelIndex) {
+        if (!isFriendDemoMode()) return null;
+        if (getFriendDemoLevelMode(levelIndex) !== "mountain") return null;
+        return FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === levelIndex) ?? null;
+      }
+
+      function getEffectiveMountainTuningForLevel(level, levelIndex = model.levelIndex) {
+        const profile = getFriendDemoDifficultyProfile(levelIndex);
+        if (!profile) return model.mountainTuning;
+        return {
+          ...model.mountainTuning,
+          tileCount: profile.tileCount,
+          stackDepth: profile.stackDepth,
+          huPacks: profile.huPacks,
+          gangPacks: profile.gangPacks,
+          numberSuits: profile.numberSuits,
+          honorRanks: profile.honorRanks,
+          honorWeight: profile.honorWeight,
+        };
+      }
+
+      function getFriendDemoTutorialRequiredCombo(levelIndex = model.levelIndex) {
+        return isFriendDemoTutorialLevel(levelIndex)
+          ? FRIEND_DEMO_TUTORIAL_COMBOS[levelIndex] ?? null
+          : null;
+      }
+
+      function hasCompletedFriendDemoTutorialCombo(levelIndex = model.levelIndex) {
+        const requiredCombo = getFriendDemoTutorialRequiredCombo(levelIndex);
+        if (!requiredCombo) return true;
+        return (model.state?.comboCounts?.[requiredCombo] ?? 0) > 0;
+      }
+
+      function getFriendDemoFeaturedCombos(levelIndex) {
+        const tutorialCombo = FRIEND_DEMO_TUTORIAL_COMBOS[levelIndex];
+        if (tutorialCombo) return [tutorialCombo];
+        return model.levelsConfig.levels[levelIndex]?.featuredCombos ?? [];
+      }
+
+      function getFriendDemoRewardPool(levelIndex) {
+        if (levelIndex === 2) return [FRIEND_DEMO_FIRST_REWARD_ID];
+        const rewardPool = model.levelsConfig.levels[levelIndex]?.rewardPool ?? [];
+        return rewardPool.map((rewardId) => rewardId === "vision_plus_1" ? FRIEND_DEMO_DISCARD_REWARD_ID : rewardId);
+      }
+
+      function createFriendDemoFixedReward() {
+        return {
+          id: FRIEND_DEMO_FIRST_REWARD_ID,
+          name: "卡槽 +2",
+          description: "主卡槽从 6 格扩到 8 格，后续关卡进入完整容量。",
+          effects: [{ type: "slot_limit_delta", value: 2 }],
+        };
+      }
+
+      function createFriendDemoDiscardReward() {
+        return {
+          id: FRIEND_DEMO_DISCARD_REWARD_ID,
+          name: "丢弃 +1",
+          description: "获得 1 次丢弃卡槽末尾牌的机会。",
+          effects: [{ type: "tool_delta", tool: "discard", value: 1 }],
+        };
+      }
+
+      function createFriendDemoTutorialTiles(level) {
+        const layouts = {
+          peng: [
+            { suit: "tong", rank: 6, x: 176, y: 130 },
+            { suit: "tong", rank: 6, x: 232, y: 130 },
+            { suit: "tong", rank: 6, x: 288, y: 130 },
+          ],
+          chi: [
+            { suit: "tiao", rank: 2, x: 176, y: 130 },
+            { suit: "tiao", rank: 3, x: 232, y: 130 },
+            { suit: "tiao", rank: 4, x: 288, y: 130 },
+          ],
+          gang: [
+            { suit: "tong", rank: 9, x: 150, y: 124 },
+            { suit: "tong", rank: 9, x: 206, y: 124 },
+            { suit: "tong", rank: 9, x: 262, y: 124 },
+            { suit: "tong", rank: 9, x: 318, y: 124 },
+          ],
+          hu: [
+            { suit: "wan", rank: 1, x: 132, y: 130 },
+            { suit: "wan", rank: 2, x: 188, y: 130 },
+            { suit: "wan", rank: 3, x: 244, y: 130 },
+            { suit: "tong", rank: 5, x: 300, y: 130 },
+            { suit: "tong", rank: 5, x: 356, y: 130 },
+            { suit: "tong", rank: 5, x: 412, y: 130 },
+            { suit: "honor", rank: 6, x: 216, y: 270 },
+            { suit: "honor", rank: 6, x: 272, y: 270 },
+          ],
+        };
+        const combo = FRIEND_DEMO_TUTORIAL_COMBOS[(level?.order ?? 1) - 1] ?? "peng";
+        return layouts[combo].map((tile, index) => ({
+          id: `friend-demo-${combo}-${index + 1}`,
+          suit: tile.suit,
+          rank: tile.rank,
+          x: tile.x,
+          y: tile.y,
+          layer: 0,
+          stackOrder: index,
+          blockedBy: [],
+          location: "board",
+          sourcePackage: `friend-demo-${combo}`,
+          solutionGroup: `friend-demo-${combo}`,
+          solutionStep: Math.floor(index / 3) + 1,
+        }));
+      }
+
+      function getPlayableTilesForLevel(level, index) {
+        if (isFriendDemoMode() && getFriendDemoLevelMode(index) === "tutorial") {
+          return createFriendDemoTutorialTiles(level);
+        }
+
+        return model.mode === "mountain" ? generateMountainTiles(level) : level.tiles;
+      }
+
+      function getInitialSlotOrderForLevel(level, index) {
+        if (isFriendDemoMode() && getFriendDemoLevelMode(index) === "tutorial") return [];
+        return model.mode === "mountain" ? [] : level.initialSlotOrder;
+      }
+
+      function getInitialReserveOrderForLevel(level, index) {
+        if (isFriendDemoMode() && getFriendDemoLevelMode(index) === "tutorial") return [];
+        return model.mode === "mountain" ? [] : level.initialReserveOrder;
+      }
+
+      function getToolsForLevel(defaults) {
+        const baseTools = isFriendDemoMode() ? FRIEND_DEMO_DEFAULT_TOOLS : defaults.tools;
+        return {
+          shuffle: (baseTools.shuffle ?? 0) + (model.run.tools.shuffle ?? 0),
+          undo: (baseTools.undo ?? 0) + (model.run.tools.undo ?? 0),
+          discard: (baseTools.discard ?? 0) + (model.run.tools.discard ?? 0),
+          vision: (baseTools.vision ?? 0) + (model.run.tools.vision ?? 0),
+        };
+      }
+
+      function loadLevel(index, options = {}) {
+        resetMountainTemplateForLevelTransition(index, options);
+        model.levelIndex = Math.min(index, getPlayableLevelCount() - 1);
+        refreshAutoMountainTemplateSeedForLoad(options);
         const level = currentLevel();
         const defaults = model.levelsConfig.defaults;
-        const playableTiles = model.mode === "mountain" ? generateMountainTiles(level) : level.tiles;
-        const initialSlotOrder = model.mode === "mountain" ? [] : level.initialSlotOrder;
-        const initialReserveOrder = model.mode === "mountain" ? [] : level.initialReserveOrder;
+        const playableTiles = getPlayableTilesForLevel(level, model.levelIndex);
+        const initialSlotOrder = getInitialSlotOrderForLevel(level, model.levelIndex);
+        const initialReserveOrder = getInitialReserveOrderForLevel(level, model.levelIndex);
         model.state = {
           tiles: playableTiles.map((tile) => ({ ...tile, blockedBy: [...tile.blockedBy] })),
           slot: [...initialSlotOrder],
           reserve: [...initialReserveOrder],
-          slotLimit: clampSlotLimit(defaults.slotLimit + model.run.slotDelta),
-          reserveLimit: defaults.reserveLimit + model.run.reserveDelta,
+          river: [],
+          riverLimit: DEFAULT_RIVER_LIMIT,
+          discardSelecting: false,
+          openMelds: [],
+          slotLimit: isFriendDemoMode() ? getFriendDemoSlotLimit(model.levelIndex) : clampSlotLimit(defaults.slotLimit + model.run.slotDelta),
+          reserveLimit: isFriendDemoMode() ? 0 : defaults.reserveLimit + model.run.reserveDelta,
           shields: defaults.shields + model.run.shieldsDelta,
           firstProtect: defaults.firstProtect,
           score: 0,
           coins: model.run.coins,
-          comboCounts: { chi: 0, peng: 0, gang: 0, hu: 0 },
+          comboCounts: { chi: 0, peng: 0, gang: 0, hu: 0, bugang: 0 },
           suitComboCounts: createEmptySuitTotals(),
-          bossGoals: getBossGoals(model.levelIndex),
-          tools: {
-            shuffle: defaults.tools.shuffle + model.run.tools.shuffle,
-            undo: defaults.tools.undo + model.run.tools.undo,
-            vision: defaults.tools.vision + model.run.tools.vision,
-          },
+          bossGoals: getActiveBossGoals(model.levelIndex),
+          tools: getToolsForLevel(defaults),
           bonuses: { ...model.run.bonuses },
           history: [],
           visionActive: false,
@@ -1170,14 +2166,19 @@
       }
 
       function renderAll(message) {
+        syncPrototypeViewShell();
         renderModeSwitch();
         renderLevelTabs();
         renderHeader();
+        renderPlayHud();
         renderMountainTuning();
         renderBoard();
         renderSlot();
         renderCombos();
+        renderHuHint();
         renderCounts();
+        renderOpenMelds();
+        renderRiver();
         renderStats();
         renderPickedRewards();
         view.status.textContent = message ?? "";
@@ -1193,13 +2194,13 @@
 
       function renderLevelTabs() {
         view.levelTabs.innerHTML = "";
-        model.levelsConfig.levels.forEach((level, index) => {
+        getPlayableLevels().forEach((level, index) => {
           const button = document.createElement("button");
           button.className = `level-tab${index === model.levelIndex ? " active" : ""}`;
           button.type = "button";
           button.textContent = String(level.order).padStart(2, "0");
           button.setAttribute("aria-label", `第 ${level.order} 关 ${level.name}`);
-          button.addEventListener("click", () => loadLevel(index));
+          button.addEventListener("click", () => loadLevel(index, { resetFixedMountainTemplate: true }));
           view.levelTabs.append(button);
         });
       }
@@ -1207,25 +2208,81 @@
       function renderHeader() {
         const level = currentLevel();
         const modeLabel = model.mode === "mountain" ? "密集牌山" : "配置关卡";
-        const bossLabel = isBossLevel() ? " / Boss" : "";
-        view.levelMeta.textContent = `${model.levelsConfig.displayName} / ${modeLabel}${bossLabel} / ${model.levelsConfig.levels.length} 关`;
-        view.levelName.textContent = isBossLevel() ? `${level.name} · Boss` : level.name;
-        view.levelSubtitle.textContent = model.mode === "mountain" ? `${level.subtitle} · 生成 ${model.state.tiles.length} 张牌` : level.subtitle;
+        const viewLabel = model.prototypeView === "tuner" ? "调牌器" : "玩家试玩";
+        const bossGoals = getActiveBossGoals(model.levelIndex);
+        const bossLabel = bossGoals.length > 0 ? " / Boss" : "";
+        const templateLabel = model.mode === "mountain" ? ` · ${model.activeMountainTemplate.label}` : "";
+        const difficultyLabel = getFriendDemoDifficultyProfile(model.levelIndex)?.label;
+        const difficultyText = difficultyLabel ? `${difficultyLabel} · ` : "";
+        view.levelMeta.textContent = `${model.levelsConfig.displayName} / ${viewLabel} / ${modeLabel}${bossLabel} / ${getPlayableLevelCount()} 关`;
+        view.levelName.textContent = difficultyLabel ?? (bossGoals.length > 0 ? `${level.name} · Boss` : level.name);
+        view.levelSubtitle.textContent = model.mode === "mountain" ? `${difficultyText}${level.subtitle}${templateLabel} · 生成 ${model.state.tiles.length} 张牌` : level.subtitle;
         renderFeaturedCombos();
         renderBossGoal();
       }
 
+      function renderPlayHud() {
+        const level = currentLevel();
+        view.hudLevel.textContent = `第 ${level.order} 关`;
+        view.hudGoal.textContent = getHudGoalText();
+        view.hudRemaining.textContent = String(getBoardTiles().length);
+        view.hudScore.textContent = model.state.score;
+        view.hudCoins.textContent = model.state.coins;
+      }
+
+      function getHudGoalText() {
+        const bossGoals = model.state.bossGoals ?? [];
+        if (bossGoals.length > 0) {
+          const completed = bossGoals.filter(isBossGoalItemComplete).length;
+          return `Boss ${completed}/${bossGoals.length}`;
+        }
+
+        const featuredCombos = isFriendDemoMode()
+          ? getFriendDemoFeaturedCombos(model.levelIndex)
+          : currentLevel().featuredCombos ?? [];
+        if (featuredCombos.length > 0) {
+          return `重点 ${featuredCombos.map((combo) => TYPE_LABELS[combo]).join("/")}`;
+        }
+
+        return model.mode === "mountain" ? "清空密集牌山" : "清空配置关卡";
+      }
+
       function renderMountainTuning() {
-        view.mountainTuningPanel.style.display = model.mode === "mountain" ? "grid" : "none";
+        const shouldShowTuning = model.prototypeView === "tuner" && model.mode === "mountain";
+        view.mountainTuningPanel.hidden = !shouldShowTuning;
+        view.mountainTuningPanel.style.display = shouldShowTuning ? "grid" : "none";
+        renderMountainTemplateOptions();
         view.mountainSeed.value = model.mountainTuning.seed;
+        view.mountainTemplate.value = model.mountainTuning.templateId;
         view.mountainTileCount.value = model.mountainTuning.tileCount ?? "";
         view.mountainStackDepth.value = model.mountainTuning.stackDepth;
         view.mountainHuPacks.value = model.mountainTuning.huPacks ?? "";
         view.mountainHonorWeight.value = model.mountainTuning.honorWeight;
       }
 
+      function renderMountainTemplateOptions() {
+        if (view.mountainTemplate.dataset.ready === "true") return;
+
+        const options = [
+          { id: "auto", label: "自动模板" },
+          ...MOUNTAIN_TEMPLATE_IDS.map(getMountainTemplateDefinition),
+        ];
+        view.mountainTemplate.innerHTML = "";
+
+        for (const optionConfig of options) {
+          const option = document.createElement("option");
+          option.value = optionConfig.id;
+          option.textContent = optionConfig.label;
+          view.mountainTemplate.append(option);
+        }
+
+        view.mountainTemplate.dataset.ready = "true";
+      }
+
       function renderFeaturedCombos() {
-        const combos = currentLevel().featuredCombos ?? [];
+        const combos = isFriendDemoMode()
+          ? getFriendDemoFeaturedCombos(model.levelIndex)
+          : currentLevel().featuredCombos ?? [];
         if (combos.length === 0) {
           view.featuredCombos.classList.remove("show");
           view.featuredCombos.innerHTML = "";
@@ -1283,25 +2340,31 @@
       }
 
       function renderBoard() {
-        const { coordinateSystem } = model.levelsConfig;
+        const coordinateSystem = getActiveCoordinateSystem();
         view.board.innerHTML = "";
         view.board.dataset.mode = model.mode;
         view.board.classList.toggle("vision-on", Boolean(model.state.visionActive));
-        view.board.classList.toggle("boss", isBossLevel());
+        view.board.classList.toggle("boss", getActiveBossGoals(model.levelIndex).length > 0);
 
         for (const tile of model.state.tiles) {
           if (tile.location !== "board") continue;
-          if (tile.stackColumn && !isVisibleStackTop(tile)) continue;
+          if (tile.stackColumn && !isVisibleStackDisplayTile(tile)) continue;
 
           const button = document.createElement("button");
           const blocked = isTileBlocked(tile.id);
-          const hasHiddenStack = getHiddenStackDepth(tile) > 0;
-          button.className = `tile ${blocked ? "blocked" : "available"}${hasHiddenStack ? " stack-top" : ""}`;
+          const stackPreviewDepth = getStackPreviewDepth(tile);
+          const hiddenStackDepth = getHiddenStackDepth(tile);
+          const hasHiddenStack = hiddenStackDepth > 0;
+          const isPreviewTile = tile.stackColumn && stackPreviewDepth > 0;
+          const isBridgeTile = Boolean(tile.stackBridge);
+          const isLooseTile = Boolean(tile.looseMountainTile);
+          const bridgeUnlockCount = getBridgeUnlockCount(tile);
+          button.className = `tile ${blocked ? "blocked" : "available"}${hasHiddenStack ? " stack-top" : ""}${isPreviewTile ? " stack-preview" : ""}${isBridgeTile ? " stack-bridge" : ""}${isLooseTile ? " loose-mountain" : ""}`;
           button.type = "button";
-          const visual = getVisualPosition(tile, coordinateSystem);
+          const visual = getVisualPosition(tile, coordinateSystem, model.state.tiles);
           button.style.left = `${visual.left}%`;
           button.style.top = `${visual.top}%`;
-          button.style.zIndex = String(10 + visual.order);
+          button.style.zIndex = String(TILE_Z_INDEX_BASE + visual.order);
           button.style.setProperty("--lift-x", `${visual.liftX}%`);
           button.style.setProperty("--lift-y", `${visual.liftY}%`);
           button.disabled = blocked || model.state.phase !== "playing";
@@ -1309,7 +2372,16 @@
           if (tile.sourcePackage) button.dataset.sourcePackage = tile.sourcePackage;
           if (tile.solutionGroup) button.dataset.solutionGroup = tile.solutionGroup;
           if (tile.solutionStep) button.dataset.solutionStep = String(tile.solutionStep);
-          const stackHint = hasHiddenStack ? `，下方 ${getHiddenStackDepth(tile)} 张` : "";
+          if (tile.mixedWindowRole) button.dataset.mixedWindowRole = tile.mixedWindowRole;
+          if (hasHiddenStack) button.dataset.stackDepth = String(hiddenStackDepth);
+          if (tile.stackColumn) button.dataset.stackPreviewDepth = String(stackPreviewDepth);
+          if (tile.stackCoverMode) button.dataset.stackCoverMode = tile.stackCoverMode;
+          if (tile.stackOverlapRatio) button.dataset.stackOverlapRatio = tile.stackOverlapRatio.toFixed(2);
+          if (isBridgeTile) button.dataset.bridgeUnlocks = String(bridgeUnlockCount);
+          if (isLooseTile) button.dataset.looseMountainTile = "true";
+          const stackHint = hasHiddenStack
+            ? `，下方 ${hiddenStackDepth} 张`
+            : (isPreviewTile ? `，上方 ${stackPreviewDepth} 张` : (isBridgeTile ? `，压住 ${bridgeUnlockCount} 个入口` : ""));
           button.setAttribute("aria-label", `${tileLabel(tile)} ${blocked ? "被压住" : "可点击"}${stackHint}`);
           button.innerHTML = getTileFaceHtml(tile);
           button.addEventListener("click", () => moveTileToSlot(tile.id));
@@ -1317,14 +2389,15 @@
         }
       }
 
-      function getVisualPosition(tile, coordinateSystem) {
+      function getVisualPosition(tile, coordinateSystem, tiles = model.state.tiles) {
         const left = (tile.x / coordinateSystem.baseWidth) * 100;
         const top = (tile.y / coordinateSystem.baseHeight) * 100;
-        const tileIndex = model.state.tiles.findIndex((item) => item.id === tile.id);
-        const layerLiftX = tile.layer * (model.mode === "mountain" ? -0.58 : -0.85);
-        const layerLiftY = tile.layer * (model.mode === "mountain" ? -1.28 : -1.85);
-        const weaveX = tile.stackColumn ? 0 : ((tileIndex % 3) - 1) * (model.mode === "mountain" ? 0.24 : 0.42);
-        const weaveY = tile.stackColumn ? 0 : ((tileIndex % 4) - 1.5) * (model.mode === "mountain" ? 0.18 : 0.28);
+        const tileIndex = tiles.findIndex((item) => item.id === tile.id);
+        const layerLiftX = tile.stackBridge ? 0 : tile.layer * (model.mode === "mountain" ? -0.58 : -0.85);
+        const layerLiftY = tile.stackBridge ? 0 : tile.layer * (model.mode === "mountain" ? -1.28 : -1.85);
+        const stackPreviewOffset = getStackPreviewVisualOffset(tile, tiles);
+        const weaveX = tile.stackBridge ? 0 : tile.stackColumn ? stackPreviewOffset.x : ((tileIndex % 3) - 1) * (model.mode === "mountain" ? 0.24 : 0.42);
+        const weaveY = tile.stackBridge ? 0 : tile.stackColumn ? stackPreviewOffset.y : ((tileIndex % 4) - 1.5) * (model.mode === "mountain" ? 0.18 : 0.28);
 
         return {
           left: left + layerLiftX + weaveX,
@@ -1335,19 +2408,98 @@
         };
       }
 
+      function getStackPreviewVisualOffset(tile, tiles = model.state.tiles) {
+        const previewDepth = Math.min(getStackPreviewDepthForTiles(tile, tiles), getStackVisiblePreviewDepth(tile));
+        if (!tile.stackColumn || previewDepth <= 0) return { x: 0, y: 0 };
+
+        const direction = getStackColumnVisualDirection(tile);
+        const lane = previewDepth % 2 === 0 ? -direction : direction;
+        const order = getTileStackOrder(tile);
+        const overlapRatio = clampNumber(tile.stackOverlapRatio ?? 0.5, MOUNTAIN_STACK_OVERLAP_RANGE.min, MOUNTAIN_STACK_OVERLAP_RANGE.max);
+        const spread = tile.stackPreviewSpread ?? 1;
+        const revealScale = 1.18 - overlapRatio;
+        return {
+          x: lane * (0.16 + previewDepth * 0.42 * revealScale * spread) + Math.sin(order * 0.017) * 0.28,
+          y: previewDepth * (0.22 + 1.3 * revealScale * spread) + Math.cos(order * 0.019) * 0.16,
+        };
+      }
+
+      function getStackColumnVisualDirection(tile) {
+        const source = String(tile.stackColumnId ?? tile.id);
+        let hash = 0;
+        for (let index = 0; index < source.length; index += 1) {
+          hash = (hash * 31 + source.charCodeAt(index)) >>> 0;
+        }
+        return hash % 2 === 0 ? 1 : -1;
+      }
+
+      function getMountainVisualTileRect(tile, tiles) {
+        const coordinateSystem = getActiveCoordinateSystem();
+        const visual = getVisualPosition(tile, coordinateSystem, tiles);
+        const { width, height } = getMountainRuleTileSize();
+        return {
+          x: (visual.left / 100) * coordinateSystem.baseWidth,
+          y: (visual.top / 100) * coordinateSystem.baseHeight,
+          width,
+          height,
+        };
+      }
+
+      function getMountainVisualIntersectionRect(tile, other, tiles) {
+        const rect = getMountainVisualTileRect(tile, tiles);
+        const otherRect = getMountainVisualTileRect(other, tiles);
+        const left = Math.max(rect.x, otherRect.x);
+        const top = Math.max(rect.y, otherRect.y);
+        const right = Math.min(rect.x + rect.width, otherRect.x + otherRect.width);
+        const bottom = Math.min(rect.y + rect.height, otherRect.y + otherRect.height);
+        if (right <= left || bottom <= top) return null;
+        return { left, top, right, bottom };
+      }
+
+      function getMountainVisualOverlapRatio(tile, other, tiles) {
+        const rect = getMountainVisualIntersectionRect(tile, other, tiles);
+        const { width, height } = getMountainRuleTileSize();
+        return rect ? getUnionArea([rect]) / (width * height) : 0;
+      }
+
+      function getActiveCoordinateSystem() {
+        return model.mode === "mountain" ? MOUNTAIN_COORDINATE_SYSTEM : model.levelsConfig.coordinateSystem;
+      }
+
       function generateMountainTiles(level) {
-        const tuning = model.mountainTuning;
-        const seedText = tuning.seed || `${level.id}:${level.order}`;
-        const random = createSeededRandom(hashText(seedText));
+        const tuning = getEffectiveMountainTuningForLevel(level, model.levelIndex);
+        const seedText = getMountainGenerationSeedText(level, tuning);
+        let lastError = null;
+
+        for (const mountainTemplate of getMountainTemplateGenerationCandidates(level, tuning)) {
+          const random = createSeededRandom(hashText(`${seedText}:${mountainTemplate.id}`));
+          try {
+            const generatedTiles = generateMountainTilesForTemplate(level, tuning, mountainTemplate, random);
+            if (shouldRetryAutoMountainTemplate(level, tuning, generatedTiles)) {
+              lastError = new Error(`密集牌山生成重试：${mountainTemplate.label} 起手开放过多。`);
+              continue;
+            }
+            model.activeMountainTemplate = mountainTemplate;
+            return generatedTiles;
+          } catch (error) {
+            lastError = error;
+          }
+        }
+
+        throw lastError ?? new Error("密集牌山生成失败：没有可用模板。");
+      }
+
+      function generateMountainTilesForTemplate(level, tuning, mountainTemplate, random) {
         const targetTileCount = tuning.tileCount ?? getDefaultMountainTileCount(level);
-        const positions = createMountainPositions(random, targetTileCount, tuning);
+        const positions = createMountainPositions(random, targetTileCount, tuning, mountainTemplate);
         const selectedPositions = positions.slice(0, targetTileCount).map((position, index) => ({
           ...position,
           id: `m-${level.order}-${String(index + 1).padStart(2, "0")}`,
         }));
-        const tileSpecByPositionId = buildSolvableTileSpecs(level, selectedPositions, random, getBossGoals(model.levelIndex), tuning);
+        const bossGoals = getActiveBossGoals(model.levelIndex);
+        const tileSpecByPositionId = buildSolvableTileSpecs(level, selectedPositions, random, bossGoals, tuning);
 
-        const tiles = selectedPositions.map((position, index) => {
+        const tiles = selectedPositions.map((position) => {
           const spec = tileSpecByPositionId.get(position.id);
           return {
             id: position.id,
@@ -1359,212 +2511,579 @@
             stackOrder: position.stackOrder,
             stackColumn: position.stackColumn,
             stackColumnId: position.stackColumnId,
+            stackCoverMode: position.stackCoverMode,
+            stackOverlapRatio: position.stackOverlapRatio,
+            stackPreviewLimit: position.stackPreviewLimit,
+            stackPreviewSpread: position.stackPreviewSpread,
+            stackBridge: position.stackBridge,
+            stackBridgeId: position.stackBridgeId,
+            stackBridgeColumnIds: position.stackBridgeColumnIds,
             blockedBy: [],
             location: "board",
             sourcePackage: spec.sourcePackage,
             solutionStep: spec.solutionStep,
             solutionGroup: spec.solutionGroup,
+            mixedWindowRole: spec.mixedWindowRole,
           };
         });
 
-        const generatedTiles = attachMountainBlockers(tiles);
+        let generatedTiles = attachMountainBlockers(tiles);
+        if (shouldRebalanceRuntimeInitialMixedWindow(level)) {
+          generatedTiles = rebalanceRuntimeInitialMixedWindow(generatedTiles, random);
+        }
         validateSolutionPath(generatedTiles);
-        validateBossGoalsFromSolution(generatedTiles, getBossGoals(model.levelIndex));
+        validateBossGoalsFromSolution(generatedTiles, bossGoals);
+        assertFriendDemoOrphanRiskBudget(generatedTiles, model.levelIndex);
         return generatedTiles;
       }
 
       function getDefaultMountainTileCount(level) {
-        return Math.min(54, 48 + level.order * 2);
+        return MOUNTAIN_DEFAULT_TILE_COUNT;
       }
 
-      function createMountainPositions(random, targetTileCount, tuning) {
+      function shouldRebalanceRuntimeInitialMixedWindow(level) {
+        const profile = getFriendDemoDifficultyProfile(model.levelIndex);
+        if (profile && (profile.huPacks ?? 0) === 0 && getActiveBossGoals(model.levelIndex).length === 0) return true;
+        return !hasFeaturedOrBossMountainGoals(level, getActiveBossGoals(model.levelIndex));
+      }
+
+      function getMountainTemplateDefinition(templateId) {
+        return {
+          id: templateId,
+          label: MOUNTAIN_TEMPLATE_LABELS[templateId] ?? templateId,
+        };
+      }
+
+      function selectMountainTemplate(level, tuning) {
+        const configuredTemplateId = normalizeMountainTemplateId(tuning.templateId);
+        if (configuredTemplateId !== "auto") return getMountainTemplateDefinition(configuredTemplateId);
+
+        const templateIds = getAutoMountainTemplateIds();
+        const templateIndex = model.prototypeView === "tuner"
+          ? (level.order - 1) % templateIds.length
+          : hashText(getAutoMountainTemplateSeedText(level, tuning)) % templateIds.length;
+        return getMountainTemplateDefinition(templateIds[templateIndex]);
+      }
+
+      function getAutoMountainTemplateIds() {
+        return MOUNTAIN_AUTO_TEMPLATE_IDS;
+      }
+
+      function getMountainTemplateGenerationCandidates(level, tuning) {
+        const selectedTemplate = selectMountainTemplate(level, tuning);
+        if (normalizeMountainTemplateId(tuning.templateId) !== "auto") return [selectedTemplate];
+
+        return [
+          selectedTemplate,
+          ...getAutoMountainTemplateIds()
+            .filter((templateId) => templateId !== selectedTemplate.id)
+            .map(getMountainTemplateDefinition),
+        ];
+      }
+
+      function shouldRetryAutoMountainTemplate(level, tuning, generatedTiles) {
+        if (normalizeMountainTemplateId(tuning.templateId) !== "auto") return false;
+        if (model.prototypeView !== "play") return false;
+        return getGeneratedInitialAvailableCount(generatedTiles) > MOUNTAIN_INITIAL_AVAILABLE_TARGET;
+      }
+
+      function getGeneratedInitialAvailableCount(tiles) {
+        const originalState = model.state;
+        model.state = {
+          tiles,
+          slot: [],
+          reserve: [],
+          slotLimit: MAX_SLOT_LIMIT,
+          reserveLimit: 0,
+          shields: 0,
+          firstProtect: false,
+          score: 0,
+          coins: 0,
+          comboCounts: { chi: 0, peng: 0, gang: 0, hu: 0 },
+          suitComboCounts: createEmptySuitTotals(),
+          bossGoals: [],
+          tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
+          bonuses: {},
+          history: [],
+          visionActive: false,
+          phase: "playing",
+          recentBossProgress: [],
+        };
+        const availableCount = tiles.filter((tile) => !isTileBlocked(tile.id)).length;
+        model.state = originalState;
+        return availableCount;
+      }
+
+      function getAutoMountainTemplateSeedText(level, tuning) {
+        if (tuning.seed) return `${level.id}:${level.order}:${tuning.seed}`;
+        if (model.prototypeView === "play") {
+          return `${level.id}:${level.order}:${model.autoMountainTemplateSeed || "auto"}`;
+        }
+        return `${level.id}:${level.order}`;
+      }
+
+      function getMountainGenerationSeedText(level, tuning) {
+        if (tuning.seed) return tuning.seed;
+        if (model.prototypeView === "play" && model.autoMountainTemplateSeed) {
+          return `${level.id}:${level.order}:${model.autoMountainTemplateSeed}`;
+        }
+        return `${level.id}:${level.order}`;
+      }
+
+      function createMountainPositions(random, targetTileCount, tuning, mountainTemplate = getMountainTemplateDefinition("center-tower")) {
         const positions = [];
-        const baseLayerCounts = getMountainLayerCounts(targetTileCount, random);
+        const anchors = getMountainActiveTemplateAnchors(getMountainTemplateAnchors(mountainTemplate.id));
+        const stackCounts = getMountainStackCounts(targetTileCount - MOUNTAIN_MERGED_STACK_COUNT, anchors);
 
-        addRandomGridLayer(positions, random, {
-          layer: 0,
-          rows: 4,
-          cols: 7,
-          count: baseLayerCounts[0],
-          startX: 74,
-          startY: 36,
-          gapX: 72,
-          gapY: 72,
-          jitter: 2,
-          stackBase: 0,
-          required: [
-            [1, 1],
-            [1, 2],
-            [1, 3],
-            [1, 4],
-            [1, 5],
-            [2, 2],
-            [2, 3],
-            [2, 4],
-          ],
-        });
-        addRandomGridLayer(positions, random, {
-          layer: 1,
-          rows: 4,
-          cols: 6,
-          count: baseLayerCounts[1],
-          startX: 110,
-          startY: 72,
-          gapX: 72,
-          gapY: 62,
-          jitter: 2,
-          stackBase: 1000,
-          required: [
-            [0, 2],
-            [1, 1],
-            [1, 2],
-            [1, 3],
-            [1, 4],
-            [2, 2],
-            [2, 3],
-          ],
-        });
-        addRandomGridLayer(positions, random, {
-          layer: 2,
-          rows: 3,
-          cols: 5,
-          count: baseLayerCounts[2],
-          startX: 146,
-          startY: 108,
-          gapX: 72,
-          gapY: 58,
-          jitter: 2,
-          stackBase: 2000,
-          required: [
-            [0, 2],
-            [1, 1],
-            [1, 2],
-            [1, 3],
-            [2, 2],
-          ],
-        });
-        addTemplatePositions(positions, random, pickTemplatePositions(random, [
-          { layer: 3, row: 0, col: 0, x: 180, y: 28, stackOrder: 3000 },
-          { layer: 3, row: 0, col: 1, x: 252, y: 28, stackOrder: 3001 },
-          { layer: 3, row: 0, col: 2, x: 324, y: 28, stackOrder: 3002 },
-          { layer: 3, row: 1, col: 0, x: 146, y: 84, stackOrder: 3040 },
-          { layer: 3, row: 1, col: 1, x: 218, y: 84, stackOrder: 3041 },
-          { layer: 3, row: 1, col: 2, x: 290, y: 84, stackOrder: 3042 },
-          { layer: 3, row: 1, col: 3, x: 362, y: 84, stackOrder: 3043 },
-          { layer: 3, row: 2, col: 0, x: 218, y: 140, stackOrder: 3080 },
-          { layer: 3, row: 2, col: 1, x: 290, y: 140, stackOrder: 3081 },
-          { layer: 3, row: 3, col: 0, x: 254, y: 196, stackOrder: 3120 },
-        ], baseLayerCounts[3]));
-        addSameCellStack(positions, random, { id: "left-a", layer: 2, x: 34, y: 132, count: tuning.stackDepth, stackBase: 2200, col: -1 });
-        addSameCellStack(positions, random, { id: "right-a", layer: 2, x: 514, y: 132, count: tuning.stackDepth, stackBase: 2240, col: 8 });
-
-        const coreCount = positions.length;
-        addRandomGridLayer(positions, random, {
-          layer: 0,
-          rows: 2,
-          cols: 7,
-          count: 8,
-          startX: 74,
-          startY: 0,
-          gapX: 72,
-          gapY: 306,
-          jitter: 2,
-          stackBase: 500,
-          required: [],
+        anchors.forEach((anchor, index) => {
+          const overlapProfile = createMountainStackOverlapProfile(index, random);
+          addTemplateStackPositions(positions, random, {
+            ...anchor,
+            count: stackCounts[index],
+            templateId: mountainTemplate.id,
+            overlapProfile,
+          }, tuning);
         });
 
+        const bridgeGroups = createMountainBridgeGroups(random, positions, mountainTemplate.id);
+        addMountainBridgePositions(positions, random, bridgeGroups, mountainTemplate.id);
         ensureMountainPositionCapacity(positions, random, targetTileCount);
-        return shuffleTailPositions(positions, random, coreCount);
+        return shuffleTailPositions(positions, random, 0);
       }
 
-      function getMountainLayerCounts(targetTileCount, random) {
-        const counts = [18, 11, 6, 6];
-        let extra = Math.max(0, targetTileCount - 18 - 11 - 6 - 6 - 8 - 8);
+      function createMountainBridgeGroups(random, positions, templateId) {
+        const stackTops = getGeneratedStackTopPositions(positions)
+          .filter((position) => !hasGeneratedHigherNonBridgeVisualOverlap(position, positions));
+        const candidatePairs = [];
 
-        while (extra > 0) {
-          if (counts[0] < 28) {
-            counts[0] += 1;
-          } else if (counts[1] < 24) {
-            counts[1] += 1;
-          } else if (counts[2] < 15) {
-            counts[2] += 1;
-          } else if (counts[3] < 10) {
-            counts[3] += 1;
+        for (let aIndex = 0; aIndex < stackTops.length; aIndex += 1) {
+          for (let bIndex = aIndex + 1; bIndex < stackTops.length; bIndex += 1) {
+            const first = stackTops[aIndex];
+            const second = stackTops[bIndex];
+            const distance = Math.hypot(first.visualX - second.visualX, first.visualY - second.visualY);
+            const bridgeCoordinates = getMountainBridgeCoordinateCandidatesForColumns(first, second);
+            if (bridgeCoordinates.length === 0 || distance > getMountainBridgeMaxDistance()) continue;
+            candidatePairs.push({ first, second, bridgeCoordinates, distance, jitter: random() });
           }
-          extra -= 1;
         }
 
-        counts[0] += Math.floor(random() * 2);
-        counts[1] += Math.floor(random() * 2);
+        const selected = [];
+        const usedColumnIds = new Set();
+        const placedBridges = [];
+        candidatePairs
+          .sort((a, b) => a.distance - b.distance || a.jitter - b.jitter)
+          .forEach((pair) => {
+            if (selected.length >= MOUNTAIN_MERGED_STACK_COUNT) return;
+            if (usedColumnIds.has(pair.first.stackColumnId) || usedColumnIds.has(pair.second.stackColumnId)) return;
+            const bridgeCoordinate = pair.bridgeCoordinates.find((coordinate) => (
+              !hasMountainBridgeOverlap(coordinate, placedBridges)
+            ));
+            if (!bridgeCoordinate) return;
+            const bridgePosition = { x: bridgeCoordinate.x, y: bridgeCoordinate.y };
+            if (hasMountainBridgeOverlap(bridgePosition, placedBridges)) return;
+            selected.push({
+              id: `${templateId}-bridge-${selected.length + 1}`,
+              columns: [pair.first, pair.second],
+              bridgeCoordinate,
+            });
+            placedBridges.push(bridgePosition);
+            usedColumnIds.add(pair.first.stackColumnId);
+            usedColumnIds.add(pair.second.stackColumnId);
+          });
+
+        return selected;
+      }
+
+      function getMountainActiveTemplateAnchors(anchors) {
+        const activeAnchors = anchors
+          .map((anchor, index) => ({ anchor, index }))
+          .sort((a, b) => (b.anchor.weight ?? 1) - (a.anchor.weight ?? 1) || a.index - b.index)
+          .slice(0, Math.min(MOUNTAIN_ACTIVE_STACK_COUNT, anchors.length))
+          .map((item) => item.anchor);
+        const centerX = activeAnchors.reduce((sum, anchor) => sum + anchor.x, 0) / activeAnchors.length;
+        const centerY = activeAnchors.reduce((sum, anchor) => sum + anchor.y, 0) / activeAnchors.length;
+        return activeAnchors.map((anchor) => ({
+          ...anchor,
+          x: Math.round(centerX + (anchor.x - centerX) * MOUNTAIN_STACK_CLUSTER_PULL),
+          y: Math.round(centerY + (anchor.y - centerY) * MOUNTAIN_STACK_CLUSTER_PULL),
+        }));
+      }
+
+      function getGeneratedStackTopPositions(positions) {
+        return positions
+          .filter((position) => position.stackColumn && isVisibleGeneratedStackTop(position, positions))
+          .map((position) => {
+            const visual = getMountainGeneratedVisualPosition(position, positions);
+            return {
+              ...position,
+              visualX: visual.x,
+              visualY: visual.y,
+            };
+          });
+      }
+
+      function getMountainGeneratedVisualPosition(position, positions) {
+        const tileIndex = positions.findIndex((item) => isSameGeneratedPosition(item, position));
+        const layerLiftX = position.stackBridge ? 0 : position.layer * -0.58;
+        const layerLiftY = position.stackBridge ? 0 : position.layer * -1.28;
+        const stackPreviewOffset = getGeneratedStackPreviewVisualOffset(position, positions);
+        const weaveX = position.stackBridge ? 0 : position.stackColumn ? stackPreviewOffset.x : ((tileIndex % 3) - 1) * 0.24;
+        const weaveY = position.stackBridge ? 0 : position.stackColumn ? stackPreviewOffset.y : ((tileIndex % 4) - 1.5) * 0.18;
+
+        return {
+          x: position.x + (layerLiftX + weaveX) / 100 * MOUNTAIN_COORDINATE_SYSTEM.baseWidth,
+          y: position.y + (layerLiftY + weaveY) / 100 * MOUNTAIN_COORDINATE_SYSTEM.baseHeight,
+        };
+      }
+
+      function getMountainGeneratedVisualTileRect(position, positions) {
+        const visual = getMountainGeneratedVisualPosition(position, positions);
+        const { width, height } = getMountainRuleTileSize();
+        return {
+          x: visual.x,
+          y: visual.y,
+          width,
+          height,
+        };
+      }
+
+      function getMountainGeneratedVisualIntersectionRect(position, other, positions) {
+        const rect = getMountainGeneratedVisualTileRect(position, positions);
+        const otherRect = getMountainGeneratedVisualTileRect(other, positions);
+        const left = Math.max(rect.x, otherRect.x);
+        const top = Math.max(rect.y, otherRect.y);
+        const right = Math.min(rect.x + rect.width, otherRect.x + otherRect.width);
+        const bottom = Math.min(rect.y + rect.height, otherRect.y + otherRect.height);
+        if (right <= left || bottom <= top) return null;
+        return { left, top, right, bottom };
+      }
+
+      function hasGeneratedHigherVisualOverlap(position, positions) {
+        return positions.some((other) => {
+          if (isSameGeneratedPosition(other, position)) return false;
+          if (other.location && other.location !== "board") return false;
+          if (getTileStackOrder(other) <= getTileStackOrder(position)) return false;
+          return Boolean(getMountainGeneratedVisualIntersectionRect(position, other, positions));
+        });
+      }
+
+      function hasGeneratedHigherNonBridgeVisualOverlap(position, positions) {
+        return positions.some((other) => {
+          if (other.stackBridge) return false;
+          if (isSameGeneratedPosition(other, position)) return false;
+          if (other.location && other.location !== "board") return false;
+          if (getTileStackOrder(other) <= getTileStackOrder(position)) return false;
+          return Boolean(getMountainGeneratedVisualIntersectionRect(position, other, positions));
+        });
+      }
+
+      function getGeneratedStackPreviewVisualOffset(position, positions) {
+        const previewDepth = Math.min(getGeneratedStackPreviewDepth(position, positions), getStackVisiblePreviewDepth(position));
+        if (!position.stackColumn || previewDepth <= 0) return { x: 0, y: 0 };
+
+        const direction = getStackColumnVisualDirection(position);
+        const lane = previewDepth % 2 === 0 ? -direction : direction;
+        const order = getTileStackOrder(position);
+        const overlapRatio = clampNumber(position.stackOverlapRatio ?? 0.5, MOUNTAIN_STACK_OVERLAP_RANGE.min, MOUNTAIN_STACK_OVERLAP_RANGE.max);
+        const spread = position.stackPreviewSpread ?? 1;
+        const revealScale = 1.18 - overlapRatio;
+        return {
+          x: lane * (0.16 + previewDepth * 0.42 * revealScale * spread) + Math.sin(order * 0.017) * 0.28,
+          y: previewDepth * (0.22 + 1.3 * revealScale * spread) + Math.cos(order * 0.019) * 0.16,
+        };
+      }
+
+      function getMountainBridgeMaxDistance() {
+        const { width, height } = getMountainRuleTileSize();
+        return Math.hypot(width * 1.15, height * 1.15);
+      }
+
+      function getMountainTemplateAnchors(templateId) {
+        const templates = {
+          "center-tower": [
+            [320, 314, 1.5], [262, 360, 1.2], [354, 362, 1.2], [310, 430, 1.35],
+            [146, 224, 0.85], [474, 224, 0.85], [134, 534, 0.85], [486, 534, 0.85],
+            [238, 640, 0.8], [386, 640, 0.8],
+          ],
+          "two-wings": [
+            [174, 150, 1.1], [132, 278, 1], [174, 410, 1], [132, 540, 1], [176, 668, 1.05],
+            [446, 150, 1.1], [490, 278, 1], [446, 410, 1], [490, 540, 1], [444, 668, 1.05],
+          ],
+          cross: [
+            [310, 166, 1.05], [310, 268, 1.1], [310, 382, 1.35], [310, 494, 1.1], [310, 606, 1.05],
+            [116, 386, 0.9], [206, 386, 1], [414, 386, 1], [504, 386, 0.9], [310, 716, 0.7],
+          ],
+          ring: [
+            [310, 116, 1], [430, 164, 1], [504, 286, 1], [506, 432, 1], [430, 562, 1],
+            [310, 622, 1], [190, 562, 1], [112, 432, 1], [116, 286, 1], [190, 164, 1],
+          ],
+          "long-wall": [
+            [116, 142, 1], [164, 214, 1], [212, 286, 1], [260, 358, 1], [308, 430, 1.1],
+            [356, 502, 1], [404, 574, 1], [452, 646, 1], [500, 718, 1], [548, 790, 0.8],
+          ],
+          islands: [
+            [140, 170, 1.15], [204, 230, 0.9], [430, 172, 1.15], [492, 232, 0.9],
+            [294, 392, 1.3], [356, 454, 1.1], [130, 612, 1], [208, 680, 0.85],
+            [426, 614, 1], [496, 682, 0.85],
+          ],
+          canyon: [
+            [132, 116, 1.05], [116, 256, 1], [132, 396, 1], [116, 536, 1], [132, 676, 1.05],
+            [488, 116, 1.05], [504, 256, 1], [488, 396, 1], [504, 536, 1], [488, 676, 1.05],
+          ],
+          staircase: [
+            [126, 126, 1], [174, 198, 1], [222, 270, 1], [270, 342, 1], [318, 414, 1.1],
+            [366, 486, 1], [414, 558, 1], [462, 630, 1], [510, 702, 0.9], [286, 724, 0.9],
+          ],
+        };
+
+        return (templates[templateId] ?? templates["center-tower"]).map(([x, y, weight], index) => ({
+          id: `${templateId}-${index + 1}`,
+          x: scaleMountainTemplateCoordinate(x, "x"),
+          y: scaleMountainTemplateCoordinate(y, "y"),
+          weight,
+          stackBase: index * 700,
+          row: index,
+          col: index,
+        }));
+      }
+
+      function scaleMountainTemplateCoordinate(value, axis) {
+        const sourceSize = axis === "x"
+          ? MOUNTAIN_TEMPLATE_SOURCE_COORDINATE_SYSTEM.baseWidth
+          : MOUNTAIN_TEMPLATE_SOURCE_COORDINATE_SYSTEM.baseHeight;
+        const targetSize = axis === "x"
+          ? MOUNTAIN_COORDINATE_SYSTEM.baseWidth
+          : MOUNTAIN_COORDINATE_SYSTEM.baseHeight;
+        return Math.round((value / sourceSize) * targetSize);
+      }
+
+      function getMountainStackCounts(targetTileCount, anchors) {
+        const sortedAnchorIndexes = anchors
+          .map((anchor, index) => ({ index, weight: anchor.weight ?? 1 }))
+          .sort((a, b) => b.weight - a.weight || a.index - b.index)
+          .slice(0, Math.min(MOUNTAIN_PRIMARY_STACK_COUNT, anchors.length))
+          .map((item) => item.index);
+        const primaryIndexes = new Set(sortedAnchorIndexes);
+        const weightedAnchors = anchors.map((anchor, index) => ({
+          index,
+          weight: (anchor.weight ?? 1) * (primaryIndexes.has(index) ? MOUNTAIN_PRIMARY_STACK_WEIGHT_MULTIPLIER : 1),
+        }));
+        const totalWeight = weightedAnchors.reduce((sum, anchor) => sum + anchor.weight, 0);
+        const counts = weightedAnchors.map((anchor) => Math.max(1, Math.floor((targetTileCount * anchor.weight) / totalWeight)));
+        let remainder = targetTileCount - counts.reduce((sum, count) => sum + count, 0);
+        let cursor = 0;
+
+        while (remainder > 0) {
+          const index = weightedAnchors[cursor % weightedAnchors.length].index;
+          counts[index] += 1;
+          remainder -= 1;
+          cursor += 1;
+        }
+
+        while (remainder < 0) {
+          const index = weightedAnchors[(weightedAnchors.length - 1 - cursor % weightedAnchors.length)].index;
+          if (counts[index] > 1) {
+            counts[index] -= 1;
+            remainder += 1;
+          }
+          cursor += 1;
+        }
+
         return counts;
       }
 
       function ensureMountainPositionCapacity(positions, random, targetTileCount) {
         let index = 0;
         while (positions.length < targetTileCount) {
-          const col = index % 8;
-          const row = Math.floor(index / 8) % 2;
+          const col = index % 10;
+          const row = Math.floor(index / 10) % 14;
+          const layer = 4 + Math.floor(index / 140);
           positions.push({
-            layer: 0,
+            positionId: `extra-${index + 1}`,
+            layer,
             row,
             col,
-            x: 38 + col * 68 + randomBetween(random, -2, 2),
-            y: 6 + row * 314 + randomBetween(random, -2, 2),
-            stackOrder: 650 + index,
+            x: 92 + col * 48 + (row % 2) * 10 + randomBetween(random, -2, 2),
+            y: 108 + row * 48 + randomBetween(random, -2, 2),
+            stackOrder: 5000 + index,
           });
           index += 1;
         }
       }
 
-      function addRandomGridLayer(positions, random, layout) {
-        const requiredKeys = new Set(layout.required.map(([row, col]) => `${row}:${col}`));
-        const cells = [];
+      function addTemplateStackPositions(positions, random, stack, tuning) {
+        const phase = randomBetween(random, 0, Math.PI * 2);
+        const baseX = stack.x + randomBetween(random, -3, 3);
+        const baseY = stack.y + randomBetween(random, -3, 3);
+        const layerStep = Math.max(5, tuning.stackDepth + 2);
+        const overlapProfile = stack.overlapProfile ?? createMountainStackOverlapProfile(stack.col, random);
 
-        for (let row = 0; row < layout.rows; row += 1) {
-          for (let col = 0; col < layout.cols; col += 1) {
-            const centerBias = Math.abs(row - (layout.rows - 1) / 2) + Math.abs(col - (layout.cols - 1) / 2);
-            cells.push({ row, col, score: random() + centerBias * 0.18 });
-          }
-        }
-
-        const selectedKeys = new Set(requiredKeys);
-        for (const cell of cells.sort((a, b) => a.score - b.score)) {
-          if (selectedKeys.size >= layout.count) break;
-          selectedKeys.add(`${cell.row}:${cell.col}`);
-        }
-
-        for (const key of selectedKeys) {
-          const [row, col] = key.split(":").map(Number);
+        for (let depth = 0; depth < stack.count; depth += 1) {
+          const weaveX = Math.sin(depth * 0.43 + phase) * 1.4;
+          const weaveY = Math.cos(depth * 0.39 + phase) * 1.1;
           positions.push({
-            layer: layout.layer,
-            row,
-            col,
-            x: layout.startX + col * layout.gapX + randomBetween(random, -layout.jitter, layout.jitter),
-            y: layout.startY + row * layout.gapY + randomBetween(random, -layout.jitter, layout.jitter),
-            stackOrder: layout.stackBase + row * 40 + col,
-          });
-        }
-      }
-
-      function addSameCellStack(positions, random, stack) {
-        const x = stack.x + randomBetween(random, -2, 2);
-        const y = stack.y + randomBetween(random, -2, 2);
-        for (let index = 0; index < stack.count; index += 1) {
-          positions.push({
-            layer: stack.layer,
-            row: index,
+            positionId: `${stack.id}-${depth + 1}`,
+            layer: Math.min(9, Math.floor(depth / layerStep)),
+            row: stack.row,
             col: stack.col,
-            x,
-            y,
-            stackOrder: stack.stackBase + index,
+            x: baseX + weaveX + randomBetween(random, -0.45, 0.45),
+            y: baseY + weaveY + depth * 0.42 + randomBetween(random, -0.35, 0.35),
+            stackOrder: depth * 100 + stack.col,
             stackColumn: true,
             stackColumnId: stack.id,
+            stackCoverMode: overlapProfile.mode,
+            stackOverlapRatio: overlapProfile.overlapRatio,
+            stackPreviewLimit: overlapProfile.previewDepth,
+            stackPreviewSpread: overlapProfile.previewSpread,
+            templateId: stack.templateId,
           });
         }
       }
 
-      function pickTemplatePositions(random, templates, count) {
-        return shuffleItems(templates, random).slice(0, count).sort((a, b) => a.stackOrder - b.stackOrder);
+      function createMountainStackOverlapProfile(index, random) {
+        const modeIndex = index % 3;
+        if (modeIndex === 0) {
+          return {
+            mode: "full",
+            overlapRatio: 1,
+            previewDepth: 1 + Math.floor(random() * 2),
+            previewSpread: 0.12,
+          };
+        }
+        if (modeIndex === 1) {
+          return {
+            mode: "partial",
+            overlapRatio: randomBetween(random, 0.28, 0.78),
+            previewDepth: MOUNTAIN_STACK_PREVIEW_DEPTH,
+            previewSpread: randomBetween(random, 0.72, 1.05),
+          };
+        }
+        return {
+          mode: "loose",
+          overlapRatio: MOUNTAIN_STACK_OVERLAP_RANGE.min,
+          previewDepth: MOUNTAIN_STACK_PREVIEW_DEPTH,
+          previewSpread: randomBetween(random, 1.08, 1.34),
+        };
+      }
+
+      function addMountainBridgePositions(positions, random, bridgeGroups, templateId) {
+        bridgeGroups.forEach((group, index) => {
+          const bridgeCoordinate = group.bridgeCoordinate ?? getMountainBridgeCoordinate(group, random);
+          const bridgePosition = {
+            layer: 0,
+            row: index,
+            col: 40 + index,
+            x: bridgeCoordinate.x,
+            y: bridgeCoordinate.y,
+            stackOrder: 90000 + index,
+            stackBridge: true,
+            stackBridgeId: group.id,
+            stackBridgeColumnIds: group.columns.map((column) => column.stackColumnId),
+            templateId,
+          };
+          positions.push(bridgePosition);
+        });
+      }
+
+      function getMountainBridgeCoordinate(group, random) {
+        const coordinate = getMountainBridgeCoordinateCandidatesForColumns(group.columns[0], group.columns[1])[0];
+        if (coordinate) return coordinate;
+
+        const { width, height } = getMountainRuleTileSize();
+        const first = group.columns[0];
+        const second = group.columns[1];
+        const minX = Math.max(first.visualX, second.visualX) - width + 4;
+        const maxX = Math.min(first.visualX, second.visualX) + width - 4;
+        const minY = Math.max(first.visualY, second.visualY) - height + 4;
+        const maxY = Math.min(first.visualY, second.visualY) + height - 4;
+        const fallbackX = (first.visualX + second.visualX) / 2;
+        const fallbackY = (first.visualY + second.visualY) / 2;
+        const x = minX <= maxX
+          ? randomBetween(random, minX, maxX)
+          : fallbackX;
+        const y = minY <= maxY
+          ? randomBetween(random, minY, maxY)
+          : fallbackY;
+
+        return {
+          x: clampMountainBridgeCoordinate(x, width, "x"),
+          y: clampMountainBridgeCoordinate(y, height, "y"),
+        };
+      }
+
+      function getMountainBridgeCoordinateCandidatesForColumns(first, second) {
+        const { width, height } = getMountainRuleTileSize();
+        const minX = Math.max(first.visualX, second.visualX) - width + 4;
+        const maxX = Math.min(first.visualX, second.visualX) + width - 4;
+        const minY = Math.max(first.visualY, second.visualY) - height + 4;
+        const maxY = Math.min(first.visualY, second.visualY) + height - 4;
+        if (minX > maxX || minY > maxY) return [];
+
+        const midX = (minX + maxX) / 2;
+        const midY = (minY + maxY) / 2;
+        const rawCandidates = [
+          { x: midX, y: midY },
+          { x: minX, y: minY },
+          { x: maxX, y: maxY },
+          { x: minX, y: maxY },
+          { x: maxX, y: minY },
+          { x: midX, y: minY },
+          { x: midX, y: maxY },
+          { x: minX, y: midY },
+          { x: maxX, y: midY },
+        ];
+
+        const seen = new Set();
+        return rawCandidates
+          .map((candidate) => ({
+            x: clampMountainBridgeCoordinate(candidate.x, width, "x"),
+            y: clampMountainBridgeCoordinate(candidate.y, height, "y"),
+          }))
+          .filter((candidate) => {
+            const key = `${candidate.x.toFixed(2)}:${candidate.y.toFixed(2)}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+      }
+
+      function placeMountainBridgeWithoutOverlap(bridgePosition, placedBridges, index) {
+        if (!hasMountainBridgeOverlap(bridgePosition, placedBridges)) return bridgePosition;
+
+        const { width, height } = getMountainRuleTileSize();
+        const direction = index % 2 === 0 ? -1 : 1;
+        const offsets = [
+          { x: direction * width * 1.05, y: -height * 0.18 },
+          { x: direction * width * 1.05, y: height * 0.18 },
+          { x: 0, y: -height * 1.05 },
+          { x: 0, y: height * 1.05 },
+          { x: -direction * width * 1.05, y: 0 },
+          { x: direction * width * 1.55, y: -height * 0.35 },
+          { x: direction * width * 1.55, y: height * 0.35 },
+        ];
+
+        for (const offset of offsets) {
+          const candidate = {
+            ...bridgePosition,
+            x: clampMountainBridgeCoordinate(bridgePosition.x + offset.x, width, "x"),
+            y: clampMountainBridgeCoordinate(bridgePosition.y + offset.y, height, "y"),
+          };
+          if (!hasMountainBridgeOverlap(candidate, placedBridges)) return candidate;
+        }
+
+        return bridgePosition;
+      }
+
+      function hasMountainBridgeOverlap(candidate, placedBridges) {
+        const { width, height } = getMountainRuleTileSize();
+        return placedBridges.some((bridge) => Boolean(getIntersectionRect(candidate, bridge, width, height)));
+      }
+
+      function clampMountainBridgeCoordinate(value, tileSize, axis) {
+        const boardSize = axis === "x"
+          ? MOUNTAIN_COORDINATE_SYSTEM.baseWidth
+          : MOUNTAIN_COORDINATE_SYSTEM.baseHeight;
+        return clampNumber(value, 8, boardSize - tileSize - 8);
       }
 
       function shuffleTailPositions(positions, random, fixedCount) {
@@ -1572,32 +3091,6 @@
           ...positions.slice(0, fixedCount),
           ...shuffleItems(positions.slice(fixedCount), random),
         ];
-      }
-
-      function addGridPositions(positions, random, layout) {
-        for (let row = 0; row < layout.rows; row += 1) {
-          for (let col = 0; col < layout.cols; col += 1) {
-            const rowOffset = row % 2 === 0 ? 0 : layout.staggerX;
-            positions.push({
-              layer: layout.layer,
-              row,
-              col,
-              x: layout.startX + col * layout.gapX + rowOffset + randomBetween(random, -5, 5),
-              y: layout.startY + row * layout.gapY + randomBetween(random, -4, 4),
-              stackOrder: layout.stackBase + row * 40 + col,
-            });
-          }
-        }
-      }
-
-      function addTemplatePositions(positions, random, templates) {
-        for (const template of templates) {
-          positions.push({
-            ...template,
-            x: template.x + randomBetween(random, -4, 4),
-            y: template.y + randomBetween(random, -3, 3),
-          });
-        }
       }
 
       function buildComboPackages(level, random, packageCount) {
@@ -1622,12 +3115,23 @@
         const suitGoalQueue = buildBossSuitGoalQueue(bossGoals);
         const featuredCombos = level.featuredCombos ?? [];
         const huPackCount = getHuPackCount(level, tuning);
+        const gangPackCount = getFriendDemoGangPackCount(tuning);
         if (huPackCount > 0) {
           const bossHuIndex = comboGoalQueue.indexOf("hu");
           if (bossHuIndex >= 0) comboGoalQueue.splice(bossHuIndex, 1);
         }
-        const solutionGroups = buildSolutionGroups(positions, comboGoalQueue, huPackCount);
-        const patterns = shuffleItems(collectComboPatterns(level), random);
+        const releaseGroups = buildSolutionGroups(
+          positions,
+          comboGoalQueue,
+          huPackCount,
+          getHuPackReleaseDelay(level, tuning),
+          gangPackCount,
+          getFriendDemoGangPackReleaseDelay(level, tuning),
+        );
+        const solutionGroups = buildMixedWindowSolutionGroups(releaseGroups, random);
+        const reservedGangTileKeys = getFriendDemoGangTileKeys(level, solutionGroups, tuning);
+        const requiredTileIdentityQueue = shuffleItems(buildRequiredTileIdentityQueue(tuning, reservedGangTileKeys), random);
+        const patterns = buildMountainFillerPatterns(level, random, tuning, reservedGangTileKeys);
         const tileSpecByPositionId = new Map();
         let patternIndex = 0;
 
@@ -1635,28 +3139,314 @@
           const featuredCombo = group.featuredCombo;
           const goalCombo = featuredCombo ? null : comboGoalQueue.shift();
           const goalSuit = featuredCombo ? null : suitGoalQueue.shift();
+          const requiredTileIdentity = featuredCombo || goalCombo || goalSuit ? null : requiredTileIdentityQueue.shift();
           let pattern = featuredCombo === "hu"
-            ? makeHuPattern(level, random, groupIndex)
+            ? makeHuPattern(level, random, groupIndex, tuning)
+            : featuredCombo === "gang"
+            ? makeFriendDemoGangPattern(level, groupIndex, tuning)
             : goalCombo
             ? makeBossGoalPattern(goalCombo, random, groupIndex, goalSuit)
+            : requiredTileIdentity
+            ? makeTileIdentityCoveragePattern(requiredTileIdentity)
             : patterns[patternIndex % patterns.length];
-          if (!goalCombo && !featuredCombo && shouldUseHonorFiller(random, tuning.honorWeight)) {
-            pattern = makeHonorPengPattern(level.order, groupIndex);
+          if (!goalCombo && !featuredCombo && !requiredTileIdentity && shouldUseHonorFiller(random, tuning)) {
+            pattern = makeHonorPengPattern(level.order, groupIndex, tuning);
           }
-          if (!goalCombo && !featuredCombo) patternIndex += 1;
+          if (!goalCombo && !featuredCombo && !requiredTileIdentity) patternIndex += 1;
           const specs = expandPatternToGroup(pattern, group.length, random);
 
           group.forEach((position, index) => {
             tileSpecByPositionId.set(position.id, {
               ...specs[index],
               sourcePackage: `solution-${groupIndex + 1}-${pattern.type}`,
-              solutionStep: groupIndex + 1,
+              solutionStep: position.solutionStep ?? groupIndex + 1,
               solutionGroup: `solution-${groupIndex + 1}`,
+              mixedWindowRole: position.mixedWindowRole,
             });
           });
         });
 
+        rebalanceInitialMixedWindow(tileSpecByPositionId, positions, random);
         return tileSpecByPositionId;
+      }
+
+      function getFriendDemoGangPackCount(tuning) {
+        return Math.max(0, Math.min(4, tuning.gangPacks ?? 0));
+      }
+
+      function getFriendDemoGangPackReleaseDelay() {
+        return 2;
+      }
+
+      function getFriendDemoGangTileKeys(level, solutionGroups, tuning = null) {
+        const keys = new Set();
+        solutionGroups.forEach((group, groupIndex) => {
+          if (group.featuredCombo !== "gang") return;
+          const pattern = makeFriendDemoGangPattern(level, groupIndex, tuning);
+          pattern.tiles.forEach((tile) => keys.add(getTileKey(tile)));
+        });
+        return keys;
+      }
+
+      function buildMixedWindowSolutionGroups(releaseGroups, random) {
+        const groups = [];
+        let releaseStep = 1;
+
+        for (let index = 0; index < releaseGroups.length; index += 1) {
+          const first = releaseGroups[index];
+          const second = releaseGroups[index + 1];
+
+          if (canUseMixedWindowDistribution(first, second)) {
+            const firstOrder = shuffleItems([0, 1, 2], random);
+            const secondOrder = shuffleItems([0, 1, 2], random);
+            groups.push([
+              makeMixedWindowMember(first[firstOrder[0]], releaseStep, "hold"),
+              makeMixedWindowMember(first[firstOrder[1]], releaseStep, "hold"),
+              makeMixedWindowMember(second[secondOrder[0]], releaseStep + 1, "finish"),
+            ]);
+            groups.push([
+              makeMixedWindowMember(first[firstOrder[2]], releaseStep, "lure"),
+              makeMixedWindowMember(second[secondOrder[1]], releaseStep + 1, "hold"),
+              makeMixedWindowMember(second[secondOrder[2]], releaseStep + 1, "finish"),
+            ]);
+            index += 1;
+            releaseStep += 2;
+          } else {
+            groups.push(makePassthroughSolutionGroup(first, releaseStep));
+            releaseStep += 1;
+          }
+        }
+
+        return groups;
+      }
+
+      function canUseMixedWindowDistribution(first, second) {
+        return Boolean(
+          first
+          && second
+          && first.length === 3
+          && second.length === 3
+          && !first.featuredCombo
+          && !second.featuredCombo
+        );
+      }
+
+      function makeMixedWindowMember(position, solutionStep, mixedWindowRole) {
+        return {
+          ...position,
+          solutionStep,
+          mixedWindowRole,
+        };
+      }
+
+      function makePassthroughSolutionGroup(group, solutionStep) {
+        const passthrough = group.map((position) => makeMixedWindowMember(position, solutionStep, "direct"));
+        if (group.featuredCombo) passthrough.featuredCombo = group.featuredCombo;
+        return passthrough;
+      }
+
+      function rebalanceInitialMixedWindow(tileSpecByPositionId, positions, random) {
+        const initialAvailableIds = getInitialAvailablePositionIds(positions);
+        const deferredIds = shuffleItems(
+          positions
+            .filter((position) => !initialAvailableIds.has(position.id))
+            .map((position) => position.id)
+            .filter((id) => {
+              const step = tileSpecByPositionId.get(id)?.solutionStep ?? Number.MAX_SAFE_INTEGER;
+              return step <= 2;
+            }),
+          random,
+        );
+        const usedDeferredIds = new Set();
+        let safety = 0;
+
+        while (safety < 20) {
+          safety += 1;
+          const groupCounts = countInitialSolutionGroups(tileSpecByPositionId, initialAvailableIds);
+          const completeGroup = [...groupCounts.entries()].find(([, count]) => count >= 3)?.[0];
+          if (!completeGroup) return;
+
+          const visibleSwapId = [...initialAvailableIds].find((id) => (
+            tileSpecByPositionId.get(id)?.solutionGroup === completeGroup
+          ));
+          const deferredSwapId = deferredIds.find((id) => {
+            if (usedDeferredIds.has(id)) return false;
+            const spec = tileSpecByPositionId.get(id);
+            if (!spec || spec.solutionGroup === completeGroup) return false;
+            return (groupCounts.get(spec.solutionGroup) ?? 0) <= 1;
+          });
+
+          const swapId = deferredSwapId;
+          if (!visibleSwapId || !swapId) return;
+          swapSolutionIdentity(tileSpecByPositionId.get(visibleSwapId), tileSpecByPositionId.get(swapId));
+          if (swapId === deferredSwapId) usedDeferredIds.add(deferredSwapId);
+        }
+      }
+
+      function getInitialAvailablePositionIds(positions) {
+        const initialPositions = positions.map((position) => ({
+          ...position,
+          location: "board",
+        }));
+        return new Set(
+          initialPositions
+            .filter((position) => !isPositionBlocked(position, initialPositions))
+            .map((position) => position.id),
+        );
+      }
+
+      function countInitialSolutionGroups(tileSpecByPositionId, initialAvailableIds) {
+        const counts = new Map();
+        initialAvailableIds.forEach((id) => {
+          const key = tileSpecByPositionId.get(id)?.solutionGroup;
+          if (!key) return;
+          counts.set(key, (counts.get(key) ?? 0) + 1);
+        });
+        return counts;
+      }
+
+      function swapSolutionIdentity(first, second) {
+        const firstIdentity = {
+          suit: first.suit,
+          rank: first.rank,
+          sourcePackage: first.sourcePackage,
+          solutionGroup: first.solutionGroup,
+          mixedWindowRole: first.mixedWindowRole,
+        };
+        first.suit = second.suit;
+        first.rank = second.rank;
+        first.sourcePackage = second.sourcePackage;
+        first.solutionGroup = second.solutionGroup;
+        first.mixedWindowRole = second.mixedWindowRole;
+        second.suit = firstIdentity.suit;
+        second.rank = firstIdentity.rank;
+        second.sourcePackage = firstIdentity.sourcePackage;
+        second.solutionGroup = firstIdentity.solutionGroup;
+        second.mixedWindowRole = firstIdentity.mixedWindowRole;
+      }
+
+      function rebalanceRuntimeInitialMixedWindow(tiles, random) {
+        const nextTiles = tiles.map((tile) => ({ ...tile }));
+        const deferredIds = shuffleItems(
+          nextTiles
+            .filter((tile) => isGeneratedTileBlocked(tile, nextTiles))
+            .map((tile) => tile.id),
+          random,
+        );
+        const usedDeferredIds = new Set();
+        let safety = 0;
+
+        while (safety < 30) {
+          safety += 1;
+          const availableTiles = nextTiles.filter((tile) => !isGeneratedTileBlocked(tile, nextTiles));
+          const groupCounts = availableTiles.reduce((counts, tile) => {
+            const key = tile.solutionGroup;
+            if (!key) return counts;
+            counts.set(key, (counts.get(key) ?? 0) + 1);
+            return counts;
+          }, new Map());
+          const completeGroup = [...groupCounts.entries()].find(([, count]) => count >= 3)?.[0];
+          if (!completeGroup) return nextTiles;
+
+          const visibleSwap = availableTiles.find((tile) => tile.solutionGroup === completeGroup);
+          const deferredFillerId = findDeferredMixedWindowFillerId(nextTiles, deferredIds, usedDeferredIds, completeGroup, visibleSwap);
+          const filler = nextTiles.find((tile) => tile.id === deferredFillerId);
+
+          if (!visibleSwap || !filler) return nextTiles;
+          swapSolutionIdentity(visibleSwap, filler);
+          usedDeferredIds.add(deferredFillerId);
+        }
+
+        return nextTiles;
+      }
+
+      function findDeferredMixedWindowFillerId(tiles, deferredIds, usedDeferredIds, completeGroup, visibleSwap) {
+        const visibleStep = visibleSwap?.solutionStep ?? 0;
+        return deferredIds
+          .map((id) => tiles.find((tile) => tile.id === id))
+          .filter(Boolean)
+          .filter((tile) => (
+            !usedDeferredIds.has(tile.id)
+            && tile.solutionGroup !== completeGroup
+          ))
+          .sort((a, b) => (
+            Math.abs((a.solutionStep ?? 0) - visibleStep) - Math.abs((b.solutionStep ?? 0) - visibleStep)
+          ))[0]?.id;
+      }
+
+      function getAllTileIdentities(tuning = null) {
+        const numberSuits = getAllowedNumberSuits(tuning);
+        const honorRanks = getAllowedHonorRanks(tuning);
+        return [
+          ...numberSuits.flatMap((suit) => (
+            Array.from({ length: 9 }, (_, index) => ({
+              key: `${suit}-${index + 1}`,
+              suit,
+              rank: index + 1,
+            }))
+          )),
+          ...honorRanks.map((rank) => ({
+            key: `honor-${rank}`,
+            suit: "honor",
+            rank,
+          })),
+        ];
+      }
+
+      function buildRequiredTileIdentityQueue(tuning, reservedTileKeys = new Set()) {
+        return getAllTileIdentities(tuning).filter((identity) => !reservedTileKeys.has(identity.key));
+      }
+
+      function buildMountainFillerPatterns(level, random, tuning = null, reservedTileKeys = new Set()) {
+        const identityPatterns = getAllTileIdentities(tuning)
+          .filter((identity) => !reservedTileKeys.has(identity.key))
+          .map(makeTileIdentityCoveragePattern);
+        const chiPatterns = getAllowedNumberSuits(tuning).flatMap((suit) => (
+          Array.from({ length: 7 }, (_, index) => makePattern("chi", [
+            { suit, rank: index + 1 },
+            { suit, rank: index + 2 },
+            { suit, rank: index + 3 },
+          ]))
+        )).filter((pattern) => !doesPatternUseReservedTile(pattern, reservedTileKeys));
+        const levelPatterns = collectComboPatterns(level)
+          .filter((pattern) => isPatternAllowedByTuning(pattern, tuning))
+          .filter((pattern) => !doesPatternUseReservedTile(pattern, reservedTileKeys));
+        return shuffleItems([
+          ...identityPatterns,
+          ...chiPatterns,
+          ...levelPatterns,
+        ], random);
+      }
+
+      function doesPatternUseReservedTile(pattern, reservedTileKeys) {
+        if (!reservedTileKeys || reservedTileKeys.size === 0) return false;
+        return pattern.tiles.some((tile) => reservedTileKeys.has(getTileKey(tile)));
+      }
+
+      function getAllowedNumberSuits(tuning = null) {
+        const suits = tuning?.numberSuits;
+        if (!Array.isArray(suits) || suits.length === 0) return NUMBER_SUITS;
+        return suits.filter((suit) => NUMBER_SUITS.includes(suit));
+      }
+
+      function getAllowedHonorRanks(tuning = null) {
+        const ranks = tuning?.honorRanks;
+        if (!Array.isArray(ranks)) return Array.from({ length: 7 }, (_, index) => index + 1);
+        return ranks.filter((rank) => Number.isInteger(rank) && rank >= 1 && rank <= 7);
+      }
+
+      function isPatternAllowedByTuning(pattern, tuning = null) {
+        return pattern.tiles.every((tile) => isTileIdentityAllowedByTuning(tile, tuning));
+      }
+
+      function isTileIdentityAllowedByTuning(tile, tuning = null) {
+        if (NUMBER_SUITS.includes(tile.suit)) return getAllowedNumberSuits(tuning).includes(tile.suit);
+        if (tile.suit === "honor") return getAllowedHonorRanks(tuning).includes(tile.rank);
+        return false;
+      }
+
+      function buildRequiredSuitQueue() {
+        return ALL_SUITS.flatMap((suit) => Array.from({ length: 4 }, () => suit));
       }
 
       function getHuPackCount(level, tuning) {
@@ -1664,12 +3454,20 @@
         return (level.featuredCombos ?? []).includes("hu") ? 1 : 0;
       }
 
-      function shouldUseHonorFiller(random, honorWeight) {
-        return random() < Math.max(0, Math.min(100, honorWeight)) / 100;
+      function hasFeaturedOrBossMountainGoals(level, bossGoals) {
+        return (level.featuredCombos ?? []).length > 0 || (bossGoals ?? []).length > 0;
       }
 
-      function makeHonorPengPattern(levelOrder, groupIndex) {
-        const rank = ((levelOrder + groupIndex) % 7) + 1;
+      function shouldUseHonorFiller(random, tuning) {
+        if (getAllowedHonorRanks(tuning).length === 0) return false;
+        return random() < Math.max(0, Math.min(100, tuning.honorWeight ?? 0)) / 100;
+      }
+
+      function makeHonorPengPattern(levelOrder, groupIndex, tuning = null) {
+        const honorRanks = getAllowedHonorRanks(tuning);
+        const rank = honorRanks.length > 0
+          ? honorRanks[(levelOrder + groupIndex) % honorRanks.length]
+          : 1;
         return makePattern("peng", [
           { suit: "honor", rank },
           { suit: "honor", rank },
@@ -1677,13 +3475,35 @@
         ]);
       }
 
-      function makeHuPattern(level, random, groupIndex) {
-        const chiSuit = NUMBER_SUITS[(level.order + groupIndex) % NUMBER_SUITS.length];
-        const pairSuit = NUMBER_SUITS[(level.order + groupIndex + 2) % NUMBER_SUITS.length];
-        const tripletSuit = level.order >= 6 ? "honor" : NUMBER_SUITS[(level.order + groupIndex + 1) % NUMBER_SUITS.length];
+      function makeSuitCoveragePattern(suit, levelOrder, groupIndex) {
+        if (suit === "honor") return makeHonorPengPattern(levelOrder, groupIndex);
+        const startRank = ((levelOrder + groupIndex) % 7) + 1;
+        return makePattern("chi", [
+          { suit, rank: startRank },
+          { suit, rank: startRank + 1 },
+          { suit, rank: startRank + 2 },
+        ]);
+      }
+
+      function makeTileIdentityCoveragePattern(identity) {
+        return makePattern("peng", [
+          { suit: identity.suit, rank: identity.rank },
+          { suit: identity.suit, rank: identity.rank },
+          { suit: identity.suit, rank: identity.rank },
+        ]);
+      }
+
+      function makeHuPattern(level, random, groupIndex, tuning = null) {
+        const numberSuits = getAllowedNumberSuits(tuning);
+        const honorRanks = getAllowedHonorRanks(tuning);
+        const chiSuit = numberSuits[(level.order + groupIndex) % numberSuits.length];
+        const pairSuit = numberSuits[(level.order + groupIndex + 2) % numberSuits.length];
+        const tripletSuit = honorRanks.length > 0 && level.order >= 8
+          ? "honor"
+          : numberSuits[(level.order + groupIndex + 1) % numberSuits.length];
         const startRank = ((level.order + groupIndex) % 7) + 1;
         const tripletRank = tripletSuit === "honor"
-          ? ((level.order + groupIndex) % 7) + 1
+          ? honorRanks[(level.order + groupIndex) % honorRanks.length]
           : ((level.order + groupIndex + 4) % 9) + 1;
         const pairRank = ((level.order + groupIndex + 6) % 9) + 1;
 
@@ -1720,31 +3540,49 @@
         return makePattern(combo, Array.from({ length: count }, () => tile));
       }
 
+      function makeFriendDemoGangPattern(level, groupIndex, tuning = null) {
+        const numberSuits = getAllowedNumberSuits(tuning);
+        const suit = numberSuits[(level.order + groupIndex) % numberSuits.length];
+        const rank = ((level.order * 2 + groupIndex * 2) % 9) + 1;
+        const tile = { suit, rank };
+        return makePattern("gang", [tile, tile, tile, tile]);
+      }
+
       function getPatternRankForSuit(suit, rank) {
         if (suit === "honor") return ((rank - 1) % 7) + 1;
         return rank;
       }
 
-      function buildSolutionGroups(positions, comboGoalQueue, huPackCount) {
+      function buildSolutionGroups(
+        positions,
+        comboGoalQueue,
+        huPackCount,
+        huPackReleaseDelay = 0,
+        gangPackCount = 0,
+        gangPackReleaseDelay = 0,
+      ) {
         const remaining = positions.map((position) => ({ ...position, location: "board" }));
         const groups = [];
         let safety = 0;
         let nextGoalIndex = 0;
         let pendingHuGroups = huPackCount;
+        let pendingGangGroups = gangPackCount;
+        let nextGangGroupIndex = gangPackReleaseDelay;
 
         while (remaining.length > 0 && safety < 200) {
           safety += 1;
           const available = remaining
             .filter((position) => !isPositionBlocked(position, remaining))
             .sort((a, b) => getTileStackOrder(b) - getTileStackOrder(a));
-          const wantsHuGroup = pendingHuGroups > 0 && available.length >= MAX_SLOT_LIMIT;
-          const nextGoalCombo = wantsHuGroup ? null : comboGoalQueue[nextGoalIndex];
+          const wantsGangGroup = pendingGangGroups > 0 && groups.length >= nextGangGroupIndex && available.length >= 4;
+          const wantsHuGroup = !wantsGangGroup && pendingHuGroups > 0 && groups.length >= huPackReleaseDelay && available.length >= MAX_SLOT_LIMIT;
+          const nextGoalCombo = wantsHuGroup || wantsGangGroup ? null : comboGoalQueue[nextGoalIndex];
           const goalTakeCount = nextGoalCombo ? getComboGoalGroupSize(nextGoalCombo) : 0;
           const wantsBossGroup = Boolean(nextGoalCombo);
           if (wantsBossGroup && available.length < goalTakeCount) {
             throw new Error(`密集牌山生成失败：Boss ${TYPE_LABELS[nextGoalCombo]} 目标缺少可用位置。`);
           }
-          const takeCount = wantsHuGroup ? MAX_SLOT_LIMIT : wantsBossGroup ? goalTakeCount : available.length >= 3 ? 3 : available.length;
+          const takeCount = wantsHuGroup ? MAX_SLOT_LIMIT : wantsGangGroup ? 4 : wantsBossGroup ? goalTakeCount : available.length >= 3 ? 3 : available.length;
 
           if (takeCount === 0) {
             throw new Error("密集牌山生成失败：没有可解的起手牌。");
@@ -1754,6 +3592,11 @@
           if (wantsHuGroup) {
             group.featuredCombo = "hu";
             pendingHuGroups -= 1;
+          }
+          if (wantsGangGroup) {
+            group.featuredCombo = "gang";
+            pendingGangGroups -= 1;
+            nextGangGroupIndex = groups.length + 3;
           }
           if (wantsBossGroup) nextGoalIndex += 1;
           groups.push(group);
@@ -1770,6 +3613,10 @@
 
         if (pendingHuGroups > 0) {
           throw new Error("密集牌山生成失败：胡牌重点缺少 8 张可用位置。");
+        }
+
+        if (pendingGangGroups > 0) {
+          throw new Error("密集牌山生成失败：明杠机会缺少 4 张可用位置。");
         }
 
         return groups;
@@ -1794,8 +3641,16 @@
         return combo === "gang" ? 4 : 3;
       }
 
+      function getHuPackReleaseDelay(level, tuning) {
+        if (!getFriendDemoDifficultyProfile(model.levelIndex)) return 0;
+        if ((tuning.huPacks ?? 0) <= 0) return 0;
+        return isBossLevel(model.levelIndex) ? 3 : 2;
+      }
+
       function isPositionBlocked(position, positions) {
-        return getPositionCoverRatio(position, positions) > BLOCKED_COVER_RATIO;
+        if (position.stackColumn && !isVisibleGeneratedStackTop(position, positions)) return true;
+        return isPositionCoveredByHigherTile(position, positions)
+          || isPositionBlockedByBridge(position, positions);
       }
 
       function getPositionCoverRatio(position, positions) {
@@ -1804,6 +3659,7 @@
 
         positions.forEach((other) => {
           if (other.id === position.id) return;
+          if (other.location && other.location !== "board") return;
           if (getTileStackOrder(other) <= getTileStackOrder(position)) return;
 
           const rect = getIntersectionRect(position, other, width, height);
@@ -1811,6 +3667,28 @@
         });
 
         return getUnionArea(coverRects) / (width * height);
+      }
+
+      function isPositionCoveredByHigherTile(position, positions) {
+        const { width, height } = getMountainRuleTileSize();
+        return positions.some((other) => {
+          if (other.id === position.id) return false;
+          if (other.location && other.location !== "board") return false;
+          if (getTileStackOrder(other) <= getTileStackOrder(position)) return false;
+          return getOverlapRatio(position, other, width, height) >= BLOCKED_COVER_RATIO;
+        });
+      }
+
+      function isPositionBlockedByBridge(position, positions) {
+        if (!position.stackColumn || !isVisibleGeneratedStackTop(position, positions)) return false;
+        const { width, height } = getMountainRuleTileSize();
+        return positions.some((other) => (
+          other.location === "board"
+          && other.stackBridge
+          && getTileStackOrder(other) > getTileStackOrder(position)
+          && other.stackBridgeColumnIds?.includes(position.stackColumnId)
+          && getOverlapRatio(position, other, width, height) >= BLOCKED_COVER_RATIO
+        ));
       }
 
       function expandPatternToGroup(pattern, groupLength, random) {
@@ -1843,13 +3721,11 @@
       function validateSolutionPath(tiles) {
         const remaining = tiles.map((tile) => ({ ...tile, location: "board" }));
         const maxStep = Math.max(...remaining.map((tile) => tile.solutionStep ?? 0));
-        let unresolvedSlotTiles = 0;
+        const virtualSlot = [];
 
         for (let step = 1; step <= maxStep; step += 1) {
           const group = remaining.filter((tile) => tile.solutionStep === step);
           if (group.length === 0) continue;
-
-          unresolvedSlotTiles += group.length;
 
           const blockedIds = group
             .filter((tile) => isGeneratedTileBlocked(tile, remaining))
@@ -1859,22 +3735,47 @@
             throw new Error(`密集牌山生成失败：解法第 ${step} 步仍被压住 ${blockedIds.join(", ")}`);
           }
 
-          if (unresolvedSlotTiles > model.levelsConfig.defaults.slotLimit) {
-            throw new Error(`密集牌山生成失败：解法第 ${step} 步会塞满卡槽。`);
-          }
-
-          if (group.length >= 3) {
-            unresolvedSlotTiles -= group.length;
-          }
-
           for (const tile of group) {
+            virtualSlot.push(tile);
             const index = remaining.findIndex((item) => item.id === tile.id);
             if (index >= 0) remaining.splice(index, 1);
+          }
+
+          resolveVirtualSolutionSlot(virtualSlot);
+
+          if (virtualSlot.length > model.levelsConfig.defaults.slotLimit) {
+            throw new Error(`密集牌山生成失败：解法第 ${step} 步会塞满卡槽。`);
           }
         }
 
         if (remaining.length > 0) {
           throw new Error("密集牌山生成失败：解法未清空牌山。");
+        }
+      }
+
+      function resolveVirtualSolutionSlot(virtualSlot) {
+        let changed = true;
+        while (changed) {
+          changed = false;
+          const groups = new Map();
+          virtualSlot.forEach((tile) => {
+            const key = tile.solutionGroup ?? tile.sourcePackage;
+            if (!key) return;
+            const group = groups.get(key) ?? [];
+            group.push(tile);
+            groups.set(key, group);
+          });
+
+          for (const group of groups.values()) {
+            const comboType = getComboTypeForSolutionGroup(group);
+            if (!comboType) continue;
+            for (const tile of group) {
+              const index = virtualSlot.findIndex((item) => item.id === tile.id);
+              if (index >= 0) virtualSlot.splice(index, 1);
+            }
+            changed = true;
+            break;
+          }
         }
       }
 
@@ -1888,11 +3789,11 @@
         const groups = new Map();
 
         for (const tile of tiles) {
-          const step = tile.solutionStep ?? 0;
-          if (step <= 0) continue;
-          const group = groups.get(step) ?? [];
+          const groupKey = tile.solutionGroup ?? tile.sourcePackage;
+          if (!groupKey) continue;
+          const group = groups.get(groupKey) ?? [];
           group.push(tile);
-          groups.set(step, group);
+          groups.set(groupKey, group);
         }
 
         for (const group of groups.values()) {
@@ -1923,6 +3824,60 @@
         }
       }
 
+      function assertFriendDemoOrphanRiskBudget(tiles, levelIndex = model.levelIndex) {
+        const summary = getFriendDemoOrphanRiskSummary(tiles, levelIndex);
+        if (!Number.isFinite(summary.budget)) return summary;
+        if (summary.risk > summary.budget) {
+          throw new Error(`密集牌山生成失败：孤张风险 ${summary.risk}/${summary.budget}，未归类组 ${summary.unresolvedGroups.join(", ")}`);
+        }
+        return summary;
+      }
+
+      function getFriendDemoOrphanRiskSummary(tiles, levelIndex = model.levelIndex) {
+        const budget = getFriendDemoOrphanRiskBudget(levelIndex);
+        const solutionGroups = collectSolutionGroups(tiles);
+        const unresolvedGroups = [];
+        const pureOrphanGroups = [];
+        const pairOnlyGroups = [];
+
+        for (const [groupKey, group] of solutionGroups.entries()) {
+          if (getComboTypeForSolutionGroup(group)) continue;
+          unresolvedGroups.push(groupKey);
+          if (group.length === 1) pureOrphanGroups.push(groupKey);
+          if (group.length === 2) pairOnlyGroups.push(groupKey);
+        }
+
+        return {
+          budget,
+          risk: unresolvedGroups.length,
+          unresolvedGroups,
+          pureOrphanGroups,
+          pairOnlyGroups,
+        };
+      }
+
+      function getFriendDemoOrphanRiskBudget(levelIndex = model.levelIndex) {
+        const profile = getFriendDemoDifficultyProfile(levelIndex);
+        if (!profile) return Number.POSITIVE_INFINITY;
+        if (Number.isFinite(profile.orphanBudget)) return profile.orphanBudget;
+        if (levelIndex <= 4) return 1;
+        if (levelIndex === 5) return 2;
+        if (levelIndex <= 7) return 3;
+        return DEFAULT_RIVER_LIMIT + 1;
+      }
+
+      function collectSolutionGroups(tiles) {
+        const groups = new Map();
+        for (const tile of tiles) {
+          const groupKey = tile.solutionGroup ?? tile.sourcePackage;
+          if (!groupKey) continue;
+          const group = groups.get(groupKey) ?? [];
+          group.push(tile);
+          groups.set(groupKey, group);
+        }
+        return groups;
+      }
+
       function getComboTypeForSolutionGroup(group) {
         if (group.length >= MAX_SLOT_LIMIT && findHuGroups(group.slice(0, MAX_SLOT_LIMIT))) {
           return "hu";
@@ -1951,7 +3906,55 @@
       }
 
       function isGeneratedTileBlocked(tile, tiles) {
-        return getPositionCoverRatio(tile, tiles) > BLOCKED_COVER_RATIO;
+        if (tile.stackColumn && !isVisibleGeneratedStackTop(tile, tiles)) return true;
+        return isPositionCoveredByHigherTile(tile, tiles)
+          || (tile.blockedBy ?? []).some((blockerId) => (
+            tiles.some((other) => other.id === blockerId && other.location === "board")
+          ));
+      }
+
+      function isVisibleGeneratedStackTop(tile, tiles) {
+        if (!tile.stackColumn) return true;
+        return getGeneratedStackColumnTiles(tile, tiles).every((other) => (
+          isSameGeneratedPosition(other, tile) || getTileStackOrder(other) < getTileStackOrder(tile)
+        ));
+      }
+
+      function isSameGeneratedPosition(first, second) {
+        if (first === second) return true;
+        if (first.positionId !== undefined && first.positionId === second.positionId) return true;
+        return first.id !== undefined && first.id === second.id;
+      }
+
+      function isVisibleGeneratedStackDisplayTile(tile, tiles) {
+        if (!tile.stackColumn) return true;
+        return getGeneratedStackPreviewDepth(tile, tiles) <= getStackVisiblePreviewDepth(tile);
+      }
+
+      function getGeneratedStackPreviewDepth(tile, tiles) {
+        if (!tile.stackColumn) return 0;
+        return getGeneratedStackColumnTiles(tile, tiles).filter((other) => (
+          getTileStackOrder(other) > getTileStackOrder(tile)
+        )).length;
+      }
+
+      function getGeneratedHiddenStackDepth(tile, tiles) {
+        if (!tile.stackColumn || !isVisibleGeneratedStackTop(tile, tiles)) return 0;
+        return getGeneratedStackColumnTiles(tile, tiles).filter((other) => (
+          getTileStackOrder(other) < getTileStackOrder(tile)
+        )).length;
+      }
+
+      function getGeneratedStackColumnTiles(tile, tiles) {
+        return tiles.filter((other) => (
+          other.stackColumn
+          && other.stackColumnId === tile.stackColumnId
+        ));
+      }
+
+      function getStackVisiblePreviewDepth(tile) {
+        if (!tile.stackColumn) return 0;
+        return Math.min(MOUNTAIN_STACK_PREVIEW_DEPTH, Math.max(1, tile.stackPreviewLimit ?? MOUNTAIN_STACK_PREVIEW_DEPTH));
       }
 
       function collectComboPatterns(level) {
@@ -2021,12 +4024,33 @@
 
       function attachMountainBlockers(tiles) {
         const { width, height } = getMountainRuleTileSize();
-        return tiles.map((tile) => ({
+        return attachMountainBridgeBlockers(tiles.map((tile) => ({
           ...tile,
           blockedBy: tiles
-            .filter((other) => getTileStackOrder(other) > getTileStackOrder(tile) && getOverlapRatio(tile, other, width, height) > BLOCKED_COVER_RATIO)
+            .filter((other) => !other.stackBridge && getTileStackOrder(other) > getTileStackOrder(tile) && getOverlapRatio(tile, other, width, height) >= BLOCKED_COVER_RATIO)
             .map((other) => other.id),
-        }));
+        })));
+      }
+
+      function attachMountainBridgeBlockers(tiles) {
+        const bridgeTiles = tiles.filter((tile) => tile.stackBridge);
+        if (bridgeTiles.length === 0) return tiles;
+
+        return tiles.map((tile) => {
+          if (!tile.stackColumn) return tile;
+          const bridgeBlockers = bridgeTiles
+            .filter((bridge) => (
+              bridge.stackBridgeColumnIds?.includes(tile.stackColumnId)
+              && isVisibleGeneratedStackTop(tile, tiles)
+              && getOverlapRatio(tile, bridge, getMountainRuleTileSize().width, getMountainRuleTileSize().height) >= BLOCKED_COVER_RATIO
+            ))
+            .map((bridge) => bridge.id);
+          if (bridgeBlockers.length === 0) return tile;
+          return {
+            ...tile,
+            blockedBy: [...new Set([...tile.blockedBy, ...bridgeBlockers])],
+          };
+        });
       }
 
       function getOverlapRatio(tile, other, tileWidth, tileHeight) {
@@ -2123,9 +4147,51 @@
           const tileId = model.state.slot[index];
           const tile = tileId ? findTile(tileId) : null;
           const cell = document.createElement("div");
-          cell.className = `slot-cell${tile ? " filled" : ""}`;
+          const selectable = Boolean(tile && model.state.discardSelecting && model.state.phase === "playing");
+          cell.className = `slot-cell${tile ? " filled" : ""}${selectable ? " selectable" : ""}`;
           cell.textContent = tile ? tileLabel(tile) : "";
+          if (selectable) {
+            cell.type = "button";
+            cell.setAttribute("role", "button");
+            cell.setAttribute("aria-label", `打出${tileLabel(tile)}到牌河`);
+            cell.addEventListener("click", () => discardSlotTile(index));
+          }
           view.slotGrid.append(cell);
+        }
+      }
+
+      function renderOpenMelds() {
+        view.openMelds.innerHTML = "";
+        const openMelds = model.state.openMelds ?? [];
+        if (openMelds.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "meld-chip";
+          empty.textContent = "无";
+          view.openMelds.append(empty);
+          return;
+        }
+
+        for (const meld of openMelds) {
+          const chip = document.createElement("div");
+          chip.className = `meld-chip ${meld.type}`;
+          const sourceText = meld.source === "supplemental" ? "补" : meld.source === "direct" ? "明" : "";
+          chip.textContent = `${sourceText}${TYPE_LABELS[meld.type]} ${meld.label}x${meld.count}`;
+          view.openMelds.append(chip);
+        }
+      }
+
+      function renderRiver() {
+        const river = model.state.river ?? [];
+        const riverLimit = model.state.riverLimit ?? DEFAULT_RIVER_LIMIT;
+        view.river.innerHTML = "";
+        view.riverCapacity.textContent = `${river.length}/${riverLimit}`;
+        for (let index = 0; index < riverLimit; index += 1) {
+          const tileId = river[index];
+          const tile = tileId ? findTile(tileId) : null;
+          const cell = document.createElement("div");
+          cell.className = `river-cell${tile ? "" : " empty"}`;
+          cell.textContent = tile ? tileLabel(tile) : "空";
+          view.river.append(cell);
         }
       }
 
@@ -2157,8 +4223,112 @@
         }
       }
 
+      function renderHuHint() {
+        const hint = getHuWaitHint();
+        view.huHint.textContent = hint?.text ?? "";
+        view.huHint.dataset.distance = hint ? String(hint.distance) : "";
+        view.huHint.classList.toggle("show", Boolean(hint));
+      }
+
+      function getHuWaitTargetKeys() {
+        return getHuWaitHint()?.targetKeys ?? [];
+      }
+
+      function getHuWaitHint() {
+        if (!model.state || model.state.phase !== "playing") return null;
+        const slotTiles = model.state.slot.map(findTile).filter((tile) => tile?.location === "slot");
+        const distance = MAX_SLOT_LIMIT - slotTiles.length;
+        if (distance !== 1 && distance !== 2) return null;
+
+        const routes = distance === 1
+          ? findOneTileHuWaitRoutes(slotTiles)
+          : findTwoTileHuWaitRoutes(slotTiles);
+        if (routes.length === 0) return null;
+
+        const activeRoutes = routes.filter((route) => isHuWaitRouteAvailable(route.targets));
+        const selectedRoute = activeRoutes[0] ?? routes[0];
+        const labels = selectedRoute.targets.map(formatTileIdentityLabel);
+        const targetKeys = activeRoutes.length > 0 ? getUniqueHuWaitTargetKeys(selectedRoute.targets) : [];
+        const unavailableText = activeRoutes.length > 0 ? "" : "（牌山暂无）";
+        const text = distance === 1
+          ? `听：${labels.join(" / ")}${unavailableText}`
+          : `差：${labels.join(" / ")} 可胡${unavailableText}`;
+
+        return {
+          distance,
+          text,
+          targetKeys,
+        };
+      }
+
+      function findOneTileHuWaitRoutes(slotTiles) {
+        return getHuHintIdentities()
+          .filter((identity) => findHuGroups([...slotTiles, makeVirtualHuTile(identity, 0)]))
+          .map((identity) => ({ targets: [identity] }));
+      }
+
+      function findTwoTileHuWaitRoutes(slotTiles) {
+        const identities = getHuHintIdentities();
+        const routes = [];
+        for (let firstIndex = 0; firstIndex < identities.length; firstIndex += 1) {
+          for (let secondIndex = firstIndex; secondIndex < identities.length; secondIndex += 1) {
+            const first = identities[firstIndex];
+            const second = identities[secondIndex];
+            const candidateTiles = [
+              ...slotTiles,
+              makeVirtualHuTile(first, 0),
+              makeVirtualHuTile(second, 1),
+            ];
+            if (findHuGroups(candidateTiles)) routes.push({ targets: [first, second] });
+          }
+        }
+        return routes;
+      }
+
+      function getHuHintIdentities() {
+        const tuning = model.mode === "mountain"
+          ? getEffectiveMountainTuningForLevel(currentLevel(), model.levelIndex)
+          : null;
+        return getAllTileIdentities(tuning);
+      }
+
+      function makeVirtualHuTile(identity, index) {
+        return {
+          id: `hu-wait-${identity.key}-${index}`,
+          suit: identity.suit,
+          rank: identity.rank,
+          location: "slot",
+        };
+      }
+
+      function isHuWaitRouteAvailable(targets) {
+        const boardCounts = getBoardTileIdentityCounts();
+        const requiredCounts = targets.reduce((counts, target) => {
+          counts[target.key] = (counts[target.key] ?? 0) + 1;
+          return counts;
+        }, {});
+        return Object.entries(requiredCounts).every(([key, count]) => (boardCounts[key] ?? 0) >= count);
+      }
+
+      function getBoardTileIdentityCounts() {
+        return getBoardTiles().reduce((counts, tile) => {
+          const key = getTileKey(tile);
+          counts[key] = (counts[key] ?? 0) + 1;
+          return counts;
+        }, {});
+      }
+
+      function getUniqueHuWaitTargetKeys(targets) {
+        return [...new Set(targets.map((target) => target.key))];
+      }
+
+      function formatTileIdentityLabel(identity) {
+        return getTileLabel(identity);
+      }
+
       function renderCounts() {
         const counts = getRemainingTileCounts();
+        const huWaitTargetKeys = new Set(getHuWaitTargetKeys());
         view.counts.innerHTML = "";
         for (const suit of ALL_SUITS) {
           const row = document.createElement("div");
@@ -2171,9 +4341,18 @@
           for (let rank = 1; rank <= maxRank; rank += 1) {
             const dot = document.createElement("span");
             const count = counts[suit].ranks[rank] ?? 0;
-            dot.className = `rank-dot${count > 0 ? " has" : ""}`;
+            const tileKey = `${suit}-${rank}`;
+            dot.className = huWaitTargetKeys.has(tileKey) && count > 0
+              ? "rank-dot has hu-wait"
+              : `rank-dot${count > 0 ? " has" : ""}`;
             const rankLabel = suit === "honor" ? HONOR_LABELS[rank] : String(rank);
-            dot.textContent = count > 0 ? `${rankLabel}:${count}` : rankLabel;
+            const face = document.createElement("span");
+            face.className = "rank-face";
+            face.textContent = rankLabel;
+            const countLabel = document.createElement("span");
+            countLabel.className = "rank-count";
+            countLabel.textContent = String(count);
+            dot.append(face, countLabel);
             dots.append(dot);
           }
           row.append(label, dots);
@@ -2188,11 +4367,13 @@
         view.reserve.textContent = `${model.state.reserve.length}/${model.state.reserveLimit}`;
         view.shuffleCount.textContent = model.state.tools.shuffle;
         view.undoCount.textContent = model.state.tools.undo;
-        view.visionCount.textContent = model.state.tools.vision;
+        const riverLimit = model.state.riverLimit ?? DEFAULT_RIVER_LIMIT;
+        const riverUsed = (model.state.river ?? []).length;
+        view.discardCount.textContent = `${riverUsed}/${riverLimit}`;
         view.slotLimit.textContent = model.state.slotLimit;
         view.shuffleButton.disabled = model.state.phase !== "playing" || model.state.tools.shuffle <= 0 || getBoardTiles().length < 2;
         view.undoButton.disabled = model.state.phase !== "playing" || model.state.tools.undo <= 0 || model.state.history.length === 0;
-        view.visionButton.disabled = model.state.phase !== "playing" || model.state.tools.vision <= 0 || model.state.visionActive;
+        view.discardButton.disabled = model.state.phase !== "playing" || model.state.slot.length === 0 || !canUseRiverDiscard();
       }
 
       function renderPickedRewards() {
@@ -2227,17 +4408,19 @@
         pushHistory(`${tileLabel(tile)} 入槽前`);
         tile.location = "slot";
         model.state.slot.push(tileId);
-        checkDanger();
+        const dangerMessage = checkDanger();
 
         if (model.state.phase === "failed") {
-          renderAll("本关失败");
           return;
         }
 
         if (isLevelClear()) {
+          if (!canClearCurrentLevel()) {
+            renderAll(getCurrentClearRequirementText());
+            return;
+          }
           if (!isBossGoalComplete()) {
-            model.state.phase = "failed";
-            renderAll(getBossGoalMissingText());
+            failLevel(getBossGoalMissingText());
             return;
           }
           model.state.phase = "won";
@@ -2247,7 +4430,7 @@
           return;
         }
 
-        renderAll(`${tileLabel(tile)} 入槽`);
+        renderAll(dangerMessage ?? `${tileLabel(tile)} 入槽`);
       }
 
       function pushHistory(label) {
@@ -2256,6 +4439,10 @@
           tiles: model.state.tiles.map((tile) => ({ ...tile, blockedBy: [...tile.blockedBy] })),
           slot: [...model.state.slot],
           reserve: [...model.state.reserve],
+          river: [...(model.state.river ?? [])],
+          riverLimit: model.state.riverLimit ?? DEFAULT_RIVER_LIMIT,
+          openMelds: (model.state.openMelds ?? []).map((meld) => ({ ...meld, tileIds: [...meld.tileIds] })),
+          discardSelecting: model.state.discardSelecting ?? false,
           shields: model.state.shields,
         });
 
@@ -2265,32 +4452,74 @@
       function executeCombo(candidate) {
         if (model.state.phase !== "playing") return;
         if (!candidate) return;
+        if (candidate.type === "bugang") {
+          executeSupplementalGang(candidate);
+          return;
+        }
         const comboSuit = getComboSuit(candidate);
         const candidateIds = new Set(candidate.tileIds);
         for (const tile of model.state.tiles) {
           if (candidateIds.has(tile.id)) tile.location = "removed";
         }
         model.state.slot = model.state.slot.filter((tileId) => !candidateIds.has(tileId));
-        model.state.score += BASE_SCORE[candidate.type] + model.state.bonuses[candidate.type];
-        model.state.coins += COIN_REWARD[candidate.type];
+        model.state.score += (BASE_SCORE[candidate.type] ?? 0) + (model.state.bonuses[candidate.type] ?? 0);
+        model.state.coins += (COIN_REWARD[candidate.type] ?? 0);
         model.run.coins = model.state.coins;
-        model.state.comboCounts[candidate.type] += 1;
+        model.state.comboCounts[candidate.type] = (model.state.comboCounts[candidate.type] ?? 0) + 1;
+        if (candidate.type === "peng") {
+          addOpenMeld("peng", candidate, "slot");
+        }
+        let actionMessage = `${TYPE_LABELS[candidate.type]} 成功`;
         if (candidate.type === "hu") {
           const suits = new Set(candidate.tileIds.map((tileId) => findTile(tileId)?.suit).filter(Boolean));
           for (const suit of suits) {
             model.state.suitComboCounts[suit] += 1;
           }
           markBossProgress(candidate.type, [...suits]);
+          const opened = openMountainByAction(HU_SHAKE_LOOSE_COUNT);
+          const riverCleaned = cleanRiverAfterHu();
+          actionMessage = `胡后清河：清槽${riverCleaned ? `，清 ${riverCleaned}` : ""}${opened.length ? `，震落 ${opened.length} 张可选牌` : ""}`;
         } else {
           model.state.suitComboCounts[comboSuit] += 1;
           markBossProgress(candidate.type, [comboSuit]);
+          if (candidate.type === "gang") {
+            addOpenMeld("gang", candidate, "direct");
+            const opened = openMountainByAction(KONG_SHAKE_LOOSE_COUNT);
+            actionMessage = `杠开山：${opened.length ? `震落 ${opened.length} 张可选牌` : "牌山已无压顶牌"}`;
+          }
         }
         model.state.history = [];
+        finishComboAction(actionMessage);
+      }
 
+      function executeSupplementalGang(candidate) {
+        const tile = findTile(candidate.tileIds[0]);
+        if (!tile) return;
+        const tileKey = getTileKey(tile);
+        const meld = findSupplementalGangMeld(tileKey);
+        if (!meld) return;
+        model.state.slot = model.state.slot.filter((tileId) => tileId !== tile.id);
+        tile.location = "meld";
+        meld.type = "gang";
+        meld.source = "supplemental";
+        meld.count = 4;
+        meld.tileIds = [...new Set([...meld.tileIds, tile.id])];
+        model.state.score += BASE_SCORE.bugang + (model.state.bonuses.bugang ?? 0);
+        model.state.coins += COIN_REWARD.bugang;
+        model.run.coins = model.state.coins;
+        model.state.comboCounts.bugang = (model.state.comboCounts.bugang ?? 0) + 1;
+        model.state.history = [];
+        finishComboAction(`补杠成功：${meld.label} 已收入明牌`);
+      }
+
+      function finishComboAction(message) {
         if (isLevelClear()) {
+          if (!canClearCurrentLevel()) {
+            renderAll(getCurrentClearRequirementText());
+            return;
+          }
           if (!isBossGoalComplete()) {
-            model.state.phase = "failed";
-            renderAll(getBossGoalMissingText());
+            failLevel(getBossGoalMissingText());
             return;
           }
           model.state.phase = "won";
@@ -2299,7 +4528,110 @@
           return;
         }
 
-        renderAll(`${TYPE_LABELS[candidate.type]} 成功`);
+        renderAll(message);
+      }
+
+      function addOpenMeld(type, candidate, source) {
+        if (!model.state.openMelds) model.state.openMelds = [];
+        const tile = findTile(candidate.tileIds[0]);
+        if (!tile) return;
+        model.state.openMelds.push({
+          type,
+          tileKey: getTileKey(tile),
+          label: getTileLabel(tile),
+          count: candidate.tileIds.length,
+          tileIds: [...candidate.tileIds],
+          source,
+        });
+      }
+
+      function getSupplementalGangCandidates(slotTiles) {
+        const candidates = [];
+        const openMelds = model.state.openMelds ?? [];
+        for (const meld of openMelds) {
+          if (meld.type !== "peng") continue;
+          const tile = slotTiles.find((slotTile) => getTileKey(slotTile) === meld.tileKey);
+          if (tile) candidates.push(makeCandidate("bugang", [tile]));
+        }
+        return candidates;
+      }
+
+      function findSupplementalGangMeld(tileKey) {
+        return (model.state.openMelds ?? []).find((meld) => meld.type === "peng" && meld.tileKey === tileKey);
+      }
+
+      function openMountainByAction(count) {
+        const targets = getOpenMountainTargets().slice(0, count);
+        releaseMountainBlockers(targets);
+        targets.forEach((tile, index) => shakeLooseMountainTile(tile, index, targets.length));
+        return targets.map(tileLabel);
+      }
+
+      function releaseMountainBlockers(targets) {
+        const targetIds = new Set(targets.map((tile) => tile.id));
+        for (const tile of model.state.tiles) {
+          tile.blockedBy = (tile.blockedBy ?? []).filter((blockerId) => !targetIds.has(blockerId));
+        }
+      }
+
+      function shakeLooseMountainTile(tile, index, total) {
+        const position = getLooseMountainPosition(index, total);
+        tile.location = "board";
+        tile.blockedBy = [];
+        tile.layer = 0;
+        tile.stackOrder = 100000 + index;
+        tile.stackColumn = false;
+        tile.stackColumnId = "";
+        tile.stackCoverMode = "";
+        tile.stackOverlapRatio = 0;
+        tile.stackPreviewLimit = 0;
+        tile.stackPreviewSpread = 0;
+        tile.stackBridge = false;
+        tile.stackBridgeId = "";
+        tile.stackBridgeColumnIds = [];
+        tile.looseMountainTile = true;
+        tile.x = position.x;
+        tile.y = position.y;
+      }
+
+      function getLooseMountainPosition(index, total) {
+        const coordinateSystem = getActiveCoordinateSystem();
+        const { width, height } = getRuleTileSize();
+        const gap = model.mode === "mountain" ? 8 : 12;
+        const padding = 10;
+        const perRow = Math.max(1, Math.floor((coordinateSystem.baseWidth - padding * 2 + gap) / (width + gap)));
+        const row = Math.floor(index / perRow);
+        const column = index % perRow;
+        const rowCount = Math.min(perRow, total - row * perRow);
+        const rowWidth = rowCount * width + Math.max(0, rowCount - 1) * gap;
+        return {
+          x: Math.max(padding, (coordinateSystem.baseWidth - rowWidth) / 2 + column * (width + gap)),
+          y: Math.max(padding, coordinateSystem.baseHeight - height - padding - row * (height + gap)),
+        };
+      }
+
+      function getOpenMountainTargets() {
+        const boardTiles = getBoardTiles();
+        return boardTiles
+          .filter((tile) => boardTiles.some((target) => (
+            target.id !== tile.id
+            && (target.blockedBy ?? []).includes(tile.id)
+            && isTileBlocked(target.id)
+          )))
+          .sort((a, b) => {
+            const aIndex = model.state.tiles.findIndex((tile) => tile.id === a.id);
+            const bIndex = model.state.tiles.findIndex((tile) => tile.id === b.id);
+            return getTileStackOrder(b, bIndex) - getTileStackOrder(a, aIndex);
+          });
+      }
+
+      function cleanRiverAfterHu() {
+        const river = model.state.river ?? [];
+        if (river.length === 0) return "";
+        const tileId = river.shift();
+        const tile = findTile(tileId);
+        if (tile) tile.location = "removed";
+        return tile ? tileLabel(tile) : "";
       }
 
       function markBossProgress(comboType, suits) {
@@ -2325,22 +4657,58 @@
         model.state.tiles = snapshot.tiles.map((tile) => ({ ...tile, blockedBy: [...tile.blockedBy] }));
         model.state.slot = [...snapshot.slot];
         model.state.reserve = [...snapshot.reserve];
+        model.state.river = [...(snapshot.river ?? [])];
+        model.state.riverLimit = snapshot.riverLimit ?? DEFAULT_RIVER_LIMIT;
+        model.state.openMelds = (snapshot.openMelds ?? []).map((meld) => ({ ...meld, tileIds: [...meld.tileIds] }));
+        model.state.discardSelecting = snapshot.discardSelecting ?? false;
         model.state.shields = snapshot.shields;
-        renderAll(`回手：${snapshot.label}`);
+        renderAll(`撤回：${snapshot.label}`);
       }
 
-      function useVisionTool() {
+      function useDiscardTool() {
+        startDiscardSelection();
+      }
+
+      function startDiscardSelection() {
         if (model.state.phase !== "playing") return;
-        if (model.state.tools.vision <= 0 || model.state.visionActive) return;
-        model.state.tools.vision -= 1;
-        model.state.visionActive = true;
-        clearTimeout(model.visionTimer);
-        renderAll("看山：被压住的牌短暂显形");
-        model.visionTimer = setTimeout(() => {
-          if (!model.state) return;
-          model.state.visionActive = false;
-          renderAll("看山结束");
-        }, 2800);
+        if (model.state.slot.length === 0) {
+          renderAll("主槽没有可打出的牌");
+          return;
+        }
+        if (!canUseRiverDiscard()) {
+          renderAll("牌河已满，不能继续打牌");
+          return;
+        }
+        model.state.discardSelecting = !model.state.discardSelecting;
+        renderAll(model.state.discardSelecting ? "请选择 1 张主槽牌打入牌河" : "已取消打牌选择");
+      }
+
+      function discardSlotTile(slotIndex) {
+        if (model.state.phase !== "playing") return;
+        if (!model.state.discardSelecting) return;
+        if (!model.state.river) model.state.river = [];
+        if (!model.state.riverLimit) model.state.riverLimit = DEFAULT_RIVER_LIMIT;
+        if (!canUseRiverDiscard()) {
+          model.state.discardSelecting = false;
+          renderAll("牌河已满，不能继续打牌");
+          return;
+        }
+        const discardedId = model.state.slot[slotIndex];
+        const discarded = findTile(discardedId);
+        if (!discarded) return;
+        pushHistory(`${tileLabel(discarded)} 打入牌河前`);
+        model.state.slot.splice(slotIndex, 1);
+        model.state.river.push(discardedId);
+        discarded.location = "river";
+        model.state.discardSelecting = false;
+        model.state.history = [];
+        renderAll(`牌河：${tileLabel(discarded)} 已打出`);
+      }
+
+      function canUseRiverDiscard() {
+        const river = model.state.river ?? [];
+        const riverLimit = model.state.riverLimit ?? DEFAULT_RIVER_LIMIT;
+        return river.length < riverLimit;
       }
 
       function useShuffleTool() {
@@ -2348,7 +4716,7 @@
         if (model.state.tools.shuffle <= 0 || getBoardTiles().length < 2) return;
         model.state.tools.shuffle -= 1;
         shuffleBoardTileFaces();
-        renderAll("洗山：剩余牌面已重排");
+        renderAll("洗牌：剩余牌面已重排");
       }
 
       function shuffleBoardTileFaces() {
@@ -2391,19 +4759,18 @@
       }
 
       function getClearSummaryText() {
-        if (isBossLevel()) return "Boss 关已清空，本章完成。";
+        if (getActiveBossGoals(model.levelIndex).length > 0) return "Boss 关已清空，本章完成。";
         if (shouldOfferRewardAfterLevel(model.levelIndex)) return "下一关前可选择一次奖励。";
         return "牌山已清空，可以进入下一关。";
       }
 
       function showRewards() {
-        const level = currentLevel();
         view.rewardTitle.textContent = "选择奖励";
         view.rewardGrid.innerHTML = "";
         view.rewardGrid.style.display = "grid";
         view.runComplete.classList.remove("show");
         view.runComplete.innerHTML = "";
-        for (const rewardId of level.rewardPool) {
+        for (const rewardId of getRewardPoolForCurrentLevel()) {
           const reward = findReward(rewardId);
           if (!reward) continue;
 
@@ -2432,13 +4799,42 @@
         view.runComplete.classList.add("show");
 
         const summary = document.createElement("p");
-        const bossText = isBossLevel() ? "Boss 已击破。" : "";
-        summary.textContent = `${bossText}已清完 ${model.levelsConfig.levels.length} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
+        const bossText = getActiveBossGoals(model.levelIndex).length > 0 ? "Boss 已击破。" : "";
+        summary.textContent = `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
         const restart = document.createElement("button");
         restart.className = "reward-button";
         restart.type = "button";
         restart.textContent = "重开第一关";
         restart.addEventListener("click", () => restartRun());
+        view.runComplete.append(summary, restart);
+        view.rewardOverlay.classList.add("show");
+      }
+
+      function failLevel(reason) {
+        model.state.phase = "failed";
+        model.state.history = [];
+        showLevelFailed(reason);
+      }
+
+      function showLevelFailed(reason) {
+        const failureText = reason || "主槽已满，且当前没有可发动的组合或可用救场。";
+        renderAll("本关失败");
+        view.rewardTitle.textContent = "本关失败";
+        view.rewardGrid.innerHTML = "";
+        view.rewardGrid.style.display = "none";
+        view.runComplete.innerHTML = "";
+        view.runComplete.classList.add("show");
+
+        const summary = document.createElement("p");
+        summary.textContent = failureText;
+        const restart = document.createElement("button");
+        restart.className = "reward-button";
+        restart.type = "button";
+        restart.textContent = "重开本关";
+        restart.addEventListener("click", () => {
+          view.rewardOverlay.classList.remove("show");
+          loadLevel(model.levelIndex);
+        });
         view.runComplete.append(summary, restart);
         view.rewardOverlay.classList.add("show");
       }
@@ -2457,12 +4853,12 @@
         }
         model.run.pickedRewards.push(reward.id);
         view.rewardOverlay.classList.remove("show");
-        loadLevel(getNextLevelIndex());
+        loadLevel(getNextLevelIndex(), { resetFixedMountainTemplate: true });
       }
 
       function advanceAfterClear() {
         if (model.state?.phase === "playing") {
-          loadLevel(getNextLevelIndex());
+          loadLevel(getNextLevelIndex(), { resetFixedMountainTemplate: true });
           return;
         }
 
@@ -2471,7 +4867,7 @@
           return;
         }
 
-        loadLevel(getNextLevelIndex());
+        loadLevel(getNextLevelIndex(), { resetFixedMountainTemplate: true });
       }
 
       function restartRun() {
@@ -2480,34 +4876,36 @@
           reserveDelta: 0,
           shieldsDelta: 0,
           coins: 0,
-          tools: { shuffle: 0, undo: 0, vision: 0 },
+          tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
           bonuses: { chi: 0, peng: 0, gang: 0, hu: 0 },
           pickedRewards: [],
         };
         view.rewardOverlay.classList.remove("show");
-        loadLevel(0);
+        loadLevel(0, { resetFixedMountainTemplate: true, forceResetMountainTemplate: true });
       }
 
       function checkDanger() {
-        if (model.state.slot.length < model.state.slotLimit) return;
-        if (getComboCandidates().length > 0) return;
+        if (model.state.slot.length < model.state.slotLimit) return null;
+        if (getComboCandidates().length > 0) return null;
         if (model.state.reserve.length < model.state.reserveLimit) {
           const movedId = model.state.slot.pop();
           const moved = findTile(movedId);
           moved.location = "reserve";
           model.state.reserve.push(movedId);
-          return;
+          return `${tileLabel(moved)} 移入备用槽`;
         }
         if (model.state.shields > 0) {
           const removedId = model.state.slot.shift();
           const removed = findTile(removedId);
           removed.location = "removed";
           model.state.shields -= 1;
-          return;
+          return `护符救场：${tileLabel(removed)} 已移除`;
         }
-        model.state.phase = "failed";
-        model.state.history = [];
-        view.status.textContent = "本关失败";
+        if (canUseRiverDiscard()) {
+          return "主槽已满，请先发动组合，或点击丢弃打牌到牌河。";
+        }
+        failLevel("主槽已满，且当前没有可发动的组合，牌河也已满。");
+        return "本关失败";
       }
 
       function getComboCandidates() {
@@ -2515,6 +4913,7 @@
         const candidates = [];
         const huCandidate = getHuCandidate(slotTiles);
         if (huCandidate) candidates.push(huCandidate);
+        candidates.push(...getSupplementalGangCandidates(slotTiles));
         const bySuitRank = new Map();
 
         for (const tile of slotTiles) {
@@ -2553,6 +4952,7 @@
             seen.add(candidate.key);
             return true;
           })
+          .filter((candidate) => !isFriendDemoTutorialLevel() || candidate.type === getFriendDemoTutorialRequiredCombo())
           .sort((a, b) => COMBO_ORDER[a.type] - COMBO_ORDER[b.type] || a.key.localeCompare(b.key));
       }
 
@@ -2625,6 +5025,7 @@
           type,
           tileIds,
           suit: tiles[0].suit,
+          tileKey: getTileKey(tiles[0]),
           labels: tiles.map(tileLabel),
           key: `${type}:${tileIds.slice().sort().join(",")}`,
         };
@@ -2637,7 +5038,7 @@
       function getRemainingTileCounts() {
         const counts = createEmptySuitCounts();
         for (const tile of model.state.tiles) {
-          if (tile.location === "removed") continue;
+          if (tile.location !== "board") continue;
           counts[tile.suit].total += 1;
           counts[tile.suit].ranks[tile.rank] += 1;
         }
@@ -2675,6 +5076,26 @@
         return getStackColumnTiles(tile).every((other) => other.id === tile.id || getTileStackOrder(other) < getTileStackOrder(tile));
       }
 
+      function isVisibleStackDisplayTile(tile) {
+        if (!tile.stackColumn || tile.location !== "board") return true;
+        return getStackPreviewDepth(tile) <= getStackVisiblePreviewDepth(tile);
+      }
+
+      function getStackPreviewDepth(tile) {
+        if (!tile.stackColumn || tile.location !== "board") return 0;
+        return getStackPreviewDepthForTiles(tile, model.state.tiles);
+      }
+
+      function getStackPreviewDepthForTiles(tile, tiles) {
+        if (!tile.stackColumn) return 0;
+        return tiles.filter((other) => (
+          (!other.location || other.location === "board")
+          && other.stackColumn
+          && other.stackColumnId === tile.stackColumnId
+          && getTileStackOrder(other) > getTileStackOrder(tile)
+        )).length;
+      }
+
       function getHiddenStackDepth(tile) {
         if (!tile.stackColumn || !isVisibleStackTop(tile)) return 0;
         return getStackColumnTiles(tile).filter((other) => getTileStackOrder(other) < getTileStackOrder(tile)).length;
@@ -2688,15 +5109,51 @@
         ));
       }
 
+      function getBridgeUnlockCount(tile) {
+        if (!tile.stackBridge) return 0;
+        const tilesWithoutBridge = model.state.tiles.map((other) => (
+          other.id === tile.id ? { ...other, location: "slot" } : other
+        ));
+        return model.state.tiles.filter((other) => {
+          if (other.location !== "board" || !other.stackColumn || !isVisibleStackTop(other)) return false;
+          if (!(other.blockedBy ?? []).includes(tile.id)) return false;
+          if (!getMountainVisualIntersectionRect(other, tile, model.state.tiles)) return false;
+          if (!isTileBlocked(other.id)) return false;
+          return !isTileBlockedInTiles(other.id, tilesWithoutBridge);
+        }).length;
+      }
+
       function isTileBlocked(tileId) {
+        return isTileBlockedInTiles(tileId, model.state.tiles);
+      }
+
+      function isTileBlockedInTiles(tileId, tiles) {
+        const originalTiles = model.state.tiles;
+        if (tiles !== originalTiles) model.state.tiles = tiles;
+        const result = isTileBlockedForCurrentState(tileId);
+        if (tiles !== originalTiles) model.state.tiles = originalTiles;
+        return result;
+      }
+
+      function isTileBlockedForCurrentState(tileId) {
         const tile = findTile(tileId);
         if (!tile || tile.location !== "board") return false;
+        if (tile.looseMountainTile) return false;
         if (tile.stackColumn && !isVisibleStackTop(tile)) return true;
-        if (getCurrentCoverRatio(tile) > BLOCKED_COVER_RATIO) return true;
-        return tile.blockedBy.some((blockerId) => findTile(blockerId)?.location === "board");
+        if (isTileCoveredByHigherTile(tile)) return true;
+        return tile.blockedBy.some((blockerId) => {
+          const blocker = findTile(blockerId);
+          if (!blocker || blocker.location !== "board") return false;
+          if (blocker.looseMountainTile) return false;
+          if (model.mode !== "mountain") return true;
+          const rect = getMountainVisualIntersectionRect(tile, blocker, model.state.tiles);
+          const { width, height } = getMountainRuleTileSize();
+          return Boolean(rect) && getUnionArea([rect]) / (width * height) >= BLOCKED_COVER_RATIO;
+        });
       }
 
       function getCurrentCoverRatio(tile) {
+        if (tile.looseMountainTile) return 0;
         const tileIndex = model.state.tiles.findIndex((item) => item.id === tile.id);
         const tileOrder = getTileStackOrder(tile, tileIndex);
         const { width, height } = getRuleTileSize();
@@ -2704,17 +5161,38 @@
 
         model.state.tiles.forEach((other, otherIndex) => {
           if (other.id === tile.id || other.location !== "board") return;
+          if (other.looseMountainTile) return;
           if (getTileStackOrder(other, otherIndex) <= tileOrder) return;
 
-          const rect = getIntersectionRect(tile, other, width, height);
+          const rect = model.mode === "mountain"
+            ? getMountainVisualIntersectionRect(tile, other, model.state.tiles)
+            : getIntersectionRect(tile, other, width, height);
           if (rect) coverRects.push(rect);
         });
 
         return getUnionArea(coverRects) / (width * height);
       }
 
+      function isTileCoveredByHigherTile(tile) {
+        if (tile.looseMountainTile) return false;
+        const tileIndex = model.state.tiles.findIndex((item) => item.id === tile.id);
+        const tileOrder = getTileStackOrder(tile, tileIndex);
+
+        return model.state.tiles.some((other, otherIndex) => {
+          if (other.id === tile.id || other.location !== "board") return false;
+          if (other.looseMountainTile) return false;
+          if (getTileStackOrder(other, otherIndex) <= tileOrder) return false;
+          const { width, height } = getRuleTileSize();
+          if (model.mode === "mountain") {
+            const rect = getMountainVisualIntersectionRect(tile, other, model.state.tiles);
+            return Boolean(rect) && getUnionArea([rect]) / (width * height) >= BLOCKED_COVER_RATIO;
+          }
+          return Boolean(getIntersectionRect(tile, other, width, height));
+        });
+      }
+
       function getMountainRuleTileSize() {
-        return { width: 72, height: 96 };
+        return MOUNTAIN_RULE_TILE_SIZE;
       }
 
       function getRuleTileSize() {
@@ -2732,10 +5210,28 @@
           const tile = findTile(tileId);
           if (tile) tile.location = "reserve";
         }
+        for (const tileId of model.state.river ?? []) {
+          const tile = findTile(tileId);
+          if (tile) tile.location = "river";
+        }
       }
 
       function isLevelClear() {
         return model.state.tiles.every((tile) => tile.location !== "board");
+      }
+
+      function canClearCurrentLevel() {
+        return hasCompletedFriendDemoTutorialCombo(model.levelIndex);
+      }
+
+      function isFriendDemoTutorialLevel(levelIndex = model.levelIndex) {
+        return isFriendDemoMode() && getFriendDemoLevelMode(levelIndex) === "tutorial";
+      }
+
+      function getCurrentClearRequirementText() {
+        const requiredCombo = getFriendDemoTutorialRequiredCombo(model.levelIndex);
+        if (!requiredCombo) return "";
+        return `教学目标：请点击 ${TYPE_LABELS[requiredCombo]} 完成本关。`;
       }
 
       function isBossGoalComplete() {
@@ -2790,14 +5286,21 @@
       }
 
       function isLastLevel() {
-        return model.levelIndex >= model.levelsConfig.levels.length - 1;
+        return model.levelIndex >= getPlayableLevelCount() - 1;
       }
 
       function getNextLevelIndex() {
-        return Math.min(model.levelIndex + 1, model.levelsConfig.levels.length - 1);
+        return Math.min(model.levelIndex + 1, getPlayableLevelCount() - 1);
+      }
+
+      function getRewardPoolForCurrentLevel() {
+        return isFriendDemoMode() ? getFriendDemoRewardPool(model.levelIndex) : currentLevel().rewardPool;
       }
 
       function shouldOfferRewardAfterLevel(levelIndex) {
+        if (isFriendDemoMode()) {
+          return [2, 5, 8].includes(levelIndex);
+        }
         const order = model.levelsConfig.levels[levelIndex].order;
         const chapterStep = order % 10;
         return chapterStep === 3 || chapterStep === 6 || chapterStep === 9;
@@ -2805,6 +5308,11 @@
 
       function isBossLevel(levelIndex = model.levelIndex) {
         return model.levelsConfig.levels[levelIndex].order % 10 === 0;
+      }
+
+      function getActiveBossGoals(levelIndex = model.levelIndex) {
+        if (getFriendDemoDifficultyProfile(levelIndex)) return [];
+        return getBossGoals(levelIndex) ?? [];
       }
 
       function getBossGoals(levelIndex) {
@@ -2831,11 +5339,17 @@
       }
 
       function findReward(rewardId) {
+        if (rewardId === FRIEND_DEMO_FIRST_REWARD_ID) return createFriendDemoFixedReward();
+        if (rewardId === FRIEND_DEMO_DISCARD_REWARD_ID) return createFriendDemoDiscardReward();
         return model.rewardsConfig.rewards.find((reward) => reward.id === rewardId);
       }
 
       function tileLabel(tile) {
         return getTileLabel(tile);
+      }
+
+      function getTileKey(tile) {
+        return `${tile.suit}-${tile.rank}`;
       }
 
       function getTileLabel(tile) {

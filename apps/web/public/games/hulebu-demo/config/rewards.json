@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "moduleSlug": "mahjong-roguelike",
+  "displayName": "胡了卜",
+  "rewardSet": "mvp_v1",
+  "rewards": [
+    {
+      "id": "first_protect_shield",
+      "name": "留一手",
+      "rarity": "common",
+      "category": "rescue",
+      "scope": "run",
+      "description": "获得 1 个满槽护符，主槽仍固定 8 格。",
+      "effects": [
+        {
+          "type": "shield_delta",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "reserve_plus_1",
+      "name": "暗格",
+      "rarity": "common",
+      "category": "slot",
+      "scope": "run",
+      "description": "备用槽上限 +1。",
+      "effects": [
+        {
+          "type": "reserve_limit_delta",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "shield_plus_1",
+      "name": "满槽护符",
+      "rarity": "common",
+      "category": "rescue",
+      "scope": "run",
+      "description": "满槽无组合时多清 1 张槽内牌。",
+      "effects": [
+        {
+          "type": "shield_delta",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "undo_plus_1",
+      "name": "回手",
+      "rarity": "common",
+      "category": "tool",
+      "scope": "run",
+      "description": "获得 1 次撤回。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "undo",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "vision_plus_1",
+      "name": "看山",
+      "rarity": "common",
+      "category": "tool",
+      "scope": "run",
+      "description": "获得 1 次透视。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "vision",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "gang_score_plus_25",
+      "name": "开杠见喜",
+      "rarity": "uncommon",
+      "category": "gang",
+      "scope": "run",
+      "description": "后续每次杠额外 +25 分。",
+      "effects": [
+        {
+          "type": "combo_score_bonus",
+          "combo": "gang",
+          "value": 25
+        }
+      ]
+    },
+    {
+      "id": "chi_score_plus_8",
+      "name": "顺风吃",
+      "rarity": "common",
+      "category": "chi",
+      "scope": "run",
+      "description": "后续每次吃额外 +8 分。",
+      "effects": [
+        {
+          "type": "combo_score_bonus",
+          "combo": "chi",
+          "value": 8
+        }
+      ]
+    },
+    {
+      "id": "coin_plus_20",
+      "name": "压岁钱",
+      "rarity": "common",
+      "category": "economy",
+      "scope": "instant",
+      "description": "立即获得 20 铜钱。",
+      "effects": [
+        {
+          "type": "coin_delta",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "peng_score_plus_10",
+      "name": "碰上开花",
+      "rarity": "common",
+      "category": "peng",
+      "scope": "run",
+      "description": "后续每次碰额外 +10 分。",
+      "effects": [
+        {
+          "type": "combo_score_bonus",
+          "combo": "peng",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "shuffle_plus_1",
+      "name": "洗山",
+      "rarity": "common",
+      "category": "tool",
+      "scope": "run",
+      "description": "获得 1 次洗牌。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "shuffle",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "contentSummary": {
+    "totalRewards": 10,
+    "categories": [
+      "slot",
+      "rescue",
+      "tool",
+      "gang",
+      "chi",
+      "peng",
+      "economy"
+    ]
+  }
+}

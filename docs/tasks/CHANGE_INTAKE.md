@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-05-28
+**最后更新**：2026-06-02
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,349 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260602-06：胡了卜开山数量和一屏操作反馈
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：Lee 试玩和准备发布前继续反馈，当前 `胡` 后震落牌过多会降低难度，玩家可以一直胡；同时默认玩家页上方展示占用过多空间，导致操作按钮、卡槽和道具不能稳定落在一屏内。
+- 目标：合并到 T101/T102 验收补丁。默认玩家 Demo 中直接 `杠` 只震落 1 张压顶牌；`胡` 震落 3 张压顶牌；默认玩家页隐藏内部标题栏、压缩低频信息，保留可读牌面，并把记牌器改为每个牌面格上下两层：上方牌面、下方余牌数量。优先保证 `吃 / 碰 / 杠 / 补杠 / 胡`、卡槽和底部道具在桌面与 390px 移动视口首屏内可见。T102 静态发布副本同步最新 Demo。
+- 不做：不修改 Cocos 正式工程；不重做最终美术；不接部署、排行榜、账号、广告或埋点；不改变牌河容量、补杠语义或完整胡牌算法。
+- 用户价值：降低 `胡` 的连续滚雪球强度，保留 `杠` 的开山爽点但不让难度过低；把玩家高频操作集中在一屏内，减少滚动找按钮和卡槽的体验损耗。
+- 涉及模块：胡了卜 / 默认玩家 Demo / Web 游戏静态发布副本 / 一屏局内布局。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `apps/web/public/games/hulebu-demo/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T101-hulebu-river-kong-hu-demo.md`, `docs/tasks/claims/T101-lee.md`, `docs/tasks/items/T102-hulebu-web-game-publish.md`, `docs/tasks/claims/T102-lee.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本补丁仍限定在 Lee 负责的胡了卜试玩原型和 T102 Web 游戏接入范围，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：否
+- 建议优先级：P1
+- 验收标准：直接 `杠` 只震落 1 张可选牌；`胡` 震落 3 张可选牌；桌面 `/games/hulebu` iframe 中动作栏、卡槽、道具栏均在首屏内；390px 移动端无横向溢出，动作栏、卡槽和底部道具栏均可见且互不遮盖；牌面和记牌器余牌数量可读；共享测试、Web 测试、脚本语法检查、构建和浏览器复测通过。
+- AI 初步方案：先用共享 VM 测试和静态测试锁定 `KONG_SHAKE_LOOSE_COUNT = 1`、`HU_SHAKE_LOOSE_COUNT = 3` 和压缩布局 CSS；实现后同步 `apps/web/public/games/hulebu-demo/` 静态副本，并通过 Kimi WebBridge 桌面和 Playwright 390px 截图复测。
+- 处理结论：合并到已有任务
+- 对应任务编号：T101 / T102
+
+### IDEA-20260602-05：胡了卜 Demo 站内网页小游戏发布接入
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：T101 默认玩家 Demo 已可发布和试玩。Lee 希望先把当前 HTML demo 作为网页小游戏放进游戏站，让朋友通过站内链接体验，而不是等 Cocos 正式工程或小游戏平台发布链路完成。
+- 目标：新增 T102，将当前 `config-playable` HTML demo 以静态资源形式接入 Next.js 游戏站，在 `/games/hulebu` 提供可直接试玩的站内网页小游戏入口，并在 `/games` 卡片和搜索入口中指向该页面。
+- 不做：不重写当前 HTML demo 为 React 组件；不修改 Cocos 正式工程；不接排行榜、账号、支付、广告、埋点或线上 Nginx 配置；不扩大到 PDF 工具箱、AI 修图或部署基础设施。
+- 用户价值：可以快速生成一个稳定 URL 给朋友试玩，保留当前 demo 行为和移动端适配，同时通过游戏站承接入口和后续转化。
+- 涉及模块：胡了卜 / Web 游戏接入 / Next.js 游戏站 / 静态试玩发布。
+- 可能影响文件：`apps/web/src/app/games/hulebu/page.tsx`, `apps/web/src/modules/games/hulebu/**`, `apps/web/public/games/hulebu-demo/**`, `apps/web/src/components/portal-data.ts`, `apps/web/src/components/AppHeader.tsx`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T102-hulebu-web-game-publish.md`, `docs/tasks/claims/T102-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/completion/**`
+- 是否影响另一方任务：可能影响游戏站共享入口文件 `apps/web/src/components/portal-data.ts` 和 `apps/web/src/components/AppHeader.tsx`；本次由 Lee 领取并限定只改胡了卜游戏入口，不碰 Jaspon 的 AI 修图/AI 搜索/埋点范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`/games/hulebu` 可打开并优先展示可玩的胡了卜 iframe；静态 demo 文件可通过站内资源路径访问；`/games` 的麻将卡片和搜索入口指向 `/games/hulebu`；桌面和 390px 移动端无横向溢出，iframe 可见；`apps/web` 测试、lint、typecheck、build、docs sync 和 diff 检查通过。
+- AI 初步方案：把当前 HTML demo 复制为 `apps/web/public/games/hulebu-demo/index.html`，同时复制调牌器 `tuner.html` 以保证 demo 内部链接可用；新增 `apps/web/src/app/games/hulebu/page.tsx` 作为路由入口，挂载 `apps/web/src/modules/games/hulebu/` 的游戏页组件，用 iframe 加载静态 demo；更新 `portal-data.ts` 的麻将卡片和搜索链接；必要时让 `AppHeader` 在 `/games/hulebu` 隐藏，避免压缩游戏视口。
+- 处理结论：已入任务池
+- 对应任务编号：T102
+
+### IDEA-20260602-04：胡了卜记牌器口径和动作栏布局验收反馈
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：Lee 试玩第 5 关后确认当前节奏基本可接受，但记牌器不应继续统计已经进入卡槽、牌河、明牌区或移除区的牌；同时 `吃 / 碰 / 杠 / 补杠 / 胡` 按钮和卡槽挤在一起，影响读槽。
+- 目标：在 T101 内补丁修正默认玩家 Demo：记牌器只统计牌山中的 `board` 牌，震落到桌面的牌仍计入，点进卡槽后立刻扣除；组合按钮拆成独立动作栏，不再和 8 格卡槽共用一行，移动端避免底部道具栏盖住卡槽。
+- 不做：不修改 Cocos 正式工程，不新增正式 UI 美术，不改变组合判定、牌河容量、补杠收益或第 5-10 关生成规则。
+- 用户价值：记牌器表达“牌山里还能拿到什么”，避免玩家误判卡槽里的牌还算可取资源；动作按钮和卡槽分离后，玩家能更清楚地读 8 格槽位状态。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 默认玩家 Demo / 记牌器 / 卡槽动作区。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T101-hulebu-river-kong-hu-demo.md`, `docs/tasks/claims/T101-lee.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/completion/2026-06-02-task-T101-hulebu-river-kong-hu-demo.md`
+- 是否影响另一方任务：否。本补丁仍限定在 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档。
+- 是否需要新增任务：否
+- 建议优先级：P1
+- 验收标准：记牌器只按 `location === "board"` 计数；入槽后对应花色/点数立即扣除；听/差高亮只高亮牌山仍有的目标牌；组合按钮位于独立动作栏，卡槽行只保留卡槽网格；390px 移动端无横向溢出，按钮文字不挤出，固定底部道具栏不遮盖卡槽；相关测试和浏览器验证通过。
+- AI 初步方案：合并到 T101 验收补丁处理。先改 VM 行为测试验证卡槽牌不计入记牌器，再修改 `getRemainingTileCounts()` 只统计 `board`；用静态测试锁定 `action-strip` 和移动端底部留白，再移动 DOM 和 CSS。
+- 处理结论：合并到已有任务
+- 对应任务编号：T101
+
+### IDEA-20260602-03：胡了卜有限牌河、补杠和胡牌奖励试玩 Demo
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：T100 已确认有限牌河、明碰区、补杠、明杠开山、胡牌奖励和孤张预算是当前更可行的核心规则。Lee 确认这套方向后，需要先在现有 HTML 试玩 Demo 中做出能让朋友体验的第一版，而不是直接进入 Cocos 或完整 UI 美术。
+- 目标：新增 T101，在 `config-playable` 默认玩家 Demo 中实现有限牌河、任选卡槽打牌、明牌区、补杠、直接明杠开山、胡牌清河和满槽失败判定调整，让 demo 能验证新核心循环。
+- 不做：不修改 Cocos 正式工程；不修改正式关卡 JSON 或共享 Graph-based 生成器；不实现完整麻将算法、番型结算、真实摸打流程、复杂 Roguelike 奖励池、最终 UI 美术、广告、账号、排行榜或部署；不扩大到 PDF 工具箱、AI 修图、AI 搜索、埋点或 Web 站点范围。
+- 用户价值：让玩家不再因为一次吃碰决策就立刻进入无出口死局；通过牌河、补杠、明杠和胡牌奖励提供 2-3 条恢复路线，同时保留槽位压力和麻将组合判断。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 有限牌河 / 补杠 / 胡牌奖励。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T101-hulebu-river-kong-hu-demo.md`, `docs/tasks/claims/T101-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/plans/2026-06-02-hulebu-river-kong-hu-demo.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家 Demo 可见牌河和明牌区；打牌/丢弃改为任选卡槽牌进入有限牌河；碰后进入明牌区并支持第 4 张补杠；直接明杠触发开山，补杠不触发强开山；胡牌清空手牌并清理牌河 1 张；槽满但牌河未满时提示可打牌，槽满、无组合、牌河满且无救场时失败；共享测试、HTML 脚本语法检查、浏览器验证、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 VM 和静态测试，锁定 `river/openMelds/startDiscardSelection/discardSlotTile/bugang` 等行为。实现时只改当前单文件 HTML 原型，在现有 `model.state` 上增加牌河和明牌区状态，重用现有组合按钮渲染；`碰` 写入明牌区，`补杠` 升级明碰且低收益，直接 `杠` 和 `胡` 调用最小开山函数移除/解锁顶层遮挡牌，`胡` 额外清理牌河 1 张。
+- 处理结论：已入任务池
+- 对应任务编号：T101
+
+### IDEA-20260602-02：胡了卜有限牌河、补杠和胡牌奖励核心玩法设计
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：朋友试玩反馈第 5 关后仍偏难。后续讨论发现核心矛盾不是单纯牌量或牌型数量，而是麻将组合和消除目标之间存在结构冲突：`碰` 会留下第 4 张，`吃` 会把 3 张库存拆成多个对子，严格按几副麻将生成时容易出现大量孤张。如果通关要求所有牌都通过吃碰杠胡消除，玩家一次路线选择错误就会变成近似死局。
+- 目标：新增 T100，整理一套新的核心玩法规格。方向为 `有限牌河 + 明碰区 + 补杠孤张出口 + 明杠开山 + 胡牌强奖励 + 听牌提示 + 孤张预算生成器`。目标不是保证每一步都能赢，而是保证玩家有 2-3 条可恢复路线，同时保留麻将组合判断和微信小游戏需要的即时爽点。
+- 不做：不直接修改 HTML 试玩页、Cocos 工程、共享规则模型或关卡配置；不实现完整麻将算法、番型结算、真实摸打流程、最终 UI 美术、广告、账号或排行榜。
+- 用户价值：让玩家觉得失败来自可理解的风险取舍，而不是生成器制造死局；让 `胡 / 杠 / 补杠 / 牌河` 都有明确用途，提升朋友试玩和后续微信小游戏版本的可玩性。
+- 涉及模块：胡了卜 / 朋友试玩 Demo / 核心规则重整 / 微信小游戏方向。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T100-hulebu-river-kong-hu-core-design.md`, `docs/tasks/claims/T100-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-06-02-hulebu-river-kong-hu-core-design.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/DECISIONS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只做胡了卜模块玩法文档，不修改 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：形成正式玩法规格，覆盖单关胜负条件、有限牌河、明碰区、补杠、明杠开山、胡牌奖励、听牌提示、牌河回收、牌数规则、孤张预算和 10 关试玩验证路线；模块决策、进展和交接文档同步；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：把 `补杠` 定位为低收益孤张出口，不抢 `明杠` 爽点；`明杠` 才触发震山开牌；`胡` 是清槽、强开山和处理牌河的最大局内奖励；`牌河` 是有限容量容错，不是无限丢弃；生成器按副数上限和组合配方控制牌数，并增加孤张预算检查。
+- 处理结论：已入任务池
+- 对应任务编号：T100
+
+### IDEA-20260602-01：胡了卜试玩页卡槽满槽显示修复和记牌器
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：Lee 试玩默认玩家页时反馈，点击第 8 张牌时卡槽没有显示，点击第 9 张牌又出现刚刚点的第 8 张；同时玩家缺少记牌器，不知道剩余牌的花色和数量，无法做有效决策。初步排查显示，朋友 Demo 仍沿用旧的备用槽自动救场逻辑，但玩家页隐藏了备用槽区域，导致满槽时牌被静默挪入隐藏备用槽。
+- 目标：新增 T099，修复默认朋友 Demo 中满槽牌被静默挪到隐藏备用槽的问题；玩家试玩页显示可见记牌器，按万、条、筒、字统计剩余未移除牌及各点数数量，并随入槽、组合、丢弃、洗牌等状态变化刷新。
+- 不做：不修改 Cocos 正式工程；不修改正式关卡 JSON；不实现“丢弃时任选卡槽某张牌”；不重做完整 HUD；不扩大到 Web 站、PDF、AI 修图、AI 搜索或部署范围。
+- 用户价值：避免试玩时出现“点了牌但卡槽没显示”的明显错觉；让玩家能根据剩余牌型做吃、碰、杠、胡的取舍，而不是盲点。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 10 关朋友 Demo / 玩家页 HUD。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T099-hulebu-slot-visible-counter.md`, `docs/tasks/claims/T099-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家 Demo 满 8 格时不会把新点入的牌静默移入隐藏备用槽；卡槽满且无组合时保留可见 8 张并提示使用组合或丢弃；玩家页可见记牌器，显示四类牌总数和点数数量；记牌器在牌入槽、组合移除、丢弃移除后刷新；共享测试、HTML 脚本语法检查、浏览器验证、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 VM 回归测试，构造朋友 Demo 7 张槽 + 第 8 张入槽场景，断言第 8 张留在可见主槽且备用槽为空；再补静态/UI 测试锁定玩家页记牌器区块和 `renderCounts()` 刷新。实现时让朋友 Demo 的 `reserveLimit` 为 0，并在 `checkDanger()` 中跳过隐藏备用槽自动转移；把余牌统计区移到玩家页可见区域并压缩样式。
+- 处理结论：已入任务池
+- 对应任务编号：T099
+
+### IDEA-20260601-07：胡了卜朋友 Demo 第 5-10 关渐进难度曲线
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：朋友试玩反馈第 5 关开始太难，有点玩不下去。当前默认 Demo 前 4 关是小牌量教学，第 5 关直接进入 240 张密集牌山高压模式，难度存在明显断崖。
+- 目标：新增 T098，采用方案 B。默认玩家 Demo 保持前 4 关教学不变，第 5-10 关加入渐进难度 profile：第 5 关降为正式入门小牌山，第 6-8 关逐步增加牌量、堆叠和干扰，第 9-10 关再接近当前高压密集牌山。让朋友试玩能先理解正式模式，再逐步进入地狱模式。
+- 不做：不修改 Cocos 正式工程；不修改正式关卡 JSON；不实现动态失败降难；不实现丢弃选牌、记牌器或残局收官；不扩大到 Web 站、PDF、AI 修图或部署范围。
+- 用户价值：降低朋友试玩的第 5 关劝退率，让玩家在 10 关小 run 内感受到“学会规则 -> 进入正式牌山 -> 难度逐步爬升”的节奏。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 10 关朋友 Demo / 难度曲线。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T098-hulebu-friend-demo-gradual-difficulty.md`, `docs/tasks/claims/T098-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-01-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家 Demo 第 5-10 关有明确渐进 profile；第 5 关牌量约 72 张，不再直接 240 张；第 6-10 关牌量逐步提高到 240 张；每关首轮可点保持 3-8 张，且同组首轮不直接露出 3 张完整答案；第 5 关标题或提示明确“正式入门”；共享测试、HTML 脚本语法检查、浏览器验证、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先扩展 VM 测试，读取默认玩家 Demo 第 5-10 关生成摘要，断言 profile 牌量为 72/96/132/168/210/240、stackDepth 从 3 到 6、huPacks/honorWeight 逐步增加、首轮可点 3-8 且同组最多 2。实现时增加 `FRIEND_DEMO_DIFFICULTY_PROFILES` 和 `getEffectiveMountainTuningForLevel`，仅默认玩家页使用该 profile；调牌器仍按用户调参值生成。
+- 处理结论：已入任务池
+- 对应任务编号：T098
+
+### IDEA-20260601-06：胡了卜教学关必须发动对应组合才通关
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：Lee 试玩 10 关朋友 Demo 时发现，前 4 关教学关把牌全部点进卡槽后就会通关，玩家不需要点击 `碰 / 吃 / 杠 / 胡` 按钮，失去教学意义。
+- 目标：新增 T097，修正配置驱动试玩原型的前 4 关教学胜利条件。第 1 关必须成功点击 `碰`，第 2 关必须成功点击 `吃`，第 3 关必须成功点击 `杠`，第 4 关必须成功点击 `胡` 才算过关；单纯把牌放进卡槽不能触发胜利。
+- 不做：不修改 Cocos 正式工程；不修改正式关卡 JSON；不实现丢弃选牌、记牌器或残局收官；不修改第 5 关后的密集牌山生成规则；不扩大到 Web 站、PDF、AI 修图或部署范围。
+- 用户价值：保证前 4 关真正教会玩家手动发动麻将组合，避免朋友试玩时误以为游戏只是点击入槽自动过关。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 10 关朋友 Demo / 教学关胜利条件。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T097-hulebu-tutorial-action-clear.md`, `docs/tasks/claims/T097-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-01-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：前 4 关教学关全部点入卡槽但未点击对应组合按钮时不会通关；点击本关对应 `碰 / 吃 / 杠 / 胡` 后立即通关；教学关候选按钮只暴露本关目标动作，避免第 4 关误点 `吃/碰` 破坏胡牌教学；共享测试、HTML 脚本语法检查、浏览器验证、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 VM 回归测试，模拟第 1 关把所有教学牌点入卡槽后仍处于 playing，再点击 `碰` 后进入 won；同时锁定前 4 关候选类型分别只出现本关目标动作。实现时为朋友 Demo 教学关增加 `required tutorial combo` 判定，普通关仍沿用牌山清空通关。
+- 处理结论：已入任务池
+- 对应任务编号：T097
+
+### IDEA-20260601-05：胡了卜玩家页布局、牌面放大和模板随机调参
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：Lee 在 T095 混合窗口牌山后继续试玩默认玩家页，反馈当前页面整体布局仍有问题，牌面还需要更大一些，并且牌山模板需要随机，不能让玩家明显感觉每关模板固定。
+- 目标：新增 T096，继续调 `config-playable` 默认玩家页。玩家页布局改为更明确的竖屏游戏面板，牌面规则尺寸放大一档，同时保持顶部 HUD、牌桌、底部卡槽/组合区和右侧/底部道具不互相挤压；默认玩家页普通密集关的 `auto` 模板改为按 seed/重开随机选择，调牌器仍允许指定模板。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改正式关卡 JSON；不实现 T094 残局收官、记牌器或丢弃选择；不扩大到 Web 站、PDF、AI 修图或部署范围。
+- 用户价值：让朋友试玩 Demo 更接近手机小游戏的一屏体验，减少布局杂乱和牌面看不清导致的误点；模板随机能提高每次重开和后续关卡的新鲜感，避免玩家记模板。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 玩家页 HUD / 密集牌山模板。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T096-hulebu-play-layout-larger-random-template.md`, `docs/tasks/claims/T096-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-01-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页布局在桌面和 390px 移动视口下不横向溢出，顶部 HUD、牌桌、卡槽/组合区和道具栏可见且不互相覆盖；密集牌山规则牌尺寸大于 T095 的 `45x60`；普通密集关默认 `auto` 模板在同一关不同 seed/重开下能出现不同模板，调牌器指定 `template=ring` 等仍生效；首轮可点仍保持 3-8 张目标；共享测试、HTML 脚本语法检查、浏览器验证、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态和 VM 回归测试，锁定更大的 `MOUNTAIN_RULE_TILE_SIZE`、更窄的玩家页 game shell、移动端无横向溢出预算、`resolveMountainTemplateId` 对玩家页 `auto` 使用 seed 随机而非固定轮换。实现时把默认玩家页收敛到手机比例容器，牌桌显示尺寸跟随新牌面放大但限制高度，调牌器继续保留模板手动指定。
+- 处理结论：已入任务池
+- 对应任务编号：T096
+
+### IDEA-20260601-04：胡了卜混合窗口牌山生成器
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：Lee 试玩默认 10 关 Demo 后反馈，当前密集牌山虽然有堆叠遮挡，但生成器把最上层可点击牌按 3 张一组直接分配成同一个 `碰 / 吃 / 杠` 答案。玩家只要顺序点击顶层三张再点击组合按钮，下一层又继续给出下一组答案，缺少记忆、等待和取舍，玩法变成执行题。
+- 目标：新增 T095，把 `config-playable` 密集牌山从“顺序答案生成器”改为“混合窗口生成器”。可解路径仍存在，但每个组合包的成员要分散到不同堆、不同释放时机；首轮和后续可点击窗口要混入干扰牌、半成型牌、杠诱饵和吃碰冲突，避免顶层三张天然就是一组答案。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改关卡 JSON；不实现 T094 残局收官、牌引或牌河；不改最终美术；不扩大到 Web 站、PDF 或 AI 修图模块。
+- 用户价值：让玩家需要观察记牌器、记住下层信息、判断现在消除还是等待，而不是机械顺序点击；提升麻将味和 Roguelike 选择压力。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 密集牌山生成器。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T095-hulebu-mixed-window-mountain-generator.md`, `docs/tasks/claims/T095-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-01-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和文档，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页第 5 关后的密集牌山不再让每个可点击窗口天然形成同一 `solutionGroup` 的 3 张答案；首轮可点击数量仍控制在 3-8 张；至少部分组合成员跨不同释放批次和堆分散；测试能证明首轮窗口没有直接三张同组答案，并存在吃碰/碰杠或半成型干扰；脚本语法检查、共享测试、浏览器验证、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态和 VM 回归测试，断言存在 `buildMixedWindowSolutionGroups` 之类的混合窗口逻辑，并在运行态检查第 5 关默认密集牌山首轮不会出现任一 `solutionGroup` 超过 2 张可点牌。实现上保留可解路径，但在分组后对组内成员做释放分散和窗口干扰；必要时给每个窗口加入显式 lure/interference 元数据，保证玩家需要做判断。
+- 处理结论：已入任务池
+- 对应任务编号：T095
+
+### IDEA-20260601-03：胡了卜残局收官与试玩反馈设计
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：T093 朋友试玩 Demo 暴露出四类核心体验问题：前几关只是把牌点进卡槽就结束，教学没有要求玩家真正发动 `碰 / 吃 / 杠 / 胡`；牌面偏小导致看不清和误点；`丢弃` 自动丢末尾牌，缺少玩家选择；玩家页缺少可见记牌器，玩家不知道剩余牌型，无法判断孤张和等待价值。随后 Lee 继续提出如果通关要求卡槽清空，孤张会变成设计难题；双方讨论后确认采用 `残局收官` 方向，把孤张从失败垃圾转成关末决策。
+- 目标：新增 T094，完成胡了卜 `残局收官` 设计规格。正式方向采用 `牌桌清空但槽内有残张时进入残局收官`，提供 `弃牌通关 / 选作牌引 / 收入牌河` 三类收官方向；同时明确教学关必须发动对应组合才过关、正式关允许残张进入收官、丢弃改为选择任意槽位牌、玩家页补回可见记牌器、牌面可读性需要提升。
+- 不做：T094 只做设计，不直接改 HTML 原型、Cocos 工程、共享规则代码、关卡 JSON 或正式 UI 美术；不实现牌河兑换系统、不做完整生成器可解性证明、不扩展完整麻将算法。
+- 用户价值：让试玩 Demo 从“点完牌就过关”升级为“必须理解组合和残局选择”的体验；让孤张成为胡了卜的特色决策，而不是玩家觉得被生成器坑死的无解残牌。
+- 涉及模块：胡了卜 / 朋友试玩 Demo / 残牌处理 / 记牌器 / 教学流程。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T094-hulebu-endgame-settlement-design.md`, `docs/tasks/claims/T094-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-06-01-hulebu-endgame-settlement-design.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/DECISIONS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-01-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`
+- 是否影响另一方任务：否。T094 只设计 Lee 负责的胡了卜模块，不修改 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：形成清晰的残局收官设计规格；规格明确触发条件、三种收官选择、Demo 第一阶段落地范围、长期扩展、教学关胜利条件、失败判定、丢弃选择、记牌器、牌面可读性、状态流、数据字段、测试策略和后续实现任务边界；任务分片、领取分片、模块文档和每日进展同步完成；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：把 T094 定位为设计任务，不动代码。规格中推荐 Demo 先实现 `弃牌通关` 与 `选作牌引`，`收入牌河` 先作为可见但后续开放的长期方向；正式工程后续再把牌河做成跨关资源和奖励兑换系统。
+- 处理结论：已入任务池
+- 对应任务编号：T094
+
+### IDEA-20260601-02：胡了卜 10 关朋友试玩 Demo
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：Lee 决定先做一个朋友可以直接试玩的可玩 Demo，验证玩法是否成立，再进入 Cocos 做 UI、美术、动画和正式发布工程。当前 HTML 原型已经具备密集牌山、8% 轻遮挡阈值、HUD、失败弹层和调牌器分离，适合先冻结成朋友试玩版。
+- 目标：新增 T093，在 `config-playable` 默认玩家页中形成 10 关小 run。前 3 关分别教学 `碰 / 吃 / 杠`，每关 6 个卡槽；第三关通关后第一次奖励固定为卡槽 +2，达到 8 个卡槽上限；第 4 关教学 `胡`，需要 8 个卡槽；第 5 关开始进入高压密集牌山。右侧工具改为 `洗牌 / 撤回 / 丢弃`，其中丢弃用于移除卡槽中的一张牌救场。
+- 不做：不修改 Cocos 正式工程；不做最终美术、动画音效、排行榜、账号、支付或完整 20 关平衡；不修改 PDF 或 AI 修图模块。
+- 用户价值：用 5-10 分钟的真实小 run 让朋友体验核心玩法，尽早判断规则是否能懂、策略是否成立、失败是否服气、是否有继续玩的欲望。
+- 涉及模块：胡了卜 / HTML 试玩原型 / 朋友试玩 Demo。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和文档，不碰 Jaspon 负责的 AI 修图模块。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页可连续体验 10 关；第 1-3 关分别教学碰/吃/杠且 6 槽；第 3 关后固定奖励卡槽 +2 并让第 4 关达到 8 槽；第 4 关教学胡；第 5 关开始为高压密集牌山；右侧只显示洗牌、撤回、丢弃，丢弃能移除槽内一张牌；自动化测试、脚本语法检查、浏览器桌面/移动检查、文档同步和 diff 检查通过。
+- AI 初步方案：新增 `T093`，先用静态测试和 VM 测试锁定 10 关 Demo 编排、教学卡槽、固定奖励和道具文案，再在 HTML 原型中加入朋友试玩 run 层，最后用 Kimi WebBridge 或 Codex App 内置浏览器做桌面/移动首屏和前 4 关流程检查。
+- 处理结论：已入任务池
+- 对应任务编号：T093
+
+### IDEA-20260601-01：胡了卜玩家页正式一屏 HUD 重排
+
+- 提出人：Lee
+- 提出时间：2026-06-01
+- 背景：T091 已压缩默认玩家页牌桌高度，但右侧信息面板在移动端仍位于下方滚动，且玩家页仍像“牌桌 + 信息侧栏”原型。Lee 继续要求推进正式游戏一屏结构：上方关卡、目标和剩余统计，右侧可用按钮或道具，下方卡槽，牌桌不能继续独占高度。
+- 目标：新增 T092，将 `config-playable` 默认玩家页重排为更接近正式局内的一屏 HUD：顶部状态条承载关卡/目标/余牌/积分/铜钱，右侧改成紧凑道具栏，底部卡槽继续首屏可见；调牌器仍保留完整侧栏和调参信息。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改 Web 站入口；不改关卡/奖励 JSON；不做最终美术资源替换。`config-playable` HTML 原型内的玩家页 HUD 和密集牌山验收调参允许在本任务内处理。
+- 用户价值：让默认玩家页更接近正式手机小游戏的局内信息架构，提前验证顶部 HUD、右侧道具和底部卡槽同时存在时，密集牌山仍可读、可点、不卡空间。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 玩家页正式 HUD。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T092-hulebu-one-screen-play-hud.md`, `docs/tasks/claims/T092-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-01.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件、Cocos 工程或共享 Graph-based 生成器。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页出现正式局内顶部 HUD，显示关卡、目标、余牌、积分和铜钱；默认玩家页右侧为紧凑道具栏，不再展示完整信息侧栏；移动端保持左右一屏结构而不是把道具面板推到下方；牌桌和 8 格卡槽首屏可见，无横向溢出；调牌器视图继续保留调参、余牌、奖励和控制信息；自动化测试、脚本语法检查、浏览器桌面/移动检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态回归测试，锁定 `play-hud` 顶部状态条、`tools-section` 右侧道具栏、玩家页隐藏完整侧栏信息和移动端双列结构；再修改 HTML/CSS/渲染函数，新增 HUD 文案渲染并把玩家页侧栏压缩为 64-76px 道具栏；最后用 Kimi WebBridge 或内置浏览器检查桌面和移动首屏。
+- 处理结论：已入任务池
+- 对应任务编号：T092
+- 验收补充：Lee 后续明确密集牌山起手 3-8 张即可，不要过多；低于 8% 的轻微遮挡仍应可点，达到 8% 才阻塞；牌可以稍大，且大多数牌应继续集中在主牌山堆里。该补充并入 T092 的 `config-playable` 原型验收调参，不新开任务。
+
+### IDEA-20260531-02：胡了卜玩家页正式 HUD 空间压缩
+
+- 提出人：Lee
+- 提出时间：2026-05-31
+- 背景：Lee 在默认玩家页继续评估密集牌山后反馈，整个牌桌高度仍然太高。正式游戏同一屏还需要展示顶部关卡和目标、顶部剩余卡牌统计、底部卡槽、右侧可用按钮或道具等 HUD 内容，当前牌桌高度会挤占正式界面空间。
+- 目标：新增 T091，压缩 `config-playable` 玩家页牌桌高度和周边 UI 间距，建立正式 HUD 空间预算；保持牌面可读、数百张牌量、随机堆叠、桥接堆和首轮约 8-12 张可点规则不被破坏。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改 Web 站入口；不改关卡/奖励 JSON；不新增正式 HUD 功能；不改失败提示逻辑；不扩大或缩小总牌数范围。
+- 用户价值：让当前原型更接近正式竖屏小游戏一屏结构，提前验证牌山在顶部信息、右侧道具和底部卡槽同时存在时是否仍可读、可玩。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 玩家页布局。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T091-hulebu-compact-board-hud-budget.md`, `docs/tasks/claims/T091-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-31.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件、Cocos 工程或共享 Graph-based 生成器。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页密集牌山坐标高度和 CSS 显示高度明显低于 T089/T090；顶部信息、右侧面板和底部卡槽仍在同一屏结构中有空间；桌面端牌桌不再接近整屏高度，移动端不出现横向溢出；首轮可点仍保持约 8-12 张；自动化测试、脚本语法检查、浏览器桌面/移动检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态和 VM 回归测试，锁定 `560x640` 压缩坐标系、玩家页牌桌视口高度预算和更紧凑的主栏/侧栏/卡槽样式；再调整 HTML 原型 CSS 和坐标常量，压缩纵向空间但不改牌量、牌面覆盖、桥接堆和遮挡规则。
+- 处理结论：已入任务池
+- 对应任务编号：T091
+
+### IDEA-20260531-01：胡了卜失败提示弹层
+
+- 提出人：Lee
+- 提出时间：2026-05-31
+- 背景：Lee 在默认玩家页试玩时补充反馈，失败也需要提示。当前 `config-playable` 原型已有 `failed` 状态和底部状态文案，但满槽无组合后缺少足够显眼的失败弹层，玩家不一定能立刻知道本关已经结束。
+- 目标：新增 T090，让 `config-playable` 玩家页和调牌器在本关失败时弹出明确提示，说明失败原因，并提供重开本关入口；失败后牌面和组合按钮保持禁用。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改 Web 站入口；不改关卡/奖励 JSON；不做完整复活/救场系统；不改 T089 的牌山密度和遮挡生成规则。
+- 用户价值：让满槽失败、Boss 目标失败等负反馈明确可见，避免玩家误以为页面卡住或点击无响应。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 失败反馈。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T090-hulebu-failure-feedback-overlay.md`, `docs/tasks/claims/T090-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-31.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件、Cocos 工程或共享 Graph-based 生成器。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：槽位满且没有可发动组合/救场资源时进入失败状态并显示“本关失败”弹层；弹层说明失败原因并提供“重开本关”按钮；Boss 目标未完成导致失败时也使用同一失败提示；失败后牌面、组合按钮和道具按钮不可继续操作；自动化测试、脚本语法检查、浏览器检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 VM/静态测试，模拟主槽满且无组合时触发 `checkDanger`，断言 `phase=failed`、失败弹层展示和重开按钮存在；再把现有 `failed` 状态接入统一 `showLevelFailed(reason)` 弹层，复用当前 overlay 样式但使用失败标题、原因文本和重开本关按钮。
+- 处理结论：已入任务池
+- 对应任务编号：T090
+
+### IDEA-20260530-03：胡了卜原型随机组合堆遮挡
+
+- 提出人：Lee
+- 提出时间：2026-05-30
+- 背景：Lee 在试玩 T088 的散乱可见压叠层后继续反馈，当前已经有感觉，但堆叠不应固定为“顶牌加 4 张下层预览”的一种形态；实际牌山需要随机出现几个堆结合在一起的结构，可能顶上只看到一张，拿掉后下面出现一个或多个选择，也可能是当前错位露出，还可能是 5%-100% 的不同遮挡比例。
+- 目标：新增 T089，让 `config-playable` 密集牌山支持随机组合堆/桥接堆和随机遮挡比例；同一关内混合出现完全覆盖、轻微遮挡、半遮挡和当前错位预览。移走部分顶层组合牌后，下方可能解锁 1 个或多个可点击入口。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改 Web 站入口；不改关卡/奖励 JSON；不做最终美术资源替换；不复制外部游戏源码；不把首轮可点击数量重新放大。
+- 用户价值：让牌山更接近真实“羊了个羊”式读图压力：玩家能看到不同程度的下层信息，但可点击入口仍受控；移走一张顶牌后有时会产生多个新选择，提升局面变化和决策感。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 密集牌山调牌器。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T089-hulebu-random-merged-stack-overlap.md`, `docs/tasks/claims/T089-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-31.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件、Cocos 工程或共享 Graph-based 生成器。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页和调牌器的密集牌山同一关内出现多种堆叠遮挡比例；至少存在组合堆/桥接堆，移走顶层后可解锁多个下层入口；仍保留下层牌可见但 blocked/disabled；首轮可点击数量保持约 8-12 张；自动化测试、脚本语法检查、浏览器检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态和 VM 回归测试；在 HTML 原型生成阶段为部分栈顶加入 `stackBridge` 顶牌和显式 bridge blocker；为 stack column 加入 `stackOverlapRatio` 与 `stackPreviewSpread`，让可见预览从 5%-100% 遮挡间随机分布；渲染层按遮挡参数决定预览偏移和提示文案，交互仍统一走 blocked/cover 判定。
+- 处理结论：已入任务池
+- 对应任务编号：T089
+
+### IDEA-20260530-02：胡了卜原型散乱可见压叠层
+
+- 提出人：Lee
+- 提出时间：2026-05-30
+- 背景：Lee 在试玩 T087 竖屏密集牌山时反馈，当前堆叠更像若干个单独柱状堆，只显示顶牌和深度角标；还需要恢复一部分“散乱堆叠在一起”的读牌效果，让玩家能看到下面被压住的牌面，但不能点击。
+- 目标：新增 T088，让 `config-playable` 密集牌山在保留首轮约 8-12 张可点击顶牌的同时，每个堆叠露出若干张被压住的牌；这些露出的下层牌必须可见、被遮挡、不可点击，并带有轻微错位的散乱压叠视觉。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改 Web 站入口；不改关卡/奖励 JSON；不做最终美术资源替换；不复制外部游戏源码；不把首轮可点击数量重新放大。
+- 用户价值：让玩家能提前观察下层牌面，形成羊了个羊式“看得到但拿不到”的决策压力，同时避免首轮入口过多导致难度下降。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 密集牌山调牌器。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T088-hulebu-visible-scattered-stack-preview.md`, `docs/tasks/claims/T088-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-30.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件、Cocos 工程或共享 Graph-based 生成器。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页和调牌器的密集牌山不只显示单柱顶牌；每个堆叠至少露出若干张下层牌；露出的下层牌显示真实牌面但保持 blocked/disabled，不可点击；首轮可点击牌仍约 8-12 张；自动化测试、脚本语法检查、浏览器检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 VM/静态测试；在 HTML 原型中新增栈预览深度常量、预览可见性函数和 `stack-preview` 样式；渲染时显示顶牌加上紧邻下方几张下层牌，并按深度加偏移和层级，交互仍沿用遮挡图判定。
+- 处理结论：已入任务池
+- 对应任务编号：T088
+
+### IDEA-20260530-01：胡了卜原型模板随机、全牌种覆盖和竖屏牌桌
+
+- 提出人：Lee
+- 提出时间：2026-05-30
+- 背景：Lee 在试玩 T086 默认 240 张小牌牌山时反馈，每一关看起来仍是同一种横向样式；此前已经有 8 个核心模板，但当前 HTML 玩家试玩页没有复用模板变化；默认牌面也只保证四类花色覆盖，没有保证所有具体牌面都出现。
+- 目标：新增 T087，让 `config-playable` 玩家页和调牌器的密集牌山按关卡/种子稳定随机切换多个模板；默认牌桌改为竖屏优先；默认 240 张牌覆盖 `万1-9 / 条1-9 / 筒1-9 / 东南西北中发白` 全部 34 个牌面，同时保持首轮约 8-12 张可点击。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不修改 Web 站入口；不改关卡/奖励 JSON；不做最终美术资源替换；不复制外部游戏源码。
+- 用户价值：让当前右侧浏览器中的玩家试玩页更接近真实竖屏小游戏评估场景，并避免数百张牌仍只集中在少数牌面。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 密集牌山调牌器。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T087-hulebu-varied-portrait-mountain.md`, `docs/tasks/claims/T087-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/plans/2026-05-30-hulebu-varied-portrait-mountain.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-30.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜 HTML 原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件、Cocos 工程或共享 Graph-based 生成器。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家页密集牌山为竖屏优先牌桌；至少 8 个模板可被自动轮换或在调牌器指定；默认 240 张牌包含 34 个完整牌面；首轮可点击牌保持约 8-12 张；调牌器可选择模板；自动化测试、脚本语法检查、浏览器检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态和 VM 回归测试；在 HTML 原型中加入轻量模板注册表和 `template=auto|...` 调参；把位置生成从固定牌流改为模板生成；把牌面保底从四类花色升级为 34 个具体牌面每张至少 3 次；CSS 改为纵向牌桌并为堆叠顶牌显示深度角标。
+- 处理结论：已入任务池
+- 对应任务编号：T087
+
+### IDEA-20260529-01：胡了卜玩家试玩页和调牌器分离
+
+- 提出人：Lee
+- 提出时间：2026-05-29
+- 背景：对胡了卜配置试玩原型进行体验评估时发现，默认游玩页面把调参/调牌控件和真实玩家牌桌放在同一窗口，移动端首屏优先看到配置面板而不是牌山，容易混淆“玩家体验”和“开发调关工具”。
+- 目标：新增 T085，将默认玩家试玩页改为干净的游玩窗口；调牌器/调参面板通过独立入口打开，保留开发调关能力但不挤占玩家首屏。
+- 不做：不修改 Cocos 正式工程、不重做奖励效果、不改 Boss 目标逻辑、不改共享牌山生成器、不接 Web 站内 iframe、不做最终 UI 美术。
+- 用户价值：让试玩页更接近真实玩家视角，同时保留独立调牌器给后续调关和验证使用。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 调牌器。
+- 可能影响文件：`AGENTS.md`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/game/mahjong-roguelike/prototypes/config-playable/tuner.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T085-hulebu-play-page-tuner-split.md`, `docs/tasks/claims/T085-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-05-30.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务只修改 Lee 负责的胡了卜原型、共享测试和模块文档，不修改 `apps/web/**`、PDF 工具箱、AI 修图、部署文件或 T084 的 Cocos 接入文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认 `index.html` 首屏为玩家游玩页，不展示调牌/调参面板；调牌器通过独立入口新窗口打开，并可进入调参视图；移动端玩家页优先显示牌桌和主流程控件；回归测试、脚本语法检查、浏览器桌面/移动检查、文档同步和 diff 检查通过。
+- AI 初步方案：先用测试锁定默认玩家视图和独立调牌器入口，再在 HTML 原型中加入 `view=play/tuner` 视图分支；默认隐藏调参面板，调牌器链接使用独立 `tuner.html` 入口并新窗口打开；最后用浏览器检查玩家页与调牌器页。
+- 处理结论：已入任务池
+- 对应任务编号：T085
 
 ### IDEA-20260528-05：胡了卜模板注册表和 8 个核心模板共享实现
 
@@ -1183,6 +1526,25 @@
 - AI 初步方案：作为 `T018` 独立任务处理，文件范围限定在仓库忽略规则、本地状态文件取消跟踪和协作文档。
 - 处理结论：已入任务池
 - 对应任务编号：T018
+
+### IDEA-20260530-01：胡了卜数百张小牌密集牌山原型
+
+- 提出人：Lee
+- 提出时间：2026-05-30
+- 背景：当前配置试玩页的密集牌山牌量仍偏少，用户希望参考“羊了个羊”式高密度堆叠体验，让牌数达到几百张打底，并缩小牌面以便页面容纳更多牌。
+- 目标：调整 `config-playable` HTML 原型的密集牌山默认牌量、调参范围、牌面尺寸和布局坐标，让默认调牌器进入约 240 张牌的小牌压力版，并保留 URL 参数继续压测。
+- 不做：不复制外部游戏源码，不改 Cocos 正式工程，不改 Web 站内入口，不调整正式关卡 JSON，不新增完整可解路径搜索。
+- 用户价值：调牌时可以直接评估接近数百张堆叠牌山的真实视觉压力、读牌难度和页面承载能力。
+- 涉及模块：胡了卜、配置试玩原型、密集牌山调参。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`
+- 是否影响另一方任务：否；本次限定在 Lee 负责的胡了卜原型和文档范围，不碰 Jaspon 负责的 AI 修图模块。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认密集牌山目标牌量达到约 240 张；调参范围支持 120-420 张；牌面规则尺寸和 CSS 视觉尺寸变小；测试覆盖这些边界；静态脚本检查和 docs 同步通过。
+- AI 初步方案：新增 `T086`，先用静态回归测试锁定默认牌量、调参上下限、牌面规则尺寸和 CSS 小牌比例，再修改 HTML 原型生成器常量和布局。
+- 处理结论：已入任务池
+- 对应任务编号：T086
+- 验收补充：2026-06-01 Lee 在 T092 验收中继续明确密集牌山起手 3-8 张即可，不要过多；低于 8% 的轻微遮挡仍应可点，达到 8% 才阻塞；牌可以稍大，且大多数牌应继续集中在主牌山堆里。该补充已并入 T092 的 `config-playable` 原型验收调参，不新开任务。
 
 ## 6. AI 处理新想法时必须输出
 

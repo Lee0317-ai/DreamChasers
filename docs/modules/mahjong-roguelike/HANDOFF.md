@@ -48,6 +48,26 @@
 - 已完成 T081：胡了卜地图模板语法系统设计定稿。后续不应继续只加写死模板分支，而应先做模板注册表和参数系统；第一期实现 8 个核心模板：中心塔、双翼、十字、环形、长墙、岛屿、峡谷、阶梯；第二批 backlog：花瓣、堡垒、棋盘、迷雾外圈。
 - 已完成 T082：胡了卜模板注册表和参数系统实施计划。计划要求后续先保留 `center-tower` / `two-wings` 现有行为，再落地模板 definition、参数归一化、参数边界、体验标签、通用校验器和 ExperienceReport 模板字段；8 个核心模板仍由 T083 实现。
 - 已完成 T083：共享生成器已落地模板注册表、参数归一化、8 个核心模板、通用校验器和扩展后的 `ExperienceReport`。当前仍未接 Cocos，后续需要单独把 Graph-based `levelTiles` 转成 Cocos 关卡配置。
+- 已完成 T084：Cocos 默认 20 关已改为消费 Graph-based `generateHulebuMountain(...).levelTiles`，8 个核心模板按关卡轮换生成；现有渲染、点击、8 格槽、组合按钮、通关提示和奖励节点流转继续复用原 runtime。
+- 已完成 T085：配置试玩原型默认入口已改为干净玩家试玩页，调牌/调参能力移到独立 `tuner.html` 入口；`view=tuner` 才显示顶部配置切换和密集牌山调参面板。
+- 已完成 T086：配置试玩原型的密集牌山默认进入 240 张小牌压力版，调参范围支持 120-420 张；牌山坐标系扩大为 920x520，规则小牌尺寸缩到 38x52。默认生成使用 6 条压叠牌流加 4 个竖堆入口，首轮可点约 10 张，并强制覆盖 `万 / 条 / 筒 / 字` 四类牌，适合评估数百张牌的读牌压力和页面承载能力。
+- 已完成 T087：配置试玩原型的密集牌山改为 640x860 竖屏基准，并新增 8 个本地模板、自动模板轮换和调牌器模板选择；默认 240 张牌保证 34 个具体牌面全覆盖，首轮仍约 10 张可点，栈顶显示隐藏深度角标。桌面 Kimi WebBridge 和 390px 移动端 headless Chrome 截图均已验证。
+- T087 验收补丁：如果调牌器 URL 带 `template=ring`，当前关仍会显示环形；点击其他关卡、进入下一关或重开一轮会恢复 `auto` 模板，不会继续把所有关固定成环形。只有当前关重开会保留调参，便于单关调试。
+- 已完成 T088：配置试玩原型的密集牌山现在显示顶牌加 4 张下层预览牌；下层预览牌显示真实牌面、错位露出，但保持 blocked/disabled，不扩大首轮约 10 张可点入口。默认玩家页把栈深数字降噪为小圆点，调牌器仍保留数字深度提示。Kimi WebBridge 桌面默认页/调牌器和 390px headless Chrome 移动端截图均已验证。
+- 已完成 T089：配置试玩原型的密集牌山新增随机组合/桥接堆和 5%-100% 遮挡比例；同一局内混合完全覆盖、轻微遮挡和错位预览。桥接顶牌可压住多个下层堆顶入口，移走后会释放多个选择，首轮入口仍控制在 8-12 张。密度补丁后牌山坐标系为 `560x720`、规则牌尺寸为 `42x56`，桌面玩家页主栏收敛到 `500px`；运行态点击判定会按实际渲染后的视觉矩形过滤，避免视觉上已经露出的顶牌仍不可点击。
+- 已完成 T090：配置试玩原型失败时会弹出“本关失败”提示，默认说明主槽已满且没有可发动组合或救场资源，并提供“重开本关”入口；Boss 目标未完成导致失败时复用同一失败弹层。失败后牌面、组合按钮和工具按钮保持禁用。
+- 已完成 T091：默认玩家页按正式 HUD 空间重新压缩，密集牌山坐标系改为 `560x640`，玩家页牌桌限制为 `430px / 48vh`，桌面实测牌桌 `332x379` 且整页不滚动；390x844 移动检查牌桌 `344x393`、卡槽首屏可见、无横向溢出。右侧信息面板移动端仍在下方滚动，正式移动 HUD 重排应单独处理。
+- 已完成 T092：默认玩家页切为正式一屏 HUD，顶部显示关卡、目标、余牌、积分和铜钱，右侧只保留 `洗山 / 回手 / 看山` 道具栏，调牌器继续保留完整信息侧栏。桌面 1512x682 实测牌桌 `307x351`、HUD `460x61`、卡槽 `460x114`、右侧道具栏 `76x204`；390x844 移动端牌桌和卡槽首屏可见且无横向溢出。T092 验收调参补丁后，密集牌山轻微遮挡阈值统一为 `8%`，低于 8% 可点击，达到 8% 才阻塞；规则牌尺寸为 `45x60`，第 1-8 关默认首轮可点稳定在 5-8 张，符合起手 3-8 张目标；前 4 个主堆加权并向中心收拢，让多数牌继续堆在主牌山里。
+- 已完成 T093：默认玩家页成为 10 关朋友试玩 Demo。第 1-4 关分别教学 `碰 / 吃 / 杠 / 胡`，前 3 关使用 6 格主槽，第 3 关后固定奖励 `卡槽 +2`，第 4 关起使用 8 格主槽；第 5 关开始进入 240 张密集牌山高压模式。右侧道具改为 `洗牌 / 撤回 / 丢弃`，丢弃会移除主槽末尾牌并可作为满槽救场资源。移动端默认玩家页在 390 CSS 像素下采用底部横排三道具，卡槽和道具完整可见且无横向溢出。
+- 已完成 T094 设计：普通关牌桌清空但槽内有残张时进入 `残局收官`，不再默认强制清槽。收官方向为 `弃牌通关 / 选作牌引 / 收入牌河`；Demo 第一阶段优先实现弃牌通关和牌引，牌河兑换后置。下一轮实现需同时修正 T093 试玩反馈：前 4 关必须发动教学组合，牌面和点击热区放大，`丢弃` 改为选择槽位任意一张，玩家页补可见记牌器。
+- 已完成 T095：密集牌山从“顺序答案生成器”改为“混合窗口生成器”。答案组仍保留 `solutionGroup`，释放窗口改用 `solutionStep`，默认普通密集关首轮同一答案组最多露出 2 张。运行态抽样：第 1 关首轮 8 张可点、最大同组 2 张；朋友试玩第 5 关首轮 7 张可点、最大同组 2 张。
+- 已完成 T096：默认玩家页进一步压缩为一屏试玩布局，主栏 `480px`、右侧道具栏 `72px`；密集牌山规则牌尺寸从 `45x60` 放大到 `52x70`，玩家页实测牌面约 `37x49`。普通密集关 `auto` 模板按 seed/重开随机，并在候选生成失败或首轮可点超过 8 时回退到下一个安全模板；调牌器仍保留完整 8 模板手动指定。Kimi WebBridge 第 5 关 `seed=epsilon` 验证 1512x682 视口无横向/纵向溢出，首轮可点 8 张。
+- 已完成 T097：前 4 关教学关必须真实发动对应 `碰 / 吃 / 杠 / 胡` 动作才通关，单纯把牌放入卡槽只会提示教学目标。
+- 已完成 T098：朋友 Demo 第 5-10 关采用渐进难度曲线，牌量为 `72 / 96 / 132 / 168 / 210 / 240`；第 5 关标题为“正式入门”，第 10 关在朋友 Demo 中是“综合高压”压力关，不叠正式 Boss 目标和胡包。调牌器和正式配置仍保留原 Boss 配置。
+- 已完成 T099：朋友 Demo 不再把满槽牌静默移入隐藏备用槽，第 8 张保留在可见主槽；玩家页记牌器位于牌桌和卡槽之间，按 `万 / 条 / 筒 / 字` 展示剩余牌数量，随入槽、组合、丢弃和洗牌刷新。
+- 已完成 T100 设计：核心玩法收束为 `有限牌河 + 明碰区 + 补杠孤张出口 + 明杠开山 + 胡牌强奖励 + 听牌提示 + 孤张预算生成器`。补杠只处理碰后的第 4 张，不给强奖励；明杠才震山开牌；胡牌作为最强局内奖励，清槽、强开山并处理牌河。下一轮不要继续只靠降牌型或加牌量调难度，应先验证有限牌河和补杠。
+- 已完成 T101：默认玩家 Demo 已落地有限牌河、明牌区、任选槽位打牌、碰后补杠、直接明杠开山、胡后清河、简化 `听/差` 提示和孤张预算生成器检查。牌河容量当前为 `3`；槽满但牌河未满时提示打牌，牌河满且无组合/救场时才失败。根据 Lee 第 5 关试玩反馈，生成器已把第 5-10 关自然明杠包提高到每关 `2` 个，并将明杠目标牌面从普通 3 张填充组中保留出来。明杠开山现在震落 1 张压顶牌，胡牌震落 3 张压顶牌，震落牌保持为桌面可选牌。记牌器口径已改为只统计牌山 `board` 牌；卡槽、牌河、明牌区和移除区不计入。记牌器已改为每个牌面格上下两层显示，上方是牌面、下方是余牌数量。`吃 / 碰 / 杠 / 补杠 / 胡` 已拆到卡槽上方独立动作栏，卡槽行只保留 8 格槽。Kimi WebBridge 已验证第 5 关真实流程第 3 步出现 `杠` 候选，最新复测第 5 关孤张风险 `1/1`、`听/差` 提示可见，震落牌可点击入槽，记牌器入槽后扣数。下一步需要 Lee 实际试玩验收手感。
+- 已完成 T102：`/games/hulebu` 站内网页试玩入口已接入，使用 iframe 加载 `/games/hulebu-demo/index.html` 静态副本；调牌器保留 `/games/hulebu-demo/tuner.html`；游戏站麻将卡片和搜索入口已指向该页面。390px Playwright 已验证牌面约 `40x54`、记牌器上下两层可读、动作栏/卡槽/底部道具不互相遮盖。
 
 ## 新负责人需要先读
 
@@ -109,6 +129,33 @@
 56. `docs/tasks/claims/T082-lee.md`
 57. `docs/tasks/items/T083-hulebu-template-registry-core-templates.md`
 58. `docs/tasks/claims/T083-lee.md`
+59. `docs/tasks/items/T084-hulebu-cocos-graph-generator-integration.md`
+60. `docs/tasks/claims/T084-lee.md`
+61. `docs/tasks/items/T085-hulebu-play-page-tuner-split.md`
+62. `docs/tasks/claims/T085-lee.md`
+63. `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+64. `apps/game/mahjong-roguelike/prototypes/config-playable/tuner.html`
+65. `docs/tasks/items/T086-hulebu-hundreds-tile-mountain.md`
+66. `docs/tasks/claims/T086-lee.md`
+67. `docs/tasks/items/T087-hulebu-varied-portrait-mountain.md`
+68. `docs/tasks/claims/T087-lee.md`
+69. `docs/tasks/items/T088-hulebu-visible-scattered-stack-preview.md`
+70. `docs/tasks/claims/T088-lee.md`
+71. `docs/tasks/items/T089-hulebu-random-merged-stack-overlap.md`
+72. `docs/tasks/claims/T089-lee.md`
+73. `docs/tasks/items/T090-hulebu-failure-feedback-overlay.md`
+74. `docs/tasks/claims/T090-lee.md`
+75. `docs/tasks/items/T091-hulebu-compact-board-hud-budget.md`
+76. `docs/tasks/claims/T091-lee.md`
+77. `docs/tasks/items/T092-hulebu-one-screen-play-hud.md`
+78. `docs/tasks/claims/T092-lee.md`
+79. `docs/tasks/items/T093-hulebu-friend-playtest-demo.md`
+80. `docs/tasks/claims/T093-lee.md`
+81. `docs/tasks/items/T094-hulebu-endgame-settlement-design.md`
+82. `docs/tasks/claims/T094-lee.md`
+83. `docs/superpowers/specs/2026-06-01-hulebu-endgame-settlement-design.md`
+84. `docs/tasks/items/T095-hulebu-mixed-window-mountain-generator.md`
+85. `docs/tasks/claims/T095-lee.md`
 
 ## 推荐下一步
 
@@ -129,7 +176,7 @@
 胡牌节奏配置和密集牌山胡牌包已完成。下一轮建议先试玩第 6 关和第 10 关的 `密集牌山` 模式，观察首个胡牌包是否过于稳定、是否需要把 `featuredCombos` 从固定 1 包改成按关卡权重生成，再决定是否进入正式表现层。
 20 关节奏骨架已完成。下一轮建议重点试玩第 13/16/19 奖励节点和第 20 关 Boss，判断奖励间隔是否舒服、终章 Boss 是否目标过多；这批关卡仍是骨架，不是最终数值。
 第 20 关密集牌山已补回归测试，`featuredCombos: ["hu"]` 的胡牌包会复用为 Boss `胡 1` 目标。试玩时可直接打开 `prototypes/config-playable/index.html?level=20&mode=mountain`，不用先手动切关和切模式。
-随机牌山调参面板已完成。试玩调参可直接使用 `?level=20&mode=mountain&seed=calibrate&tiles=58&stack=6&hu=2&honor=90`，也可以在密集牌山模式的侧栏修改参数后点 `重新生成牌山`。
+随机牌山调参面板已完成。试玩调参可直接使用 `?level=20&mode=mountain&seed=calibrate&tiles=360&stack=6&hu=2&honor=90`，也可以在密集牌山模式的侧栏修改参数后点 `重新生成牌山`。
 Cocos/GDevelop 表现层桥接已完成。下一步正式工程建议先做 Cocos 场景骨架，让 `GameScene` 读取配置、持有规则状态，并通过 `createMahjongPresentationSnapshot` 驱动 `BoardLayer / SlotLayer / HudLayer / ComboBar`；GDevelop 侧只做对象变量映射和点击回传，不再重写规则判断。
 Cocos 场景骨架第一版已完成。下一步建议在 Cocos Creator 中创建 `HulebuGameScene`、Tile prefab 和 HUD 节点，把 `createMahjongCocosSceneModel` 输出的数据绑定到真实节点上，再做点击入槽的第一条互动链路。
 Cocos Creator 3.8.8 工程壳已完成。下一步建议在 Cocos Dashboard 中打开 `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/`，在编辑器内创建 `HulebuGameScene.scene`，绑定 `GameSceneController` 和四个 Binder，再做配置同步与首关渲染。
@@ -142,4 +189,6 @@ Cocos 牌面 SpriteFrame 绑定第一版已完成。下一步如果继续美术�
 无边框牌面资源已完成。下一步美术表现可以优先调整 Cocos 牌体底板、符号缩放比例和槽位里的同款 SpriteFrame；不要再把带框原图直接叠在自绘牌体上。
 新牌面 UI 留白版、Cocos 最小通关闭环、随机堆叠牌山恢复、牌山铺开和遮挡点击一致性已完成。下一步建议继续补奖励效果真正落地、Boss 目标进度、关卡 HUD 动态进度和槽位同款图片；完整 20 关内容平衡、最终 Tile prefab、图集和动画可以在流程稳定后继续接。
 地图模板语法系统已完成设计。若下一步继续牌山地基，应先开 T082 做模板注册表和参数系统，保留 T080 当前行为，再开 T083 实现 8 个核心模板和对应 ExperienceReport 校验；不要直接把十字、环形等写成更多临时 if 分支。
-模板注册表和 8 个核心模板共享实现已完成。下一步如果继续牌山地基，建议另起 Cocos 接入任务，把 Graph-based `levelTiles` 转成现有 Cocos `HulebuLevelTileConfig`，先用于 1-2 个测试关卡目检读牌压力，再决定是否替换默认 20 关随机堆叠生成。
+Graph-based 生成器已接回 Cocos，默认 20 关开始使用 8 个核心模板轮换生成。下一步建议用 Cocos Web Preview 手机视口目检第 1/2/3/4 关，确认中心塔、双翼、十字和环形的读牌压力，再继续补奖励效果、Boss 目标进度和槽位同款图片。
+配置试玩页已分成默认玩家页和独立调牌器。后续做朋友试玩时打开默认 `index.html`，它现在是 10 关小 run；需要调参数时打开 `tuner.html` 或 `index.html?view=tuner&mode=mountain`。默认 Demo 的第 1-4 关分别教学 `碰 / 吃 / 杠 / 胡`，且必须成功点击对应动作按钮才通关，单纯把牌全部放入卡槽不会跳关；第 5-10 关按 `72 / 96 / 132 / 168 / 210 / 240` 逐步提升牌量，第 5 关是“正式入门”，第 10 关是“综合高压”。右侧道具为 `洗牌 / 撤回 / 丢弃`，移动端为底部横排。记牌器已放在牌桌和卡槽之间；满槽时第 8 张不会被隐藏备用槽吞掉。调牌器当前默认生成 240 张小牌，首轮可点目标为 3-8 张，URL 可用 `tiles=120` 到 `tiles=420` 压测密度，也可用 `template=center-tower|two-wings|cross|ring|long-wall|islands|canyon|staircase` 指定模板。下一轮应继续按 T094 实现丢弃选择槽位任意一张和残局收官。
+T101 已把 T100 的第一版核心规则落进默认玩家 Demo，T102 已把该 Demo 接到 `/games/hulebu`。下一轮先让 Lee 和朋友试玩站内发布版，重点观察：`3` 格牌河是否过松或过紧、补杠是否有效消化孤张但不抢明杠爽点、`杠` 震落 1 张和 `胡` 震落 3 张是否形成合适恢复强度。第 5 关已保证至少 2 条干净明杠路线，不应再只靠 3 张组推进；试玩时还要确认震落牌、`听/差` 提示和上下两层记牌器是否足够清楚。试玩反馈稳定后，再拆残局收官整合、提示表现增强，以及是否沉淀到 Cocos 正式工程。
