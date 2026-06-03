@@ -1658,6 +1658,7 @@
       const DEFAULT_RIVER_LIMIT = 3;
       const KONG_SHAKE_LOOSE_COUNT = 1;
       const HU_SHAKE_LOOSE_COUNT = 3;
+      const LOOSE_MOUNTAIN_STACK_ORDER_BASE = 100000;
       const BLOCKED_COVER_RATIO = 0.08;
       const TILE_Z_INDEX_BASE = 10;
       const OVERLAY_Z_INDEX = 1000000;
@@ -1689,6 +1690,7 @@
       const MOUNTAIN_INITIAL_AVAILABLE_TARGET = 8;
       const MOUNTAIN_STACK_PREVIEW_DEPTH = 4;
       const MOUNTAIN_MERGED_STACK_COUNT = 2;
+      const MOUNTAIN_INITIAL_SOLUTION_GROUP_LIMIT = 2;
       const MOUNTAIN_ACTIVE_STACK_COUNT = 10;
       const MOUNTAIN_PRIMARY_STACK_COUNT = 4;
       const MOUNTAIN_PRIMARY_STACK_WEIGHT_MULTIPLIER = 2.45;
@@ -1703,6 +1705,7 @@
         "islands",
         "canyon",
         "staircase",
+        "suspended-waist",
       ];
       const MOUNTAIN_AUTO_TEMPLATE_IDS = [
         "ring",
@@ -1718,6 +1721,7 @@
         islands: "群岛",
         canyon: "峡谷",
         staircase: "阶梯",
+        "suspended-waist": "悬台窄腰",
       };
       const DEFAULT_MOUNTAIN_TUNING = {
         seed: "",
@@ -2157,6 +2161,7 @@
           tools: getToolsForLevel(defaults),
           bonuses: { ...model.run.bonuses },
           history: [],
+          looseMountainDropIndex: 0,
           visionActive: false,
           recentBossProgress: [],
           phase: "playing",
@@ -2520,6 +2525,7 @@
             stackBridgeColumnIds: position.stackBridgeColumnIds,
             blockedBy: [],
             location: "board",
+            templateRegion: position.templateRegion,
             sourcePackage: spec.sourcePackage,
             solutionStep: spec.solutionStep,
             solutionGroup: spec.solutionGroup,
@@ -2528,7 +2534,7 @@
         });
 
         let generatedTiles = attachMountainBlockers(tiles);
-        if (shouldRebalanceRuntimeInitialMixedWindow(level)) {
+        if (shouldRebalanceRuntimeInitialMixedWindow(level, mountainTemplate)) {
           generatedTiles = rebalanceRuntimeInitialMixedWindow(generatedTiles, random);
         }
         validateSolutionPath(generatedTiles);
@@ -2541,7 +2547,8 @@
         return MOUNTAIN_DEFAULT_TILE_COUNT;
       }
 
-      function shouldRebalanceRuntimeInitialMixedWindow(level) {
+      function shouldRebalanceRuntimeInitialMixedWindow(level, mountainTemplate = null) {
+        if (mountainTemplate?.id === "suspended-waist") return true;
         const profile = getFriendDemoDifficultyProfile(model.levelIndex);
         if (profile && (profile.huPacks ?? 0) === 0 && getActiveBossGoals(model.levelIndex).length === 0) return true;
         return !hasFeaturedOrBossMountainGoals(level, getActiveBossGoals(model.levelIndex));
@@ -2834,17 +2841,34 @@
             [126, 126, 1], [174, 198, 1], [222, 270, 1], [270, 342, 1], [318, 414, 1.1],
             [366, 486, 1], [414, 558, 1], [462, 630, 1], [510, 702, 0.9], [286, 724, 0.9],
           ],
+          "suspended-waist": getSuspendedWaistTemplateAnchors(),
         };
 
-        return (templates[templateId] ?? templates["center-tower"]).map(([x, y, weight], index) => ({
+        return (templates[templateId] ?? templates["center-tower"]).map(([x, y, weight, templateRegion], index) => ({
           id: `${templateId}-${index + 1}`,
           x: scaleMountainTemplateCoordinate(x, "x"),
           y: scaleMountainTemplateCoordinate(y, "y"),
           weight,
+          templateRegion,
           stackBase: index * 700,
           row: index,
           col: index,
         }));
+      }
+
+      function getSuspendedWaistTemplateAnchors() {
+        return [
+          [214, 122, 1.42, "top-platform"],
+          [290, 112, 1.5, "top-platform"],
+          [366, 120, 1.5, "top-platform"],
+          [442, 148, 1.36, "top-platform"],
+          [300, 294, 1.38, "waist"],
+          [358, 342, 1.3, "waist"],
+          [238, 526, 1.28, "support-column"],
+          [404, 552, 1.24, "support-column"],
+          [128, 382, 1.12, "side-scatter"],
+          [502, 684, 1.08, "side-scatter"],
+        ];
       }
 
       function scaleMountainTemplateCoordinate(value, axis) {
@@ -2936,6 +2960,7 @@
             stackPreviewLimit: overlapProfile.previewDepth,
             stackPreviewSpread: overlapProfile.previewSpread,
             templateId: stack.templateId,
+            templateRegion: stack.templateRegion,
           });
         }
       }
@@ -3345,11 +3370,12 @@
             counts.set(key, (counts.get(key) ?? 0) + 1);
             return counts;
           }, new Map());
-          const completeGroup = [...groupCounts.entries()].find(([, count]) => count >= 3)?.[0];
-          if (!completeGroup) return nextTiles;
+          const overexposedGroup = [...groupCounts.entries()]
+            .find(([, count]) => count > MOUNTAIN_INITIAL_SOLUTION_GROUP_LIMIT)?.[0];
+          if (!overexposedGroup) return nextTiles;
 
-          const visibleSwap = availableTiles.find((tile) => tile.solutionGroup === completeGroup);
-          const deferredFillerId = findDeferredMixedWindowFillerId(nextTiles, deferredIds, usedDeferredIds, completeGroup, visibleSwap);
+          const visibleSwap = availableTiles.find((tile) => tile.solutionGroup === overexposedGroup);
+          const deferredFillerId = findDeferredMixedWindowFillerId(nextTiles, deferredIds, usedDeferredIds, overexposedGroup, visibleSwap);
           const filler = nextTiles.find((tile) => tile.id === deferredFillerId);
 
           if (!visibleSwap || !filler) return nextTiles;
@@ -4575,11 +4601,12 @@
       }
 
       function shakeLooseMountainTile(tile, index, total) {
-        const position = getLooseMountainPosition(index, total);
+        const dropIndex = getNextLooseMountainDropIndex();
+        const position = getLooseMountainPosition(dropIndex);
         tile.location = "board";
         tile.blockedBy = [];
         tile.layer = 0;
-        tile.stackOrder = 100000 + index;
+        tile.stackOrder = LOOSE_MOUNTAIN_STACK_ORDER_BASE + dropIndex;
         tile.stackColumn = false;
         tile.stackColumnId = "";
         tile.stackCoverMode = "";
@@ -4594,7 +4621,15 @@
         tile.y = position.y;
       }
 
-      function getLooseMountainPosition(index, total) {
+      function getNextLooseMountainDropIndex() {
+        const current = Number.isFinite(model.state.looseMountainDropIndex)
+          ? model.state.looseMountainDropIndex
+          : model.state.tiles.filter((tile) => tile.location === "board" && tile.looseMountainTile).length;
+        model.state.looseMountainDropIndex = current + 1;
+        return current;
+      }
+
+      function getLooseMountainPosition(index) {
         const coordinateSystem = getActiveCoordinateSystem();
         const { width, height } = getRuleTileSize();
         const gap = model.mode === "mountain" ? 8 : 12;
@@ -4602,10 +4637,8 @@
         const perRow = Math.max(1, Math.floor((coordinateSystem.baseWidth - padding * 2 + gap) / (width + gap)));
         const row = Math.floor(index / perRow);
         const column = index % perRow;
-        const rowCount = Math.min(perRow, total - row * perRow);
-        const rowWidth = rowCount * width + Math.max(0, rowCount - 1) * gap;
         return {
-          x: Math.max(padding, (coordinateSystem.baseWidth - rowWidth) / 2 + column * (width + gap)),
+          x: padding + column * (width + gap),
           y: Math.max(padding, coordinateSystem.baseHeight - height - padding - row * (height + gap)),
         };
       }
@@ -5144,7 +5177,6 @@
         return tile.blockedBy.some((blockerId) => {
           const blocker = findTile(blockerId);
           if (!blocker || blocker.location !== "board") return false;
-          if (blocker.looseMountainTile) return false;
           if (model.mode !== "mountain") return true;
           const rect = getMountainVisualIntersectionRect(tile, blocker, model.state.tiles);
           const { width, height } = getMountainRuleTileSize();
@@ -5161,7 +5193,6 @@
 
         model.state.tiles.forEach((other, otherIndex) => {
           if (other.id === tile.id || other.location !== "board") return;
-          if (other.looseMountainTile) return;
           if (getTileStackOrder(other, otherIndex) <= tileOrder) return;
 
           const rect = model.mode === "mountain"
@@ -5180,7 +5211,6 @@
 
         return model.state.tiles.some((other, otherIndex) => {
           if (other.id === tile.id || other.location !== "board") return false;
-          if (other.looseMountainTile) return false;
           if (getTileStackOrder(other, otherIndex) <= tileOrder) return false;
           const { width, height } = getRuleTileSize();
           if (model.mode === "mountain") {

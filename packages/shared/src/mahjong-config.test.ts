@@ -387,6 +387,12 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.hu.statusText).toContain("胡后清河");
     expect(summary.hu.statusText).toContain("震落");
     expect(summary.hu.statusText).toContain("3 张");
+
+    expect(summary.looseLayout.overlapPairs).toBe(0);
+    expect(summary.looseLayout.looseTiles.every((tile) => tile.loose)).toBe(true);
+    expect(summary.looseLayout.looseTiles.every((tile) => tile.available)).toBe(true);
+    expect(summary.looseLayout.coveredByLooseBlocked).toBe(true);
+    expect(summary.looseLayout.coverLooseAvailable).toBe(true);
   });
 
   it("试玩 Demo 在距离胡牌 1-2 张时显示听牌提示和记牌器高亮", () => {
@@ -513,6 +519,24 @@ describe("胡了卜配置加载验证", () => {
       expect(summary.initialAvailable).toBeLessThanOrEqual(8);
       expect(summary.missingTileIdentities).toEqual([]);
     }
+  });
+
+  it("调牌器可以指定悬台窄腰模板且默认 auto 池暂不使用它", () => {
+    const summary = readPrototypeMountainSummary(
+      10,
+      "?view=tuner&mode=mountain&level=10&template=suspended-waist&seed=waist-check",
+    );
+
+    expect(summary.tuning.templateId).toBe("suspended-waist");
+    expect(summary.templateId).toBe("suspended-waist");
+    expect(summary.templateLabel).toBe("悬台窄腰");
+    expect(summary.count).toBe(240);
+    expect(summary.initialAvailable).toBeGreaterThanOrEqual(3);
+    expect(summary.initialAvailable).toBeLessThanOrEqual(8);
+    expect(summary.initialMaxSolutionGroupAvailable).toBeLessThanOrEqual(2);
+    expect(summary.initialCompleteSolutionGroups).toEqual([]);
+    expect(summary.templateRegions).toEqual(["side-scatter", "support-column", "top-platform", "waist"]);
+    expect(summary.autoTemplateIds).not.toContain("suspended-waist");
   });
 
   it("调牌器固定模板只作用当前调试关，切关后恢复自动模板", () => {
@@ -690,6 +714,8 @@ interface PrototypeMountainSummary {
   firstBridgeUnlockedChoices: number;
   stackOverlapRatios: number[];
   stackCoverModes: string[];
+  templateRegions: string[];
+  autoTemplateIds: string[];
   primaryStackTileShare: number;
   largestStackTileShare: number;
   solutionStepCount: number;
@@ -791,6 +817,19 @@ interface PrototypeRiverKongHuSummary {
     removedDelta: number;
     looseCount: number;
     statusText: string;
+  };
+  looseLayout: {
+    overlapPairs: number;
+    looseTiles: Array<{
+      id: string;
+      x: number;
+      y: number;
+      stackOrder: number;
+      loose: boolean;
+      available: boolean;
+    }>;
+    coveredByLooseBlocked: boolean;
+    coverLooseAvailable: boolean;
   };
 }
 
@@ -1071,6 +1110,11 @@ function readPrototypeMountainSummary(levelOrder: number, routeSearch = ""): Pro
         .filter((tile) => tile.stackColumn && isVisibleGeneratedStackTop(tile, generatedTiles))
         .map((tile) => tile.stackCoverMode)
       )],
+      templateRegions: Array.from(new Set(generatedTiles
+        .map((tile) => String(tile.templateRegion ?? ""))
+        .filter(Boolean)
+      )).sort(),
+      autoTemplateIds: MOUNTAIN_AUTO_TEMPLATE_IDS,
       primaryStackTileShare: stackColumnCounts.slice(0, 4).reduce((sum, count) => sum + count, 0) / generatedTiles.length,
       largestStackTileShare: (stackColumnCounts[0] ?? 0) / generatedTiles.length,
       solutionStepCount: new Set(generatedTiles.map((tile) => tile.solutionStep)).size,
@@ -1623,6 +1667,40 @@ function readPrototypeRiverKongHuSummary(): PrototypeRiverKongHuSummary {
       statusText: view.status.textContent,
     };
 
+    const repeatedLooseTiles = [
+      { id: "loose-a", suit: "wan", rank: 1, x: 80, y: 80, layer: 2, blockedBy: [], location: "board", stackColumn: true, stackColumnId: "old-a", stackBridge: true, stackBridgeId: "old-bridge-a" },
+      { id: "loose-b", suit: "wan", rank: 2, x: 90, y: 90, layer: 2, blockedBy: [], location: "board", stackColumn: true, stackColumnId: "old-b", stackBridge: true, stackBridgeId: "old-bridge-b" },
+      { id: "loose-c", suit: "wan", rank: 3, x: 100, y: 100, layer: 2, blockedBy: [], location: "board", stackColumn: true, stackColumnId: "old-c", stackBridge: true, stackBridgeId: "old-bridge-c" },
+      { id: "loose-d", suit: "tong", rank: 1, x: 110, y: 110, layer: 2, blockedBy: [], location: "board", stackColumn: true, stackColumnId: "old-d", stackBridge: true, stackBridgeId: "old-bridge-d" },
+      { id: "loose-e", suit: "tong", rank: 2, x: 120, y: 120, layer: 2, blockedBy: [], location: "board", stackColumn: true, stackColumnId: "old-e", stackBridge: true, stackBridgeId: "old-bridge-e" },
+      { id: "loose-f", suit: "tong", rank: 3, x: 130, y: 130, layer: 2, blockedBy: [], location: "board", stackColumn: true, stackColumnId: "old-f", stackBridge: true, stackBridgeId: "old-bridge-f" },
+    ];
+    model.state = createPrototypeState(repeatedLooseTiles, [], { slotLimit: 8, riverLimit: 3 });
+    repeatedLooseTiles.slice(0, 3).forEach((tile, index) => shakeLooseMountainTile(tile, index, 3));
+    repeatedLooseTiles.slice(3, 6).forEach((tile, index) => shakeLooseMountainTile(tile, index, 3));
+    const looseTileSnapshots = repeatedLooseTiles.map((tile) => ({
+      id: tile.id,
+      x: tile.x,
+      y: tile.y,
+      stackOrder: tile.stackOrder,
+      loose: Boolean(tile.looseMountainTile && !tile.stackColumn && !tile.stackBridge),
+      available: !isTileBlocked(tile.id),
+    }));
+    const overlapPairs = countLooseOverlapPairs(repeatedLooseTiles);
+
+    const coverUnder = { id: "cover-under", suit: "wan", rank: 8, x: 220, y: 180, layer: 0, blockedBy: [], location: "board" };
+    const coverLoose = { id: "cover-loose", suit: "wan", rank: 9, x: 220, y: 180, layer: 0, blockedBy: [], location: "board" };
+    model.state = createPrototypeState([coverUnder, coverLoose], [], { slotLimit: 8, riverLimit: 3 });
+    shakeLooseMountainTile(coverLoose, 0, 1);
+    coverLoose.x = coverUnder.x;
+    coverLoose.y = coverUnder.y;
+    const looseLayoutResult = {
+      overlapPairs,
+      looseTiles: looseTileSnapshots,
+      coveredByLooseBlocked: isTileBlocked("cover-under"),
+      coverLooseAvailable: !isTileBlocked("cover-loose"),
+    };
+
     ({
       river: riverResult,
       fullSlotWithRiver,
@@ -1630,6 +1708,7 @@ function readPrototypeRiverKongHuSummary(): PrototypeRiverKongHuSummary {
       bugang: bugangResult,
       gang: gangResult,
       hu: huResult,
+      looseLayout: looseLayoutResult,
     });
 
     function createPrototypeState(tiles, slot = [], options = {}) {
@@ -1670,6 +1749,18 @@ function readPrototypeRiverKongHuSummary(): PrototypeRiverKongHuSummary {
         count: meld.count,
         source: meld.source,
       }));
+    }
+
+    function countLooseOverlapPairs(tiles) {
+      let pairs = 0;
+      for (let leftIndex = 0; leftIndex < tiles.length; leftIndex += 1) {
+        for (let rightIndex = leftIndex + 1; rightIndex < tiles.length; rightIndex += 1) {
+          if (getMountainVisualOverlapRatio(tiles[leftIndex], tiles[rightIndex], tiles) >= BLOCKED_COVER_RATIO) {
+            pairs += 1;
+          }
+        }
+      }
+      return pairs;
     }
   `, context) as PrototypeRiverKongHuSummary;
 }

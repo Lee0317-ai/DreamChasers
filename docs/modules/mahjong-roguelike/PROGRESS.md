@@ -1,7 +1,20 @@
 # 胡了卜进展
 
+## 2026-06-03
+
+- 创建并完成 T105 胡了卜震落牌平铺和遮挡点击修复。
+- 根因确认：`shakeLooseMountainTile` 使用本次开山的局部 `index` 计算落点，重复 `杠 / 胡` 会复用同一组坐标；运行态遮挡检测又跳过 `looseMountainTile`，导致震落牌盖住普通牌时下层普通牌仍可点击。
+- 修复后震落牌使用全局递增 `looseMountainDropIndex` 进入桌面平铺层，连续多次开山不会互相叠起；震落牌会清理旧 `stackColumn / stackBridge / blockedBy` 元数据，保持自身可点击入槽。
+- 普通牌遮挡检测已计入震落牌：如果震落牌视觉上盖住普通下层牌，下层牌不可点击；震落牌自身仍不被阻塞。
+- 已同步 `/games/hulebu-demo/index.html` 静态发布副本，并保留 `/games/hulebu-demo/config/*.json` 绝对 fetch 路径。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config`；`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w apps/web -- hulebu`；HTML 内联脚本 `node --check`；Kimi WebBridge 行为检查；390px Chrome 截图和 DOM 布局检查。
+
 ## 2026-06-02
 
+- 创建 T103 胡了卜立体窄腰牌山模板设计。根据 Lee 提供的高堆叠参考图，确认只借鉴结构关系，不复制原图美术、牌面、颜色、文案或具体布局。
+- T103 设计稿推荐后续新增 `悬台窄腰 / suspended-waist` 模板：上层大平台制造压迫感，中段 1-2 条窄腰形成释放瓶颈，底部 2-3 个支撑柱作为后期目标，左右侧向散牌提供干扰和恢复入口。实现顺序建议为调牌器验证、再进入第 8-10 关随机池、最后评估是否同步发布副本和 Cocos 共享生成器。
+- 完成 T104 胡了卜悬台窄腰模板调牌器实现。`suspended-waist` 已加入 HTML 原型和站内静态调牌器，中文名为 `悬台窄腰`，结构区域包含 `top-platform / waist / support-column / side-scatter`。
+- T104 暂不把 `suspended-waist` 加入默认玩家页 auto 随机池；当前只通过 `/games/hulebu-demo/tuner.html?template=suspended-waist&level=10&seed=waist-check` 进行调牌器验证。Kimi WebBridge 桌面验证生成 240 张牌、首轮可点 8 张、同组最多露出 2 张；390px 截图保存到 `/tmp/hulebu-t104-suspended-waist-mobile.png`。
 - 完成 T098 胡了卜朋友 Demo 第 5-10 关渐进难度曲线。
 - 默认玩家 Demo 前 4 关教学保持不变，第 5-10 关新增 difficulty profile，牌量从 `72 / 96 / 132 / 168 / 210 / 240` 逐步上升，堆叠深度从 `3` 提高到 `6`，字牌权重从 `12` 提高到 `40`。
 - 第 5 关标题直接显示“正式入门”，不再从教学关后直接进入 240 张高压牌山；第 10 关在朋友 Demo 中作为“综合高压”压力关，不叠正式 Boss 目标和胡包，调牌器和正式配置仍保留原 Boss 配置。

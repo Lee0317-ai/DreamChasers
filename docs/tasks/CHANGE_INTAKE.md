@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-06-02
+**最后更新**：2026-06-03
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,96 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260603-03：统一账号中心、产品型工具入口和 AI Gateway 规划
+
+- 提出人：Lee
+- 提出时间：2026-06-03
+- 背景：Lee 希望把 `拾光 TimePick` 和 `镜界 Wonderland` 作为工具站下的独立产品型工具接入。两个产品可以各自有登录入口，也可以从产品进入主站；同时平台后续需要统一用户账号、积分、订阅、API Key、LLM 调用、provider 配置和模型账号池。现有工程里，AI 修图已有 provider adapter 雏形；拾光使用 Supabase Auth；镜界使用 FastAPI JWT 和多 provider 环境变量，需要先形成平台级规划。
+- 目标：新增 T108，先完成平台账号中心、工具站产品分层、独立产品型工具接入、AI Gateway 和 BYOK 模型来源规划，不进入开发。规划需要明确平台额度、用户临时 Key、外部 Gateway BYOK、自建加密 Key Vault 和本地连接器五类模型来源，并为后续账号中心 MVP、产品 token exchange、LLM provider 协议和模型账号池预留扩展口。
+- 不做：不开发账号、登录、SSO、产品接入或 AI Gateway 代码；不迁移拾光或镜界现有账号；不接入真实模型 API；不实现支付、订阅、充值、模型账号池或 Key Vault；不修改 `apps/**`, `packages/**`, `deploy/**` 或任何产品代码。
+- 用户价值：用户可以免费使用网站，也可以选择订阅/充值使用平台 AI 能力，或自带模型能力；拾光、镜界作为工具站产品保持独立体验，同时共享平台账号、权益和 AI 能力。
+- 涉及模块：平台账号中心 / 工具站 / 独立产品型工具 / AI Gateway / BYOK / LLM provider。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T108-platform-account-ai-gateway-planning.md`, `docs/tasks/claims/T108-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-06-03-platform-account-ai-gateway-design.md`, `docs/progress/2026-06-03-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`；后续实现可能影响 `apps/web/prisma/**`, `apps/web/src/lib/auth/**`, `apps/web/src/app/api/auth/**`, `apps/web/src/lib/ai/**`, `apps/web/src/app/api/ai/**`, `apps/web/src/components/portal-data.ts` 和拾光/镜界各自接入层。
+- 是否影响另一方任务：本次只做规划文档，不修改 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围；后续进入实现时会影响平台共享能力，需要单独拆分任务和确认文件边界。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：形成可评估规划设计稿，覆盖工具站产品分层、统一账号中心、多处登录入口、产品 token exchange、AI Gateway、模型来源、BYOK 隐私方案、provider 协议、阶段拆分和风险；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：推荐采用 `工具站统一归口 + 产品独立入口 + 自建账号中心 + 统一 AI Gateway`。账号中心使用 Next.js、Prisma/Postgres 和 Auth.js；模型能力支持 `platform_pool`, `user_ephemeral_key`, `external_gateway_byok`, `user_encrypted_vault`, `local_connector` 五类来源。第一版只做平台额度和用户临时 Key 预留，外部 Gateway BYOK 和本地连接器后置。
+- 处理结论：已入任务池
+- 对应任务编号：T108
+
+### IDEA-20260603-02：AI 面试助手和虚拟面试规划
+
+- 提出人：Lee
+- 提出时间：2026-06-03
+- 背景：Lee 希望新增一个网页 AI 工具，用户输入岗位 JD、求职者简历和补充信息，支持上传简历图片，系统自动生成面试题、参考答案和可下载 HTML 报告。后续讨论确认该工具需要同时服务面试官和面试者，并支持进入虚拟面试，由大模型根据用户回答动态追问和复盘。
+- 目标：新增 T106，先完成具体规划文档和模块文档，不进入开发。规划需要评估该功能是否适合挂在网页小工具里，并明确双入口、参数配置、HTML 下载报告、文本虚拟面试、合规边界和后续拆分路线；后续可扩展简历优化建议，并在面试题纲中补充专业领域实战例子和行业用法说明。
+- 不做：不开发业务代码；不接入真实大模型 API；不实现实时语音面试；不实现简历优化改写；不新增账号、历史记录、企业筛选或 ATS 接入；不修改 PDF 工具箱、AI 修图、胡了卜游戏、部署或数据库模型。
+- 用户价值：面试者可以根据岗位和简历得到精准题目、回答框架、追问风险和虚拟面试复盘；面试官可以得到结构化问题、追问链、评分卡和不合规问题提醒。
+- 涉及模块：AI 面试助手 / 网页工具频道 / AI 能力工具 / 虚拟面试 / HTML 下载报告。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T106-ai-interview-coach-planning.md`, `docs/tasks/claims/T106-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-06-03-ai-interview-coach-design.md`, `docs/modules/ai-interview-coach/**`, `docs/progress/2026-06-03-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`；后续如进入开发，可能影响 `apps/web/src/app/tools/ai-interview-coach/**`, `apps/web/src/modules/tools/ai-interview-coach/**`, `apps/web/src/app/api/tools/ai-interview-coach/**`, `apps/web/src/components/portal-data.ts`。
+- 是否影响另一方任务：否。本次只做规划文档，不修改 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围；后续如进入开发，需要单独领取并确认工具频道共享入口文件。
+- 是否需要新增任务：是
+- 建议优先级：P2
+- 验收标准：形成可评估规划设计稿，覆盖产品定位、MVP 范围、用户流程、差异化、AI 能力拆分、技术可行性、合规边界、商业化和阶段拆分；建立 `docs/modules/ai-interview-coach/` 必备模块文档；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：推荐作为网页小工具候选方向入池，定位为 `AI 面试助手：生成面试作战包，进入虚拟面试，下载复盘报告`。第一版先做文本报告和文本虚拟面试，使用结构化 JSON 中间层和固定 HTML 模板，不直接让模型生成整页 HTML；实时语音、历史记录和企业筛选后置。后续增强可加入简历优化建议，并让面试提纲补充专业领域的简单实战例子、行业用法说明和可迁移回答素材。
+- 处理结论：已入任务池
+- 对应任务编号：T106, T107
+
+### IDEA-20260603-01：胡了卜震落牌平铺和遮挡点击修复
+
+- 提出人：Lee
+- 提出时间：2026-06-03
+- 背景：Lee 试玩站内发布版时发现，重复几次 `胡` 和 `杠` 后，震落到桌面的牌会重新叠在一起；同时视觉上被盖住的下层牌仍然可以点击，破坏“只有露出的牌可点”的核心规则。
+- 目标：新增 T105，修复默认玩家 Demo 和站内静态副本中的震落牌落点与点击判定。震落牌应进入桌面平铺层，连续多次开山也不能互相堆叠；任何视觉上被更高层牌明显盖住的普通牌都不可点击，震落牌自身仍保持可点击入槽。
+- 不做：不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不新增正式动画、音效或美术；不调整 `杠` 震落 1 张、`胡` 震落 3 张的数量；不改变牌河、补杠、胡牌或记牌器玩法口径。
+- 用户价值：避免玩家看到“掉下来的牌又叠起来”的违和反馈，并恢复堆叠消除最基本的可点击可信度：被盖住就不能点，露出来才可以点。
+- 涉及模块：胡了卜 / 默认玩家 Demo / 开山震落牌 / 遮挡点击判定 / Web 静态发布副本。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T105-hulebu-loose-tile-layer-blocking-fix.md`, `docs/tasks/claims/T105-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-03-lee.md`, `docs/completion/**`
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的胡了卜 HTML 试玩原型、站内静态副本和共享测试，不碰 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：连续多次 `杠 / 胡` 触发的震落牌在桌面平铺层有稳定不重叠落点；震落牌不保留旧堆叠列、桥接或 blocker 元数据；震落牌自身可点击入槽；被普通牌或震落牌明显盖住的下层普通牌不可点击；默认原型和 `/games/hulebu-demo/index.html` 静态副本同步；共享测试、脚本语法、Web 接入测试、浏览器桌面/移动复测、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补 VM 回归测试，复现“多次震落牌重叠”和“被震落牌覆盖的下层牌仍可点”。根因方向为 `shakeLooseMountainTile` 复用局部偏移且清空了遮挡关系，同时运行态遮挡检测忽略了 `looseMountainTile`。实现时增加单调递增的震落牌平铺序号和桌面网格落点，清理旧堆叠元数据；运行态普通牌遮挡检测计入震落牌，震落牌自身仍直接可点。
+- 处理结论：已入任务池
+- 对应任务编号：T105
+
+### IDEA-20260602-08：胡了卜悬台窄腰模板调牌器实现
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：T103 已确认可以借鉴高堆叠参考图的结构方向，推荐先做 `悬台窄腰 / suspended-waist` 模板，并先接入调牌器验证，不直接替换默认朋友试玩关。
+- 目标：新增 T104，在当前 HTML 试玩原型中新增 `suspended-waist` 牌山模板。该模板可在调牌器下拉和 URL 参数中选择，静态发布副本同步该模板供站内调牌器验证；默认玩家页 auto 随机池暂不加入该模板，避免影响 `/games/hulebu` 当前发布试玩体验。
+- 不做：不复制参考图美术、颜色、牌面或文案；不把 `suspended-waist` 加入默认朋友试玩第 5-10 关 auto 池；不修改 Cocos 正式工程；不修改共享 Graph-based 生成器；不调整 T101 当前 `杠 / 胡 / 记牌器 / 动作栏` 玩法。
+- 用户价值：让 Lee 可以在调牌器中实际查看和测试立体窄腰牌山的读牌压力，确认可读性、入口数量和视觉冲击后，再决定是否进入默认高压关。
+- 涉及模块：胡了卜 / 配置驱动试玩原型 / 调牌器 / Web 静态发布副本 / 密集牌山模板。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `apps/web/public/games/hulebu-demo/tuner.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `packages/shared/src/mahjong-config.test.ts`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T104-hulebu-suspended-waist-template.md`, `docs/tasks/claims/T104-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/plans/2026-06-02-hulebu-suspended-waist-template.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`, `docs/completion/**`
+- 是否影响另一方任务：否。T104 只改 Lee 负责的胡了卜 HTML 原型、静态游戏副本、共享测试和模块文档，不碰 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`suspended-waist` 出现在调牌器模板列表和 URL 参数归一化中；模板中文名为 `悬台窄腰`；模板锚点包含顶部平台、窄腰、支撑柱和侧向散牌四类结构标记；指定 `template=suspended-waist` 可生成密集牌山，首轮可点保持 3-8 张且无完整答案组直接露出；默认玩家页 auto 模板池暂不包含该模板；静态发布副本同步且保留绝对配置路径；共享测试、脚本语法、Web 接入测试、浏览器桌面/移动检查、文档同步和 diff 检查通过。
+- AI 初步方案：按 TDD 先补静态测试和 VM 测试，要求模板 ID、中文名、结构角色字段、调牌器 URL 指定模板和默认 auto 池排除。实现时扩展 `MOUNTAIN_TEMPLATE_IDS` 和 `MOUNTAIN_TEMPLATE_LABELS`，新增 `getMountainTemplateAnchors("suspended-waist")` 锚点，并为锚点加 `templateRegion` 数据用于验证结构；生成后同步 `apps/web/public/games/hulebu-demo/` 静态副本。
+- 处理结论：已入任务池
+- 对应任务编号：T104
+
+### IDEA-20260602-07：胡了卜立体窄腰牌山模板参考
+
+- 提出人：Lee
+- 提出时间：2026-06-02
+- 背景：Lee 看到一张“羊了个羊”式高堆叠截图，结构上有上层大平台、中段窄腰、底部支撑柱和侧向散牌，视觉上比当前普通平铺/环形/阶梯模板更有立体压迫感。该参考可以用于胡了卜牌山结构方向，但不能照搬原图美术、牌面符号、文案或具体布局。
+- 目标：新增 T103，先做结构设计规格，抽象出适合胡了卜的“高层平台 + 中段窄腰 + 底部支撑柱 + 侧向散牌”牌山模板方向，并明确它在默认朋友 Demo、调牌器、后续 Cocos 共享生成器中的落地顺序。
+- 不做：不直接复制参考图的美术、颜色、牌面、文案或关卡形状；不立即修改 `/games/hulebu` 当前发布试玩版；不修改 Cocos 正式工程；不扩大到 PDF、AI 修图、AI 搜索、埋点或部署。
+- 用户价值：让牌山看起来更像“真实堆起来的难关”，提升视觉冲击、层级期待和记忆压力；同时通过窄腰和支撑柱控制可点击入口，让玩家不再感觉只是平面随机散牌。
+- 涉及模块：胡了卜 / 密集牌山模板 / 默认玩家 Demo / 调牌器 / 后续 Cocos 牌山生成器。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T103-hulebu-stacked-waist-mountain-template-design.md`, `docs/tasks/claims/T103-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/specs/2026-06-02-hulebu-stacked-waist-mountain-template-design.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-02-lee.md`
+- 是否影响另一方任务：否。T103 先做胡了卜牌山模板设计，不修改 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：形成可执行设计规格，说明参考图可借鉴的结构点、必须规避的照搬点、推荐模板方案、参数范围、可读性约束、难度用途、默认 Demo 与调牌器落地顺序、后续实现任务边界；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：推荐先设计一个 `suspended-waist / 悬台窄腰` 模板：上层平台提供视觉压迫，中段 1-2 条窄腰形成释放瓶颈，底部 2-3 个支撑柱提供后期解锁目标，侧边少量散牌作为干扰和恢复入口。实现应先进入调牌器可选模板，确认读牌清楚后再加入第 8-10 关随机池；当前发布版不自动替换，避免影响已准备发给朋友的稳定试玩。
+- 处理结论：已入任务池
+- 对应任务编号：T103
 
 ### IDEA-20260602-06：胡了卜开山数量和一屏操作反馈
 

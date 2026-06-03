@@ -57,6 +57,14 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain('"islands"');
     expect(playHtml).toContain('"canyon"');
     expect(playHtml).toContain('"staircase"');
+    expect(playHtml).toContain('"suspended-waist"');
+    expect(playHtml).toContain('"suspended-waist": "悬台窄腰"');
+    expect(playHtml).toContain("templateRegion");
+    expect(playHtml).toContain("function getSuspendedWaistTemplateAnchors");
+    expect(playHtml).toContain('"top-platform"');
+    expect(playHtml).toContain('"waist"');
+    expect(playHtml).toContain('"support-column"');
+    expect(playHtml).toContain('"side-scatter"');
     expect(playHtml).toContain("const MOUNTAIN_AUTO_TEMPLATE_IDS = [");
     expect(playHtml).toContain("function getAutoMountainTemplateIds()");
     expect(playHtml).toContain("function getMountainTemplateGenerationCandidates");
