@@ -1,0 +1,23 @@
+# T073 部署脚本阶段日志增强完成记录
+
+- 完成时间：2026-05-27
+- 负责人：Codex / 开发 B
+- 修改文件：
+  - `deploy/update-deploy.sh`
+  - `docs/tasks/items/T073-deploy-stage-logs.md`
+  - `docs/tasks/claims/T073-codex.md`
+  - `docs/progress/2026-05-27.md`
+- 实现内容：
+  - 为部署脚本增加统一阶段级开始/完成日志。
+  - 覆盖本地打包、远端目录准备、源码上传、Compose 和脚本上传、远程部署、公网健康检查等步骤。
+  - 保留原有细粒度动作日志，便于同时看阶段和细节。
+- 验证命令：
+  - `bash -n deploy/update-deploy.sh`
+  - `git diff --check`
+  - `npm run docs:sync`
+- 验证结果：
+  - 语法通过。
+  - 差异检查通过。
+  - 文档同步通过。
+- 遗留问题：
+  - `ssh/scp` 仍依赖网络和服务器可达性。

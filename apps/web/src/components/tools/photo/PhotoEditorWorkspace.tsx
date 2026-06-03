@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- Local blob previews cannot be handled by the Next image optimizer. */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   aiSuggestions,
   photoTools,
@@ -49,8 +49,8 @@ const initialSliders: SliderState = {
   zoom: 100,
   fontSize: 32,
   opacity: 100,
-  borderWidth: 24,
-  radius: 8,
+  borderWidth: 0,
+  radius: 0,
   natural: 80,
   detail: 90
 };
@@ -62,6 +62,7 @@ const cropHandles: CropResizeHandle[] = ["nw", "n", "ne", "e", "se", "s", "sw", 
 type UploadedPhoto = {
   name: string;
   aspectRatio: string;
+  file: File;
   sizeLabel: string;
   dimensions: string;
   objectUrl: string;
@@ -118,6 +119,7 @@ type EditorSnapshot = {
   appliedCrop: ReturnType<typeof useCropBox>["rect"] | null;
   borderColor: string;
   pan: { x: number; y: number };
+  photo: UploadedPhoto | null;
   selectedBorderId: PhotoBorderId;
   selectedFilterId: PhotoFilterId;
   selectedStickerId: string | null;
@@ -143,12 +145,52 @@ type ExportState = {
   textElements: TextElement[];
 };
 
+type ToolParameterProps = {
+  activeTool: PhotoTool;
+  borderColor: string;
+  cropRatio: CropRatio;
+  onAddSticker: (preset: PhotoStickerPreset) => void;
+  onAddText: () => void;
+  onApplyCrop: () => void;
+  onBorderColorChange: (color: string) => void;
+  onCropRatioChange: (ratio: CropRatio) => void;
+  onDeleteSelectedText: () => void;
+  onResetCrop: () => void;
+  onRunBeauty: () => void;
+  onSelectBorder: (preset: PhotoBorderPreset) => void;
+  onSelectFilter: (filterId: PhotoFilterId) => void;
+  onTextBoldChange: (isBold: boolean) => void;
+  onTextColorChange: (color: string) => void;
+  onTextContentChange: (content: string) => void;
+  onTextFontChange: (fontFamily: string) => void;
+  onTextItalicChange: (isItalic: boolean) => void;
+  onUploadCustomSticker: () => void;
+  selectedBorderId: PhotoBorderId;
+  selectedFilterId: PhotoFilterId;
+  selectedSticker: StickerElement | null;
+  selectedText: TextElement | null;
+  beautyError: string | null;
+  beautyStatusMessage: string | null;
+  isBeautyRunning: boolean;
+  sliders: SliderState;
+  stickerCategories: StickerCategoryList;
+  stickerPresets: PhotoStickerPreset[];
+  textBold: boolean;
+  textColor: string;
+  textFont: string;
+  textItalic: boolean;
+  textValue: string;
+  updateSlider: (key: keyof SliderState, value: number) => void;
+};
+
 const rainbowTextColor = "rainbow-gradient";
 const rainbowTextGradient = "linear-gradient(90deg, #ef4444, #f97316, #facc15, #22c55e, #06b6d4, #2563eb, #9333ea)";
 const defaultStickerSize = 36;
 const minStickerSize = 32;
 const maxStickerSize = 180;
 const customStickerAccept = "image/png,image/jpeg,image/webp,image/svg+xml";
+const photoFileInputId = "photo-editor-file-input";
+const customStickerInputId = "photo-editor-custom-sticker-input";
 
 const textColors: TextOption[] = [
   { label: "黑", value: "#111111" },
@@ -178,6 +220,15 @@ const defaultTextContent = "DreamChasers";
 const defaultBorderColor = "#ffffff";
 const defaultPolaroidColor = "#fffaf0";
 const maxHistorySize = 50;
+const beautyPollingIntervalMs = 2000;
+const aiDrawingLoaderSrc = "/images/photo-editor/ai-drawing-loader.webp";
+
+type BeautyTaskResponse = {
+  error?: string;
+  message?: string;
+  status?: "queued" | "processing" | "succeeded" | "failed";
+  taskId?: string;
+};
 
 export function PhotoEditorWorkspace() {
   const [activeToolId, setActiveToolId] = useState<PhotoToolId | null>("adjust");
@@ -186,9 +237,12 @@ export function PhotoEditorWorkspace() {
   const [appliedCrop, setAppliedCrop] = useState<ReturnType<typeof useCropBox>["rect"] | null>(null);
   const [isOriginalCompare, setIsOriginalCompare] = useState(false);
   const [selectedFilterId, setSelectedFilterId] = useState<PhotoFilterId>("natural");
-  const [selectedBorderId, setSelectedBorderId] = useState<PhotoBorderId>("minimal-white");
+  const [selectedBorderId, setSelectedBorderId] = useState<PhotoBorderId>("none");
   const [borderColor, setBorderColor] = useState(defaultBorderColor);
   const [photo, setPhoto] = useState<UploadedPhoto | null>(null);
+  const [isBeautyRunning, setIsBeautyRunning] = useState(false);
+  const [beautyError, setBeautyError] = useState<string | null>(null);
+  const [beautyStatusMessage, setBeautyStatusMessage] = useState<string | null>(null);
   const [textDraft, setTextDraft] = useState(defaultTextContent);
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
@@ -200,25 +254,18 @@ export function PhotoEditorWorkspace() {
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [undoStack, setUndoStack] = useState<EditorSnapshot[]>([]);
   const [redoStack, setRedoStack] = useState<EditorSnapshot[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const customStickerInputRef = useRef<HTMLInputElement>(null);
   const customStickerUrlsRef = useRef<string[]>([]);
+  const photoObjectUrlsRef = useRef<string[]>([]);
   const photoCanvasRef = useRef<HTMLDivElement>(null);
   const { isDragging, pan, panHandlers, resetPan, setCanvasPan } = useCanvasPan();
   const cropBox = useCropBox();
 
   useEffect(() => {
     return () => {
-      if (photo?.objectUrl) {
-        URL.revokeObjectURL(photo.objectUrl);
-      }
-    };
-  }, [photo]);
-
-  useEffect(() => {
-    return () => {
       customStickerUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
       customStickerUrlsRef.current = [];
+      photoObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      photoObjectUrlsRef.current = [];
     };
   }, []);
 
@@ -227,10 +274,126 @@ export function PhotoEditorWorkspace() {
     [activeToolId]
   );
 
+  const applyCrop = () => {
+    setAppliedCrop(cropBox.rect);
+  };
+
+  const changeCropRatio = (ratio: CropRatio) => {
+    cropBox.setRatio(ratio);
+  };
+
+  const resetCrop = () => {
+    setAppliedCrop(null);
+    cropBox.reset();
+    setSliders((current) => ({ ...current, rotate: 0 }));
+  };
+
+  const addSticker = (preset: PhotoStickerPreset) => {
+    const id = `sticker-${Date.now()}`;
+    setStickerElements((current) => [
+      ...current,
+      {
+        aspectRatio: 1,
+        id,
+        name: preset.name,
+        rotation: 0,
+        size: defaultStickerSize,
+        src: preset.src,
+        x: 50,
+        y: 50
+      }
+    ]);
+    setSelectedStickerId(id);
+  };
+
+  const selectFilter = (filterId: PhotoFilterId) => {
+    setSelectedFilterId(filterId);
+  };
+
+  const addText = () => {
+    const content = textDraft.trim();
+
+    if (!content) {
+      return;
+    }
+    const id = `text-${Date.now()}`;
+    setTextElements((current) => [
+      ...current,
+      {
+        color: textColor,
+        content,
+        fontFamily: textFont,
+        fontSize: sliders.fontSize,
+        id,
+        isBold: textBold,
+        isItalic: textItalic,
+        opacity: sliders.opacity,
+        rotation: 0,
+        x: 50,
+        y: 50
+      }
+    ]);
+    setSelectedTextId(id);
+  };
+
+  const deleteSelectedText = () => {
+    if (!selectedTextId) {
+      return;
+    }
+    setTextElements((current) => current.filter((element) => element.id !== selectedTextId));
+    setSelectedTextId(null);
+  };
+
+  const changeTextColor = (color: string) => {
+    setTextColor(color);
+    if (selectedTextId) {
+      setTextElements((current) =>
+        current.map((element) => (element.id === selectedTextId ? { ...element, color } : element))
+      );
+    }
+  };
+
+  const changeTextBold = (isBold: boolean) => {
+    setTextBold(isBold);
+    if (selectedTextId) {
+      setTextElements((current) =>
+        current.map((element) => (element.id === selectedTextId ? { ...element, isBold } : element))
+      );
+    }
+  };
+
+  const changeTextFont = (fontFamily: string) => {
+    setTextFont(fontFamily);
+    if (selectedTextId) {
+      setTextElements((current) =>
+        current.map((element) => (element.id === selectedTextId ? { ...element, fontFamily } : element))
+      );
+    }
+  };
+
+  const changeTextItalic = (isItalic: boolean) => {
+    setTextItalic(isItalic);
+    if (selectedTextId) {
+      setTextElements((current) =>
+        current.map((element) => (element.id === selectedTextId ? { ...element, isItalic } : element))
+      );
+    }
+  };
+
+  const changeTextContent = (content: string) => {
+    setTextDraft(content);
+    if (selectedTextId) {
+      setTextElements((current) =>
+        current.map((element) => (element.id === selectedTextId ? { ...element, content } : element))
+      );
+    }
+  };
+
   const createSnapshot = (): EditorSnapshot => ({
     appliedCrop,
     borderColor,
     pan,
+    photo,
     selectedBorderId,
     selectedFilterId,
     selectedStickerId,
@@ -249,6 +412,7 @@ export function PhotoEditorWorkspace() {
     setAppliedCrop(snapshot.appliedCrop);
     setBorderColor(snapshot.borderColor);
     setCanvasPan(snapshot.pan);
+    setPhoto(snapshot.photo);
     setSelectedBorderId(snapshot.selectedBorderId);
     setSelectedFilterId(snapshot.selectedFilterId);
     setSelectedStickerId(snapshot.selectedStickerId);
@@ -335,21 +499,26 @@ export function PhotoEditorWorkspace() {
     }));
   };
 
-  const openFilePicker = () => {
-    fileInputRef.current?.click();
-  };
+  const openFilePicker = useCallback(() => {
+    document.getElementById(photoFileInputId)?.click();
+  }, []);
 
-  const openCustomStickerPicker = () => {
-    customStickerInputRef.current?.click();
-  };
+  const openCustomStickerPicker = useCallback(() => {
+    document.getElementById(customStickerInputId)?.click();
+  }, []);
 
   const clearCustomStickers = () => {
     customStickerUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
     customStickerUrlsRef.current = [];
   };
 
+  const clearPhotoObjectUrls = () => {
+    photoObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+    photoObjectUrlsRef.current = [];
+  };
+
   const handleSelectTool = (tool: PhotoToolId) => {
-    if (photoTools.find((item) => item.id === tool)?.group === "ai") {
+    if (photoTools.find((item) => item.id === tool)?.group === "ai" && tool !== "beauty") {
       notifyAiUnavailable();
       return;
     }
@@ -365,25 +534,14 @@ export function PhotoEditorWorkspace() {
       return;
     }
 
-    const objectUrl = URL.createObjectURL(file);
-    const image = new Image();
-
-    image.onload = () => {
+    void createUploadedPhoto(file).then((uploadedPhoto) => {
+      clearPhotoObjectUrls();
+      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
       setUndoStack([]);
       setRedoStack([]);
-      setPhoto((current) => {
-        if (current?.objectUrl) {
-          URL.revokeObjectURL(current.objectUrl);
-        }
-
-        return {
-          name: file.name,
-          aspectRatio: `${image.naturalWidth} / ${image.naturalHeight}`,
-          sizeLabel: formatFileSize(file.size),
-          dimensions: `${image.naturalWidth} x ${image.naturalHeight}`,
-          objectUrl
-        };
-      });
+      setPhoto(uploadedPhoto);
+      setBeautyError(null);
+      setBeautyStatusMessage(null);
       resetPan();
       setAppliedCrop(null);
       setIsOriginalCompare(false);
@@ -400,14 +558,81 @@ export function PhotoEditorWorkspace() {
       setSelectedStickerId(null);
       setSliders(initialSliders);
       cropBox.reset();
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-    };
-
-    image.src = objectUrl;
+    })
+      .catch(() => {
+        window.alert("图片加载失败，请重新选择。");
+      });
     event.target.value = "";
+  };
+
+  const handleRunBeauty = async () => {
+    if (!photo || isBeautyRunning) {
+      return;
+    }
+
+    setIsBeautyRunning(true);
+    setBeautyError(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("image", photo.file, photo.file.name || photo.name);
+      formData.set("beautyType", "natural_portrait");
+
+      const response = await fetch("/api/tools/photo/beauty", {
+        body: formData,
+        method: "POST"
+      });
+
+      const task = (await response.json()) as BeautyTaskResponse;
+
+      if (!response.ok || !task.taskId) {
+        throw new Error(task.error || "AI 美颜任务创建失败，请稍后再试。");
+      }
+
+      setBeautyStatusMessage(task.message || "AI 美颜任务已提交。");
+      const completedTask = await waitForBeautyTask(task.taskId, setBeautyStatusMessage);
+
+      if (completedTask.status === "failed") {
+        throw new Error(completedTask.error || "AI 美颜生成失败，请稍后再试。");
+      }
+
+      const resultResponse = await fetch(`/api/tools/photo/beauty/tasks/${task.taskId}/result`, {
+        method: "GET"
+      });
+
+      if (!resultResponse.ok) {
+        throw new Error(await readBeautyError(resultResponse));
+      }
+
+      const resultBlob = await resultResponse.blob();
+      const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || "portrait"}-beauty.png`, {
+        type: resultBlob.type || "image/png"
+      });
+      const uploadedPhoto = await createUploadedPhoto(resultFile);
+      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+      commitHistory();
+      setPhoto(uploadedPhoto);
+      resetPan();
+      setAppliedCrop(null);
+      setIsOriginalCompare(false);
+      setSelectedFilterId("natural");
+      setSliders((current) => ({
+        ...current,
+        brightness: 0,
+        contrast: 0,
+        filterStrength: 0,
+        rotate: 0,
+        saturation: 0,
+        temperature: 0,
+        zoom: 100
+      }));
+      cropBox.reset();
+    } catch (error) {
+      setBeautyError(error instanceof Error ? error.message : "AI 美颜生成失败，请稍后再试。");
+    } finally {
+      setIsBeautyRunning(false);
+      setBeautyStatusMessage(null);
+    }
   };
 
   const handleCustomStickerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -460,15 +685,15 @@ export function PhotoEditorWorkspace() {
       <input
         accept="image/*"
         className={styles.fileInput}
+        id={photoFileInputId}
         onChange={handleFileChange}
-        ref={fileInputRef}
         type="file"
       />
       <input
         accept={customStickerAccept}
         className={styles.fileInput}
+        id={customStickerInputId}
         onChange={handleCustomStickerChange}
-        ref={customStickerInputRef}
         type="file"
       />
       <div className={styles.workspace} onClick={() => setSelectedTextId(null)}>
@@ -482,132 +707,80 @@ export function PhotoEditorWorkspace() {
           onUndo={handleUndo}
           photo={photo}
         />
-        <ToolRail activeToolId={activeToolId} onSelectTool={handleSelectTool} onUploadClick={openFilePicker} photo={photo} />
+        <ToolRail
+          activeToolId={activeToolId}
+          beautyError={beautyError}
+          beautyStatusMessage={beautyStatusMessage}
+          borderColor={borderColor}
+          cropRatio={cropBox.ratio}
+          isBeautyRunning={isBeautyRunning}
+          onAddSticker={addSticker}
+          onAddText={addText}
+          onApplyCrop={applyCrop}
+          onBorderColorChange={setBorderColor}
+          onCropRatioChange={changeCropRatio}
+          onDeleteSelectedText={deleteSelectedText}
+          onResetCrop={resetCrop}
+          onRunBeauty={handleRunBeauty}
+          onSelectBorder={handleSelectBorder}
+          onSelectFilter={selectFilter}
+          onSelectTool={handleSelectTool}
+          onTextBoldChange={changeTextBold}
+          onTextColorChange={changeTextColor}
+          onTextContentChange={changeTextContent}
+          onTextFontChange={changeTextFont}
+          onTextItalicChange={changeTextItalic}
+          onUploadClick={openFilePicker}
+          onUploadCustomSticker={openCustomStickerPicker}
+          photo={photo}
+          selectedBorderId={selectedBorderId}
+          selectedFilterId={selectedFilterId}
+          selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
+          selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
+          sliders={sliders}
+          textBold={textBold}
+          textColor={textColor}
+          textFont={textFont}
+          textItalic={textItalic}
+          textValue={textElements.find((element) => element.id === selectedTextId)?.content ?? textDraft}
+          updateSlider={updateSlider}
+        />
         {activeTool ? (
           <ParameterPanel
             activeTool={activeTool}
-            cropRatio={cropBox.ratio}
-            onApplyCrop={() => {
-              setAppliedCrop(cropBox.rect);
-            }}
-            onCropRatioChange={(ratio) => {
-              cropBox.setRatio(ratio);
-            }}
-            onResetCrop={() => {
-              setAppliedCrop(null);
-              cropBox.reset();
-              setSliders((current) => ({ ...current, rotate: 0 }));
-            }}
-            onAddSticker={(preset) => {
-              const id = `sticker-${Date.now()}`;
-              setStickerElements((current) => [
-                ...current,
-                {
-                  aspectRatio: 1,
-                  id,
-                  name: preset.name,
-                  rotation: 0,
-                  size: defaultStickerSize,
-                  src: preset.src,
-                  x: 50,
-                  y: 50
-                }
-              ]);
-              setSelectedStickerId(id);
-            }}
-            onSelectFilter={(filterId) => {
-              setSelectedFilterId(filterId);
-            }}
-            onAddText={() => {
-              const content = textDraft.trim();
-
-              if (!content) {
-                return;
-              }
-              const id = `text-${Date.now()}`;
-              setTextElements((current) => [
-                ...current,
-                {
-                  color: textColor,
-                  content,
-                  fontFamily: textFont,
-                  fontSize: sliders.fontSize,
-                  id,
-                  isBold: textBold,
-                  isItalic: textItalic,
-                  opacity: sliders.opacity,
-                  rotation: 0,
-                  x: 50,
-                  y: 50
-                }
-              ]);
-              setSelectedTextId(id);
-            }}
-            onDeleteSelectedText={() => {
-              if (!selectedTextId) {
-                return;
-              }
-              setTextElements((current) => current.filter((element) => element.id !== selectedTextId));
-              setSelectedTextId(null);
-            }}
-            onTextColorChange={(color) => {
-              setTextColor(color);
-              if (selectedTextId) {
-                setTextElements((current) =>
-                  current.map((element) => (element.id === selectedTextId ? { ...element, color } : element))
-                );
-              }
-            }}
-            onTextBoldChange={(isBold) => {
-              setTextBold(isBold);
-              if (selectedTextId) {
-                setTextElements((current) =>
-                  current.map((element) => (element.id === selectedTextId ? { ...element, isBold } : element))
-                );
-              }
-            }}
-            onTextFontChange={(fontFamily) => {
-              setTextFont(fontFamily);
-              if (selectedTextId) {
-                setTextElements((current) =>
-                  current.map((element) => (element.id === selectedTextId ? { ...element, fontFamily } : element))
-                );
-              }
-            }}
-            onTextItalicChange={(isItalic) => {
-              setTextItalic(isItalic);
-              if (selectedTextId) {
-                setTextElements((current) =>
-                  current.map((element) => (element.id === selectedTextId ? { ...element, isItalic } : element))
-                );
-              }
-            }}
-            onTextContentChange={(content) => {
-              setTextDraft(content);
-              if (selectedTextId) {
-                setTextElements((current) =>
-                  current.map((element) => (element.id === selectedTextId ? { ...element, content } : element))
-                );
-              }
-            }}
-            selectedFilterId={selectedFilterId}
-            selectedBorderId={selectedBorderId}
-            selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
-            selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
+            beautyError={beautyError}
+            beautyStatusMessage={beautyStatusMessage}
             borderColor={borderColor}
-            onBorderColorChange={(color) => {
-              setBorderColor(color);
-            }}
+            cropRatio={cropBox.ratio}
+            isBeautyRunning={isBeautyRunning}
+            onAddSticker={addSticker}
+            onAddText={addText}
+            onApplyCrop={applyCrop}
+            onBorderColorChange={setBorderColor}
+            onCropRatioChange={changeCropRatio}
+            onDeleteSelectedText={deleteSelectedText}
+            onResetCrop={resetCrop}
+            onRunBeauty={handleRunBeauty}
             onSelectBorder={handleSelectBorder}
-            textColor={textColor}
+            onSelectFilter={selectFilter}
+            onTextBoldChange={changeTextBold}
+            onTextColorChange={changeTextColor}
+            onTextContentChange={changeTextContent}
+            onTextFontChange={changeTextFont}
+            onTextItalicChange={changeTextItalic}
+            onUploadCustomSticker={openCustomStickerPicker}
+            selectedBorderId={selectedBorderId}
+            selectedFilterId={selectedFilterId}
+            selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
+            selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
+            sliders={sliders}
+            stickerCategories={photoStickerCategories}
+            stickerPresets={photoStickerPresets}
             textBold={textBold}
+            textColor={textColor}
             textFont={textFont}
             textItalic={textItalic}
             textValue={textElements.find((element) => element.id === selectedTextId)?.content ?? textDraft}
-            stickerCategories={photoStickerCategories}
-            stickerPresets={photoStickerPresets}
-            sliders={sliders}
-            onUploadCustomSticker={openCustomStickerPicker}
             updateSlider={updateSlider}
             onPointerDown={(event) => {
               if (activeTool.id === "text") {
@@ -624,8 +797,10 @@ export function PhotoEditorWorkspace() {
         <Stage
           activeTool={activeTool}
           appliedCrop={appliedCrop}
+          beautyStatusMessage={beautyStatusMessage}
           cropBox={cropBox}
           cropRatio={cropBox.ratio}
+          isBeautyRunning={isBeautyRunning}
           isOriginalCompare={isOriginalCompare}
           isDragging={isDragging}
           onToggleOriginalCompare={() => setIsOriginalCompare((current) => !current)}
@@ -732,6 +907,70 @@ function loadImage(src: string) {
   });
 }
 
+function createUploadedPhoto(file: File) {
+  const objectUrl = URL.createObjectURL(file);
+
+  return new Promise<UploadedPhoto>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      resolve({
+        name: file.name,
+        aspectRatio: `${image.naturalWidth} / ${image.naturalHeight}`,
+        dimensions: `${image.naturalWidth} x ${image.naturalHeight}`,
+        file,
+        objectUrl,
+        sizeLabel: formatFileSize(file.size)
+      });
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("图片加载失败。"));
+    };
+    image.src = objectUrl;
+  });
+}
+
+async function readBeautyError(response: Response) {
+  try {
+    const payload = (await response.json()) as unknown;
+
+    if (payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string") {
+      return payload.error;
+    }
+  } catch {
+    return "AI 美颜生成失败，请稍后再试。";
+  }
+
+  return "AI 美颜生成失败，请稍后再试。";
+}
+
+async function waitForBeautyTask(taskId: string, onStatus: (message: string) => void) {
+  while (true) {
+    await delay(beautyPollingIntervalMs);
+
+    const response = await fetch(`/api/tools/photo/beauty/tasks/${taskId}`, {
+      method: "GET"
+    });
+    const task = (await response.json()) as BeautyTaskResponse;
+
+    if (!response.ok) {
+      throw new Error(task.error || "AI 美颜任务查询失败，请稍后再试。");
+    }
+
+    if (task.message) {
+      onStatus(task.message);
+    }
+
+    if (task.status === "succeeded" || task.status === "failed") {
+      return task;
+    }
+  }
+}
+
+function delay(milliseconds: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
 function drawRoundedRect(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) {
   const safeRadius = Math.min(Math.max(radius, 0), width / 2, height / 2);
 
@@ -748,49 +987,39 @@ function drawRoundedRect(context: CanvasRenderingContext2D, x: number, y: number
   context.closePath();
 }
 
-function drawCoverImage(context: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, width: number, height: number) {
-  const imageRatio = image.naturalWidth / image.naturalHeight;
-  const targetRatio = width / height;
-  let sourceWidth = image.naturalWidth;
-  let sourceHeight = image.naturalHeight;
-  let sourceX = 0;
-  let sourceY = 0;
-
-  if (imageRatio > targetRatio) {
-    sourceWidth = image.naturalHeight * targetRatio;
-    sourceX = (image.naturalWidth - sourceWidth) / 2;
-  } else {
-    sourceHeight = image.naturalWidth / targetRatio;
-    sourceY = (image.naturalHeight - sourceHeight) / 2;
-  }
-
-  context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
-}
-
 function drawPreviewImage(context: CanvasRenderingContext2D, image: HTMLImageElement, state: ExportState, width: number, height: number) {
   const imageRatio = image.naturalWidth / image.naturalHeight;
   const targetRatio = width / height;
-  let sourceWidth = image.naturalWidth;
-  let sourceHeight = image.naturalHeight;
-  let sourceX = 0;
-  let sourceY = 0;
+  let drawWidth = width;
+  let drawHeight = height;
 
   if (imageRatio > targetRatio) {
-    sourceWidth = image.naturalHeight * targetRatio;
-    sourceX = (image.naturalWidth - sourceWidth) / 2;
+    drawHeight = width / imageRatio;
   } else {
-    sourceHeight = image.naturalWidth / targetRatio;
-    sourceY = (image.naturalHeight - sourceHeight) / 2;
+    drawWidth = height * imageRatio;
   }
 
   if (state.appliedCrop) {
-    sourceX += (state.appliedCrop.left / 100) * sourceWidth;
-    sourceY += (state.appliedCrop.top / 100) * sourceHeight;
-    sourceWidth *= state.appliedCrop.width / 100;
-    sourceHeight *= state.appliedCrop.height / 100;
+    const sourceX = (state.appliedCrop.left / 100) * image.naturalWidth;
+    const sourceY = (state.appliedCrop.top / 100) * image.naturalHeight;
+    const sourceWidth = (state.appliedCrop.width / 100) * image.naturalWidth;
+    const sourceHeight = (state.appliedCrop.height / 100) * image.naturalHeight;
+    const sourceRatio = sourceWidth / sourceHeight;
+
+    drawWidth = width;
+    drawHeight = height;
+
+    if (sourceRatio > targetRatio) {
+      drawHeight = width / sourceRatio;
+    } else {
+      drawWidth = height * sourceRatio;
+    }
+
+    context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+    return;
   }
 
-  context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, -width / 2, -height / 2, width, height);
+  context.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 }
 
 function clampColor(value: number) {
@@ -1066,14 +1295,78 @@ function TopBar({
 
 function ToolRail({
   activeToolId,
+  beautyError,
+  beautyStatusMessage,
+  borderColor,
+  cropRatio,
+  isBeautyRunning,
+  onAddSticker,
+  onAddText,
+  onApplyCrop,
+  onBorderColorChange,
+  onCropRatioChange,
+  onDeleteSelectedText,
+  onResetCrop,
+  onRunBeauty,
+  onSelectBorder,
+  onSelectFilter,
   onSelectTool,
+  onTextBoldChange,
+  onTextColorChange,
+  onTextContentChange,
+  onTextFontChange,
+  onTextItalicChange,
   onUploadClick,
-  photo
+  onUploadCustomSticker,
+  photo,
+  selectedBorderId,
+  selectedFilterId,
+  selectedSticker,
+  selectedText,
+  sliders,
+  textBold,
+  textColor,
+  textFont,
+  textItalic,
+  textValue,
+  updateSlider
 }: {
   activeToolId: PhotoToolId | null;
+  beautyError: string | null;
+  beautyStatusMessage: string | null;
+  borderColor: string;
+  cropRatio: CropRatio;
+  isBeautyRunning: boolean;
+  onAddSticker: (preset: PhotoStickerPreset) => void;
+  onAddText: () => void;
+  onApplyCrop: () => void;
+  onBorderColorChange: (color: string) => void;
+  onCropRatioChange: (ratio: CropRatio) => void;
+  onDeleteSelectedText: () => void;
+  onResetCrop: () => void;
+  onRunBeauty: () => void;
+  onSelectBorder: (preset: PhotoBorderPreset) => void;
+  onSelectFilter: (filterId: PhotoFilterId) => void;
   onSelectTool: (tool: PhotoToolId) => void;
+  onTextBoldChange: (isBold: boolean) => void;
+  onTextColorChange: (color: string) => void;
+  onTextContentChange: (content: string) => void;
+  onTextFontChange: (fontFamily: string) => void;
+  onTextItalicChange: (isItalic: boolean) => void;
   onUploadClick: () => void;
+  onUploadCustomSticker: () => void;
   photo: UploadedPhoto | null;
+  selectedBorderId: PhotoBorderId;
+  selectedFilterId: PhotoFilterId;
+  selectedSticker: StickerElement | null;
+  selectedText: TextElement | null;
+  sliders: SliderState;
+  textBold: boolean;
+  textColor: string;
+  textFont: string;
+  textItalic: boolean;
+  textValue: string;
+  updateSlider: (key: keyof SliderState, value: number) => void;
 }) {
   return (
     <aside className={styles.toolsPanel} aria-label="修图工具">
@@ -1104,27 +1397,86 @@ function ToolRail({
             <div className={styles.toolList}>
               {photoTools
                 .filter((tool) => tool.group === group.id)
-                .map((tool) => (
-                  <button
-                    className={`${styles.navTool} ${activeToolId === tool.id ? styles.active : ""} ${tool.group === "ai" ? styles.disabledTool : ""}`}
-                    aria-disabled={tool.group === "ai"}
-                    key={tool.id}
-                    onClick={() => onSelectTool(tool.id)}
-                    type="button"
-                  >
-                    <span className={styles.toolIcon}>{tool.icon}</span>
-                    <span className={styles.toolText}>
-                      <strong>{tool.name}</strong>
-                      <small>{tool.description}</small>
-                    </span>
-                    {tool.cost ? <span className={styles.aiCost}>未开放</span> : <span className={styles.chev}>›</span>}
-                  </button>
-                ))}
+                .map((tool) => {
+                  const isActive = activeToolId === tool.id;
+                  const isUnavailableAiTool = tool.group === "ai" && tool.id !== "beauty";
+                  return (
+                    <div className={styles.toolItem} key={tool.id}>
+                      <button
+                        className={`${styles.navTool} ${isActive ? styles.active : ""} ${isUnavailableAiTool ? styles.disabledTool : ""}`}
+                        aria-disabled={isUnavailableAiTool}
+                        aria-expanded={isUnavailableAiTool ? undefined : isActive}
+                        onClick={() => onSelectTool(tool.id)}
+                        type="button"
+                      >
+                        <span className={styles.toolIcon}>{tool.icon}</span>
+                        <span className={styles.toolText}>
+                          <strong>{tool.name}</strong>
+                          <small>{tool.description}</small>
+                        </span>
+                        {tool.cost ? <span className={styles.aiCost}>{tool.id === "beauty" ? "1 次" : "未开放"}</span> : <span className={styles.chev}>›</span>}
+                      </button>
+                      {isActive ? (
+                        <ParameterInlinePanel
+                          activeTool={tool}
+                          beautyError={beautyError}
+                          beautyStatusMessage={beautyStatusMessage}
+                          borderColor={borderColor}
+                          cropRatio={cropRatio}
+                          isBeautyRunning={isBeautyRunning}
+                          onAddSticker={onAddSticker}
+                          onAddText={onAddText}
+                          onApplyCrop={onApplyCrop}
+                          onBorderColorChange={onBorderColorChange}
+                          onCropRatioChange={onCropRatioChange}
+                          onDeleteSelectedText={onDeleteSelectedText}
+                          onResetCrop={onResetCrop}
+                          onRunBeauty={onRunBeauty}
+                          onSelectBorder={onSelectBorder}
+                          onSelectFilter={onSelectFilter}
+                          onTextBoldChange={onTextBoldChange}
+                          onTextColorChange={onTextColorChange}
+                          onTextContentChange={onTextContentChange}
+                          onTextFontChange={onTextFontChange}
+                          onTextItalicChange={onTextItalicChange}
+                          onUploadCustomSticker={onUploadCustomSticker}
+                          selectedBorderId={selectedBorderId}
+                          selectedFilterId={selectedFilterId}
+                          selectedSticker={selectedSticker}
+                          selectedText={selectedText}
+                          sliders={sliders}
+                          stickerCategories={photoStickerCategories}
+                          stickerPresets={photoStickerPresets}
+                          textBold={textBold}
+                          textColor={textColor}
+                          textFont={textFont}
+                          textItalic={textItalic}
+                          textValue={textValue}
+                          updateSlider={updateSlider}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })}
             </div>
           </section>
         ))}
       </div>
     </aside>
+  );
+}
+
+function ParameterInlinePanel(props: ToolParameterProps) {
+  return (
+    <div className={styles.mobileParamPanel} onClick={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
+      <div className={styles.mobileParamHead}>
+        <strong>{props.activeTool.name}</strong>
+        <span>{props.activeTool.panelDescription}</span>
+      </div>
+      <div className={styles.mobileParamBody}>
+        <ToolParameterContent {...props} />
+      </div>
+    </div>
   );
 }
 
@@ -1137,6 +1489,7 @@ function ParameterPanel({
   onCropRatioChange,
   onDeleteSelectedText,
   onResetCrop,
+  onRunBeauty,
   onBorderColorChange,
   onSelectBorder,
   onSelectFilter,
@@ -1150,6 +1503,9 @@ function ParameterPanel({
   selectedBorderId,
   selectedSticker,
   selectedText,
+  beautyError,
+  beautyStatusMessage,
+  isBeautyRunning,
   stickerCategories,
   stickerPresets,
   textColor,
@@ -1171,6 +1527,7 @@ function ParameterPanel({
   onCropRatioChange: (ratio: CropRatio) => void;
   onDeleteSelectedText: () => void;
   onResetCrop: () => void;
+  onRunBeauty: () => void;
   onBorderColorChange: (color: string) => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
@@ -1184,6 +1541,9 @@ function ParameterPanel({
   selectedBorderId: PhotoBorderId;
   selectedSticker: StickerElement | null;
   selectedText: TextElement | null;
+  beautyError: string | null;
+  beautyStatusMessage: string | null;
+  isBeautyRunning: boolean;
   stickerCategories: StickerCategoryList;
   stickerPresets: PhotoStickerPreset[];
   textColor: string;
@@ -1206,72 +1566,159 @@ function ParameterPanel({
       </div>
 
       <div className={styles.paramBody}>
-        {activeTool.id === "adjust" ? (
-          <AdjustPanel sliders={sliders} updateSlider={updateSlider} />
-        ) : null}
-        {activeTool.id === "crop" ? (
-          <CropPanel
-            cropRatio={cropRatio}
-            onApplyCrop={onApplyCrop}
-            onCropRatioChange={onCropRatioChange}
-            onResetCrop={onResetCrop}
-            sliders={sliders}
-            updateSlider={updateSlider}
-          />
-        ) : null}
-        {activeTool.id === "filter" ? (
-          <FilterPanel
-            selectedFilterId={selectedFilterId}
-            onSelectFilter={onSelectFilter}
-            sliders={sliders}
-            updateSlider={updateSlider}
-          />
-        ) : null}
-        {activeTool.id === "text" ? (
-          <TextPanel
-            onAddText={onAddText}
-            onDeleteSelectedText={onDeleteSelectedText}
-            onTextColorChange={onTextColorChange}
-            onTextBoldChange={onTextBoldChange}
-            onTextContentChange={onTextContentChange}
-            onTextItalicChange={onTextItalicChange}
-            onTextFontChange={onTextFontChange}
-            selectedText={selectedText}
-            sliders={sliders}
-            textColor={textColor}
-            textBold={textBold}
-            textFont={textFont}
-            textItalic={textItalic}
-            textValue={textValue}
-            updateSlider={updateSlider}
-          />
-        ) : null}
-        {activeTool.id === "sticker" ? (
-          <StickerPanel
-            onAddSticker={onAddSticker}
-            onUploadCustomSticker={onUploadCustomSticker}
-            selectedSticker={selectedSticker}
-            stickerCategories={stickerCategories}
-            stickerGroups={photoStickerGroups}
-            stickerPresets={stickerPresets}
-          />
-        ) : null}
-        {activeTool.id === "border" ? (
-          <BorderPanel
-            borderColor={borderColor}
-            onBorderColorChange={onBorderColorChange}
-            onSelectBorder={onSelectBorder}
-            selectedBorderId={selectedBorderId}
-            sliders={sliders}
-            updateSlider={updateSlider}
-          />
-        ) : null}
-        {activeTool.id === "beauty" ? <BeautyPanel sliders={sliders} updateSlider={updateSlider} /> : null}
-        {activeTool.id === "background" ? <BackgroundPanel /> : null}
-        {activeTool.id === "repair" ? <RepairPanel /> : null}
-        {activeTool.id === "enhance" ? <EnhancePanel /> : null}
+        <ToolParameterContent
+          activeTool={activeTool}
+          borderColor={borderColor}
+          cropRatio={cropRatio}
+          onAddSticker={onAddSticker}
+          onAddText={onAddText}
+          onApplyCrop={onApplyCrop}
+          onBorderColorChange={onBorderColorChange}
+          onCropRatioChange={onCropRatioChange}
+          onDeleteSelectedText={onDeleteSelectedText}
+          onResetCrop={onResetCrop}
+          onRunBeauty={onRunBeauty}
+          onSelectBorder={onSelectBorder}
+          onSelectFilter={onSelectFilter}
+          onTextBoldChange={onTextBoldChange}
+          onTextColorChange={onTextColorChange}
+          onTextContentChange={onTextContentChange}
+          onTextFontChange={onTextFontChange}
+          onTextItalicChange={onTextItalicChange}
+          onUploadCustomSticker={onUploadCustomSticker}
+          selectedBorderId={selectedBorderId}
+          selectedFilterId={selectedFilterId}
+          selectedSticker={selectedSticker}
+          selectedText={selectedText}
+          beautyError={beautyError}
+          beautyStatusMessage={beautyStatusMessage}
+          isBeautyRunning={isBeautyRunning}
+          sliders={sliders}
+          stickerCategories={stickerCategories}
+          stickerPresets={stickerPresets}
+          textBold={textBold}
+          textColor={textColor}
+          textFont={textFont}
+          textItalic={textItalic}
+          textValue={textValue}
+          updateSlider={updateSlider}
+        />
       </div>
     </aside>
+  );
+}
+
+function ToolParameterContent({
+  activeTool,
+  borderColor,
+  cropRatio,
+  onAddSticker,
+  onAddText,
+  onApplyCrop,
+  onBorderColorChange,
+  onCropRatioChange,
+  onDeleteSelectedText,
+  onResetCrop,
+  onRunBeauty,
+  onSelectBorder,
+  onSelectFilter,
+  onTextBoldChange,
+  onTextColorChange,
+  onTextContentChange,
+  onTextFontChange,
+  onTextItalicChange,
+  onUploadCustomSticker,
+  selectedBorderId,
+  selectedFilterId,
+  selectedSticker,
+  selectedText,
+  beautyError,
+  beautyStatusMessage,
+  isBeautyRunning,
+  sliders,
+  stickerCategories,
+  stickerPresets,
+  textBold,
+  textColor,
+  textFont,
+  textItalic,
+  textValue,
+  updateSlider
+}: ToolParameterProps) {
+  return (
+    <>
+      {activeTool.id === "adjust" ? (
+        <AdjustPanel sliders={sliders} updateSlider={updateSlider} />
+      ) : null}
+      {activeTool.id === "crop" ? (
+        <CropPanel
+          cropRatio={cropRatio}
+          onApplyCrop={onApplyCrop}
+          onCropRatioChange={onCropRatioChange}
+          onResetCrop={onResetCrop}
+          sliders={sliders}
+          updateSlider={updateSlider}
+        />
+      ) : null}
+      {activeTool.id === "filter" ? (
+        <FilterPanel
+          selectedFilterId={selectedFilterId}
+          onSelectFilter={onSelectFilter}
+          sliders={sliders}
+          updateSlider={updateSlider}
+        />
+      ) : null}
+      {activeTool.id === "text" ? (
+        <TextPanel
+          onAddText={onAddText}
+          onDeleteSelectedText={onDeleteSelectedText}
+          onTextColorChange={onTextColorChange}
+          onTextBoldChange={onTextBoldChange}
+          onTextContentChange={onTextContentChange}
+          onTextItalicChange={onTextItalicChange}
+          onTextFontChange={onTextFontChange}
+          selectedText={selectedText}
+          sliders={sliders}
+          textColor={textColor}
+          textBold={textBold}
+          textFont={textFont}
+          textItalic={textItalic}
+          textValue={textValue}
+          updateSlider={updateSlider}
+        />
+      ) : null}
+      {activeTool.id === "sticker" ? (
+        <StickerPanel
+          onAddSticker={onAddSticker}
+          onUploadCustomSticker={onUploadCustomSticker}
+          selectedSticker={selectedSticker}
+          stickerCategories={stickerCategories}
+          stickerGroups={photoStickerGroups}
+          stickerPresets={stickerPresets}
+        />
+      ) : null}
+      {activeTool.id === "border" ? (
+        <BorderPanel
+          borderColor={borderColor}
+          onBorderColorChange={onBorderColorChange}
+          onSelectBorder={onSelectBorder}
+          selectedBorderId={selectedBorderId}
+          sliders={sliders}
+          updateSlider={updateSlider}
+        />
+      ) : null}
+      {activeTool.id === "beauty" ? (
+        <BeautyPanel
+          beautyError={beautyError}
+          beautyStatusMessage={beautyStatusMessage}
+          isBeautyRunning={isBeautyRunning}
+          onRunBeauty={onRunBeauty}
+        />
+      ) : null}
+      {activeTool.id === "background" ? <BackgroundPanel /> : null}
+      {activeTool.id === "repair" ? <RepairPanel /> : null}
+      {activeTool.id === "enhance" ? <EnhancePanel /> : null}
+    </>
   );
 }
 
@@ -1638,22 +2085,30 @@ function BorderPanel({
 }
 
 function BeautyPanel({
-  sliders,
-  updateSlider
+  beautyError,
+  beautyStatusMessage,
+  isBeautyRunning,
+  onRunBeauty
 }: {
-  sliders: SliderState;
-  updateSlider: (key: keyof SliderState, value: number) => void;
+  beautyError: string | null;
+  beautyStatusMessage: string | null;
+  isBeautyRunning: boolean;
+  onRunBeauty: () => void;
 }) {
   return (
     <>
       <AiPanelCard
-        action="生成自然美颜"
         detail="自然优化肤色、暗沉与细节，默认保留人物五官和脸型，不做夸张改变。"
         title="AI 美颜 · 消耗 1 次"
       />
       <div className={styles.controlCard}>
-        <Slider label="自然程度" max={100} min={0} suffix="%" value={sliders.natural} onChange={(value) => updateSlider("natural", value)} />
-        <Slider label="细节保留" max={100} min={0} suffix="%" value={sliders.detail} onChange={(value) => updateSlider("detail", value)} />
+        <p className={styles.sectionLabel}>美颜类型</p>
+        <OptionGrid activeOption="自然人像增强" options={["自然人像增强"]} />
+        <button className={styles.runButton} disabled={isBeautyRunning} onClick={onRunBeauty} type="button">
+          {isBeautyRunning ? "生成中..." : "生成自然美颜"}
+        </button>
+        {beautyStatusMessage ? <p className={styles.statusText}>{beautyStatusMessage}</p> : null}
+        {beautyError ? <p className={styles.errorText}>{beautyError}</p> : null}
       </div>
     </>
   );
@@ -1742,8 +2197,10 @@ function AiPanelCard({ action, detail, title }: { action?: string; detail: strin
 function Stage({
   activeTool,
   appliedCrop,
+  beautyStatusMessage,
   cropBox,
   cropRatio,
+  isBeautyRunning,
   isOriginalCompare,
   isDragging,
   onToggleOriginalCompare,
@@ -1774,8 +2231,10 @@ function Stage({
 }: {
   activeTool: PhotoTool | null;
   appliedCrop: ReturnType<typeof useCropBox>["rect"] | null;
+  beautyStatusMessage: string | null;
   cropBox: ReturnType<typeof useCropBox>;
   cropRatio: CropRatio;
+  isBeautyRunning: boolean;
   isOriginalCompare: boolean;
   isDragging: boolean;
   onToggleOriginalCompare: () => void;
@@ -1826,12 +2285,14 @@ function Stage({
     "--photo-frame-radius": `${sliders.radius}px`,
     "--photo-frame-width": `${borderWidth}px`,
     aspectRatio: photo?.aspectRatio,
+    height: "min(100%, 82vh)",
     ...baseShellStyle,
     ...appliedCropStyle.shellStyle
   };
   const showCropBox = activeTool?.id === "crop";
   const canResizeCrop = cropRatio === "自由";
   const borderClassName = activeBorder.id.replace(/(^|-)([a-z])/g, (_, __, letter: string) => letter.toUpperCase());
+  const canvasPanHandlers = isBeautyRunning ? {} : panHandlers;
 
   return (
     <main className={styles.stage}>
@@ -1853,13 +2314,17 @@ function Stage({
         </div>
       </div>
 
-      <section className={styles.canvasWrap} aria-label="图片画布">
+      <section
+        aria-busy={isBeautyRunning}
+        aria-label="图片画布"
+        className={`${styles.canvasWrap} ${isBeautyRunning ? styles.lockedCanvas : ""}`}
+      >
         {photo ? (
           <div
             className={`${styles.photoShell} ${styles[`photoBorder${borderClassName}`]} ${isDragging ? styles.dragging : ""}`}
             data-photo-canvas
             ref={photoCanvasRef}
-            {...panHandlers}
+            {...canvasPanHandlers}
             onClick={(event) => {
               event.stopPropagation();
               onDeselectStickerElement();
@@ -1928,6 +2393,14 @@ function Stage({
             <small>选择一张图片开始编辑</small>
           </button>
         )}
+        {photo && isBeautyRunning ? (
+          <div className={styles.aiGeneratingOverlay} role="status" aria-live="polite">
+            <div className={styles.aiGeneratingPanel}>
+              <img alt="" className={styles.aiGeneratingCharacter} draggable={false} src={aiDrawingLoaderSrc} />
+              <p>{beautyStatusMessage || "正在进行自然人像增强。"}</p>
+            </div>
+          </div>
+        ) : null}
       </section>
     </main>
   );

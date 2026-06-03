@@ -1,0 +1,31 @@
+# T072 本地一键更新部署脚本完成记录
+
+- 完成时间：2026-05-27
+- 负责人：Codex / 开发 B
+- 修改文件：
+  - `deploy/update-deploy.sh`
+  - `deploy/README.md`
+  - `docs/operations/DEPLOYMENT.md`
+  - `docs/tasks/items/T072-local-update-deploy-script.md`
+  - `docs/tasks/claims/T072-codex.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/progress/2026-05-27.md`
+- 实现内容：
+  - 将部署脚本改为本地入口，支持本地打包、上传、远程构建、重启和健康检查。
+  - 增加远程模式分支，修复脚本在服务器端误走本地逻辑的问题。
+  - 补齐健康检查重试、临时目录清理和本地打包噪声抑制。
+  - 更新部署手册，说明项目根目录直接执行即可部署。
+- 验证命令：
+  - `bash -n deploy/update-deploy.sh`
+  - `git diff --check`
+  - `npm run docs:sync`
+  - `bash deploy/update-deploy.sh`
+  - `curl -I http://47.90.180.92`
+- 验证结果：
+  - 脚本语法通过。
+  - 文档同步通过。
+  - 本地执行脚本成功完成远端部署，最终退出码为 0。
+  - 公网 `http://47.90.180.92` 可继续访问。
+- 遗留问题：
+  - 本地未配置 SSH key 时仍需要输入服务器密码。
+  - 服务器构建速度仍受云主机性能影响。
