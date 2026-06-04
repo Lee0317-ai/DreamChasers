@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rebuild the DreamChasers account center UI around the Open Design account system while keeping phase one grounded in email magic-link login and existing account data.
+**Goal:** Rebuild the DreamChasers account center UI around the Open Design account system while keeping phase one grounded in email registration verification, email-password login, and existing account data.
 
 **Architecture:** Add focused account view-model helpers for navigation, security state, and AI model-source copy, then render those helpers through shared account shell components. Route files remain thin entry points; reusable account UI lives under `apps/web/src/components/account/`, pure account rules live under `apps/web/src/lib/account/`, and account CSS lives in a named section of `apps/web/src/app/globals.css`.
 
@@ -14,7 +14,7 @@
 
 This plan implements phase one only:
 
-- Email magic-link login with the new visual treatment.
+- Email registration verification and email-password login with the new visual treatment.
 - Account shell and navigation.
 - Account overview, profile, security, devices, AI credits, recharge, subscription, LLM config, API keys, and product access pages.
 - LLM config as a visible phase-two control surface that explains AI Gateway model sources without saving provider keys.
@@ -975,13 +975,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Link>
         <p className="account-kicker">EMAIL SIGN-IN</p>
         <h1>欢迎回来</h1>
-        <p className="account-auth-copy">输入邮箱后，我们会发送一次性登录链接。第一阶段使用邮箱验证统一 DreamChasers 和产品型工具身份。</p>
+        <p className="account-auth-copy">使用注册邮箱和密码登录。新账号需要先完成邮箱验证，验证邮件只在注册阶段发送。</p>
 
         <form action={requestEmailLogin} className="account-auth-form">
           <input name="returnUrl" type="hidden" value={returnUrl} />
           <label htmlFor="email">邮箱</label>
           <input id="email" name="email" placeholder="you@example.com" required type="email" />
-          <button type="submit">发送登录邮件</button>
+          <button type="submit">登录账号</button>
         </form>
 
         <p className="account-auth-note">密码、短信和社交登录会在对应安全能力上线后加入。</p>
@@ -1217,7 +1217,7 @@ export default async function AccountSecurityPage() {
       <AccountSection title="安全能力">
         <div className="account-list">
           <div className="account-list-row"><strong>邮箱验证</strong><AccountStatusPill tone="success">已启用</AccountStatusPill></div>
-          <div className="account-list-row"><strong>登录邮件冷却</strong><AccountStatusPill tone="success">已启用</AccountStatusPill></div>
+          <div className="account-list-row"><strong>注册验证邮件冷却</strong><AccountStatusPill tone="success">已启用</AccountStatusPill></div>
           <div className="account-list-row"><strong>密码登录</strong><AccountStatusPill>未启用</AccountStatusPill></div>
           <div className="account-list-row"><strong>手机号</strong><AccountStatusPill>未绑定</AccountStatusPill></div>
           <div className="account-list-row"><strong>二步验证</strong><AccountStatusPill>未开放</AccountStatusPill></div>
@@ -1782,7 +1782,7 @@ Update the implementation task item, claim, progress, and completion record with
 
 ```md
 - Implemented account shell and Open Design-derived account center pages.
-- First phase keeps email magic-link login.
+- First phase uses email registration verification and email-password login.
 - LLM config page maps T108 AI Gateway credential sources and does not store provider keys.
 - Verification passed: lint, typecheck, build, account tests, desktop browser check, mobile browser check.
 ```

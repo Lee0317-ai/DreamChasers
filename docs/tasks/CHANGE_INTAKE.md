@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-06-03
+**最后更新**：2026-06-04
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,42 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260604-19：账号认证补全找回密码、修改密码和重发验证邮件
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T135/T136 已把账号体系改成邮箱注册验证 + 邮箱密码登录，但还缺常规账号闭环：忘记密码后的邮件重置、已登录用户修改密码、未验证邮箱重发验证邮件。
+- 目标：新增 T138，一起实现 `/forgot-password`、`/reset-password`、账号安全页修改密码和重发验证邮件能力。
+- 不做：不做手机号、OAuth、TOTP、短信、设备强制下线、密码强度评分、历史密码复用检查、真实风控和验证码。
+- 用户价值：用户可以自助恢复账号、维护密码，并在注册验证邮件过期时重新完成邮箱验证。
+- 涉及模块：账号中心 / Auth.js / Prisma VerificationToken / 登录注册页面 / 安全页。
+- 可能影响文件：`apps/web/src/lib/auth/**`, `apps/web/src/app/login/**`, `apps/web/src/app/register/**`, `apps/web/src/app/forgot-password/**`, `apps/web/src/app/reset-password/**`, `apps/web/src/app/account/security/page.tsx`, `apps/web/src/app/globals.css`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：找回密码不泄露账号枚举；有效 token 可设置新密码；无效或过期 token 不能改密码；已登录用户可验证当前密码后修改密码；未验证邮箱可重发验证邮件；测试、类型检查、lint、构建、文档同步和 diff 检查通过。
+- AI 初步方案：复用 Auth.js `VerificationToken` 表承载密码重置 token，使用 `password-reset:<email>` identifier 区分用途；重置邮件和注册验证邮件共用 SMTP 发送能力；server actions 统一校验密码长度、确认密码和当前密码；页面沿用现有账号 auth panel 和安全页样式。
+- 处理结论：已入任务池
+- 对应任务编号：T138
+
+### IDEA-20260604-18：账号中心认证方式修正为邮箱注册验证和邮箱密码登录
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T133/T134 初版按邮箱 magic-link 日常登录规划账号中心第一阶段。Lee 明确修正：邮箱登入的意思是邮箱注册账号，并通过发邮件做验证；之后通过账号邮箱和密码登录。
+- 目标：合并到 T135 实现任务，把 `/login` 改为邮箱 + 密码登录，新增 `/register` 做邮箱注册、密码设置和验证邮件发送；邮件只承担注册邮箱验证，不作为日常登录方式。
+- 不做：不实现手机号、OAuth、TOTP、找回密码、密码修改、支付订阅、真实模型调用或 provider key 保存。
+- 用户价值：账号体系符合常规注册/登录认知，避免把邮箱验证误做成 magic-link 登录。
+- 涉及模块：账号中心 / Auth.js / Prisma User / 登录注册页面。
+- 可能影响文件：`apps/web/src/app/login/**`, `apps/web/src/app/register/**`, `apps/web/src/lib/auth/**`, `apps/web/prisma/schema.prisma`, `apps/web/src/generated/prisma/**`, `apps/web/src/app/account/security/page.tsx`, `apps/web/src/lib/account/**`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：否，合并到 T135。
+- 建议优先级：P0
+- 验收标准：注册页可设置密码并发送邮箱验证邮件；登录页只使用邮箱和密码；未验证邮箱不能登录；密码哈希存储；登录/注册页面桌面和移动端布局正常；测试、类型检查、lint 和构建通过。
+- AI 初步方案：为 `User` 增加 `passwordHash`，新增 scrypt 密码哈希工具；Auth.js 增加 Credentials provider 并切 JWT session；注册 action upsert 未验证用户密码哈希后调用 Nodemailer provider 发送验证邮件；登录 action 先校验密码和邮箱验证状态，再 credentials sign-in。
+- 处理结论：合并到已有任务
+- 对应任务编号：T135
 
 ### IDEA-20260604-17：账号统一中心页面体系重规划
 

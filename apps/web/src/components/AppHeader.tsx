@@ -7,7 +7,7 @@ export function AppHeader() {
   const pathname = usePathname();
   const isTools = pathname.startsWith("/tools");
   const isGames = pathname.startsWith("/games");
-  const isAccount = pathname.startsWith("/account") || pathname.startsWith("/login");
+  const isAccount = pathname.startsWith("/account") || pathname.startsWith("/login") || pathname.startsWith("/register");
 
   if (pathname === "/") {
     return null;

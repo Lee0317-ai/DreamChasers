@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ProductSessionManager } from "@/components/account/ProductSessionManager";
+import { AccountShell } from "@/components/account/AccountShell";
+import { AccountSection, AccountStatusPill } from "@/components/account/AccountUi";
 import { ensureDefaultProducts, getAccountDashboard } from "@/lib/account/account-data";
-import { signOutCurrentUser } from "@/lib/auth/actions";
+import { buildAccountInitial, buildSecuritySummary, formatAccountDate } from "@/lib/account/account-view-model";
 import { requireUser } from "@/lib/auth/session";
 
 export default async function AccountPage() {
@@ -13,65 +14,77 @@ export default async function AccountPage() {
     redirect("/login?returnUrl=/account");
   }
 
+  const initial = buildAccountInitial(account.name, account.email);
+  const security = buildSecuritySummary({
+    auditLogCount: account.auditLogs.length,
+    emailVerified: Boolean(account.emailVerified)
+  });
+
   return (
-    <main className="account-page">
-      <section className="account-hero">
-        <p className="account-eyebrow">Account Center</p>
-        <h1>账号中心</h1>
-        <p>统一管理 DreamChasers 主站、站内工具和后续独立产品型工具的身份与权益。</p>
-      </section>
-
-      <section className="account-grid">
-        <div className="account-panel account-profile-panel">
-          <div>
-            <p className="account-eyebrow">Profile</p>
-            <h2>{account.name}</h2>
-            <p className="account-muted">{account.email}</p>
-          </div>
-          <span className="account-badge">{account.emailVerified ? "邮箱已验证" : "等待验证"}</span>
+    <AccountShell email={account.email} initial={initial} name={account.name}>
+      <header className="account-page-heading">
+        <div>
+          <p className="account-kicker">Account Center</p>
+          <h1>下午好，{account.name}</h1>
+          <p className="account-muted">统一管理 DreamChasers 主站、AI 能力和产品型工具入口。</p>
         </div>
+        <Link className="account-button secondary" href="/account/profile">
+          编辑资料
+        </Link>
+      </header>
 
-        <div className="account-panel">
-          <p className="account-eyebrow">Credits</p>
+      <div className="account-stats-grid">
+        <div className="account-stat">
+          <p className="account-muted">安全等级</p>
+          <h2>{security.level}</h2>
+          <p className="account-muted">{security.description}</p>
+        </div>
+        <div className="account-stat">
+          <p className="account-muted">AI 积分</p>
           <h2>{account.creditBalance}</h2>
-          <p className="account-muted">平台权益账本余额。第一版不接真实支付。</p>
-          <Link className="account-secondary-link" href="/account/billing">
-            查看权益
+          <p className="account-muted">来自平台权益账本。</p>
+        </div>
+        <div className="account-stat">
+          <p className="account-muted">产品接入</p>
+          <h2>{products.length}</h2>
+          <p className="account-muted">可生成一次性产品 token。</p>
+        </div>
+      </div>
+
+      <AccountSection eyebrow="Quick Actions" title="快捷操作">
+        <div className="account-action-grid">
+          <Link className="account-action" href="/account/security">
+            <strong>账号安全</strong>
+            <p className="account-muted">查看邮箱验证、审计记录和退出登录。</p>
+          </Link>
+          <Link className="account-action" href="/account/ai/credits">
+            <strong>积分管理</strong>
+            <p className="account-muted">查看余额、配额和 AI 使用账本。</p>
+          </Link>
+          <Link className="account-action" href="/account/products">
+            <strong>产品接入</strong>
+            <p className="account-muted">为 TimePick 等产品生成短时 token。</p>
           </Link>
         </div>
+      </AccountSection>
 
-        <div className="account-panel">
-          <p className="account-eyebrow">Security</p>
-          <h2>安全记录</h2>
-          <p className="account-muted">查看登录、退出、API Key 和产品会话记录。</p>
-          <Link className="account-secondary-link" href="/account/security">
-            查看安全
-          </Link>
-        </div>
-      </section>
-
-      <ProductSessionManager products={products.map((product) => ({ name: product.name, slug: product.slug }))} />
-
-      <section className="account-panel">
-        <div className="account-panel-heading">
-          <div>
-            <p className="account-eyebrow">Recent Activity</p>
-            <h2>最近审计记录</h2>
-          </div>
-          <form action={signOutCurrentUser}>
-            <button type="submit">退出登录</button>
-          </form>
-        </div>
+      <AccountSection eyebrow="Recent Activity" title="最近审计记录">
         <div className="account-list">
-          {account.auditLogs.length === 0 ? <p className="account-muted">暂无审计记录。</p> : null}
+          {account.auditLogs.length === 0 ? <p className="account-empty">暂无审计记录。</p> : null}
           {account.auditLogs.map((log) => (
             <div className="account-list-row" key={log.id}>
               <strong>{log.action}</strong>
-              <span>{log.createdAt.toLocaleString("zh-CN")}</span>
+              <span>{formatAccountDate(log.createdAt)}</span>
             </div>
           ))}
         </div>
-      </section>
-    </main>
+      </AccountSection>
+
+      <AccountSection eyebrow="Status" title="账号状态">
+        <AccountStatusPill tone={account.emailVerified ? "success" : "warning"}>
+          {account.emailVerified ? "邮箱已验证" : "等待邮箱验证"}
+        </AccountStatusPill>
+      </AccountSection>
+    </AccountShell>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { requestEmailLogin } from "@/lib/auth/actions";
 import { sanitizeReturnUrl } from "@/lib/account/account-security";
+import { loginWithPassword } from "@/lib/auth/actions";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -16,20 +16,28 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="account-auth-page">
       <section className="account-auth-panel">
         <Link className="account-auth-logo" href="/tools">
-          DreamChasers
+          <span className="account-logo-mark">D</span>
+          <span>统一中心</span>
         </Link>
-        <p className="account-eyebrow">统一账号中心</p>
-        <h1>邮箱验证登录</h1>
-        <p className="account-auth-copy">输入邮箱后，我们会发送一次性登录链接。新邮箱验证成功后会自动创建平台账号。</p>
+        <p className="account-kicker">Email Password Sign-In</p>
+        <h1>欢迎回来</h1>
+        <p className="account-auth-copy">使用注册邮箱和密码登录。新账号需要先完成邮箱验证，验证邮件只在注册阶段发送。</p>
 
-        <form action={requestEmailLogin} className="account-auth-form">
+        <form action={loginWithPassword} className="account-auth-form">
           <input name="returnUrl" type="hidden" value={returnUrl} />
           <label htmlFor="email">邮箱</label>
           <input id="email" name="email" placeholder="you@example.com" required type="email" />
-          <button type="submit">发送登录邮件</button>
+          <label htmlFor="password">密码</label>
+          <input id="password" minLength={8} name="password" placeholder="输入密码" required type="password" />
+          <button type="submit">登录账号</button>
         </form>
 
-        <p className="account-auth-note">登录即表示你同意平台只使用该邮箱识别账号和同步工具权益。</p>
+        <p className="account-auth-note">
+          还没有账号？<Link className="account-text-link" href={`/register?returnUrl=${encodeURIComponent(returnUrl)}`}>先用邮箱注册并验证</Link>
+        </p>
+        <p className="account-auth-note">
+          忘记密码？<Link className="account-text-link" href="/forgot-password">发送重置邮件</Link>
+        </p>
       </section>
     </main>
   );
