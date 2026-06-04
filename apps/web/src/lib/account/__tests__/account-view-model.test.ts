@@ -8,14 +8,14 @@ describe("account-view-model", () => {
     expect(buildAccountInitial("", "")).toBe("U");
   });
 
-  it("summarizes phase-one security without claiming password or phone support", () => {
+  it("summarizes phase-one security without claiming phone or two-factor support", () => {
     expect(buildSecuritySummary({ auditLogCount: 3, emailVerified: true })).toEqual({
-      description: "邮箱验证已启用，最近有 3 条安全记录。",
+      description: "邮箱验证和密码登录已启用，最近有 3 条安全记录。",
       level: "基础",
       score: 2
     });
     expect(buildSecuritySummary({ auditLogCount: 0, emailVerified: false })).toEqual({
-      description: "邮箱仍在等待验证，请重新登录确认邮箱。",
+      description: "邮箱仍在等待验证，请先完成注册验证。",
       level: "待确认",
       score: 0
     });

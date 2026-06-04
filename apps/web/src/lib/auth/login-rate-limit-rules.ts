@@ -27,5 +27,5 @@ export function getLoginCooldownState(
 }
 
 export function buildLoginCooldownMessage(retryAfterSeconds: number) {
-  return `登录邮件发送过于频繁，请 ${retryAfterSeconds} 秒后再试。`;
+  return `验证邮件发送过于频繁，请 ${retryAfterSeconds} 秒后再试。`;
 }

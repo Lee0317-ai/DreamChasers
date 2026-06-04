@@ -41,12 +41,12 @@ export default async function AccountSecurityPage() {
             <AccountStatusPill tone="success">已启用</AccountStatusPill>
           </div>
           <div className="account-list-row">
-            <strong>登录邮件冷却</strong>
+            <strong>密码登录</strong>
             <AccountStatusPill tone="success">已启用</AccountStatusPill>
           </div>
           <div className="account-list-row">
-            <strong>密码登录</strong>
-            <AccountStatusPill>未启用</AccountStatusPill>
+            <strong>注册验证邮件冷却</strong>
+            <AccountStatusPill tone="success">已启用</AccountStatusPill>
           </div>
           <div className="account-list-row">
             <strong>手机号</strong>

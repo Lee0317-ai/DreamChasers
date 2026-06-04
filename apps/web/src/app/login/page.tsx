@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { sanitizeReturnUrl } from "@/lib/account/account-security";
-import { requestEmailLogin } from "@/lib/auth/actions";
+import { loginWithPassword } from "@/lib/auth/actions";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -19,18 +19,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <span className="account-logo-mark">D</span>
           <span>统一中心</span>
         </Link>
-        <p className="account-kicker">Email Sign-In</p>
+        <p className="account-kicker">Email Password Sign-In</p>
         <h1>欢迎回来</h1>
-        <p className="account-auth-copy">输入邮箱后，我们会发送一次性登录链接。第一阶段使用邮箱验证统一 DreamChasers 和产品型工具身份。</p>
+        <p className="account-auth-copy">使用注册邮箱和密码登录。新账号需要先完成邮箱验证，验证邮件只在注册阶段发送。</p>
 
-        <form action={requestEmailLogin} className="account-auth-form">
+        <form action={loginWithPassword} className="account-auth-form">
           <input name="returnUrl" type="hidden" value={returnUrl} />
           <label htmlFor="email">邮箱</label>
           <input id="email" name="email" placeholder="you@example.com" required type="email" />
-          <button type="submit">发送登录邮件</button>
+          <label htmlFor="password">密码</label>
+          <input id="password" minLength={8} name="password" placeholder="输入密码" required type="password" />
+          <button type="submit">登录账号</button>
         </form>
 
-        <p className="account-auth-note">密码、短信和社交登录会在对应安全能力上线后加入。</p>
+        <p className="account-auth-note">
+          还没有账号？<Link className="account-text-link" href={`/register?returnUrl=${encodeURIComponent(returnUrl)}`}>先用邮箱注册并验证</Link>
+        </p>
       </section>
     </main>
   );

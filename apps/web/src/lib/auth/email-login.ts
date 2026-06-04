@@ -19,10 +19,10 @@ export type SmtpConfig = {
   secure: boolean;
 };
 
-export function buildLoginEmail({ siteName, url }: EmailInput) {
-  const subject = `登录 ${siteName}`;
+export function buildRegistrationVerificationEmail({ siteName, url }: EmailInput) {
+  const subject = `验证 ${siteName} 账号邮箱`;
   const text = [
-    `点击下面的链接登录 ${siteName}：`,
+    `点击下面的链接验证你的 ${siteName} 账号邮箱：`,
     "",
     url,
     "",
@@ -30,8 +30,8 @@ export function buildLoginEmail({ siteName, url }: EmailInput) {
     "如果不是你本人操作，可以忽略这封邮件。"
   ].join("\n");
   const html = [
-    `<p>点击下面的按钮登录 ${siteName}：</p>`,
-    `<p><a href="${escapeHtml(url)}" style="display:inline-block;padding:10px 16px;background:#111827;color:#ffffff;text-decoration:none;border-radius:8px;">登录 ${escapeHtml(siteName)}</a></p>`,
+    `<p>点击下面的按钮验证你的 ${escapeHtml(siteName)} 账号邮箱：</p>`,
+    `<p><a href="${escapeHtml(url)}" style="display:inline-block;padding:10px 16px;background:#111827;color:#ffffff;text-decoration:none;border-radius:8px;">验证邮箱</a></p>`,
     `<p>如果按钮无法打开，请复制这个链接：</p>`,
     `<p>${escapeHtml(url)}</p>`,
     `<p>这个链接将在短时间后失效，且只能使用一次。如果不是你本人操作，可以忽略这封邮件。</p>`
@@ -61,11 +61,11 @@ export function getSmtpConfig(env: SmtpEnv = process.env): SmtpConfig | null {
 }
 
 export async function sendLoginEmail({ siteName, to, url }: EmailInput) {
-  const message = buildLoginEmail({ siteName, to, url });
+  const message = buildRegistrationVerificationEmail({ siteName, to, url });
   const smtpConfig = getSmtpConfig();
 
   if (!smtpConfig) {
-    console.info(`[auth] Development login link for ${to}: ${url}`);
+    console.info(`[auth] Development registration verification link for ${to}: ${url}`);
     return;
   }
 
