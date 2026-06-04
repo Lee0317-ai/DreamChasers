@@ -242,4 +242,6 @@
 | T134 | P0 | 账号统一中心页面体系重规划实施计划 | Lee | 待验收 | T108, T110, T111, T112, T113, T133 | `docs/tasks/items/T134-account-center-redesign-implementation-plan.md`, `docs/tasks/claims/T134-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/plans/2026-06-04-account-center-redesign.md`, `docs/progress/2026-06-04-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md` | `npm run docs:sync`; `rg -n "T[B]D\|T[O]DO\|待[补]" docs/tasks/items/T134-account-center-redesign-implementation-plan.md docs/tasks/claims/T134-lee.md docs/superpowers/plans/2026-06-04-account-center-redesign.md docs/progress/2026-06-04-lee.md`; `git diff --check` |
 | T135 | P0 | 账号统一中心页面体系实现 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
 | T136 | P0 | 账号注册登录数据库同步和真实链路联调 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
+| T137 | P0 | 账号密码登录 Prisma migration 落档 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
+| T138 | P0 | 账号找回密码、修改密码和重发验证邮件 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
 <!-- DOCS_SYNC_TASKS_END -->

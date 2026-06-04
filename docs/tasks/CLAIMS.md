@@ -538,4 +538,6 @@
 | T134 | 未命名任务 | 未填写 | 待验收 | 未填写 | `docs/tasks/items/T134-account-center-redesign-implementation-plan.md`, `docs/tasks/claims/T134-lee.md`, `docs/tasks/NEXT_ID.md`, `docs/superpowers/plans/2026-06-04-account-center-redesign.md`, `docs/progress/2026-06-04-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md` | `npm run docs:sync`; `rg -n "T[B]D\|T[O]DO\|待[补]" docs/tasks/items/T134-account-center-redesign-implementation-plan.md docs/tasks/claims/T134-lee.md docs/superpowers/plans/2026-06-04-account-center-redesign.md docs/progress/2026-06-04-lee.md`; `git diff --check` | 未填写 |
 | T135 | 未命名任务 | 未填写 | 未填写 | 2026-06-04 | 未填写 | 未填写 | 未填写 |
 | T136 | 未命名任务 | 未填写 | 未填写 | 2026-06-04 | 未填写 | 未填写 | 未填写 |
+| T137 | 未命名任务 | 未填写 | 未填写 | 2026-06-04 | 未填写 | 未填写 | 未填写 |
+| T138 | 未命名任务 | 未填写 | 未填写 | 2026-06-04 | 未填写 | 未填写 | 未填写 |
 <!-- DOCS_SYNC_CLAIMS_END -->

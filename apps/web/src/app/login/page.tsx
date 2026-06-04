@@ -35,6 +35,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <p className="account-auth-note">
           还没有账号？<Link className="account-text-link" href={`/register?returnUrl=${encodeURIComponent(returnUrl)}`}>先用邮箱注册并验证</Link>
         </p>
+        <p className="account-auth-note">
+          忘记密码？<Link className="account-text-link" href="/forgot-password">发送重置邮件</Link>
+        </p>
       </section>
     </main>
   );

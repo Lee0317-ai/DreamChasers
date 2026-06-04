@@ -48,6 +48,24 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260604-19：账号认证补全找回密码、修改密码和重发验证邮件
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T135/T136 已把账号体系改成邮箱注册验证 + 邮箱密码登录，但还缺常规账号闭环：忘记密码后的邮件重置、已登录用户修改密码、未验证邮箱重发验证邮件。
+- 目标：新增 T138，一起实现 `/forgot-password`、`/reset-password`、账号安全页修改密码和重发验证邮件能力。
+- 不做：不做手机号、OAuth、TOTP、短信、设备强制下线、密码强度评分、历史密码复用检查、真实风控和验证码。
+- 用户价值：用户可以自助恢复账号、维护密码，并在注册验证邮件过期时重新完成邮箱验证。
+- 涉及模块：账号中心 / Auth.js / Prisma VerificationToken / 登录注册页面 / 安全页。
+- 可能影响文件：`apps/web/src/lib/auth/**`, `apps/web/src/app/login/**`, `apps/web/src/app/register/**`, `apps/web/src/app/forgot-password/**`, `apps/web/src/app/reset-password/**`, `apps/web/src/app/account/security/page.tsx`, `apps/web/src/app/globals.css`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：找回密码不泄露账号枚举；有效 token 可设置新密码；无效或过期 token 不能改密码；已登录用户可验证当前密码后修改密码；未验证邮箱可重发验证邮件；测试、类型检查、lint、构建、文档同步和 diff 检查通过。
+- AI 初步方案：复用 Auth.js `VerificationToken` 表承载密码重置 token，使用 `password-reset:<email>` identifier 区分用途；重置邮件和注册验证邮件共用 SMTP 发送能力；server actions 统一校验密码长度、确认密码和当前密码；页面沿用现有账号 auth panel 和安全页样式。
+- 处理结论：已入任务池
+- 对应任务编号：T138
+
 ### IDEA-20260604-18：账号中心认证方式修正为邮箱注册验证和邮箱密码登录
 
 - 提出人：Lee

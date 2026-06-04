@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildRegistrationVerificationEmail, getSmtpConfig } from "../email-login";
+import { buildPasswordResetEmail, buildRegistrationVerificationEmail, getSmtpConfig } from "../email-login";
 
 describe("email-login", () => {
   it("builds a clear registration verification email with the verification URL", () => {
@@ -24,6 +24,20 @@ describe("email-login", () => {
         SMTP_FROM: "DreamChasers <no-reply@example.com>"
       })
     ).toBeNull();
+  });
+
+  it("builds a password reset email with reset-specific copy", () => {
+    const email = buildPasswordResetEmail({
+      siteName: "DreamChasers",
+      to: "lee@example.com",
+      url: "https://dream.example/reset-password?token=abc"
+    });
+
+    expect(email.subject).toBe("重置 DreamChasers 账号密码");
+    expect(email.text).toContain("https://dream.example/reset-password?token=abc");
+    expect(email.text).toContain("如果不是你本人操作，可以忽略这封邮件");
+    expect(email.html).toContain("重置密码");
+    expect(email.text).not.toContain("验证邮箱");
   });
 
   it("parses SMTP config from environment values", () => {
