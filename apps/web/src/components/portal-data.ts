@@ -51,6 +51,23 @@ export const toolItems: PortalItem[] = [
     ]
   },
   {
+    id: "timepick",
+    title: "TimePick",
+    description: "灵感、资源、标签、搜索、待办和每日抽签的个人时间与知识管理工具，使用统一账号登录。",
+    icon: "TP",
+    href: "/tools/timepick",
+    tags: ["免费", "知识管理", "账号同步"],
+    categories: ["doc", "ai"],
+    detailsTitle: "TimePick",
+    details: [
+      "资源、文件夹、标签和搜索历史已接入 DreamChasers API",
+      "灵感抽屉、学习重点、任务清单和 Profile 使用统一账号",
+      "每日抽签和运势聊天使用平台无模型占位能力",
+      "本地开发默认跳转到 TimePick 前端 http://localhost:8080/home"
+    ],
+    footnote: "如果本地 TimePick 未启动，请在 TimePick 项目中运行 dev server。"
+  },
+  {
     id: "converter",
     title: "格式转换器",
     description: "Word、Excel、PPT、图片、PDF 互相转换，批量处理。",
@@ -174,6 +191,13 @@ export const searchItems = [
     icon: "IMG",
     title: "AI 修图工具",
     description: "亮度、对比度、滤镜、AI 美颜",
+    tag: "工具"
+  },
+  {
+    href: "/tools/timepick",
+    icon: "TP",
+    title: "TimePick",
+    description: "资源、灵感、标签、待办和每日抽签",
     tag: "工具"
   },
   {
