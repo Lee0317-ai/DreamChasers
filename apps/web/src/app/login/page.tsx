@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { requestEmailLogin } from "@/lib/auth/actions";
 import { sanitizeReturnUrl } from "@/lib/account/account-security";
+import { requestEmailLogin } from "@/lib/auth/actions";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -16,11 +16,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="account-auth-page">
       <section className="account-auth-panel">
         <Link className="account-auth-logo" href="/tools">
-          DreamChasers
+          <span className="account-logo-mark">D</span>
+          <span>统一中心</span>
         </Link>
-        <p className="account-eyebrow">统一账号中心</p>
-        <h1>邮箱验证登录</h1>
-        <p className="account-auth-copy">输入邮箱后，我们会发送一次性登录链接。新邮箱验证成功后会自动创建平台账号。</p>
+        <p className="account-kicker">Email Sign-In</p>
+        <h1>欢迎回来</h1>
+        <p className="account-auth-copy">输入邮箱后，我们会发送一次性登录链接。第一阶段使用邮箱验证统一 DreamChasers 和产品型工具身份。</p>
 
         <form action={requestEmailLogin} className="account-auth-form">
           <input name="returnUrl" type="hidden" value={returnUrl} />
@@ -29,7 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <button type="submit">发送登录邮件</button>
         </form>
 
-        <p className="account-auth-note">登录即表示你同意平台只使用该邮箱识别账号和同步工具权益。</p>
+        <p className="account-auth-note">密码、短信和社交登录会在对应安全能力上线后加入。</p>
       </section>
     </main>
   );
