@@ -40,7 +40,7 @@ export function ProductSessionManager({ products }: ProductSessionManagerProps) 
   }
 
   return (
-    <section className="account-panel">
+    <section className="account-card">
       <div className="account-panel-heading">
         <div>
           <p className="account-eyebrow">Products</p>

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { AccountShell } from "@/components/account/AccountShell";
 import { ApiKeyManager } from "@/components/account/ApiKeyManager";
 import { getAccountDashboard } from "@/lib/account/account-data";
+import { buildAccountInitial } from "@/lib/account/account-view-model";
 import { requireUser } from "@/lib/auth/session";
 
 export default async function AccountApiKeysPage() {
@@ -12,13 +14,15 @@ export default async function AccountApiKeysPage() {
   }
 
   return (
-    <main className="account-page">
-      <section className="account-hero compact">
-        <p className="account-eyebrow">Developer</p>
-        <h1>API Key</h1>
-        <p>用于后续产品和自动化脚本调用 DreamChasers 平台接口。明文只展示一次。</p>
-      </section>
+    <AccountShell email={account.email} initial={buildAccountInitial(account.name, account.email)} name={account.name}>
+      <header className="account-page-heading">
+        <div>
+          <p className="account-kicker">Developer</p>
+          <h1>API Key</h1>
+          <p className="account-muted">平台 API Key 用于调用 DreamChasers API，不等同于用户自带模型 API Key。</p>
+        </div>
+      </header>
       <ApiKeyManager initialApiKeys={account.apiKeys} />
-    </main>
+    </AccountShell>
   );
 }

@@ -64,7 +64,7 @@ export function ApiKeyManager({ initialApiKeys }: ApiKeyManagerProps) {
   }
 
   return (
-    <section className="account-panel">
+    <section className="account-card">
       <div className="account-panel-heading">
         <div>
           <p className="account-eyebrow">Platform API Key</p>
