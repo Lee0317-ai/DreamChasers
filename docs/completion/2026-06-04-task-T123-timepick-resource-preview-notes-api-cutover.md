@@ -1,0 +1,29 @@
+# T123：TimePick 资源预览心得保存 API 切换完成记录
+
+- 完成时间：2026-06-04
+- 负责人：Lee
+- 修改文件：
+  - `/Users/lee/Desktop/Lee/TimePick/src/components/ResourcePreview.tsx`
+  - `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`
+  - `docs/tasks/items/T123-timepick-resource-preview-notes-api-cutover.md`
+  - `docs/tasks/claims/T123-lee.md`
+  - `docs/progress/2026-06-04-lee.md`
+  - `docs/completion/2026-06-04-task-T123-timepick-resource-preview-notes-api-cutover.md`
+- 实现内容：
+  - `ResourcePreview` 保存心得移除 Supabase `.from('resources').update({ notes })`。
+  - 保存心得改调用 DreamChasers API client：`updateTimePickResource(resource.id, buildTimePickResourcePayload(resource, { notes }))`。
+  - `buildTimePickResourcePayload` 支持 `notes` patch，保存时保留原资源 section、folder、url、content、tags、thumbnail、source inspiration、file size 等字段。
+- 验证命令：
+  - 静态红绿检查：确认 `ResourcePreview` 不再包含 Supabase resources update。
+  - `npx eslint src/lib/dreamchasers-auth.ts src/lib/timepick-api.ts src/components/ResourcePreview.tsx`（TimePick）
+  - `npm run build`（TimePick）
+  - Kimi WebBridge 真实浏览器检查资源预览保存心得。
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 静态检查、TimePick 定向 ESLint、TimePick build 均通过。
+  - 浏览器联调中，临时资源 `T123 心得临时资源` 的预览弹窗保存心得后，最终有效 `PATCH http://localhost:3000/api/timepick/resources/cmpyslay20004wxi8bv44n3lm` 返回 200，响应体 `notes` 为 `T123 浏览器联调心得：通过 ResourcePreview 保存，确认写入 DreamChasers API。`。
+  - 刷新 TimePick 后资源列表显示保存后的心得；临时资源已通过 `DELETE /api/timepick/resources/cmpyslay20004wxi8bv44n3lm` 返回 200 清理。
+- 遗留问题：
+  - 本任务不迁移上传、Storage、自动识别、灵感、待办、抽签、标签管理、搜索或 Profile 统计。
+  - 旧自动识别 AI 能力依赖的 Coze 工作流已关闭，后续由 T122 重新设计为平台系统 AI 能力。

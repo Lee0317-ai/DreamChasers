@@ -208,11 +208,12 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 
 ### 任务分片
 
-- 已扫描任务分片：83 个。
-- 已扫描领取分片：75 个。
+- 已扫描任务分片：108 个。
+- 已扫描领取分片：100 个。
 
 ### 当前未完成领取
 
+- T015：PDF 工具箱 PDF 转 Word Beta 导出格式修复，Lee，状态：待验收
 - T051：胡了卜麻将牌面 UI 参考图，Codex / 开发 B，状态：待验收
 - T052：胡了卜 Boss 目标配置化，Codex / 开发 B，状态：待验收
 - T053：胡了卜 Boss 牌型目标第一版，Codex / 开发 B，状态：待验收
@@ -264,12 +265,35 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 - T105：胡了卜震落牌平铺和遮挡点击修复，Lee，状态：待验收
 - T106：AI 面试助手规划，Lee，状态：待验收
 - T108：统一账号中心、产品型工具入口和 AI Gateway 规划，Lee，状态：待验收
+- T110：未命名任务，未填写领取人，状态：待验收
+- T111：未命名任务，未填写领取人，状态：待验收
+- T112：未命名任务，未填写领取人，状态：待验收
+- T113：产品型工具 token 消费接口，Lee，状态：待验收
+- T114：TimePick 同账号 PostgreSQL 迁移基座，Lee，状态：待验收
+- T115：TimePick 前端同账号登录壳，Lee，状态：待验收
+- T116：TimePick 文件夹和资源列表 API 切换，Lee，状态：待验收
+- T117：TimePick 文件夹新增和重命名 API 切换，Lee，状态：待验收
+- T118：TimePick 子文件夹卡片 API 切换，Lee，状态：待验收
+- T119：TimePick 资源卡片删除 API 切换，Lee，状态：待验收
+- T120：TimePick 资源录入编辑 API 切换，Lee，状态：待验收
+- T121：TimePick 资源卡片自动识别更新 API 切换，Lee，状态：待验收
+- T123：TimePick 资源预览心得保存 API 切换，Lee，状态：待验收
+- T124：TimePick 标签读取和管理 API 切换，Lee，状态：待验收
+- T125：TimePick 搜索页 API 切换，Lee，状态：待验收
+- T126：TimePick 灵感抽屉 API 切换，Lee，状态：待验收
+- T127：TimePick 角色选择 API 切换，Lee，状态：待验收
+- T128：TimePick 学习重点 API 切换，Lee，状态：待验收
+- T129：TimePick 任务清单主链路 API 切换，Lee，状态：待验收
+- T130：TimePick Profile 页面 API 切换，Lee，状态：待验收
+- T131：TimePick 首页每日抽签弹窗 API 切换，Lee，状态：待验收
+- T132：TimePick 剩余 Supabase 直连清零，Lee，状态：待验收
+- T133：未命名任务，未填写领取人，状态：待验收
 
 ### 最近完成任务分片
 
-- T065：胡了卜 Cocos 手机竖屏首屏适配，负责人：未填写
 - T066：胡了卜 Cocos 真实可见尺寸自适应，负责人：未填写
 - T068：胡了卜麻将 UI 图片资源归档和切图，负责人：未填写
 - T072：本地一键更新部署脚本，负责人：未填写
 - T103：胡了卜立体窄腰牌山模板设计，负责人：Lee
+- T109：Supabase PostgreSQL 切换到自托管 PostgreSQL，负责人：Lee
 <!-- DOCS_SYNC_STATUS_END -->

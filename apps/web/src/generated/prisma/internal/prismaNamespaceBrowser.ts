@@ -59,7 +59,33 @@ export const ModelName = {
   UpdateLog: 'UpdateLog',
   AiRequestLog: 'AiRequestLog',
   UsageQuota: 'UsageQuota',
-  ApiCredential: 'ApiCredential'
+  ApiCredential: 'ApiCredential',
+  User: 'User',
+  Account: 'Account',
+  Session: 'Session',
+  VerificationToken: 'VerificationToken',
+  EmailLoginRequest: 'EmailLoginRequest',
+  UserProfile: 'UserProfile',
+  Product: 'Product',
+  ProductMembership: 'ProductMembership',
+  Entitlement: 'Entitlement',
+  CreditWallet: 'CreditWallet',
+  CreditLedger: 'CreditLedger',
+  PlatformApiKey: 'PlatformApiKey',
+  ProductSession: 'ProductSession',
+  CredentialReference: 'CredentialReference',
+  AccountAuditLog: 'AccountAuditLog',
+  TimePickProfile: 'TimePickProfile',
+  TimePickUserRole: 'TimePickUserRole',
+  TimePickSection: 'TimePickSection',
+  TimePickFolder: 'TimePickFolder',
+  TimePickResource: 'TimePickResource',
+  TimePickInspiration: 'TimePickInspiration',
+  TimePickSearchHistory: 'TimePickSearchHistory',
+  TimePickTagGroup: 'TimePickTagGroup',
+  TimePickLearningFocus: 'TimePickLearningFocus',
+  TimePickTryQueueLink: 'TimePickTryQueueLink',
+  TimePickFortuneDraw: 'TimePickFortuneDraw'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -178,12 +204,374 @@ export const ApiCredentialScalarFieldEnum = {
 export type ApiCredentialScalarFieldEnum = (typeof ApiCredentialScalarFieldEnum)[keyof typeof ApiCredentialScalarFieldEnum]
 
 
+export const UserScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  emailVerified: 'emailVerified',
+  image: 'image',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AccountScalarFieldEnum = {
+  userId: 'userId',
+  type: 'type',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  refresh_token: 'refresh_token',
+  access_token: 'access_token',
+  expires_at: 'expires_at',
+  token_type: 'token_type',
+  scope: 'scope',
+  id_token: 'id_token',
+  session_state: 'session_state',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const SessionScalarFieldEnum = {
+  sessionToken: 'sessionToken',
+  userId: 'userId',
+  expires: 'expires',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
+
+
+export const VerificationTokenScalarFieldEnum = {
+  identifier: 'identifier',
+  token: 'token',
+  expires: 'expires'
+} as const
+
+export type VerificationTokenScalarFieldEnum = (typeof VerificationTokenScalarFieldEnum)[keyof typeof VerificationTokenScalarFieldEnum]
+
+
+export const EmailLoginRequestScalarFieldEnum = {
+  email: 'email',
+  lastRequestedAt: 'lastRequestedAt',
+  requestCount: 'requestCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailLoginRequestScalarFieldEnum = (typeof EmailLoginRequestScalarFieldEnum)[keyof typeof EmailLoginRequestScalarFieldEnum]
+
+
+export const UserProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  displayName: 'displayName',
+  locale: 'locale',
+  timezone: 'timezone',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserProfileScalarFieldEnum = (typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum]
+
+
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const ProductMembershipScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductMembershipScalarFieldEnum = (typeof ProductMembershipScalarFieldEnum)[keyof typeof ProductMembershipScalarFieldEnum]
+
+
+export const EntitlementScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EntitlementScalarFieldEnum = (typeof EntitlementScalarFieldEnum)[keyof typeof EntitlementScalarFieldEnum]
+
+
+export const CreditWalletScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  scope: 'scope',
+  balance: 'balance',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CreditWalletScalarFieldEnum = (typeof CreditWalletScalarFieldEnum)[keyof typeof CreditWalletScalarFieldEnum]
+
+
+export const CreditLedgerScalarFieldEnum = {
+  id: 'id',
+  walletId: 'walletId',
+  amount: 'amount',
+  type: 'type',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type CreditLedgerScalarFieldEnum = (typeof CreditLedgerScalarFieldEnum)[keyof typeof CreditLedgerScalarFieldEnum]
+
+
+export const PlatformApiKeyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  keyHash: 'keyHash',
+  keyHint: 'keyHint',
+  lastUsedAt: 'lastUsedAt',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PlatformApiKeyScalarFieldEnum = (typeof PlatformApiKeyScalarFieldEnum)[keyof typeof PlatformApiKeyScalarFieldEnum]
+
+
+export const ProductSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  tokenHash: 'tokenHash',
+  returnUrl: 'returnUrl',
+  consumedAt: 'consumedAt',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ProductSessionScalarFieldEnum = (typeof ProductSessionScalarFieldEnum)[keyof typeof ProductSessionScalarFieldEnum]
+
+
+export const CredentialReferenceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  source: 'source',
+  label: 'label',
+  reference: 'reference',
+  keyHint: 'keyHint',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CredentialReferenceScalarFieldEnum = (typeof CredentialReferenceScalarFieldEnum)[keyof typeof CredentialReferenceScalarFieldEnum]
+
+
+export const AccountAuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  ipHash: 'ipHash',
+  userAgent: 'userAgent',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AccountAuditLogScalarFieldEnum = (typeof AccountAuditLogScalarFieldEnum)[keyof typeof AccountAuditLogScalarFieldEnum]
+
+
+export const TimePickProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  username: 'username',
+  nickname: 'nickname',
+  birthDate: 'birthDate',
+  defaultTryQueueFolderId: 'defaultTryQueueFolderId',
+  storageUsed: 'storageUsed',
+  storageLimit: 'storageLimit',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickProfileScalarFieldEnum = (typeof TimePickProfileScalarFieldEnum)[keyof typeof TimePickProfileScalarFieldEnum]
+
+
+export const TimePickUserRoleScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  role: 'role',
+  createdAt: 'createdAt'
+} as const
+
+export type TimePickUserRoleScalarFieldEnum = (typeof TimePickUserRoleScalarFieldEnum)[keyof typeof TimePickUserRoleScalarFieldEnum]
+
+
+export const TimePickSectionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+} as const
+
+export type TimePickSectionScalarFieldEnum = (typeof TimePickSectionScalarFieldEnum)[keyof typeof TimePickSectionScalarFieldEnum]
+
+
+export const TimePickFolderScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  parentId: 'parentId',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickFolderScalarFieldEnum = (typeof TimePickFolderScalarFieldEnum)[keyof typeof TimePickFolderScalarFieldEnum]
+
+
+export const TimePickResourceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sectionId: 'sectionId',
+  folderId: 'folderId',
+  parentId: 'parentId',
+  name: 'name',
+  url: 'url',
+  content: 'content',
+  fileType: 'fileType',
+  fileSize: 'fileSize',
+  thumbnailUrl: 'thumbnailUrl',
+  notes: 'notes',
+  tags: 'tags',
+  sourceInspirationId: 'sourceInspirationId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickResourceScalarFieldEnum = (typeof TimePickResourceScalarFieldEnum)[keyof typeof TimePickResourceScalarFieldEnum]
+
+
+export const TimePickInspirationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  content: 'content',
+  location: 'location',
+  status: 'status',
+  convertedToResourceId: 'convertedToResourceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickInspirationScalarFieldEnum = (typeof TimePickInspirationScalarFieldEnum)[keyof typeof TimePickInspirationScalarFieldEnum]
+
+
+export const TimePickSearchHistoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  keyword: 'keyword',
+  createdAt: 'createdAt'
+} as const
+
+export type TimePickSearchHistoryScalarFieldEnum = (typeof TimePickSearchHistoryScalarFieldEnum)[keyof typeof TimePickSearchHistoryScalarFieldEnum]
+
+
+export const TimePickTagGroupScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  color: 'color',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickTagGroupScalarFieldEnum = (typeof TimePickTagGroupScalarFieldEnum)[keyof typeof TimePickTagGroupScalarFieldEnum]
+
+
+export const TimePickLearningFocusScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  weight: 'weight',
+  synonyms: 'synonyms',
+  isPaused: 'isPaused',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickLearningFocusScalarFieldEnum = (typeof TimePickLearningFocusScalarFieldEnum)[keyof typeof TimePickLearningFocusScalarFieldEnum]
+
+
+export const TimePickTryQueueLinkScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  url: 'url',
+  title: 'title',
+  description: 'description',
+  tags: 'tags',
+  status: 'status',
+  priorityScore: 'priorityScore',
+  priorityLevel: 'priorityLevel',
+  queuePosition: 'queuePosition',
+  isPriorityLocked: 'isPriorityLocked',
+  rating: 'rating',
+  notes: 'notes',
+  startTime: 'startTime',
+  completeTime: 'completeTime',
+  archivedAt: 'archivedAt',
+  convertedToResourceId: 'convertedToResourceId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TimePickTryQueueLinkScalarFieldEnum = (typeof TimePickTryQueueLinkScalarFieldEnum)[keyof typeof TimePickTryQueueLinkScalarFieldEnum]
+
+
+export const TimePickFortuneDrawScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  birthDate: 'birthDate',
+  drawDate: 'drawDate',
+  imageUrl: 'imageUrl',
+  fortuneContent: 'fortuneContent',
+  createdAt: 'createdAt'
+} as const
+
+export type TimePickFortuneDrawScalarFieldEnum = (typeof TimePickFortuneDrawScalarFieldEnum)[keyof typeof TimePickFortuneDrawScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -200,4 +588,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

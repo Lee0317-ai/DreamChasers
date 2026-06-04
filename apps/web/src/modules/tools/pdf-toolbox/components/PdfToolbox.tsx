@@ -9,7 +9,7 @@ import {
   getPdfPageCount,
   imagesToPdf
 } from "../lib/pdf-actions";
-import { createWordHtmlDocument, extractPdfText } from "../lib/pdf-text";
+import { createWordDocxDocument, extractPdfText } from "../lib/pdf-text";
 import type { PdfActionResult, PdfBuildPage, PdfPageItem, PdfSourceFile } from "../types";
 import { PdfActionPanel } from "./PdfActionPanel";
 import { PdfFileList } from "./PdfFileList";
@@ -29,8 +29,13 @@ function downloadBytes(result: PdfActionResult) {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = result.fileName;
+  anchor.style.display = "none";
+  document.body.append(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => {
+    anchor.remove();
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
 function createPagesForFile(file: PdfSourceFile): PdfPageItem[] {
@@ -261,12 +266,11 @@ export function PdfToolbox() {
       const buffer = new ArrayBuffer(sourceBytes.byteLength);
       new Uint8Array(buffer).set(sourceBytes);
       const pagesText = await extractPdfText(buffer);
-      const html = createWordHtmlDocument("DreamChasers PDF to Word Beta", pagesText);
-      const encoded = new TextEncoder().encode(html);
+      const bytes = createWordDocxDocument("DreamChasers PDF to Word Beta", pagesText);
       const nextResult = {
-        fileName: "dreamchasers-pdf-to-word-beta.doc",
-        bytes: encoded,
-        mimeType: "application/msword"
+        fileName: "dreamchasers-pdf-to-word-beta.docx",
+        bytes,
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       };
       setResult(nextResult);
       downloadBytes(nextResult);

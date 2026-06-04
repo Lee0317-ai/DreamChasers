@@ -24,3 +24,54 @@ export const ContentStatus = {
 } as const
 
 export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus]
+
+
+export const ProductStatus = {
+  active: 'active',
+  draft: 'draft',
+  archived: 'archived'
+} as const
+
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]
+
+
+export const EntitlementStatus = {
+  active: 'active',
+  retired: 'retired'
+} as const
+
+export type EntitlementStatus = (typeof EntitlementStatus)[keyof typeof EntitlementStatus]
+
+
+export const CreditLedgerType = {
+  grant: 'grant',
+  usage: 'usage',
+  adjustment: 'adjustment',
+  refund: 'refund'
+} as const
+
+export type CreditLedgerType = (typeof CreditLedgerType)[keyof typeof CreditLedgerType]
+
+
+export const CredentialSource = {
+  platform_pool: 'platform_pool',
+  user_ephemeral_key: 'user_ephemeral_key',
+  external_gateway_byok: 'external_gateway_byok',
+  user_encrypted_vault: 'user_encrypted_vault',
+  local_connector: 'local_connector'
+} as const
+
+export type CredentialSource = (typeof CredentialSource)[keyof typeof CredentialSource]
+
+
+export const AccountAuditAction = {
+  login_requested: 'login_requested',
+  login_success: 'login_success',
+  login_failed: 'login_failed',
+  logout: 'logout',
+  api_key_created: 'api_key_created',
+  api_key_revoked: 'api_key_revoked',
+  product_session_created: 'product_session_created'
+} as const
+
+export type AccountAuditAction = (typeof AccountAuditAction)[keyof typeof AccountAuditAction]

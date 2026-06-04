@@ -48,6 +48,366 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260604-17：账号统一中心页面体系重规划
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：Lee 提供 Open Design 项目 `9bf531c6-e521-4b0c-b23e-430e44751483`，希望在现有 DreamChasers 账号代码基础上，重新规划账号统一中心页面体系。当前 T110-T113 已完成邮箱验证登录、账号首页、平台 API Key 和产品 token 骨架；T108 已完成统一账号中心、产品型工具入口和 AI Gateway 总体规划。新设计稿覆盖桌面登录、注册、账号概览、个人信息、安全、设备、AI 积分、充值、订阅、LLM 配置，以及 iOS/Android 移动端形态。
+- 目标：新增 T133，产出账号统一中心页面体系重规划规格，明确完整页面信息架构、第一阶段邮箱验证登录落地范围、第二阶段模型配置如何承接 T108 的 AI Gateway 五类模型来源，以及后续实现拆分。
+- 不做：不改应用代码；不接真实支付；不实现密码、短信、OAuth、实名、MFA、设备强制下线、真实 AI Gateway 调用或模型 Key 保存；不迁移 TimePick 或镜界业务代码。
+- 用户价值：在不推翻现有邮箱登录 MVP 的前提下，把账号中心、AI 能力、产品型工具接入和模型配置统一到可持续扩展的信息架构里，避免后续 UI、计费和 AI Gateway 各自生长。
+- 涉及模块：账号中心 / AI Gateway / 产品型工具接入 / Open Design UI 映射。
+- 可能影响文件：`docs/tasks/**`, `docs/superpowers/specs/**`, `docs/progress/2026-06-04-lee.md`；后续实现任务才可能影响 `apps/web/src/app/account/**`, `apps/web/src/components/account/**`, `apps/web/src/lib/account/**`, `apps/web/src/app/api/account/**`, `apps/web/src/app/login/**`, `apps/web/src/app/globals.css`。
+- 是否影响另一方任务：否。本任务只做规划文档，不修改 Jaspon 负责的 AI 修图代码；后续若实现 AI Gateway 或模型配置，需要单独确认文件边界。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：规格文档覆盖 Open Design 页面映射、当前代码能力边界、完整路由结构、第一阶段可用范围、第二阶段 LLM 配置/模型来源策略、后续任务拆分、风险和验证要求；文档同步、占位符扫描和 diff 检查通过。
+- AI 初步方案：基于 Open Design MCP 读取的账号中心设计稿，结合当前 `apps/web/src/app/account/**`、Prisma 账号模型、T108 AI Gateway 规划和 T122 TimePick 自动识别规划，形成 `docs/superpowers/specs/2026-06-04-account-center-redesign-design.md`。第一阶段坚持邮箱 magic link；第二阶段模型配置不直接保存用户 provider key，先支持平台额度、临时 Key、外部 Gateway BYOK，再后置加密 Key Vault 和本地连接器。
+- 处理结论：已入任务池
+- 对应任务编号：T133
+
+### IDEA-20260604-16：TimePick 剩余 Supabase 直连清零
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T115-T131 已把 TimePick 主要账号、资源、文件夹、标签、搜索、灵感、角色、学习重点、待办、Profile 和首页每日抽签链路切到 DreamChasers API。静态扫描仍剩 `/fortune` 运势聊天、上传/Storage、自动识别、批量导入、模块树和旧 Simple todo 文件里的 Supabase 直连。
+- 目标：新增 T132，在不新增 Prisma schema、不接真实 AI/Storage 的前提下清零 TimePick `src` 中 Supabase import 和调用点；必要功能改为 DreamChasers API、无模型本地占位或显式降级。
+- 不做：不接真实 AI 模型；不实现正式文件对象存储；不重建完整模块树 schema；不导入 Supabase 历史模块/文件/批量数据；不修改 Prisma schema；不改 DreamChasers 非 TimePick 模块。
+- 用户价值：TimePick 前端不再依赖 Supabase client，统一账号壳下不会继续混用 Supabase Auth、DB、Storage 和 Edge Function。
+- 涉及模块：TimePick / DreamChasers API / 上传降级 / 自动识别降级 / 模块树降级 / 运势聊天降级 / 批量导入 / 旧 Simple todo。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Fortune.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceDialog.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceCard.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/BatchImportDialog.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/TodoSimple.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/TodoPageSimple.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/ModuleDialog.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceTree.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/integrations/supabase/**`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移收尾范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：`rg` 扫描 TimePick `src` 不再出现 Supabase import/调用；TimePick build 通过；DreamChasers 定向测试/typecheck/build 通过；旧高成本能力以明确降级或无模型占位替代，不误接 AI/Storage；文档同步和 diff 检查通过。
+- AI 初步方案：先登记一个收尾任务。DreamChasers 增加轻量 `/api/timepick/fortune/chat` 文本占位接口；TimePick `/fortune` 改走该接口。`ResourceDialog` 和 `ResourceCard` 的自动识别改为客户端无模型 metadata 占位，文件/缩略图使用本地 data URL 降级，不再上传 Storage。批量导入改用 DreamChasers `createTimePickResource`。旧 Simple todo 改用现有 todo API 或降级为跳转主 todo。模块树因 schema 不完整，改为从现有 resources/folders/sections 读取并禁用旧模块写入弹窗。最后删除 Supabase client 目录。
+- 处理结论：已入任务池
+- 对应任务编号：T132
+
+### IDEA-20260604-15：TimePick 首页每日抽签弹窗切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T115 已让 TimePick 使用 DreamChasers 登录态，T130 已把 Profile 资料和出生日期保存切到 DreamChasers API。首页 `FortuneDrawDialog` 仍直接读取 Supabase `profiles`、更新 `profiles.birth_date`，并调用 Supabase Edge Function `draw-fortune`；在统一账号壳下会继续绕过 DreamChasers owner 权限和 PostgreSQL。
+- 目标：新增 T131，让首页每日抽签弹窗的出生日期检查、出生日期保存、每日抽签读取/生成和缓存全部走 DreamChasers API，并复用 `TimePickProfile` 与 `TimePickFortuneDraw` 模型。
+- 不做：不迁移 `/fortune` 运势聊天页；不接入 Supabase Edge Function `fortune-agent`；不接真实 AI 模型、图片生成、Storage 或上传；不修改 Prisma schema；不导入历史抽签数据；不重做抽签弹窗 UI。
+- 用户价值：用户在统一账号登录后打开首页每日抽签时，出生日期和每日抽签结果进入 DreamChasers PostgreSQL 并受当前登录用户权限保护；旧 Supabase Edge Function 不再阻塞基础抽签弹窗。
+- 涉及模块：TimePick / DreamChasers API / 首页每日抽签弹窗。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/fortune/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/FortuneDrawDialog.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户每日抽签 API；未设置出生日期时返回需要设置生日的业务状态；已设置生日时同一天重复抽签返回缓存结果；新抽签写入 `TimePickFortuneDraw`，`draw_date` 按本地自然日归一；TimePick `FortuneDrawDialog` 不再导入或调用 Supabase；保存出生日期复用 DreamChasers profile API；`/fortune` 运势聊天页保持现状；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器未设置生日提示/保存生日/抽签缓存联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖抽签日期归一、每日缓存 key、返回字段映射和未设置生日状态。DreamChasers 新增 `POST /api/timepick/fortune/draw`，服务层读取当前用户 profile，缺生日返回 409；有生日则按当天查 `TimePickFortuneDraw`，命中返回 cached，未命中生成无模型的每日运势文本和内联图片 URL 后写库。TimePick API client 新增 `drawTimePickFortune`，`FortuneDrawDialog` 改用 `fetchTimePickProfile` / `updateTimePickProfileBirthDate` / `drawTimePickFortune` 替换 Supabase 直连。
+- 处理结论：已入任务池
+- 对应任务编号：T131
+
+### IDEA-20260604-14：TimePick Profile 页面切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T115 已让 TimePick 使用 DreamChasers 登录态，T116-T129 已逐步迁移核心资源、学习重点和任务清单链路。`Profile` 页面仍直接读取 Supabase `profiles`、统计 Supabase `resources`，并使用 Supabase Auth 修改密码，绕过 DreamChasers 同账号资料和安全页。
+- 目标：新增 T130，让 TimePick Profile 页面的资料读取、资源统计和出生日期保存走 DreamChasers API，并复用 DreamChasers `TimePickProfile` 和 `TimePickResource` 模型；旧修改密码入口改为跳转 DreamChasers 账号安全页。
+- 不做：不实现 DreamChasers 密码修改；不迁移抽签 Edge Function；不迁移模块树、上传/Storage、自动识别、批量导入或批量优先级；不修改 Prisma schema；不导入历史数据；不重做 Profile 页面视觉结构。
+- 用户价值：用户在统一账号登录后查看/维护个人资料时，Profile 数据来自 DreamChasers PostgreSQL 并受当前登录用户权限保护；旧 Supabase 密码体系不再暴露在新账号壳里。
+- 涉及模块：TimePick / DreamChasers API / Profile 页面。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/profile/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Profile.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户 TimePick profile 读取和出生日期更新 API；Profile 返回 nickname、username、birth_date、created_at、storage_used、storage_limit 和当前用户资源数；出生日期拒绝空值、非法日期和未来日期；更新只允许当前登录用户自己的 profile；TimePick `Profile` 页面不再导入或调用 Supabase；修改密码按钮不再触发 Supabase Auth，改为打开 DreamChasers `/account/security`；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器 Profile 读取/生日更新联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖 profile 字段映射、出生日期规范化、未来日期拒绝和 owner 写权限。DreamChasers 新增 `GET/PATCH /api/timepick/profile`；服务层从 `TimePickProfile` 读取资料并用 `TimePickResource.count` 统计资源数。TimePick API client 新增 profile 读取/更新方法，`Profile.tsx` 用 API client 替换 Supabase 直连，密码弹窗替换为跳转 DreamChasers 账号安全页。
+- 处理结论：已入任务池
+- 对应任务编号：T130
+
+### IDEA-20260604-13：TimePick 任务清单主链路切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T115 已让 TimePick 使用 DreamChasers 登录态，T116-T128 已逐步迁移文件夹、资源、标签、搜索、灵感、角色和学习重点链路。`TodoPage`、`AddTodoDialog` 和 `CompleteTodoDialog` 仍直接读写 Supabase `try_queue_links`，任务清单列表、添加、开始、完成、暂缓、放弃和删除绕过 DreamChasers 同账号 owner 权限。
+- 目标：新增 T129，让 TimePick `/todo` 主页面的任务清单主链路走 DreamChasers API，并复用 DreamChasers `TimePickTryQueueLink` 模型。
+- 不做：不迁移未挂路由的 `TodoSimple` / `TodoPageSimple`；不迁移 `BatchImportDialog` 和批量优先级 Edge Function；不迁移模块树、抽签、Profile、上传/Storage、自动识别或批量学习重点优先级；不修改 Prisma schema；不导入历史数据；不重做任务清单 UI。
+- 用户价值：用户在统一账号登录后维护待尝试链接时，任务清单数据进入 DreamChasers PostgreSQL 并受当前登录用户权限保护，TimePick 高频个人工作流继续脱离 Supabase。
+- 涉及模块：TimePick / DreamChasers API / 任务清单。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/todos/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/TodoPage.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/AddTodoDialog.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/CompleteTodoDialog.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户任务清单列表、新增、状态更新和删除 API；URL 和标题会 trim 并拒绝空值；状态只允许 `unstarted`、`trying`、`completed`、`deferred`、`abandoned`；完成状态要求评分 1-5；更新和删除只允许当前用户自己的任务；转换为资源时复用现有资源/文件夹权限校验；TimePick `/todo` 主链路不再导入或调用 Supabase `try_queue_links`；批量导入和未挂路由的旧 Simple 文件保持现状；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器任务新增/开始/完成/删除联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖任务输入规范化、状态规范化、完成评分校验、owner 写权限和字段映射。DreamChasers 新增 `GET/POST /api/timepick/todos` 和 `PATCH/DELETE /api/timepick/todos/[todoId]`；服务层基于 `TimePickTryQueueLink` 实现列表、新增、状态更新和删除。TimePick API client 新增任务清单方法，`TodoPage`、`AddTodoDialog`、`CompleteTodoDialog` 用 API client 替换 Supabase 直连；转换资源用已有 `fetchTimePickFolders` 与 `createTimePickResource`。
+- 处理结论：已入任务池
+- 对应任务编号：T129
+
+### IDEA-20260604-12：TimePick 学习重点切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T115 已让 TimePick 使用 DreamChasers 登录态，T116-T127 已逐步迁移文件夹、资源、标签、搜索、灵感和角色链路。`LearningFocusDialog` 仍直接读取和写入 Supabase `learning_focus`，学习重点列表、新增、删除和同义词更新绕过 DreamChasers 同账号 owner 权限。
+- 目标：新增 T128，让 TimePick 学习重点列表读取、新增、删除和同义词更新走 DreamChasers API，并复用 DreamChasers `TimePickLearningFocus` 模型。
+- 不做：不迁移待办、抽签、Profile、上传/Storage、自动识别、模块树或批量优先级 Edge Function；不修改 Prisma schema；不导入历史数据；不改变学习重点弹窗 UI 和批量优先级按钮语义。
+- 用户价值：用户在统一账号登录后维护学习重点时，学习重点数据进入 DreamChasers PostgreSQL 并受当前登录用户权限保护，后续待办优先级能力有统一数据来源。
+- 涉及模块：TimePick / DreamChasers API / 学习重点。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/learning-focus/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/LearningFocusDialog.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户学习重点列表、新增、同义词更新和删除 API；名称会 trim 并拒绝空名称；同义词会 trim、去空、去重；删除和更新只允许当前用户自己的学习重点；TimePick `LearningFocusDialog` 不再导入或调用 Supabase `learning_focus`；批量优先级 Edge Function 保持现状；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器学习重点新增/更新同义词/删除联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖学习重点字段映射、名称规范化、同义词规范化和 owner 写权限。DreamChasers 新增 `GET/POST /api/timepick/learning-focus` 和 `PATCH/DELETE /api/timepick/learning-focus/[focusId]`；TimePick API client 新增学习重点方法，`LearningFocusDialog` 用 API client 替换 Supabase 直连，保留现有 prompt 和批量优先级 fetch。
+- 处理结论：已入任务池
+- 对应任务编号：T128
+
+### IDEA-20260604-11：TimePick 角色选择切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T115 已让 TimePick 使用 DreamChasers 登录态，T116-T126 已逐步迁移文件夹、资源、标签、搜索和灵感链路。`RoleSelect` 和 `Home` 仍直接写 Supabase `user_roles`，角色选择、默认 collector 初始化和角色切换会绕过 DreamChasers 账号与 PostgreSQL。
+- 目标：新增 T127，让 TimePick 角色读取、设置和切换走 DreamChasers API，并复用 DreamChasers `TimePickUserRole` 模型。
+- 不做：不迁移模块树、待办、抽签、Profile、上传/Storage、自动识别、学习焦点或其他 Supabase 链路；不修改 Prisma schema；不导入历史角色数据；不改变首页默认 collector 行为和角色 UI。
+- 用户价值：用户在统一账号登录后，角色偏好进入 DreamChasers PostgreSQL 并受当前登录用户权限保护，TimePick 启动入口进一步脱离 Supabase。
+- 涉及模块：TimePick / DreamChasers API / 角色选择 / 首页角色切换。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/role/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/lib/dreamchasers-auth.ts`, `/Users/lee/Desktop/Lee/TimePick/src/pages/RoleSelect.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Home.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户角色读取和写入 API；角色只允许 `collector` 或 `searcher`；空值和非法值被拒绝；读取无角色时返回 `null`；写入使用当前登录用户；TimePick `RoleSelect` 和 `Home` 不再导入或调用 Supabase `user_roles`；保留 `localStorage userRole` 缓存；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器默认角色初始化/角色选择或切换联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖角色规范化、非法值拒绝和角色映射。DreamChasers 新增 `GET/PATCH /api/timepick/role`，服务层复用 `TimePickUserRole` upsert；TimePick API client 新增 `fetchTimePickRole` 和 `setTimePickRole`，`RoleSelect` 与 `Home` 用 API client 替换 Supabase `user_roles` 写入，仍保留 `localStorage` 降低首页重复请求。
+- 处理结论：已入任务池
+- 对应任务编号：T127
+
+### IDEA-20260604-10：TimePick 灵感抽屉切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116-T125 已把 TimePick 首页资源、文件夹、标签和搜索页逐步切到 DreamChasers API。`InspirationDrawer` 和 `RecentInspirations` 仍直接查询 Supabase `inspirations`，灵感新增、编辑、删除和转资源状态标记仍绕过 DreamChasers 同账号 owner 权限。
+- 目标：新增 T126，让 TimePick 灵感抽屉和最近灵感模块的灵感读取、新增、编辑、删除和标记已转换走 DreamChasers API。
+- 不做：不迁移待办、抽签、Profile、上传/Storage、自动识别、角色选择、模块树或其他 Supabase 链路；不导入历史数据；不修改 Prisma schema；不改变语音识别 UI；不改变资源弹窗上传和自动识别流程。
+- 用户价值：用户在统一账号登录后记录、查看、编辑、删除灵感，以及把灵感转为资源时，灵感数据进入 DreamChasers PostgreSQL 并受当前登录用户权限校验保护。
+- 涉及模块：TimePick / DreamChasers API / 灵感抽屉 / 最近灵感。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/inspirations/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/InspirationDrawer.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/RecentInspirations.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户灵感列表、新增、编辑、删除和状态更新 API；灵感内容会 trim 并拒绝空内容；删除和更新只允许当前用户自己的灵感；最近灵感只读取 active 状态且限制 3 条；`InspirationDrawer` 和 `RecentInspirations` 不再导入或调用 Supabase；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器新增/编辑/删除/转资源联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖灵感字段映射、输入规范化和 owner 校验。DreamChasers 新增 `GET/POST /api/timepick/inspirations` 和 `PATCH/DELETE /api/timepick/inspirations/[inspirationId]`；列表支持 `status=active` 和 `limit=3`。TimePick API client 新增灵感方法，两个组件改用 API client 替换 Supabase 直连，保留语音识别和转资源 UI 逻辑。
+- 处理结论：已入任务池
+- 对应任务编号：T126
+
+### IDEA-20260604-09：TimePick 搜索页切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116-T124 已把 TimePick 首页资源列表、文件夹、资源删除、资源保存、预览心得和标签管理逐步切到 DreamChasers API。`SearchPage` 仍直接查询 Supabase `search_history` 和 `resources`，会绕过 DreamChasers 同账号 owner 权限和 PostgreSQL 数据。
+- 目标：新增 T125，让 TimePick 搜索页的搜索历史读取/写入/删除和资源搜索结果读取全部走 DreamChasers API。
+- 不做：不迁移灵感、待办、抽签、Profile、上传/Storage、自动识别、角色选择或其他 Supabase 链路；不导入历史数据；不修改 Prisma schema；不新增全文检索索引；不接 AI 搜索或模型能力；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户在统一账号登录后，搜索页看到的历史记录和资源结果来自 DreamChasers PostgreSQL，并受当前登录用户权限校验保护，继续收敛 TimePick 核心查询链路。
+- 涉及模块：TimePick / DreamChasers API / 搜索页 / 搜索历史。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/search/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/pages/SearchPage.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供当前用户资源搜索和搜索历史 API；搜索历史写入会规范化空白并拒绝空关键词；搜索历史读取按最新排序且限制数量；删除历史只允许删除当前用户记录；资源搜索只返回当前用户资源并匹配 name/content/tags/notes/url；TimePick `SearchPage` 不再导入或调用 Supabase；DreamChasers 定向测试、TimePick 定向 ESLint/build、静态红绿检查、真实浏览器搜索/历史联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖关键词规范化、空关键词拒绝、搜索匹配字段和 history owner 校验。DreamChasers 新增 `GET /api/timepick/search?keyword=...` 返回资源结果，`GET/POST /api/timepick/search/history` 管理历史列表和新增记录，`DELETE /api/timepick/search/history/[historyId]` 删除单条历史。TimePick API client 新增搜索和历史方法，`SearchPage` 用这些方法替换 Supabase 直连，保留现有 UI 行为。
+- 处理结论：已入任务池
+- 对应任务编号：T125
+
+### IDEA-20260604-08：TimePick 标签读取和管理切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116-T123 已把 TimePick 首页核心资源列表、文件夹、资源删除、资源基础保存、自动识别 metadata 写回和预览心得保存逐步切到 DreamChasers API。标签云、标签树和标签管理仍从 Supabase `resources.tags` 读取，并通过 Supabase RPC 或资源 update 做标签删除、重命名和新增。
+- 目标：新增 T124，让 `TagCloud`、`TagTree`、`TagManageDialog` 的标签读取和标签管理操作复用 DreamChasers resources API，不再直接调用 Supabase。
+- 不做：不迁移搜索页；不迁移灵感、待办、抽签、Profile、上传/Storage 或自动识别；不新增独立标签表；不导入历史数据；不修改 Prisma schema；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户在统一账号登录后，标签筛选和标签管理基于 DreamChasers PostgreSQL 资源数据，资源主链路继续减少 Supabase 依赖面。
+- 涉及模块：TimePick / DreamChasers API / 标签云 / 标签树 / 标签管理。
+- 可能影响文件：`/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/TagCloud.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/TagTree.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/TagManageDialog.tsx`, `docs/tasks/**`, `docs/superpowers/plans/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：`TagCloud`、`TagTree`、`TagManageDialog` 不再导入 Supabase；标签统计来自 DreamChasers resources API；删除标签会从所有含该标签的资源中移除；重命名标签会替换所有含旧标签的资源并去重；新增标签沿用现有行为，把标签挂到第一个资源，若无资源则提示先创建资源；TimePick 定向 ESLint/build、静态红绿检查、真实浏览器标签读取/新增/重命名/删除联调、文档同步和 diff 检查通过。
+- AI 初步方案：在 TimePick API client 中新增 `getTimePickTagStats`，从 `Resource[]` 统计标签；扩展 `TimePickResourcePayloadPatch` 支持 `tags`，让 `buildTimePickResourcePayload(resource, { tags })` 保留其他 metadata。三个标签组件使用 `fetchTimePickResourceView({ displayMode: "resource-only", selectedType: "all" })` 获取资源，标签管理批量调用 `updateTimePickResource` 更新资源 tags。先运行静态红灯检查确认 Supabase import/RPC 仍存在，再实现并确认转绿。
+- 处理结论：已入任务池
+- 对应任务编号：T124
+
+### IDEA-20260604-05：TimePick 资源卡片自动识别更新切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T119 已把 `ResourceCard` 删除资源切到 DreamChasers API，T120 已把 `ResourceDialog` 基础新增/编辑保存切到 DreamChasers API。`ResourceCard` 自动识别仍在识别成功后直接用 Supabase `.from('resources').update(...)` 写回资源标题、内容和缩略图。Lee 确认旧自动识别 AI 能力之前依赖 Coze 工作流，但该工作流已经关闭，后续会重新优化并嵌入平台系统 AI 能力。
+- 目标：新增 T121，让 `ResourceCard` 自动识别后的资源 metadata 更新走 DreamChasers `updateTimePickResource` API client。
+- 不做：不替换 Supabase Edge Function `auto-recognize`；不替换识别图片下载上传和 Supabase Storage；不迁移上传、灵感、待办、抽签、标签管理、搜索或 Profile 统计；不导入历史数据；不修改 Prisma schema；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户从资源卡片点击自动识别后，识别结果写回当前资源时进入 DreamChasers PostgreSQL 和 owner 权限校验，资源卡片主操作进一步减少 Supabase 写库依赖。
+- 涉及模块：TimePick / DreamChasers API / ResourceCard / 自动识别结果写回。
+- 可能影响文件：`/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceCard.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：`ResourceCard` 自动识别结果写回不再使用 Supabase `.from('resources').update`；写回时保留原资源 section、folder、url、notes、tags、source inspiration、file size 等字段，只覆盖识别返回的 name/content/thumbnail；Supabase Edge Function 和 Storage 上传仍保留原状；旧 Coze 自动识别工作流关闭导致真实识别不作为本任务验收前置；TimePick 定向 ESLint/build、静态回归检查、文档同步和 diff 检查通过。
+- AI 初步方案：在 TimePick API client 中新增 `buildTimePickResourcePayload`，从现有 `Resource` 合成完整更新 payload，避免调用 DreamChasers `PATCH` 时丢失必填字段。`ResourceCard.handleAutoRecognize` 的最终更新改调用 `updateTimePickResource(resource.id, buildTimePickResourcePayload(resource, updateData))`。先用静态回归命令确认旧 Supabase update 存在，再实现并确认命令转绿。
+- 处理结论：已入任务池
+- 对应任务编号：T121
+
+### IDEA-20260604-06：TimePick 自动识别重做为平台系统 AI 能力
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：TimePick 旧自动识别能力此前依赖 Coze 工作流，现在该工作流已经关闭。后续需要重新优化自动识别，并嵌入 DreamChasers 平台系统 AI 能力；图片生成/图片能力部分计划单独做一个 skill。
+- 目标：后续单独拆任务，设计并实现新的平台 AI 自动识别能力，替换旧 Supabase Edge Function / Coze 工作流；图片生成能力另做独立 skill。
+- 不做：本次不实现新 AI 能力；不接真实模型；不迁移 Storage；不修改现有 T121 代码范围。
+- 用户价值：避免继续依赖已关闭的 Coze 工作流，让 TimePick 自动识别后续走平台统一 AI 能力，便于账号、额度、模型来源和后续图片生成能力统一治理。
+- 涉及模块：TimePick / DreamChasers AI Gateway / 自动识别 / 图片生成 skill。
+- 可能影响文件：后续待拆，可能涉及 `apps/web/src/lib/ai/**`, `apps/web/src/app/api/timepick/**`, `/Users/lee/Desktop/Lee/TimePick/src/**`, `docs/tasks/**`, `docs/superpowers/specs/**`, Codex skill 目录。
+- 是否影响另一方任务：待评估。后续如果涉及平台 AI 或图片 skill，需要单独确认文件边界。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：待后续任务明确。
+- AI 初步方案：先做规划任务，明确自动识别输入/输出 JSON、平台 AI provider 调用、账号额度、失败降级、图片生成 skill 边界，再拆实现任务。
+- 处理结论：已入任务池
+- 对应任务编号：T122
+
+### IDEA-20260604-07：TimePick 资源预览心得保存切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T120 已提供 DreamChasers 资源基础编辑 API，`ResourcePreview` 预览弹窗中的“保存心得”仍直接调用 Supabase `.from('resources').update({ notes })`。
+- 目标：新增 T123，让 `ResourcePreview` 保存心得走 DreamChasers `updateTimePickResource` API client。
+- 不做：不改预览渲染；不替换资源文件打开/图片/视频预览；不迁移上传、自动识别、Storage、灵感、待办、抽签、标签管理、搜索或 Profile 统计；不导入历史数据；不修改 Prisma schema。
+- 用户价值：用户在资源预览弹窗保存心得时，写回进入 DreamChasers PostgreSQL 和 owner 权限校验，继续减少 Supabase 写库依赖。
+- 涉及模块：TimePick / DreamChasers API / ResourcePreview / 资源心得。
+- 可能影响文件：`/Users/lee/Desktop/Lee/TimePick/src/components/ResourcePreview.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：`ResourcePreview` 不再导入 Supabase；保存心得调用 DreamChasers API client；保存时保留原资源 section、folder、url、content、tags、thumbnail、source inspiration、file size 等字段，只覆盖 notes；TimePick 定向 ESLint/build、静态红绿检查、真实浏览器保存心得联调、文档同步和 diff 检查通过。
+- AI 初步方案：复用 T121 新增的 `buildTimePickResourcePayload`，将 `handleSaveNotes` 改为 `updateTimePickResource(resource.id, buildTimePickResourcePayload(resource, { notes }))`。如果 helper 类型缺少 notes patch，先扩展 helper 类型并用静态红绿检查确认 `ResourcePreview` 的 Supabase update 被移除。
+- 处理结论：已入任务池
+- 对应任务编号：T123
+
+### IDEA-20260604-04：TimePick 资源录入编辑基础保存切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116-T119 已把 TimePick 首页文件夹树、资源列表、文件夹增删改、资源移动、子文件夹卡片和资源删除切到 DreamChasers API。`ResourceDialog` 仍直接读取 Supabase sections/folders，并用 Supabase 保存新增/编辑资源，是资源主链路里下一块高频基础操作。
+- 目标：新增 T120，让 `ResourceDialog` 的基础资源新增/编辑保存、folders 读取和 sections 读取切到 DreamChasers API。
+- 不做：不替换上传文件到 Supabase Storage；不替换自动识别 Edge Function；不替换识别图片下载上传；不迁移灵感状态回写、待办、抽签、标签管理、搜索或 Profile 统计；不导入历史数据；不修改 Prisma schema；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户在统一账号登录后可以从 TimePick 表单新增和编辑基础资源元数据，资源 CRUD 主链路进一步进入 DreamChasers PostgreSQL 和权限校验。
+- 涉及模块：TimePick / DreamChasers API / ResourceDialog / 资源保存。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/resources/**`, `apps/web/src/app/api/timepick/sections/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceDialog.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 提供 sections 读取、资源新增和资源基础编辑 API；所有资源保存校验当前用户 owner、section 存在、folder 属于当前用户；TimePick `ResourceDialog` 基础保存和 folders/sections 读取不再直连 Supabase；上传和自动识别仍保留原 Supabase 链路；DreamChasers 测试、类型检查、构建、TimePick 定向 ESLint/build、真实浏览器新增/编辑资源联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，覆盖资源名称规范化、section/folder 权限校验、保存 payload 规范化和编辑 owner 校验。DreamChasers 新增 `GET /api/timepick/sections`、`POST /api/timepick/resources`，并扩展 `[resourceId]` 的 `PATCH` 支持基础字段更新；TimePick API client 新增 `fetchTimePickSections`、`createTimePickResource`、`updateTimePickResource`，`ResourceDialog` 复用已有上传和自动识别逻辑，只把最终 metadata 保存改走 DreamChasers API。
+- 处理结论：已入任务池
+- 对应任务编号：T120
+
+### IDEA-20260604-03：TimePick 资源卡片删除切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116-T118 已把 TimePick 首页文件夹、资源列表、文件夹新增/编辑/删除、子文件夹卡片和资源移动主链路切到 DreamChasers API。`ResourceCard` 的删除资源仍直接调用 Supabase，是资源列表里剩余的高频基础操作。
+- 目标：新增 T119，DreamChasers 提供当前用户资源删除 API，并让 TimePick `ResourceCard` 删除资源时调用 DreamChasers API client。
+- 不做：不替换 `ResourceDialog` 新增/编辑；不替换自动识别、缩略图下载上传、Supabase Storage、灵感、待办、抽签、标签管理；不导入历史数据；不修改 Prisma schema；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户在统一账号登录后可以从资源列表删除自己的资源，删除操作进入 DreamChasers PostgreSQL 权限校验，进一步收敛首页核心资源管理闭环。
+- 涉及模块：TimePick / DreamChasers API / 资源卡片。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/resources/[resourceId]/route.ts`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceCard.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers `DELETE /api/timepick/resources/[resourceId]` 只允许当前用户删除自己的资源；TimePick API client 新增删除资源方法；`ResourceCard` 删除资源不再使用 Supabase；自动识别、缩略图上传和编辑仍保持原状；DreamChasers 测试、类型检查、构建、TimePick 定向 ESLint/build、真实浏览器删除资源联调、文档同步和 diff 检查通过。
+- AI 初步方案：先补纯规则测试，新增 `canDeleteTimePickResource` 校验 requester 与 resource owner 一致。DreamChasers 服务层新增 `deleteTimePickResource`，route 增加 `DELETE` 并复用 CORS。TimePick `timepick-api.ts` 新增 `deleteTimePickResource`，`ResourceCard.handleDelete` 改调用该方法；保留文件内 Supabase import，因为自动识别和上传仍使用 Supabase。
+- 处理结论：已入任务池
+- 对应任务编号：T119
+
+### IDEA-20260604-02：TimePick 子文件夹卡片操作切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116/T117 已把 TimePick 首页的文件夹树、资源列表、文件夹删除、资源移动、文件夹新增和重命名切到 DreamChasers API。T117 收尾时确认 `SubFolderCard` 仍含 Supabase 调用，主要覆盖子文件夹统计、删除和拖拽移动资源。
+- 目标：新增 T118，让 TimePick `SubFolderCard` 不再直接调用 Supabase，子文件夹统计、删除子文件夹和拖拽移动资源统一复用 DreamChasers API client。
+- 不做：不替换资源新增/编辑/上传；不替换 `ResourceCard`、`ResourceDialog`、灵感、待办、抽签、标签管理、AI 识别或 Storage；不导入历史数据；不修改 Prisma schema；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户在 TimePick 首页子文件夹卡片中看到的数量和执行的删除/移动操作都走统一账号和 PostgreSQL API，进一步减少 Supabase 依赖面。
+- 涉及模块：TimePick / DreamChasers API / 子文件夹卡片。
+- 可能影响文件：`/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/SubFolderCard.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：`SubFolderCard` 不再直接导入或调用 Supabase；子文件夹资源数/子文件夹数统计来自 DreamChasers API；删除子文件夹调用 DreamChasers 文件夹删除 API；拖拽资源到子文件夹调用 DreamChasers 资源移动 API；TimePick 定向 ESLint/build、真实浏览器子文件夹统计/删除/拖拽联调、文档同步和 diff 检查通过。
+- AI 初步方案：优先复用 T116 已有 `fetchTimePickFolders`、`fetchTimePickResources`、`deleteTimePickFolder`、`moveTimePickResource`，在 `SubFolderCard` 中按父文件夹 ID 获取直接子文件夹和直接资源数量，删除和 drop handler 改走 API client。若现有资源查询接口已支持 `folderId`，不新增 DreamChasers API；只在发现字段缺口时补最小 client 类型。
+- 处理结论：已入任务池
+- 对应任务编号：T118
+
+### IDEA-20260604-01：TimePick 文件夹新增和重命名切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T116 已把 TimePick 文件夹树读取、资源列表读取、删除文件夹和移动资源切到 DreamChasers API，并完成真实浏览器 CORS/cookie 联调。下一步需要让 `FolderDialog` 的新建文件夹和编辑文件夹也脱离 Supabase。
+- 目标：新增 T117，DreamChasers 提供 TimePick 创建/更新文件夹 API，并让 TimePick `FolderDialog` 使用 DreamChasers API 完成文件夹列表读取、同级重名检查、新建和重命名/移动父级。
+- 不做：不替换资源新增/编辑/上传；不替换灵感、待办、抽签、标签管理、AI 识别；不导入历史数据；不修改 Prisma schema；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：用户在统一账号登录后的首页文件夹主链路可以完成“看、建、改、删、移动资源”的闭环，减少对 Supabase 的依赖面。
+- 涉及模块：TimePick / DreamChasers API / 文件夹管理。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/folders/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/FolderDialog.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers API 支持当前用户创建文件夹、更新文件夹名称和父级，并校验 owner、同级重名和循环父级；TimePick `FolderDialog` 不再直接调用 Supabase；测试、类型检查、构建、TimePick 定向 ESLint/build、真实浏览器新建和重命名文件夹联调、文档同步和 diff 检查通过。
+- AI 初步方案：复用 T116 的 folders API 和 CORS helper，在 `POST /api/timepick/folders` 创建文件夹，在 `PATCH /api/timepick/folders/[folderId]` 更新文件夹。纯规则层新增文件夹名称规范化、同级重名和循环父级判断测试；前端复用 `fetchTimePickFolders`，新增 `createTimePickFolder` / `updateTimePickFolder`。
+- 处理结论：已入任务池
+- 对应任务编号：T117
+
+### IDEA-20260603-06：TimePick 文件夹和资源列表切到 DreamChasers API
+
+- 提出人：Lee
+- 提出时间：2026-06-03
+- 背景：T114 已建立 TimePick PostgreSQL 迁移基座，T115 已把 TimePick 登录壳切到 DreamChasers 同账号 bootstrap。下一步需要开始替换 TimePick 业务数据访问，优先切用户进入首页最核心的文件夹树和资源列表。
+- 目标：新增 T116，DreamChasers 提供 TimePick 文件夹/资源列表 API；TimePick `FolderTree` 和 `ResourceList` 改用 DreamChasers API 读取文件夹、资源、子文件夹和面包屑，并支持删除文件夹、拖拽移动资源的最小操作。
+- 不做：不替换新增/编辑资源表单；不迁移文件上传和 Supabase Storage；不替换灵感、待办、抽签、标签管理、AI 识别；不导入历史数据；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：登录壳切到统一账号后，TimePick 首页主数据读取也开始进入 DreamChasers PostgreSQL，为后续逐屏替换打通路径。
+- 涉及模块：TimePick / DreamChasers API / PostgreSQL / Prisma。
+- 可能影响文件：`apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/**`, `/Users/lee/Desktop/Lee/TimePick/src/components/FolderTree.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceList.tsx`, `docs/tasks/**`, `docs/progress/2026-06-03-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 迁移范围；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers API 可返回当前用户文件夹、资源、子文件夹和面包屑；文件夹删除和资源移动校验 owner；TimePick 文件夹树和资源列表不再直接调用 Supabase 读取；DreamChasers 相关测试、TimePick build、文档同步和 diff 检查通过。
+- AI 初步方案：API 返回 Supabase 兼容字段（`parent_id`, `folder_id`, `section_id`, `sections`），减少 TimePick 组件改动。权限统一使用 Auth.js 当前用户 email 回查平台 `User.id`，所有查询都带 `userId`。
+- 处理结论：已入任务池
+- 对应任务编号：T116
+
+### IDEA-20260603-05：TimePick 前端登录壳切换到 DreamChasers 同账号
+
+- 提出人：Lee
+- 提出时间：2026-06-03
+- 背景：T114 已在 DreamChasers PostgreSQL 中建立 TimePick 同账号迁移基座和 `GET /api/timepick/bootstrap`。下一步需要让 TimePick 前端不再优先使用自己的 Supabase 用户名/密码登录，而是通过 DreamChasers 账号中心进入，并读取 bootstrap 身份。
+- 目标：新增 T115，在 `/Users/lee/Desktop/Lee/TimePick/` 中新增 DreamChasers API 客户端和登录壳：启动时调用 `/api/timepick/bootstrap` 获取同账号用户；未登录时跳转到 DreamChasers `/login?returnUrl=<TimePick当前地址>`；保留旧 Supabase 数据查询不在本任务替换。
+- 不做：不迁移所有 TimePick 资源/文件夹/待办/抽签数据查询；不删除 Supabase client；不导入历史数据；不改 DreamChasers 数据库 schema；不接 AI Gateway；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：TimePick 用户入口开始收敛到 DreamChasers 统一账号，为后续逐屏替换数据 API 和历史数据导入建立前端入口。
+- 涉及模块：TimePick / DreamChasers 账号中心 / 产品型工具。
+- 可能影响文件：`/Users/lee/Desktop/Lee/TimePick/package.json`, `/Users/lee/Desktop/Lee/TimePick/package-lock.json`, `/Users/lee/Desktop/Lee/TimePick/src/lib/**`, `/Users/lee/Desktop/Lee/TimePick/src/contexts/AuthContext.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/AuthGuard.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Login.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Register.tsx`, `docs/tasks/**`, `docs/progress/2026-06-03-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的 TimePick 登录壳和 DreamChasers 文档；不修改 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：TimePick 新增最小测试脚本；DreamChasers 登录 URL 生成规则有测试；AuthContext 可通过 bootstrap 设置平台用户；登录/注册入口改为跳转 DreamChasers 账号中心；`npm run test`、`npm run lint`、`npm run build` 在 TimePick 通过；DreamChasers `npm run docs:sync` 和 `git diff --check` 通过。
+- AI 初步方案：新增 `src/lib/dreamchasers-auth.ts`，封装 API base、登录 URL、bootstrap fetch 和平台用户转换；AuthContext 保持 `user.id` 等现有调用兼容，但后端来源改成 DreamChasers bootstrap。旧 Supabase signIn/signUp 入口改为跳转平台登录/注册说明，后续 T116 再替换资源数据 API。
+- 处理结论：已入任务池
+- 对应任务编号：T115
+
+### IDEA-20260603-04：TimePick 直接迁移到 DreamChasers Postgres 并共用平台账号
+
+- 提出人：Lee
+- 提出时间：2026-06-03
+- 背景：T110-T113 已完成 DreamChasers 邮箱登录、账号中心、产品 token 生成和消费 API。Lee 确认拾光 TimePick 不再做 Supabase Auth 到平台账号的桥接层，而是直接迁移到 DreamChasers PostgreSQL，并使用同一套 DreamChasers 账号作为 TimePick 数据 owner。
+- 目标：新增 T114，先建立 TimePick 迁移基座：把 TimePick 核心业务表映射到 DreamChasers Prisma/Postgres，owner 字段引用平台 `User.id`，新增受 Auth.js 保护的 TimePick bootstrap API，作为后续替换 TimePick Supabase 查询和导入历史数据的基础。
+- 不做：不在本任务内完成 TimePick 全前端改造；不迁移 Supabase Storage 文件；不迁移历史线上数据；不接 AI Gateway；不删除 TimePick 现有 Supabase 代码；不修改 PDF 工具箱、胡了卜游戏、AI 修图或部署脚本。
+- 用户价值：TimePick 与 DreamChasers 主站使用同一个账号，后续用户登录平台后即可进入拾光，拾光数据也进入平台统一 PostgreSQL，便于后续权益、AI 能力、备份和商业化统一治理。
+- 涉及模块：平台账号中心 / TimePick / 产品型工具 / PostgreSQL / Prisma / Auth.js。
+- 可能影响文件：`apps/web/prisma/**`, `apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/**`, `apps/web/src/generated/prisma/**`, `/Users/lee/Desktop/Lee/TimePick/src/**`（后续任务）, `docs/tasks/**`, `docs/superpowers/plans/**`, `docs/progress/2026-06-03-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务限定在 Lee 负责的平台账号、数据库和 TimePick 接入范围；不修改 Jaspon 负责的 AI 修图、AI 搜索、埋点或部署范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：T114 任务和领取分片创建；TimePick 核心 schema 已落到 DreamChasers Prisma，owner 引用平台 `User.id`；新增 bootstrap API 能在已登录平台用户下返回/创建 TimePick profile 和默认 section；测试、Prisma 校验、类型检查、构建、文档同步和 diff 检查通过。
+- AI 初步方案：先盘点 TimePick Supabase 表，保留原表语义但统一加 `timePick` 前缀，避免和主站 `ContentItem` 等模型混淆。第一批落表覆盖 profile、role、section、folder、resource、inspiration、search history、tag group、try queue、learning focus、fortune draw。API 层先做 bootstrap，后续任务逐屏替换 TimePick 前端的 Supabase client 查询。
+- 处理结论：已入任务池
+- 对应任务编号：T114
+
 ### IDEA-20260603-03：统一账号中心、产品型工具入口和 AI Gateway 规划
 
 - 提出人：Lee

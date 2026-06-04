@@ -39,3 +39,17 @@
   - PDF 转图片。
   - 基础压缩。
 - 下一步：继续补 PDF 转图片和基础压缩。
+
+## 2026-06-03
+
+- 修复 PDF 转 Word Beta 导出格式问题。
+- 根因：旧实现抽取 PDF 文本后生成 HTML，并以 `.doc` / `application/msword` 下载；部分编辑器会直接把它识别为 HTML，且不符合用户预期的 Word 文档包。
+- 修复：新增浏览器端最小 OOXML `.docx` 生成器，输出真实 ZIP/DOCX 包，包含 `[Content_Types].xml`、`_rels/.rels` 和 `word/document.xml`。
+- 下载结果改为 `dreamchasers-pdf-to-word-beta.docx`，MIME 改为 `application/vnd.openxmlformats-officedocument.wordprocessingml.document`。
+- 新增回归测试，断言生成结果以 DOCX ZIP 文件头 `PK` 开头，避免再次回退为 HTML 文档。
+- 已完成验证：
+  - `npm run test -w apps/web -- pdf`：通过，12 个测试通过。
+  - `npm run typecheck -w apps/web`：通过。
+  - `npm run lint -w apps/web`：通过，仍存在 Prisma 生成文件既有 warning。
+  - `npm run build -w apps/web`：通过。
+- 遗留：PDF 转 Word 仍是普通文本抽取 Beta，不做 OCR 和复杂版式还原。

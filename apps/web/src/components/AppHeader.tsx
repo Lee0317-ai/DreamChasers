@@ -7,6 +7,7 @@ export function AppHeader() {
   const pathname = usePathname();
   const isTools = pathname.startsWith("/tools");
   const isGames = pathname.startsWith("/games");
+  const isAccount = pathname.startsWith("/account") || pathname.startsWith("/login");
 
   if (pathname === "/") {
     return null;
@@ -20,7 +21,7 @@ export function AppHeader() {
     return null;
   }
 
-  if (isTools) {
+  if (isTools || isAccount) {
     return (
       <nav className="nav tools-nav" id="nav">
         <div className="container nav-inner">
@@ -43,6 +44,11 @@ export function AppHeader() {
             </li>
             <li>
               <Link href="/tools#ai">AI</Link>
+            </li>
+            <li>
+              <Link className={isAccount ? "active" : ""} href="/account">
+                账号
+              </Link>
             </li>
             <li>
               <Link className="portal-btn" href="/games">
@@ -82,6 +88,9 @@ export function AppHeader() {
             <Link className="portal-btn" href="/tools">
               去工具箱
             </Link>
+          </li>
+          <li>
+            <Link href="/account">账号</Link>
           </li>
         </ul>
       </div>

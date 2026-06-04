@@ -99,6 +99,398 @@ model ApiCredential {
   createdAt  DateTime  @default(now())
 }
 
+model User {
+  id              String             @id @default(cuid())
+  name            String?
+  email           String             @unique
+  emailVerified   DateTime?
+  image           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  accounts        Account[]
+  sessions        Session[]
+  profile         UserProfile?
+  apiKeys         PlatformApiKey[]
+  auditLogs       AccountAuditLog[]
+  creditWallets   CreditWallet[]
+  productSessions ProductSession[]
+  memberships     ProductMembership[]
+  timePickProfile  TimePickProfile?
+  timePickRoles    TimePickUserRole[]
+  timePickFolders  TimePickFolder[]
+  timePickResources TimePickResource[]
+  timePickInspirations TimePickInspiration[]
+  timePickSearchHistory TimePickSearchHistory[]
+  timePickTagGroups TimePickTagGroup[]
+  timePickLearningFocus TimePickLearningFocus[]
+  timePickTryQueueLinks TimePickTryQueueLink[]
+  timePickFortuneDraws TimePickFortuneDraw[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model EmailLoginRequest {
+  email           String   @id
+  lastRequestedAt DateTime
+  requestCount    Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  displayName String?
+  locale      String   @default("zh-CN")
+  timezone    String   @default("Asia/Shanghai")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Product {
+  id              String              @id @default(cuid())
+  slug            String              @unique
+  name            String
+  status          ProductStatus        @default(active)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  memberships     ProductMembership[]
+  productSessions ProductSession[]
+}
+
+model ProductMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
+
+model Entitlement {
+  id          String            @id @default(cuid())
+  code        String            @unique
+  name        String
+  description String?
+  status      EntitlementStatus @default(active)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model CreditWallet {
+  id        String         @id @default(cuid())
+  userId    String
+  scope     String         @default("platform")
+  balance   Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledger    CreditLedger[]
+
+  @@unique([userId, scope])
+  @@index([userId])
+}
+
+model CreditLedger {
+  id        String       @id @default(cuid())
+  walletId  String
+  amount    Int
+  type      CreditLedgerType
+  note      String?
+  createdAt DateTime     @default(now())
+  wallet    CreditWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, createdAt])
+}
+
+model PlatformApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  keyHash    String    @unique
+  keyHint    String
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model ProductSession {
+  id          String    @id @default(cuid())
+  userId      String
+  productId   String
+  tokenHash   String    @unique
+  returnUrl   String
+  consumedAt  DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([productId, createdAt])
+}
+
+model CredentialReference {
+  id         String                 @id @default(cuid())
+  userId     String?
+  source     CredentialSource
+  label      String
+  reference  String?
+  keyHint    String?
+  active     Boolean                @default(true)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+
+  @@index([userId, source])
+}
+
+model AccountAuditLog {
+  id        String             @id @default(cuid())
+  userId    String?
+  action    AccountAuditAction
+  ipHash    String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime           @default(now())
+  user      User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([action, createdAt])
+}
+
+model TimePickProfile {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  username                String   @unique
+  nickname                String?
+  birthDate               DateTime?
+  defaultTryQueueFolderId String?
+  storageUsed             BigInt   @default(0)
+  storageLimit            BigInt   @default(1073741824)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([username])
+}
+
+model TimePickUserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+model TimePickSection {
+  id        String             @id @default(cuid())
+  name      String
+  type      String
+  sortOrder Int                @default(0)
+  createdAt DateTime           @default(now())
+  resources TimePickResource[]
+
+  @@unique([type])
+  @@index([sortOrder])
+}
+
+model TimePickFolder {
+  id        String             @id @default(cuid())
+  userId    String
+  name      String
+  parentId  String?
+  sortOrder Int                @default(0)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    TimePickFolder?    @relation("TimePickFolderChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  TimePickFolder[]   @relation("TimePickFolderChildren")
+  resources TimePickResource[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@index([name])
+}
+
+model TimePickResource {
+  id                  String                 @id @default(cuid())
+  userId              String
+  sectionId           String
+  folderId            String?
+  parentId            String?
+  name                String
+  url                 String?
+  content             String?
+  fileType            String?
+  fileSize            BigInt                 @default(0)
+  thumbnailUrl        String?
+  notes               String?
+  tags                String[]               @default([])
+  sourceInspirationId String?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  section             TimePickSection        @relation(fields: [sectionId], references: [id])
+  folder              TimePickFolder?        @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  parent              TimePickResource?      @relation("TimePickResourceChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children            TimePickResource[]     @relation("TimePickResourceChildren")
+  sourceInspiration   TimePickInspiration?   @relation("TimePickResourceSourceInspiration", fields: [sourceInspirationId], references: [id], onDelete: SetNull)
+  convertedInspirations TimePickInspiration[] @relation("TimePickInspirationConvertedResource")
+  convertedTryQueueLinks TimePickTryQueueLink[] @relation("TimePickTryQueueConvertedResource")
+
+  @@index([userId])
+  @@index([sectionId])
+  @@index([folderId])
+  @@index([name])
+}
+
+model TimePickInspiration {
+  id                    String              @id @default(cuid())
+  userId                String
+  content               String
+  location              String?
+  status                String              @default("active")
+  convertedToResourceId String?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  convertedToResource   TimePickResource?   @relation("TimePickInspirationConvertedResource", fields: [convertedToResourceId], references: [id], onDelete: SetNull)
+  resources             TimePickResource[]  @relation("TimePickResourceSourceInspiration")
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([convertedToResourceId])
+}
+
+model TimePickSearchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  keyword   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model TimePickTagGroup {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  color     String   @default("#3B82F6")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model TimePickLearningFocus {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  weight    Float    @default(1)
+  synonyms  String[] @default([])
+  isPaused  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model TimePickTryQueueLink {
+  id                    String            @id @default(cuid())
+  userId                String
+  url                   String
+  title                 String?
+  description           String?
+  tags                  String[]          @default([])
+  status                String            @default("unstarted")
+  priorityScore         Float?
+  priorityLevel         String?
+  queuePosition         Int?
+  isPriorityLocked      Boolean           @default(false)
+  rating                Int?
+  notes                 String?
+  startTime             DateTime?
+  completeTime          DateTime?
+  archivedAt            DateTime?
+  convertedToResourceId String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  convertedToResource   TimePickResource? @relation("TimePickTryQueueConvertedResource", fields: [convertedToResourceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, priorityLevel, queuePosition])
+}
+
+model TimePickFortuneDraw {
+  id             String   @id @default(cuid())
+  userId         String
+  birthDate      DateTime
+  drawDate       DateTime
+  imageUrl       String
+  fortuneContent String
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, drawDate])
+  @@index([userId])
+  @@index([drawDate])
+}
+
 enum ContentType {
   tool
   game
@@ -108,4 +500,40 @@ enum ContentStatus {
   active
   draft
   archived
+}
+
+enum ProductStatus {
+  active
+  draft
+  archived
+}
+
+enum EntitlementStatus {
+  active
+  retired
+}
+
+enum CreditLedgerType {
+  grant
+  usage
+  adjustment
+  refund
+}
+
+enum CredentialSource {
+  platform_pool
+  user_ephemeral_key
+  external_gateway_byok
+  user_encrypted_vault
+  local_connector
+}
+
+enum AccountAuditAction {
+  login_requested
+  login_success
+  login_failed
+  logout
+  api_key_created
+  api_key_revoked
+  product_session_created
 }

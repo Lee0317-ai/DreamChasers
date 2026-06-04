@@ -1,0 +1,37 @@
+# T124：TimePick 标签读取和管理 API 切换完成记录
+
+- 完成时间：2026-06-04
+- 负责人：Lee
+- 修改文件：
+  - `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`
+  - `/Users/lee/Desktop/Lee/TimePick/src/components/TagCloud.tsx`
+  - `/Users/lee/Desktop/Lee/TimePick/src/components/TagTree.tsx`
+  - `/Users/lee/Desktop/Lee/TimePick/src/components/TagManageDialog.tsx`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T124-timepick-tag-api-cutover.md`
+  - `docs/tasks/claims/T124-lee.md`
+  - `docs/superpowers/plans/2026-06-04-timepick-tag-api-cutover.md`
+  - `docs/progress/2026-06-04-lee.md`
+  - `docs/completion/2026-06-04-task-T124-timepick-tag-api-cutover.md`
+- 实现内容：
+  - `TagCloud`、`TagTree`、`TagManageDialog` 不再导入 Supabase。
+  - 标签统计改为通过 DreamChasers `fetchTimePickResourceView({ displayMode: "resource-only", selectedType: "all" })` 获取当前用户资源后计算。
+  - `TagManageDialog` 的标签新增、重命名和删除改为调用 `updateTimePickResource` 写回资源 `tags`。
+  - TimePick API client 新增 `getTimePickTagStats`，并扩展 `buildTimePickResourcePayload` 支持 `tags` patch。
+- 验证命令：
+  - 静态红灯检查：确认旧 Supabase 标签路径存在并返回 exit 1。
+  - 静态绿灯检查：确认 `TagCloud`、`TagTree`、`TagManageDialog` 不再含 Supabase import、Supabase resources 查询或 `delete_tag` / `rename_tag` RPC。
+  - `npx eslint src/lib/dreamchasers-auth.ts src/lib/timepick-api.ts src/components/TagCloud.tsx src/components/TagTree.tsx src/components/TagManageDialog.tsx`（TimePick）
+  - `npm run build`（TimePick）
+  - Kimi WebBridge 真实浏览器检查标签读取、新增、重命名和删除。
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 静态红绿检查、TimePick 定向 ESLint、TimePick build 均通过。
+  - 浏览器联调中，临时资源 `T124 标签临时资源` 创建成功，初始标签 `t124-old` 在标签树显示。
+  - 标签管理新增 `t124-new`、重命名 `t124-old` 为 `t124-renamed`、删除 `t124-renamed` 均触发 DreamChasers `PATCH /api/timepick/resources/cmpyta6ic00046ai8cvj4oc8z` 200；删除返回体确认 `tags: ["t124-new"]`。
+  - 临时资源已通过 `DELETE /api/timepick/resources/cmpyta6ic00046ai8cvj4oc8z` 返回 200 清理，资源列表和标签页回到空状态。
+- 遗留问题：
+  - 本任务不迁移搜索页、灵感、待办、抽签、Profile、上传/Storage 或自动识别。
+  - 旧自动识别 AI 能力依赖的 Coze 工作流已关闭，后续由 T122 重新设计为平台系统 AI 能力。
