@@ -60,9 +60,39 @@ input {
 }
 
 .portal {
+  position: relative;
   display: flex;
   width: 100%;
   min-height: 100vh;
+}
+
+.portal-account-links {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+}
+
+.portal-account-links a {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  border: 1px solid oklch(100% 0 0 / 0.32);
+  border-radius: var(--radius-sm);
+  background: oklch(100% 0 0 / 0.88);
+  color: oklch(18% 0.02 260);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0 14px;
+  backdrop-filter: blur(12px);
+}
+
+.portal-account-links a.primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: #fff;
 }
 
 .portal-side {

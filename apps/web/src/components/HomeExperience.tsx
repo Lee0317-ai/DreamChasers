@@ -3,6 +3,13 @@ import Link from "next/link";
 export function HomeExperience() {
   return (
     <div className="portal">
+      <div className="portal-account-links" aria-label="账号入口">
+        <Link href="/login">登录</Link>
+        <Link className="primary" href="/register">
+          注册
+        </Link>
+      </div>
+
       <Link className="portal-side tools" href="/tools">
         <span className="portal-content">
           <span className="portal-icon">T</span>

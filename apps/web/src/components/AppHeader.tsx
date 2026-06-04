@@ -46,8 +46,13 @@ export function AppHeader() {
               <Link href="/tools#ai">AI</Link>
             </li>
             <li>
-              <Link className={isAccount ? "active" : ""} href="/account">
-                账号
+              <Link className={pathname.startsWith("/login") || pathname.startsWith("/account") ? "active" : ""} href="/login">
+                登录
+              </Link>
+            </li>
+            <li>
+              <Link className={pathname.startsWith("/register") ? "active" : ""} href="/register">
+                注册
               </Link>
             </li>
             <li>
@@ -90,7 +95,10 @@ export function AppHeader() {
             </Link>
           </li>
           <li>
-            <Link href="/account">账号</Link>
+            <Link href="/login">登录</Link>
+          </li>
+          <li>
+            <Link href="/register">注册</Link>
           </li>
         </ul>
       </div>
