@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { sanitizeReturnUrl } from "@/lib/account/account-security";
 import { sendLoginEmail } from "./email-login";
 import { verifyPassword } from "./password";
+import { canUsePasswordLogin } from "./auth-rules";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
@@ -90,7 +91,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           where: { email }
         });
 
-        if (!user?.emailVerified || !(await verifyPassword(password, user.passwordHash))) {
+        if (!user) {
+          return null;
+        }
+
+        const passwordMatches = await verifyPassword(password, user.passwordHash);
+
+        if (
+          !canUsePasswordLogin({
+            emailVerified: user.emailVerified,
+            passwordMatches
+          })
+        ) {
           return null;
         }
 

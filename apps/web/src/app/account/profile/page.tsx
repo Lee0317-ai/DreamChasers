@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { AccountShell } from "@/components/account/AccountShell";
-import { AccountSection, AccountStatusPill } from "@/components/account/AccountUi";
+import { AccountSection } from "@/components/account/AccountUi";
 import { getAccountDashboard } from "@/lib/account/account-data";
 import { buildAccountInitial } from "@/lib/account/account-view-model";
 import { requireUser } from "@/lib/auth/session";
@@ -21,7 +21,7 @@ export default async function AccountProfilePage() {
         <div>
           <p className="account-kicker">Profile</p>
           <h1>个人信息</h1>
-          <p className="account-muted">第一阶段展示统一账号资料；昵称编辑、手机号和实名能力分任务开放。</p>
+          <p className="account-muted">展示当前统一账号资料。更多资料编辑能力后续独立接入。</p>
         </div>
       </header>
 
@@ -30,7 +30,7 @@ export default async function AccountProfilePage() {
           <span className="account-avatar">{initial}</span>
           <div>
             <strong>{account.name}</strong>
-            <p className="account-muted">昵称编辑会接入 UserProfile。</p>
+            <p className="account-muted">当前登录账号资料。</p>
           </div>
         </div>
       </AccountSection>
@@ -41,17 +41,6 @@ export default async function AccountProfilePage() {
             <strong>邮箱</strong>
             <span>{account.email}</span>
           </div>
-          <div className="account-list-row">
-            <strong>手机号</strong>
-            <AccountStatusPill>未绑定</AccountStatusPill>
-          </div>
-        </div>
-      </AccountSection>
-
-      <AccountSection title="实名信息">
-        <div className="account-list-row">
-          <strong>认证状态</strong>
-          <AccountStatusPill>未开放</AccountStatusPill>
         </div>
       </AccountSection>
     </AccountShell>

@@ -3,29 +3,14 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Badge,
-  Bot,
-  Boxes,
-  Coins,
-  CreditCard,
-  KeyRound,
-  LayoutDashboard,
-  Monitor,
-  Shield,
-  User
-} from "lucide-react";
+import { Boxes, Coins, KeyRound, LayoutDashboard, Shield, User } from "lucide-react";
 import { accountNavGroups, findActiveAccountNavItem, type AccountNavItem } from "@/lib/account/account-navigation";
 
 const iconMap = {
-  badge: Badge,
-  bot: Bot,
   boxes: Boxes,
   coins: Coins,
-  "credit-card": CreditCard,
   key: KeyRound,
   "layout-dashboard": LayoutDashboard,
-  monitor: Monitor,
   shield: Shield,
   user: User
 } satisfies Record<AccountNavItem["icon"], ComponentType<{ size?: number }>>;

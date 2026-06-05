@@ -8,6 +8,7 @@ import { sanitizeReturnUrl } from "@/lib/account/account-security";
 import { redirect } from "next/navigation";
 import { assertEmailLoginAllowed, LoginRateLimitError } from "./login-rate-limit";
 import { sendPasswordResetEmail } from "./email-login";
+import { canUsePasswordLogin, shouldReplaceExistingAccountPassword } from "./auth-rules";
 import {
   buildPasswordResetIdentifier,
   createPasswordResetToken,
@@ -26,12 +27,16 @@ export async function loginWithPassword(formData: FormData) {
     where: { email }
   });
 
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
-    redirect("/login/error?reason=invalid-credentials");
-  }
+  const passwordMatches = user ? await verifyPassword(password, user.passwordHash) : false;
 
-  if (!user.emailVerified) {
-    redirect("/login/error?reason=email-not-verified");
+  if (
+    !user ||
+    !canUsePasswordLogin({
+      emailVerified: user.emailVerified,
+      passwordMatches
+    })
+  ) {
+    redirect("/login/error?reason=invalid-credentials");
   }
 
   try {
@@ -81,7 +86,13 @@ export async function requestEmailRegistration(formData: FormData) {
     where: { email }
   });
 
-  if (existingUser?.emailVerified && existingUser.passwordHash) {
+  if (
+    existingUser &&
+    !shouldReplaceExistingAccountPassword({
+      emailVerified: existingUser.emailVerified,
+      hasPasswordHash: Boolean(existingUser.passwordHash)
+    })
+  ) {
     redirect("/login/error?reason=account-exists");
   }
 
@@ -100,8 +111,9 @@ export async function requestEmailRegistration(formData: FormData) {
     }
   });
 
-  await signIn("nodemailer", {
+  await signIn("credentials", {
     email,
+    password,
     redirectTo: returnUrl
   });
 }

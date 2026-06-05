@@ -3,7 +3,7 @@ import { AccountShell } from "@/components/account/AccountShell";
 import { AccountSection, AccountStatusPill } from "@/components/account/AccountUi";
 import { getAccountDashboard } from "@/lib/account/account-data";
 import { buildAccountInitial, buildSecuritySummary, formatAccountDate } from "@/lib/account/account-view-model";
-import { changeCurrentPassword, resendVerificationEmail, signOutCurrentUser } from "@/lib/auth/actions";
+import { changeCurrentPassword, signOutCurrentUser } from "@/lib/auth/actions";
 import { requireUser } from "@/lib/auth/session";
 
 export default async function AccountSecurityPage() {
@@ -37,24 +37,12 @@ export default async function AccountSecurityPage() {
       <AccountSection title="安全能力">
         <div className="account-list">
           <div className="account-list-row">
-            <strong>邮箱验证</strong>
+            <strong>邮箱密码登录</strong>
             <AccountStatusPill tone="success">已启用</AccountStatusPill>
           </div>
           <div className="account-list-row">
-            <strong>密码登录</strong>
-            <AccountStatusPill tone="success">已启用</AccountStatusPill>
-          </div>
-          <div className="account-list-row">
-            <strong>注册验证邮件冷却</strong>
-            <AccountStatusPill tone="success">已启用</AccountStatusPill>
-          </div>
-          <div className="account-list-row">
-            <strong>手机号</strong>
-            <AccountStatusPill>未绑定</AccountStatusPill>
-          </div>
-          <div className="account-list-row">
-            <strong>二步验证</strong>
-            <AccountStatusPill>未开放</AccountStatusPill>
+            <strong>邮箱验证门槛</strong>
+            <AccountStatusPill>已关闭</AccountStatusPill>
           </div>
         </div>
       </AccountSection>
@@ -70,16 +58,6 @@ export default async function AccountSecurityPage() {
           <button type="submit">更新密码</button>
         </form>
       </AccountSection>
-
-      {!account.emailVerified ? (
-        <AccountSection title="重发验证邮件">
-          <form action={resendVerificationEmail} className="account-inline-form">
-            <input name="email" type="hidden" value={account.email} />
-            <input name="returnUrl" type="hidden" value="/account/security" />
-            <button type="submit">发送验证邮件</button>
-          </form>
-        </AccountSection>
-      ) : null}
 
       <AccountSection title="审计记录">
         <div className="account-list">

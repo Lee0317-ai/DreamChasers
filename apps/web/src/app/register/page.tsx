@@ -21,7 +21,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         </Link>
         <p className="account-kicker">Email Registration</p>
         <h1>创建账号</h1>
-        <p className="account-auth-copy">邮箱将作为账号名。设置密码后，我们会发送验证邮件；完成验证后即可用邮箱和密码登录。</p>
+        <p className="account-auth-copy">邮箱将作为账号名。设置密码后会直接进入账号中心，后续用邮箱和密码登录。</p>
 
         <form action={requestEmailRegistration} className="account-auth-form">
           <input name="returnUrl" type="hidden" value={returnUrl} />
@@ -31,7 +31,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           <input id="password" minLength={8} name="password" placeholder="至少 8 位" required type="password" />
           <label htmlFor="confirmPassword">确认密码</label>
           <input id="confirmPassword" minLength={8} name="confirmPassword" placeholder="再次输入密码" required type="password" />
-          <button type="submit">注册并发送验证邮件</button>
+          <button type="submit">注册并进入账号</button>
         </form>
 
         <p className="account-auth-note">

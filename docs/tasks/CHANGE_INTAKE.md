@@ -48,6 +48,42 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260604-21：账号中心第一阶段占位清理
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：T135 已完成账号中心页面体系，T140 已取消邮箱验证门槛；但账号中心主导航和页面里仍展示充值、订阅、LLM 配置、设备强制管理、手机号、实名、二步验证等后续能力占位，用户会误以为账号管理基座完整可用。
+- 目标：新增 T141，把账号中心可见主体验收敛到第一阶段已可用能力；隐藏或重定向未开放功能入口；清理“等待邮箱验证”等旧状态。
+- 不做：不实现真实支付、订阅、AI Gateway、BYOK、Key Vault、设备强制下线、手机号、实名、OAuth、MFA；不修改认证 action、Prisma schema 或 TimePick 外部仓库。
+- 用户价值：账号中心只展示当前能用的功能，避免用户点击到大量占位页面，降低误解和测试成本。
+- 涉及模块：账号中心导航 / 账号概览 / 个人信息 / 安全页 / AI 积分 / 后续能力深链。
+- 可能影响文件：`apps/web/src/app/account/**`, `apps/web/src/components/account/**`, `apps/web/src/lib/account/**`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：主导航不再出现充值、订阅、LLM 配置、登录设备等不可用入口；账号概览不再显示等待邮箱验证；个人信息和安全页不再显示手机号、实名、二步验证占位；旧占位深链重定向到可用页；账号测试、类型检查、构建、文档同步和 diff 检查通过。
+- AI 初步方案：先更新 account navigation 和 security summary 测试；导航保留账号概览、个人信息、账号安全、积分管理、API Key、产品接入；`/account/devices` 重定向 `/account/security`，`/account/ai/recharge`、`/account/ai/subscription`、`/account/ai/llm-config` 重定向 `/account/ai/credits`；概览、资料、安全页文案只展示当前可用能力。
+- 处理结论：已入任务池
+- 对应任务编号：T141
+
+### IDEA-20260604-20：取消邮箱验证门槛并修复 TimePick 登录跳转
+
+- 提出人：Lee
+- 提出时间：2026-06-04
+- 背景：账号注册登录当前仍要求发送并完成邮箱验证。Lee 要求先去掉该门槛，注册时直接填写邮箱和密码即可进入。另有 TimePick 点击登录后页面消失反馈，初步定位为 TimePick 统一账号跳转默认指向 `http://localhost:3000/login`，而本地 DreamChasers 服务常用 `3100`，端口不一致会导致跳转到错误页面。
+- 目标：新增 T140，注册后直接邮箱密码登录；日常登录只校验邮箱密码；移除注册验证邮件主链路提示和重发验证入口；修复 TimePick 登录默认地址、returnUrl 和页面文案。
+- 不做：不删除数据库 `emailVerified` 字段；不删除找回密码邮件；不接手机号、OAuth、TOTP、验证码、真实风控或支付；不扩大 TimePick 非登录链路迁移范围。
+- 用户价值：用户可以按常规邮箱密码流程立即创建并进入账号；从 TimePick 触发登录时不会因跳到错误端口而看到空白或页面消失。
+- 涉及模块：账号中心 / Auth.js Credentials / 注册登录页面 / TimePick 登录壳。
+- 可能影响文件：`apps/web/src/lib/auth/**`, `apps/web/src/app/login/**`, `apps/web/src/app/register/**`, `apps/web/src/app/account/security/page.tsx`, `apps/web/src/app/tools/timepick/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/dreamchasers-auth.ts`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Login.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/pages/Register.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/AuthGuard.tsx`, `docs/tasks/**`, `docs/progress/2026-06-04-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：新注册账号不发送验证邮件且直接登录；未设置 `emailVerified` 的账号可凭正确邮箱密码登录；错误密码仍不能登录；页面不再提示注册验证邮件；TimePick 登录默认指向当前 DreamChasers 本地端口并携带回到 TimePick 的 returnUrl；测试、类型检查、lint、构建、文档同步和 diff 检查通过。
+- AI 初步方案：先补认证规则和 TimePick 登录 URL 构造测试；提取/补充纯函数表示密码登录无需邮箱验证；注册 action upsert 后直接 credentials sign-in；Credentials authorize 删除 `emailVerified` 检查；登录错误页删除验证重发主入口；TimePick 默认 `VITE_DREAMCHASERS_BASE_URL` 改为 `http://localhost:3100`，登录 URL 附带当前页面作为 `returnUrl`。
+- 处理结论：已入任务池
+- 对应任务编号：T140
+
 ### IDEA-20260604-19：账号认证补全找回密码、修改密码和重发验证邮件
 
 - 提出人：Lee

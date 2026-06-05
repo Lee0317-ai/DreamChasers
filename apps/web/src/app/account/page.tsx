@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountShell } from "@/components/account/AccountShell";
-import { AccountSection, AccountStatusPill } from "@/components/account/AccountUi";
+import { AccountSection } from "@/components/account/AccountUi";
 import { ensureDefaultProducts, getAccountDashboard } from "@/lib/account/account-data";
 import { buildAccountInitial, buildSecuritySummary, formatAccountDate } from "@/lib/account/account-view-model";
 import { requireUser } from "@/lib/auth/session";
@@ -55,7 +55,7 @@ export default async function AccountPage() {
         <div className="account-action-grid">
           <Link className="account-action" href="/account/security">
             <strong>账号安全</strong>
-            <p className="account-muted">查看邮箱验证、审计记录和退出登录。</p>
+          <p className="account-muted">修改密码、查看审计记录和退出登录。</p>
           </Link>
           <Link className="account-action" href="/account/ai/credits">
             <strong>积分管理</strong>
@@ -81,9 +81,10 @@ export default async function AccountPage() {
       </AccountSection>
 
       <AccountSection eyebrow="Status" title="账号状态">
-        <AccountStatusPill tone={account.emailVerified ? "success" : "warning"}>
-          {account.emailVerified ? "邮箱已验证" : "等待邮箱验证"}
-        </AccountStatusPill>
+        <div className="account-list-row">
+          <strong>邮箱密码账号</strong>
+          <span>{account.email}</span>
+        </div>
       </AccountSection>
     </AccountShell>
   );

@@ -28,6 +28,6 @@ describe("login-rate-limit", () => {
   });
 
   it("builds a clear cooldown message", () => {
-    expect(buildLoginCooldownMessage(30)).toBe("验证邮件发送过于频繁，请 30 秒后再试。");
+    expect(buildLoginCooldownMessage(30)).toBe("请求过于频繁，请 30 秒后再试。");
   });
 });

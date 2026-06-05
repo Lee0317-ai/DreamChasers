@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </Link>
         <p className="account-kicker">Email Password Sign-In</p>
         <h1>欢迎回来</h1>
-        <p className="account-auth-copy">使用注册邮箱和密码登录。新账号需要先完成邮箱验证，验证邮件只在注册阶段发送。</p>
+        <p className="account-auth-copy">使用注册邮箱和密码登录。新账号填写邮箱和密码后即可进入。</p>
 
         <form action={loginWithPassword} className="account-auth-form">
           <input name="returnUrl" type="hidden" value={returnUrl} />
@@ -33,7 +33,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </form>
 
         <p className="account-auth-note">
-          还没有账号？<Link className="account-text-link" href={`/register?returnUrl=${encodeURIComponent(returnUrl)}`}>先用邮箱注册并验证</Link>
+          还没有账号？<Link className="account-text-link" href={`/register?returnUrl=${encodeURIComponent(returnUrl)}`}>用邮箱注册</Link>
         </p>
         <p className="account-auth-note">
           忘记密码？<Link className="account-text-link" href="/forgot-password">发送重置邮件</Link>

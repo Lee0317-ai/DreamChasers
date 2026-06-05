@@ -11,16 +11,11 @@ export function buildAccountInitial(name: string | null | undefined, email: stri
 }
 
 export function buildSecuritySummary(input: { auditLogCount: number; emailVerified: boolean }) {
-  if (!input.emailVerified) {
-    return {
-      description: "邮箱仍在等待验证，请先完成注册验证。",
-      level: "待确认",
-      score: 0
-    };
-  }
-
   return {
-    description: `邮箱验证和密码登录已启用，最近有 ${input.auditLogCount} 条安全记录。`,
+    description:
+      input.auditLogCount > 0
+        ? `邮箱密码登录已启用，邮箱验证门槛已关闭，最近有 ${input.auditLogCount} 条安全记录。`
+        : "邮箱密码登录已启用，邮箱验证门槛已关闭，最近暂无安全记录。",
     level: "基础",
     score: input.auditLogCount > 0 ? 2 : 1
   };
