@@ -247,4 +247,5 @@
 | T139 | P0 | TimePick 工具站入口补齐 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
 | T140 | P0 | 取消账号邮箱验证门槛并修复 TimePick 登录跳转 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
 | T141 | P0 | 账号中心第一阶段占位清理 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
+| T142 | P0 | 平台能力、用户资产留存和工作流自动化第一阶段规划 | Lee | 待验收 | T108, T122, T133, T134, T140, T141 | `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T142-platform-capability-retention-workflow-planning.md`, `docs/tasks/claims/T142-lee.md`, `docs/superpowers/specs/2026-06-05-platform-capability-retention-workflow-design.md`, `docs/progress/2026-06-05-lee.md`, `docs/completion/2026-06-05-task-142-platform-capability-retention-workflow-planning.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md` | `npm run docs:sync`; `rg -n "T[B]D\|T[O]DO\|待[补]" docs/tasks/items/T142-platform-capability-retention-workflow-planning.md docs/tasks/claims/T142-lee.md docs/superpowers/specs/2026-06-05-platform-capability-retention-workflow-design.md docs/progress/2026-06-05-lee.md docs/completion/2026-06-05-task-142-platform-capability-retention-workflow-planning.md`; `git diff --check` |
 <!-- DOCS_SYNC_TASKS_END -->
