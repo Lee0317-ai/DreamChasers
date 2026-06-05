@@ -48,6 +48,24 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260605-02：AI Gateway MVP、模型选择和用户自配模型规划
+
+- 提出人：Lee
+- 提出时间：2026-06-05
+- 背景：T142 已确认平台能力和留存底座采用平台优先路线。Lee 进一步明确：使用 AI 能力时，前端应该只能选择当前能力可用的模型；不同模型消耗积分不同；用户也应能使用自己配置的模型。Lee 选择 `OpenAI-compatible 优先 + 等另一个已有配置项目上传后再看复用方式`，并接受第一阶段支持临时 Key、长期用户自配模型待项目上传后再评估。
+- 目标：新增 T143，产出 AI Gateway MVP、模型选择、积分消耗和用户自配模型的实施计划；明确前端可用模型列表 API、Gateway 任务 API、模型成本策略、OpenAI-compatible adapter、mock provider、临时 Key 和后续用户模型配置适配层。
+- 不做：不实现代码；不接真实 provider；不保存用户 provider key；不做 Key Vault；不做复杂 provider 自动路由；不做真实充值扣费；不改 TimePick 外部仓库。
+- 用户价值：用户在每个 AI 能力页面只看到当前能力可用的模型，并能理解不同模型的积分消耗；平台后续可以统一支持平台模型、临时 Key 和用户自配模型，而不是每个工具各自接模型。
+- 涉及模块：AI Gateway / 模型目录 / 积分策略 / 用户模型配置 / TimePick 自动识别 / AI 修图 / AI 面试助手。
+- 可能影响文件：`docs/tasks/**`, `docs/superpowers/plans/**`, `docs/progress/2026-06-05-lee.md`, `docs/completion/**`；后续实现任务可能影响 `apps/web/prisma/**`, `apps/web/src/lib/ai/**`, `apps/web/src/app/api/ai/**`, `apps/web/src/lib/account/**`, `apps/web/src/generated/prisma/**`。
+- 是否影响另一方任务：否。本任务只做规划文档；后续实现如果涉及 AI 修图或 TimePick，需要单独确认文件范围。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：实施计划覆盖 capability model list、前端模型选择、模型积分消耗、Gateway task API、OpenAI-compatible adapter、mock provider、临时 Key、用户配置模型后置适配、日志脱敏、验证命令和后续任务拆分；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：第一阶段采用 `mock provider + OpenAI-compatible adapter` 双轨。产品 UI 先通过 capability-specific model list 展示可用模型；Gateway 服务端仍做模型能力、权限、credential source 和积分兜底校验。模型成本先用静态 `ModelCostPolicy`，后续再按 token、图片尺寸和批量数量细化。用户自配模型先支持临时 Key，长期配置等 Lee 上传另一个项目后再评估复用或重构。
+- 处理结论：已入任务池
+- 对应任务编号：T143
+
 ### IDEA-20260605-01：平台能力、用户资产留存和工作流自动化第一阶段规划
 
 - 提出人：Lee
