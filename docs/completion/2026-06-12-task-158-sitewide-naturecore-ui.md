@@ -1,0 +1,41 @@
+# T158 完成记录：全站 Naturecore 视觉统一规划与落地
+
+- 任务编号：T158
+- 负责人：Lee
+- 完成日期：2026-06-12
+- 修改文件：
+  - `apps/web/src/components/HomeExperience.tsx`
+  - `apps/web/src/app/globals.css`
+  - `docs/tasks/items/T158-sitewide-naturecore-ui-planning.md`
+  - `docs/tasks/claims/T158-lee.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/superpowers/specs/2026-06-12-sitewide-naturecore-ui-design.md`
+  - `docs/superpowers/plans/2026-06-12-sitewide-naturecore-ui.md`
+  - `docs/progress/2026-06-12-lee.md`
+  - `docs/completion/2026-06-12-task-158-sitewide-naturecore-ui.md`
+- 实现内容：
+  - 采用 Lee 确认的 C：`Hybrid Portal` 方案。
+  - 首页改为沉浸式 Naturecore Portal，有月环、森林层次、深色背景和工具/游戏双入口。
+  - 工具频道、游戏频道、顶部导航、卡片、筛选器、弹窗统一为深色金青控制台风格。
+  - 登录、注册、找回密码、重置密码页面统一为深色玻璃面板。
+  - 账号中心沿用 T157 样式，并补齐移动端长文本换行。
+  - 未改 AI Gateway 运行时、Prisma schema、TimePick 外部仓库、PDF 业务逻辑和游戏 runtime。
+- 验证命令：
+  - `npm run test -w apps/web -- account-ai-overview model-catalog ai-gateway account-ai-config pdf hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 相关测试：通过，8 个测试文件 / 35 个测试。
+  - 类型检查：通过。
+  - 生产构建：通过。
+  - 右侧内置浏览器桌面端 `/`、`/tools`、`/games`、`/login`、`/account/ai/credits`：通过。
+  - 右侧内置浏览器移动端 `/`、`/tools`、`/games`、`/login`、`/account/ai/credits`：通过。
+  - 移动端复查 `/` 与 `/account/ai/credits`：无横向溢出。
+  - `npm run docs:sync`：通过。
+  - `git diff --check`：未通过。阻塞来自仓库内既有 Prisma generated 文件尾随空格噪音，不是本次全站 UI 统一新增。
+  - `git diff --check -- <T158 涉及文件>`：通过。
+- 遗留问题：
+  - PDF 工具箱和 AI 修图工作台内部深度重排没有进入本任务范围。

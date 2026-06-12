@@ -53,3 +53,28 @@
   - `npm run lint -w apps/web`：通过，仍存在 Prisma 生成文件既有 warning。
   - `npm run build -w apps/web`：通过。
 - 遗留：PDF 转 Word 仍是普通文本抽取 Beta，不做 OCR 和复杂版式还原。
+
+## 2026-06-06
+
+- 新增 T144：PDF 工具箱升级规划和待办落档。
+- 已确认升级路线不直接承诺 Acrobat 级原文编辑，优先升级为 Edge 类 PDF 阅读编辑器。
+- 已新增 `docs/modules/pdf-toolbox/PDF_EDITOR_UPGRADE_ROADMAP.md`，明确免费标注编辑、文本与翻译、办公转换增强、商业 SDK 评估四段路线。
+- 已新增 `docs/superpowers/plans/2026-06-06-pdf-editor-upgrade-roadmap.md`，记录 Lee 后续可执行的实现待办。
+- 本次只做文档规划，不修改应用代码。
+
+## 2026-06-09
+
+- 新增 T153：PDF 工具箱首条 AI 能力接线。
+- 已将第一条站内 AI 能力冻结为 `PDF 文本摘要`，不进入翻译、OCR 或复杂 PDF 编辑。
+- 新增浏览器内摘要链路：
+  - 先抽取当前 PDF 文本；
+  - 再请求 `/api/tools/pdf/summary`；
+  - 后端通过 AI Gateway `text_generation` 完成摘要；
+  - 结果直接显示在工具页中。
+- 新增 `apps/web/src/modules/tools/pdf-toolbox/lib/pdf-ai.ts` 和对应单测。
+- 已完成验证：
+  - `npm run test -w apps/web -- pdf ai-gateway`：通过，20 个测试通过。
+  - `npm run typecheck -w apps/web`：通过。
+  - `npm run build -w apps/web`：通过。
+- 本轮未完成项：
+  - 桌面端和移动端真实浏览器检查未执行；当前会话未能直接拉起本地浏览器控制工具。

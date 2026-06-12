@@ -1,0 +1,37 @@
+# T157 完成记录：账号中心与 AI Gateway Naturecore UI 落地
+
+- 任务编号：T157
+- 负责人：Lee
+- 完成日期：2026-06-12
+- 修改文件：
+  - `apps/web/src/components/account/AccountShell.tsx`
+  - `apps/web/src/app/account/ai/credits/page.tsx`
+  - `apps/web/src/app/globals.css`
+  - `docs/tasks/items/T157-account-ai-naturecore-ui-implementation.md`
+  - `docs/tasks/claims/T157-lee.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/progress/2026-06-12-lee.md`
+  - `docs/completion/2026-06-12-task-157-account-ai-naturecore-ui.md`
+- 实现内容：
+  - 将 Lee 确认的 Open Design Naturecore 动态深色风格落到真实账号中心与 AI Gateway 页面。
+  - 使用干净深色背景，不保留森林背景图片。
+  - 新增鼠标跟随微光、卡片 hover 光扫、标题 hover 发光、侧栏玻璃质感和 AI 能力卡动态反馈。
+  - 保持现有账号、积分、模型目录、provider 状态和请求日志业务逻辑不变。
+- 验证命令：
+  - `npm run test -w apps/web -- account-ai-overview model-catalog ai-gateway account-ai-config -- --runInBand`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 账号/AI 相关测试：通过，4 个测试文件 / 17 个测试。
+  - 类型检查：通过。
+  - 生产构建：通过。
+  - 右侧内置浏览器桌面端 `/account` 和 `/account/ai/credits`：通过。
+  - 移动端断点检查：已执行 390 x 844 视口切换，并恢复默认视口。
+  - `npm run docs:sync`：通过。
+  - `git diff --check`：未通过。阻塞来自仓库内既有 Prisma generated 文件尾随空格噪音，不是本次 UI 落地新增。
+  - `git diff --check -- <T157 涉及文件>`：通过。
+- 遗留问题：
+  - 本任务没有扩展到工具、游戏或 AI 修图工作台 UI。

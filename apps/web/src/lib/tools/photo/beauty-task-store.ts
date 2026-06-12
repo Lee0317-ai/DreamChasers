@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { runNaturalPortraitBeauty, type ImageEditResult } from "./ai-image-provider";
+import { runAiGatewayTask } from "../../ai/ai-gateway";
+import { buildBeautyGatewayInput, readImageEditGatewayResult, type ImageEditResult } from "./ai-image-provider";
 
 export type BeautyTaskStatus = "queued" | "processing" | "succeeded" | "failed";
 
@@ -19,7 +20,12 @@ type BeautyTask = BeautyTaskPublicState & {
 const beautyTasks = new Map<string, BeautyTask>();
 const taskTtlMs = 30 * 60 * 1000;
 
-export function createBeautyTask(image: File) {
+type CreateBeautyTaskOptions = {
+  runAiGatewayTask?: typeof runAiGatewayTask;
+  userId: string;
+};
+
+export function createBeautyTask(image: File, options: CreateBeautyTaskOptions) {
   cleanupBeautyTasks();
 
   const now = Date.now();
@@ -33,7 +39,7 @@ export function createBeautyTask(image: File) {
   };
 
   beautyTasks.set(taskId, task);
-  void processBeautyTask(taskId, image);
+  void processBeautyTask(taskId, image, options);
 
   return toPublicState(task);
 }
@@ -58,14 +64,15 @@ export function getBeautyTaskResult(taskId: string) {
   return task.result;
 }
 
-async function processBeautyTask(taskId: string, image: File) {
+async function processBeautyTask(taskId: string, image: File, options: CreateBeautyTaskOptions) {
   updateTask(taskId, {
     message: "正在进行自然人像增强。",
     status: "processing"
   });
 
   try {
-    const result = await runNaturalPortraitBeauty(image);
+    const gatewayTask = await (options.runAiGatewayTask ?? runAiGatewayTask)(await buildBeautyGatewayInput(image, options.userId));
+    const result = readImageEditGatewayResult(gatewayTask.result);
     updateTask(taskId, {
       message: "AI 美颜已完成。",
       result,

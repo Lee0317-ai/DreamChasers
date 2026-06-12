@@ -9,6 +9,7 @@ import {
   getPdfPageCount,
   imagesToPdf
 } from "../lib/pdf-actions";
+import { buildPdfSummarySource } from "../lib/pdf-ai";
 import { createWordDocxDocument, extractPdfText } from "../lib/pdf-text";
 import type { PdfActionResult, PdfBuildPage, PdfPageItem, PdfSourceFile } from "../types";
 import { PdfActionPanel } from "./PdfActionPanel";
@@ -62,6 +63,7 @@ export function PdfToolbox() {
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [coverPosition, setCoverPosition] = useState("top-right");
   const [scanImageFiles, setScanImageFiles] = useState<File[]>([]);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
 
   const activePages = useMemo(() => pages.filter((page) => !page.deleted), [pages]);
   const selectedPages = useMemo(
@@ -89,6 +91,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在读取 PDF...");
 
     try {
@@ -124,6 +127,7 @@ export function PdfToolbox() {
     setPages((currentPages) => currentPages.filter((page) => page.fileId !== fileId));
     setResult(null);
     setError(null);
+    setAiSummary(null);
   }
 
   function togglePage(pageId: string) {
@@ -172,6 +176,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在生成 PDF...");
 
     try {
@@ -206,6 +211,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在添加文字水印...");
 
     try {
@@ -235,6 +241,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在添加签名...");
 
     try {
@@ -259,6 +266,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在抽取文本并生成 Word Beta...");
 
     try {
@@ -287,6 +295,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在遮盖区域...");
 
     try {
@@ -324,6 +333,7 @@ export function PdfToolbox() {
     setIsBusy(true);
     setError(null);
     setResult(null);
+    setAiSummary(null);
     setStatusText("正在将图片合成为 PDF...");
 
     try {
@@ -355,6 +365,53 @@ export function PdfToolbox() {
     }));
   }
 
+  async function generateAiSummary() {
+    setIsBusy(true);
+    setError(null);
+    setResult(null);
+    setAiSummary(null);
+    setStatusText("正在抽取 PDF 文本并生成 AI 摘要...");
+
+    try {
+      const sourceBytes = await buildCurrentPdfBytes();
+      const buffer = new ArrayBuffer(sourceBytes.byteLength);
+      new Uint8Array(buffer).set(sourceBytes);
+      const pagesText = await extractPdfText(buffer);
+      const sourceText = buildPdfSummarySource(pagesText);
+
+      if (!sourceText) {
+        throw new Error("当前 PDF 未抽取到可摘要文本。扫描件需要后续 OCR。");
+      }
+
+      const response = await fetch("/api/tools/pdf/summary", {
+        body: JSON.stringify({
+          fileName: files[0]?.name || "dreamchasers-pdf-toolbox.pdf",
+          sourceText
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        method: "POST"
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string; summary?: string };
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("请先登录后再生成 PDF AI 摘要。");
+        }
+        throw new Error(payload.error || "PDF 摘要暂时不可用。");
+      }
+
+      setAiSummary(payload.summary || "暂时没有生成可用摘要。");
+      setStatusText("AI 摘要已生成。");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "PDF 摘要暂时不可用。");
+      setStatusText("处理失败。");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   return (
     <main className="pdf-toolbox-page tools-station">
       <section className="pdf-hero">
@@ -376,6 +433,13 @@ export function PdfToolbox() {
           <PdfUploader disabled={isBusy} onFilesSelected={handleFilesSelected} />
           <PdfResultBar error={error} result={result} />
           <div className="pdf-status-line">{statusText}</div>
+          {aiSummary ? (
+            <section className="pdf-ai-summary" aria-label="PDF AI 摘要">
+              <div className="pdf-panel-kicker">AI Summary</div>
+              <h2>文档摘要</h2>
+              <p>{aiSummary}</p>
+            </section>
+          ) : null}
           <PdfPageGrid files={files} onTogglePage={togglePage} pages={pages} />
         </div>
 
@@ -394,11 +458,13 @@ export function PdfToolbox() {
               setPages([]);
               setResult(null);
               setError(null);
+              setAiSummary(null);
               setStatusText("上传 PDF 后开始处理。");
             }}
             onDeleteSelected={() => {
               updateSelectedPages((page) => ({ ...page, deleted: true, selected: false }));
               setResult(null);
+              setAiSummary(null);
             }}
             onDownloadCurrent={() => buildAndDownload("dreamchasers-pdf-toolbox.pdf", currentPageSpecs())}
             onApplyCoverArea={applyCoverArea}
@@ -406,6 +472,7 @@ export function PdfToolbox() {
             onApplyWatermark={applyTextWatermark}
             onCoverPositionChange={setCoverPosition}
             onExportWord={exportWordBeta}
+            onGenerateAiSummary={generateAiSummary}
             onExtractSelected={() =>
               buildAndDownload(
                 "dreamchasers-pdf-selection.pdf",

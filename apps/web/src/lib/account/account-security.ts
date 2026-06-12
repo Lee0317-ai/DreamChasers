@@ -5,6 +5,9 @@ export type CreditLedgerEntry = {
   type: "grant" | "usage" | "adjustment" | "refund";
 };
 
+export const starterPlatformCredits = 20;
+export const starterPlatformCreditNote = "starter_platform_credits";
+
 type ProductSessionRequest = {
   productSlug: string;
   registeredProductSlugs: string[];
@@ -41,6 +44,10 @@ export function buildApiKeyHint(secret: string) {
 
 export function computeCreditBalance(entries: CreditLedgerEntry[]) {
   return entries.reduce((sum, entry) => sum + entry.amount, 0);
+}
+
+export function shouldGrantStarterPlatformCredits(existingLedgerEntryCount: number) {
+  return existingLedgerEntryCount === 0;
 }
 
 export function canCreateProductSession({

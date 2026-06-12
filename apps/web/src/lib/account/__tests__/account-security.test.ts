@@ -5,7 +5,10 @@ import {
   computeCreditBalance,
   generatePlatformApiKeySecret,
   hashPlatformApiKey,
-  sanitizeReturnUrl
+  sanitizeReturnUrl,
+  shouldGrantStarterPlatformCredits,
+  starterPlatformCredits,
+  starterPlatformCreditNote
 } from "../account-security";
 
 describe("account-security", () => {
@@ -39,6 +42,13 @@ describe("account-security", () => {
     ]);
 
     expect(balance).toBe(85);
+  });
+
+  it("grants starter platform credits only when the wallet has no ledger entries", () => {
+    expect(starterPlatformCredits).toBe(20);
+    expect(starterPlatformCreditNote).toBe("starter_platform_credits");
+    expect(shouldGrantStarterPlatformCredits(0)).toBe(true);
+    expect(shouldGrantStarterPlatformCredits(1)).toBe(false);
   });
 
   it("rejects product sessions for unknown products and unsafe return URLs", () => {

@@ -47,9 +47,15 @@ export function ChannelPage({
       return matchesFilter && matchesQuery;
     });
   }, [activeFilter, items, query]);
+  const backgroundVideo = variant === "tools" ? "/videos/home/ice-portal.mp4" : "/videos/home/fire-portal.mp4";
 
   return (
     <div className={`station-page ${variant}-station`}>
+      {variant === "tools" || variant === "games" ? (
+        <video className="station-video-bg" autoPlay muted loop playsInline aria-hidden="true">
+          <source src={backgroundVideo} type="video/mp4" />
+        </video>
+      ) : null}
       <section className="page-header">
         <div className="container">
           <span className="page-kicker">{kicker}</span>

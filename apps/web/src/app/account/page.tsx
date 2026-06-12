@@ -59,7 +59,7 @@ export default async function AccountPage() {
           </Link>
           <Link className="account-action" href="/account/ai/credits">
             <strong>积分管理</strong>
-            <p className="account-muted">查看余额、配额和 AI 使用账本。</p>
+            <p className="account-muted">查看余额、模型目录、凭据模式和 AI 使用账本。</p>
           </Link>
           <Link className="account-action" href="/account/products">
             <strong>产品接入</strong>

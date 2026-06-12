@@ -126,6 +126,29 @@ model User {
   timePickLearningFocus TimePickLearningFocus[]
   timePickTryQueueLinks TimePickTryQueueLink[]
   timePickFortuneDraws TimePickFortuneDraw[]
+  aiGatewayRequestLogs AiGatewayRequestLog[]
+}
+
+model AiGatewayRequestLog {
+  id               String   @id @default(cuid())
+  userId           String?
+  productSlug      String
+  toolSlug         String?
+  capability       String
+  modelId          String
+  credentialSource String
+  status           String
+  creditCost       Int
+  providerId       String
+  inputSummary     String?
+  outputSummary    String?
+  errorCode        String?
+  createdAt        DateTime @default(now())
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([productSlug, capability, createdAt])
+  @@index([status, createdAt])
 }
 
 model Account {

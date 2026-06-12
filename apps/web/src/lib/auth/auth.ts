@@ -40,6 +40,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   events: {
     async signIn({ user }) {
       if (user.id) {
+        const { ensureStarterPlatformCreditsForUser } = await import("@/lib/account/account-data");
+
+        await ensureStarterPlatformCreditsForUser(user.id);
         await db.accountAuditLog.create({
           data: {
             action: "login_success",

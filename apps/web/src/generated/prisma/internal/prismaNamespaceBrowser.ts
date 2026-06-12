@@ -61,6 +61,7 @@ export const ModelName = {
   UsageQuota: 'UsageQuota',
   ApiCredential: 'ApiCredential',
   User: 'User',
+  AiGatewayRequestLog: 'AiGatewayRequestLog',
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
@@ -216,6 +217,26 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AiGatewayRequestLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productSlug: 'productSlug',
+  toolSlug: 'toolSlug',
+  capability: 'capability',
+  modelId: 'modelId',
+  credentialSource: 'credentialSource',
+  status: 'status',
+  creditCost: 'creditCost',
+  providerId: 'providerId',
+  inputSummary: 'inputSummary',
+  outputSummary: 'outputSummary',
+  errorCode: 'errorCode',
+  createdAt: 'createdAt'
+} as const
+
+export type AiGatewayRequestLogScalarFieldEnum = (typeof AiGatewayRequestLogScalarFieldEnum)[keyof typeof AiGatewayRequestLogScalarFieldEnum]
 
 
 export const AccountScalarFieldEnum = {

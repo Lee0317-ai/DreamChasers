@@ -14,6 +14,7 @@ type PdfActionPanelProps = {
   onCoverPositionChange: (value: string) => void;
   onDeleteSelected: () => void;
   onDownloadCurrent: () => void;
+  onGenerateAiSummary: () => void;
   onExportWord: () => void;
   onExtractSelected: () => void;
   onImagesSelected: (files: File[]) => void;
@@ -43,6 +44,7 @@ export function PdfActionPanel({
   onCoverPositionChange,
   onDeleteSelected,
   onDownloadCurrent,
+  onGenerateAiSummary,
   onExportWord,
   onExtractSelected,
   onImagesSelected,
@@ -169,6 +171,14 @@ export function PdfActionPanel({
         </label>
         <button disabled={isBusy} onClick={onImagesToPdf} type="button">
           图片扫描成 PDF
+        </button>
+      </div>
+
+      <div className="pdf-extension-panel">
+        <span className="pdf-panel-kicker">AI Summary</span>
+        <p>抽取当前 PDF 文本后生成简短摘要。扫描件和图片型 PDF 仍需要后续 OCR 能力。</p>
+        <button disabled={!canBuild || isBusy} onClick={onGenerateAiSummary} type="button">
+          生成 AI 摘要
         </button>
       </div>
 

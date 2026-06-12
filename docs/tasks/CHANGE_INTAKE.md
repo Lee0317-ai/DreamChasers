@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-06-05
+**最后更新**：2026-06-08
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,168 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260612-03：首页 Naturecore 左右分区回调
+
+- 提出人：Lee
+- 提出时间：2026-06-12
+- 背景：T158 已完成全站 Naturecore UI 统一。Lee 反馈内页效果可以，但首页作为主入口还是按左右来区分工具和游戏更直观。
+- 目标：新增 T159，仅调整首页 `/`，把中央双入口卡片改回左右分区入口，同时保留 Naturecore 背景、玻璃质感和动态反馈。
+- 不做：不修改 `/tools`、`/games`、账号中心、认证页、工具工作台、AI Gateway、Prisma 或 TimePick 外部仓库。
+- 用户价值：首页重新强化“工具站 / 游戏馆”两个平级频道的直觉分流，同时不丢失 T158 形成的整体视觉质感。
+- 涉及模块：首页 / 公开门户入口。
+- 可能影响文件：`apps/web/src/components/HomeExperience.tsx`, `apps/web/src/app/globals.css`, `docs/tasks/**`, `docs/progress/2026-06-12-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只调首页入口展示层。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：首页桌面端明确左右分区；移动端合理纵向堆叠；左右入口均可点击；Naturecore 背景保留；类型检查、构建、文档同步和浏览器检查完成。
+- AI 初步方案：保留 `portal-home` 背景层和账号入口，把 `portal-home-content` 改为左右两块 `portal-entry` 大分区；CSS 在桌面端使用两列满高布局，移动端改为单列卡片。
+- 处理结论：已入任务池
+- 对应任务编号：T159
+
+### IDEA-20260612-02：全站 Naturecore 动态 UI 统一
+
+- 提出人：Lee
+- 提出时间：2026-06-12
+- 背景：T157 已将 Open Design Naturecore 动态深色风格落到账号中心和 AI Gateway 页面。Lee 进一步要求整个网站都按这种风格优化，并明确首页可以加入背景。
+- 目标：新增 T158，将 Naturecore 动态深色视觉扩展到首页、工具频道、游戏频道、认证页、账号中心和主要工具/游戏入口；首页使用更沉浸的背景，其他页面保持可读、克制、统一。
+- 不做：不改 AI Gateway 运行时；不改 Prisma schema；不改 TimePick 外部仓库；不重做 PDF / AI 修图 / 游戏业务逻辑；不新增支付、订阅或后台能力。
+- 用户价值：网站从分散页面变成一套完整、可记忆的品牌体验；首页更有第一眼吸引力，工具和游戏页面更统一，账号中心不再像独立风格孤岛。
+- 涉及模块：公开门户 / 首页 / 工具频道 / 游戏频道 / 认证页 / 账号中心 / 全站视觉系统。
+- 可能影响文件：`apps/web/src/app/**`, `apps/web/src/components/**`, `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/modules/games/hulebu/**`, `apps/web/src/app/globals.css`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/progress/2026-06-12-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：可能影响共享前端页面和 AI 修图入口，但本轮不改 AI 修图业务逻辑；若进入深度工具工作台重做，需要再拆任务。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：通过浏览器确认全站视觉方向；首页可加入背景且首屏有品牌记忆点；工具/游戏/认证/账号页面风格统一；桌面和移动端检查通过；测试、类型检查、构建、文档同步完成。
+- AI 初步方案：先用视觉伴随展示 `Portal Forest`、`Operator Console`、`Hybrid` 三种方向；确认后写设计稿和实施计划，再把真实代码分层改造为全站主题变量、公共导航/卡片/按钮、首页沉浸背景、频道页深色卡片和认证页统一皮肤。
+- 处理结论：已入任务池
+- 对应任务编号：T158
+
+### IDEA-20260612-01：账号中心与 AI Gateway Naturecore 动态 UI 落地
+
+- 提出人：Lee
+- 提出时间：2026-06-12
+- 背景：Lee 参考 Open Design 示例模板并确认 `DreamChasers 账号中心 AI Naturecore 重设计` 方向，喜欢深色、金色/青色点缀、鼠标 hover 动效和文字动态反馈；同时明确不需要森林背景图片，只保留干净动态增强版效果。
+- 目标：新增 T157，把已确认的 Naturecore 动态深色风格落到真实账号中心和 AI Gateway 账号治理页面，优化账号概览、模型能力、运行时状态、请求日志和积分账本的视觉层次。
+- 不做：不修改 AI Gateway 运行时；不改 provider、积分扣减、Prisma schema 或 TimePick 外部仓库；不扩到工具、游戏或支付订阅能力。
+- 用户价值：账号中心和 AI 通用模块从“功能骨架”升级为更有平台感、可读性和反馈感的控制台界面，后续继续接工具和模型能力时更容易形成统一体验。
+- 涉及模块：账号中心 / AI Gateway 账号治理页 / 平台展示层。
+- 可能影响文件：`apps/web/src/app/account/**`, `apps/web/src/components/account/**`, `apps/web/src/app/globals.css`, `docs/tasks/**`, `docs/progress/2026-06-12-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改账号中心展示层，不碰 AI 修图产品实现和 TimePick 外部仓库。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：账号概览和 AI Gateway 页采用已确认的深色动态 UI；无森林背景图片；桌面端和移动端布局可用；测试、类型检查、构建、文档同步和 diff 检查完成。
+- AI 初步方案：以现有 `AccountShell`、`AccountSection` 和 `account-*` CSS 类为承载层，加入鼠标微光、卡片光扫、能力卡 hover、深色 oklch surface、金色/青色状态点缀；尽量不改业务数据结构。
+- 处理结论：已入任务池
+- 对应任务编号：T157
+
+### IDEA-20260609-01：平台级 AI 治理与产品接线路线规划
+
+- 提出人：Lee
+- 提出时间：2026-06-09
+- 背景：T146、T147、T148 已完成 AI Gateway MVP 运行时和 TimePick 两条真实产品链路，但当前平台仍缺统一治理方案。账号中心 AI 页面、provider 环境变量、运行时状态、请求日志、积分扣减和后续产品接线顺序，分别散落在实现任务、账号中心规划和产品模块待办中，缺一份以“治理优先”为核心的统一路线。
+- 目标：新增 T149，产出平台级 AI 治理与产品接线路线方案；明确账号中心与 AI Gateway 的职责边界、provider readiness 与环境变量治理、标准错误码与请求日志语义、账号中心治理面展示范围，以及 PDF 工具箱 / AI 修图 / TimePick 三条产品线的后续接线顺序；继续拆分后续任务 T150-T154。
+- 不做：不实现应用代码；不接真实多 provider 自动路由；不保存用户 provider key；不提前实现支付、订阅、Key Vault、KMS、告警中心、异步任务平台或工作流编排；不把三条产品线各自扩成独立 AI 平台。
+- 用户价值：平台终于有一套统一、可解释、可治理的 AI 口径。用户能在账号中心看懂能力、状态、调用与积分；团队后续接 PDF 工具箱和 AI 修图时也不需要各写一套模型、扣费和错误处理逻辑。
+- 涉及模块：账号中心 / AI Gateway / PDF 工具箱 / AI 修图 / TimePick / 平台治理。
+- 可能影响文件：`docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/progress/2026-06-09-lee.md`, `docs/completion/**`；后续实现任务可能影响 `apps/web/src/app/account/ai/**`, `apps/web/src/lib/account/**`, `apps/web/src/lib/ai/**`, `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/app/tools/ai-photo-editor/**`。
+- 是否影响另一方任务：否。本次只做平台规划与任务拆分；后续如果实现 AI 修图接线，需要再按任务确认文件边界。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：新增设计稿、实施计划、任务分片和领取分片；明确治理边界、账号中心展示范围、运行时治理最小闭环、产品接线准入标准和三条产品线接线顺序；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：采用“治理中台优先，产品接线附表补充”结构。先定义账号中心治理面、AI Gateway 运行时状态、环境变量 readiness、标准错误码和请求日志口径，再拆 T150-T154，把 PDF 工具箱排为第一条站内 AI 产品线，AI 修图排到后续，TimePick 保持平级样板角色。
+- 处理结论：已入任务池
+- 对应任务编号：T149, T150, T151, T152, T153, T154
+
+### IDEA-20260608-02：TimePick 运势聊天接入 AI Gateway 首条真实产品链路
+
+- 提出人：Lee
+- 提出时间：2026-06-08
+- 背景：T146 已完成 AI Gateway MVP 运行时和账号中心 AI 控制面，但还没有任何真实产品能力接到 `/api/ai/tasks`。TimePick `/fortune` 运势聊天当前已经走 DreamChasers API，只是返回无模型占位文本，适合作为第一条产品接线。
+- 目标：新增 T147，在不修改 TimePick 外部仓库的前提下，把 `apps/web/src/app/api/timepick/fortune/chat/route.ts` 改为调用 AI Gateway；补齐 `text_generation` mock 行为、TimePick fortune chat 到 gateway 的映射层、错误码返回和验证。
+- 不做：不修改 TimePick 外部仓库；不接真实 provider；不引入充值、订阅、Key Vault、用户 provider key 持久化；不扩展到 PDF 工具箱或 AI 修图；不重做 `/fortune` 页面 UI。
+- 用户价值：平台第一次出现“产品真实走 AI Gateway”的闭环，账号中心里的模型目录、积分账本和请求日志能和产品调用串起来，而不再只是平台骨架。
+- 涉及模块：AI Gateway / TimePick / 账号积分 / 请求日志。
+- 可能影响文件：`apps/web/src/lib/ai/**`, `apps/web/src/app/api/ai/**`, `apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/fortune/chat/route.ts`, `docs/tasks/**`, `docs/progress/2026-06-08-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：TimePick 运势聊天 route 调用 AI Gateway `text_generation`；成功请求写入 `AiGatewayRequestLog` 并扣减积分；失败时返回明确错误；新增测试覆盖 mock provider 文本生成、gateway 错误映射和 TimePick gateway 映射；测试、类型检查、构建、文档同步和 diff 检查通过。
+- AI 初步方案：先写测试锁定 `text_generation` mock 输出、积分不足错误码和 TimePick fortune chat gateway 请求结构；再把 route 改为 `runAiGatewayTask()`；最后做最小烟测，确认未登录仍 401，成功链路至少由测试或本地脚本验证。
+- 处理结论：已入任务池
+- 对应任务编号：T147
+
+### IDEA-20260608-03：TimePick URL 自动识别接入平台 AI Gateway
+
+- 提出人：Lee
+- 提出时间：2026-06-08
+- 背景：T122 已完成自动识别平台 AI 重做规划入口，但还没有实现代码。当前 TimePick `ResourceDialog` 和 `ResourceCard` 的“自动识别”仍走本地 `buildLocalRecognition()` 占位逻辑，没有账号、积分、日志和平台 AI 调用链。AI 美颜由于本地未配置图片模型，当前更适合先接 URL 自动识别这条 mock 可跑链路。
+- 目标：新增 T148，把 TimePick 现有 URL 自动识别按钮先接到 DreamChasers `/api/timepick/recognize`，由后端走 AI Gateway `structured_extraction` mock；保留最小输入输出结构，串起账号、积分和请求日志。
+- 不做：不接真实网页抓取或外网内容抽取；不做 OCR、截图下载、Storage；不做图片生成；不修改 Prisma schema；不把识别能力扩到 PDF 工具箱或 AI 修图；不重做 TimePick UI。
+- 用户价值：TimePick 第二条真实 AI Gateway 产品链路上线，用户在资源录入/资源卡片里点击“自动识别”时，真正走平台 AI 能力、积分扣减和日志，而不再只是前端本地占位函数。
+- 涉及模块：AI Gateway / TimePick / 账号积分 / 请求日志 / 外部 TimePick 仓库。
+- 可能影响文件：`apps/web/src/lib/ai/**`, `apps/web/src/app/api/ai/**`, `apps/web/src/lib/timepick/**`, `apps/web/src/app/api/timepick/**`, `/Users/lee/Desktop/Lee/TimePick/src/lib/timepick-api.ts`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceDialog.tsx`, `/Users/lee/Desktop/Lee/TimePick/src/components/ResourceCard.tsx`, `docs/tasks/**`, `docs/progress/2026-06-08-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：DreamChasers 新增 URL 自动识别 API，内部走 AI Gateway `structured_extraction`；TimePick `ResourceDialog` / `ResourceCard` 自动识别调用 DreamChasers API；成功时更新 title/content/thumbnail，失败时返回明确错误；测试、类型检查、构建、TimePick build、文档同步和 diff 检查通过。
+- AI 初步方案：先为识别输入输出和 gateway 映射写测试；DreamChasers 增加 `timepick-recognition` 服务层和 `/api/timepick/recognize` route；TimePick API client 新增 `recognizeTimePickResourceUrl()` 并替换两个按钮；成功链路至少做一次真实登录态烟测并核对积分与日志。
+- 处理结论：已入任务池
+- 对应任务编号：T148
+
+### IDEA-20260608-01：AI Gateway MVP 运行时与模型 API
+
+- 提出人：Lee
+- 提出时间：2026-06-08
+- 背景：T143 已完成 AI Gateway MVP 规划，但仓库里还没有运行时代码。账号中心已有平台积分、API Key 和模型来源蓝图，下一步需要真正落下统一的模型目录、能力模型列表 API、任务执行 API、积分扣减和请求日志。
+- 目标：新增 T146，实现 AI Gateway MVP 后端最小闭环：capability 常量、模型目录、model list API、task API、mock provider、OpenAI-compatible adapter 壳、积分扣减、请求日志。
+- 不做：不接 TimePick 外部仓库；不接真实支付、订阅、Key Vault、用户 provider key 持久化；不做复杂路由和自动 provider 切换。
+- 用户价值：平台 AI 能力第一次拥有统一入口，后续 TimePick 自动识别、PDF 翻译、AI 修图和其他 AI 能力都能挂到同一条调用链。
+- 涉及模块：AI Gateway / 模型目录 / 平台积分 / 请求日志。
+- 可能影响文件：`apps/web/prisma/**`, `apps/web/src/lib/ai/**`, `apps/web/src/app/api/ai/**`, `apps/web/src/lib/account/**`, `docs/tasks/**`, `docs/progress/2026-06-08-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：存在 capability 常量和模型目录；`GET /api/ai/capabilities/[capability]/models` 返回能力可用模型；`POST /api/ai/tasks` 能走 mock provider 执行、校验积分并写请求日志；测试、类型检查、构建、文档同步和 diff 检查通过。
+- AI 初步方案：先写 `model-catalog` 和 `ai-gateway` 测试，再实现能力校验、模型筛选、mock provider、平台积分扣减和请求日志；OpenAI-compatible adapter 先做壳，不默认接真实 provider；必要时新增 `AiGatewayRequestLog` Prisma model 和 migration。
+- 处理结论：已入任务池
+- 对应任务编号：T146
+
+### IDEA-20260608-01：弹珠机福利玩法和 AI 积分奖励边界
+
+- 提出人：Lee
+- 提出时间：2026-06-08
+- 背景：Lee 在线下商场看到弹珠机，提出希望把“购买弹珠、投入弹珠、随机倍率、命中返还、积分券奖励”的游艺体验迁移到网站，用作放松内容和平台福利。讨论后进一步明确：不做对话，不把它作为普通体力制，而是考虑充值赠送游戏次数、直接购买游戏次数、中奖奖励进入账户等商业方式。
+- 目标：新增 T145，记录弹珠机福利玩法规划；建立独立模块文档 `docs/modules/marble-pachinko/`；明确 `paidCredits`、`bonusCredits`、`playTickets`、`gameCoins` 四类资产边界；记录优先可探索的“充值赠送游戏次数”和需要后置评估的“直接购买游戏次数”。
+- 不做：不实现代码；不接真实概率返奖；不让用户使用可购买 AI 积分下注；不按随机倍率返还可再次参与游戏的同类积分；不做现金、提现、转售、回购、礼品卡或可变现奖品；不绕过平台账号和积分审计。
+- 用户价值：保留弹珠机的短时放松、物理爽感、中奖惊喜和回访动力，同时避免把 AI 积分系统做成下注系统，后续可作为充值福利、签到任务和平台活动入口。
+- 涉及模块：弹珠机福利玩法 / 平台积分 / AI 积分 / 游戏留存 / 福利活动规则。
+- 可能影响文件：`docs/tasks/**`, `docs/modules/marble-pachinko/**`, `docs/progress/2026-06-08-lee.md`, `docs/completion/**`；后续实现任务可能影响 `apps/web/src/modules/games/marble-pachinko/**`, `apps/web/src/app/games/**`, `apps/web/src/lib/account/**`, `apps/web/prisma/**`。
+- 是否影响另一方任务：否。本任务只做规划文档；后续如果接入账号资产、积分、游戏频道或 AI Gateway，需要单独确认文件范围和合规边界。
+- 是否需要新增任务：是
+- 建议优先级：P2
+- 验收标准：模块文档覆盖玩法定位、资产分层、充值赠送次数、直接购买次数风险、奖励边界、后续实现阶段和交接风险；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：第一阶段只记录规划。推荐路线是充值 AI 积分或完成任务时赠送 `playTickets`，弹珠机命中奖励进入 `bonusCredits`、`gameCoins`、皮肤、徽章等；`bonusCredits` 只能用于 AI 能力，不能再次用于游戏。直接购买游戏次数后置到合规确认后评估，并要求固定保底权益、每日上限、概率公示和未成年人限制。
+- 处理结论：已入任务池
+- 对应任务编号：T145
+
+### IDEA-20260606-01：PDF 工具箱升级为 Edge 类 PDF 阅读编辑器
+
+- 提出人：Lee
+- 提出时间：2026-06-06
+- 背景：Lee 参考 Microsoft Edge 内置 PDF 阅读器和翻译能力，确认当前 PDF 工具箱还不能修改 PDF 内已有文字和图片；需要规划一条升级路线，先补 Edge 类免费标注编辑体验，再评估 AI/OCR 和商业 SDK 原文编辑。
+- 目标：新增 T144，产出 PDF 工具箱升级规划和实施待办；明确免费 Edge-like 标注编辑、文本抽取与翻译、办公转换增强、真实原文编辑商业 SDK 评估四层路线；记录后续实现任务建议，供 Lee 后续领取开发。
+- 不做：不修改应用代码；不接商业 PDF SDK；不接真实翻译或 OCR 模型；不实现原文编辑；不修改现有 PDF 工具行为。
+- 用户价值：避免把 PDF 工具箱误扩成高成本 Acrobat 级编辑器，同时尽快补齐用户感知强、成本可控的“添加文本、高亮、画笔、签名、遮盖、翻译”能力。
+- 涉及模块：PDF 工具箱 / PDF 阅读器 / PDF 标注编辑 / AI Gateway 翻译 / OCR 后续能力。
+- 可能影响文件：`docs/tasks/**`, `docs/modules/pdf-toolbox/**`, `docs/superpowers/plans/**`, `docs/progress/2026-06-06-lee.md`, `docs/completion/**`；后续实现任务可能影响 `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/package.json`, `package-lock.json`。
+- 是否影响另一方任务：否。本任务只做规划文档；后续实现如果接 AI Gateway 或 OCR，需要单独确认文件范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：规划文档覆盖分阶段路线、免费/限次边界、技术方案、任务拆分、风险和验收标准；实施计划列出 Lee 可后续执行的待办；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：第一阶段先做 Edge 类免费阅读标注：文本框、拖拽签名、可调整遮盖、高亮、画笔和保存副本；第二阶段补文本搜索、抽取、选中文本翻译和整页翻译，翻译走 AI Gateway 限次；第三阶段补 PDF 转图片和基础压缩；第四阶段只做商业 SDK 原文编辑评估，不进入第一阶段实现。
+- 处理结论：已入任务池
+- 对应任务编号：T144
 
 ### IDEA-20260605-02：AI Gateway MVP、模型选择和用户自配模型规划
 

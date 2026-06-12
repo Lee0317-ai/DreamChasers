@@ -70,16 +70,16 @@
 
 ### 当前任务
 
-- 任务编号：T015
-- 任务名称：实现 PDF 工具箱 MVP
-- 负责人：Codex / 开发 A
-- 状态：进行中
-- 开始时间：2026-05-21
-- 允许修改文件：`apps/web/src/app/tools/pdf-toolbox/**`, `apps/web/src/modules/tools/pdf-toolbox/**`, `apps/web/src/components/portal-data.ts`, `apps/web/package.json`, `package-lock.json`, `docs/modules/pdf-toolbox/**`, `docs/tasks/**`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-21.md`, `docs/completion/**`
-- 禁止修改文件：`packages/**`, `apps/game/**`, `apps/web/prisma/**`, `apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**`, `docker-compose.yml`, `package.json`
-- 验证命令：`npm run test -w apps/web -- pdf`; `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 桌面端和移动端检查
+- 任务编号：无
+- 任务名称：等待下一任务领取
+- 负责人：Lee
+- 状态：已完成
+- 开始时间：2026-06-08
+- 允许修改文件：无
+- 禁止修改文件：无
+- 验证命令：无
 - 当前阻塞：无
-- 下一步：按 `docs/modules/pdf-toolbox/IMPLEMENTATION_PLAN.md` 继续补 PDF 转图片和基础压缩。
+- 下一步：T146-T155 已完成；后续如需继续扩展图片 AI，优先为 AI 修图拆智能擦除或换背景任务，并先确认异步资产链路范围。
 
 领取任务后填写：
 
@@ -208,8 +208,8 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 
 ### 任务分片
 
-- 已扫描任务分片：118 个。
-- 已扫描领取分片：110 个。
+- 已扫描任务分片：136 个。
+- 已扫描领取分片：128 个。
 
 ### 当前未完成领取
 
@@ -298,12 +298,15 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 - T141：未命名任务，未填写领取人，状态：未填写
 - T142：平台能力、用户资产留存和工作流自动化第一阶段规划，Lee，状态：待验收
 - T143：AI Gateway MVP、模型选择和用户自配模型规划，Lee，状态：待验收
+- T144：PDF 工具箱升级规划和待办落档，Lee，状态：待验收
+- T145：弹珠机福利玩法规划落档，Lee，状态：待验收
+- T149：平台级 AI 治理与产品接线路线规划，Lee，状态：待验收
 
 ### 最近完成任务分片
 
-- T137：账号密码登录 Prisma migration 落档，负责人：Lee
-- T138：账号找回密码、修改密码和重发验证邮件，负责人：Lee
-- T139：TimePick 工具站入口补齐，负责人：Lee
-- T140：取消账号邮箱验证门槛并修复 TimePick 登录跳转，负责人：Lee
-- T141：账号中心第一阶段占位清理，负责人：Lee
+- T157：账号中心与 AI Gateway Naturecore UI 落地，负责人：Lee
+- T158：全站 Naturecore 视觉统一规划与落地，负责人：Lee
+- T159：首页 Naturecore 左右分区回调，负责人：Lee
+- T160：工具站冰视频背景延展，负责人：Lee
+- T161：游戏站火视频背景延展，负责人：Lee
 <!-- DOCS_SYNC_STATUS_END -->

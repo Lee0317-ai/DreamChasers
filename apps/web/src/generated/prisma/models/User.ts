@@ -224,6 +224,7 @@ export type UserWhereInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusListRelationFilter
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkListRelationFilter
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawListRelationFilter
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -253,6 +254,7 @@ export type UserOrderByWithRelationInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusOrderByRelationAggregateInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkOrderByRelationAggregateInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawOrderByRelationAggregateInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -285,6 +287,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   timePickLearningFocus?: Prisma.TimePickLearningFocusListRelationFilter
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkListRelationFilter
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawListRelationFilter
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -342,6 +345,7 @@ export type UserCreateInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -371,6 +375,7 @@ export type UserUncheckedCreateInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -400,6 +405,7 @@ export type UserUpdateInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -429,6 +435,7 @@ export type UserUncheckedUpdateInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -497,14 +504,30 @@ export type UserMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
 export type UserScalarRelationFilter = {
   is?: Prisma.UserWhereInput
   isNot?: Prisma.UserWhereInput
 }
 
-export type UserNullableScalarRelationFilter = {
-  is?: Prisma.UserWhereInput | null
-  isNot?: Prisma.UserWhereInput | null
+export type UserCreateNestedOneWithoutAiGatewayRequestLogsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAiGatewayRequestLogsInput, Prisma.UserUncheckedCreateWithoutAiGatewayRequestLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAiGatewayRequestLogsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutAiGatewayRequestLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAiGatewayRequestLogsInput, Prisma.UserUncheckedCreateWithoutAiGatewayRequestLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAiGatewayRequestLogsInput
+  upsert?: Prisma.UserUpsertWithoutAiGatewayRequestLogsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAiGatewayRequestLogsInput, Prisma.UserUpdateWithoutAiGatewayRequestLogsInput>, Prisma.UserUncheckedUpdateWithoutAiGatewayRequestLogsInput>
 }
 
 export type UserCreateNestedOneWithoutAccountsInput = {
@@ -761,6 +784,138 @@ export type UserUpdateOneRequiredWithoutTimePickFortuneDrawsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTimePickFortuneDrawsInput, Prisma.UserUpdateWithoutTimePickFortuneDrawsInput>, Prisma.UserUncheckedUpdateWithoutTimePickFortuneDrawsInput>
 }
 
+export type UserCreateWithoutAiGatewayRequestLogsInput = {
+  id?: string
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  passwordHash?: string | null
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  apiKeys?: Prisma.PlatformApiKeyCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AccountAuditLogCreateNestedManyWithoutUserInput
+  creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
+  productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
+  memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
+  timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
+  timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
+  timePickResources?: Prisma.TimePickResourceCreateNestedManyWithoutUserInput
+  timePickInspirations?: Prisma.TimePickInspirationCreateNestedManyWithoutUserInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryCreateNestedManyWithoutUserInput
+  timePickTagGroups?: Prisma.TimePickTagGroupCreateNestedManyWithoutUserInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutAiGatewayRequestLogsInput = {
+  id?: string
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  passwordHash?: string | null
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  apiKeys?: Prisma.PlatformApiKeyUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AccountAuditLogUncheckedCreateNestedManyWithoutUserInput
+  creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
+  productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
+  timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
+  timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
+  timePickResources?: Prisma.TimePickResourceUncheckedCreateNestedManyWithoutUserInput
+  timePickInspirations?: Prisma.TimePickInspirationUncheckedCreateNestedManyWithoutUserInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryUncheckedCreateNestedManyWithoutUserInput
+  timePickTagGroups?: Prisma.TimePickTagGroupUncheckedCreateNestedManyWithoutUserInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutAiGatewayRequestLogsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAiGatewayRequestLogsInput, Prisma.UserUncheckedCreateWithoutAiGatewayRequestLogsInput>
+}
+
+export type UserUpsertWithoutAiGatewayRequestLogsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAiGatewayRequestLogsInput, Prisma.UserUncheckedUpdateWithoutAiGatewayRequestLogsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAiGatewayRequestLogsInput, Prisma.UserUncheckedCreateWithoutAiGatewayRequestLogsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAiGatewayRequestLogsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAiGatewayRequestLogsInput, Prisma.UserUncheckedUpdateWithoutAiGatewayRequestLogsInput>
+}
+
+export type UserUpdateWithoutAiGatewayRequestLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  apiKeys?: Prisma.PlatformApiKeyUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AccountAuditLogUpdateManyWithoutUserNestedInput
+  creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
+  productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
+  timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
+  timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
+  timePickResources?: Prisma.TimePickResourceUpdateManyWithoutUserNestedInput
+  timePickInspirations?: Prisma.TimePickInspirationUpdateManyWithoutUserNestedInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryUpdateManyWithoutUserNestedInput
+  timePickTagGroups?: Prisma.TimePickTagGroupUpdateManyWithoutUserNestedInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAiGatewayRequestLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  apiKeys?: Prisma.PlatformApiKeyUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AccountAuditLogUncheckedUpdateManyWithoutUserNestedInput
+  creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
+  productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
+  timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
+  timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
+  timePickResources?: Prisma.TimePickResourceUncheckedUpdateManyWithoutUserNestedInput
+  timePickInspirations?: Prisma.TimePickInspirationUncheckedUpdateManyWithoutUserNestedInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryUncheckedUpdateManyWithoutUserNestedInput
+  timePickTagGroups?: Prisma.TimePickTagGroupUncheckedUpdateManyWithoutUserNestedInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutAccountsInput = {
   id?: string
   name?: string | null
@@ -787,6 +942,7 @@ export type UserCreateWithoutAccountsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -815,6 +971,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -859,6 +1016,7 @@ export type UserUpdateWithoutAccountsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -887,6 +1045,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -915,6 +1074,7 @@ export type UserCreateWithoutSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -943,6 +1103,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -987,6 +1148,7 @@ export type UserUpdateWithoutSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1015,6 +1177,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProfileInput = {
@@ -1043,6 +1206,7 @@ export type UserCreateWithoutProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -1071,6 +1235,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -1115,6 +1280,7 @@ export type UserUpdateWithoutProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -1143,6 +1309,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -1171,6 +1338,7 @@ export type UserCreateWithoutMembershipsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -1199,6 +1367,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -1243,6 +1412,7 @@ export type UserUpdateWithoutMembershipsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -1271,6 +1441,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreditWalletsInput = {
@@ -1299,6 +1470,7 @@ export type UserCreateWithoutCreditWalletsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreditWalletsInput = {
@@ -1327,6 +1499,7 @@ export type UserUncheckedCreateWithoutCreditWalletsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreditWalletsInput = {
@@ -1371,6 +1544,7 @@ export type UserUpdateWithoutCreditWalletsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreditWalletsInput = {
@@ -1399,6 +1573,7 @@ export type UserUncheckedUpdateWithoutCreditWalletsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutApiKeysInput = {
@@ -1427,6 +1602,7 @@ export type UserCreateWithoutApiKeysInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApiKeysInput = {
@@ -1455,6 +1631,7 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApiKeysInput = {
@@ -1499,6 +1676,7 @@ export type UserUpdateWithoutApiKeysInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApiKeysInput = {
@@ -1527,6 +1705,7 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutProductSessionsInput = {
@@ -1555,6 +1734,7 @@ export type UserCreateWithoutProductSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProductSessionsInput = {
@@ -1583,6 +1763,7 @@ export type UserUncheckedCreateWithoutProductSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProductSessionsInput = {
@@ -1627,6 +1808,7 @@ export type UserUpdateWithoutProductSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProductSessionsInput = {
@@ -1655,6 +1837,7 @@ export type UserUncheckedUpdateWithoutProductSessionsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -1683,6 +1866,7 @@ export type UserCreateWithoutAuditLogsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -1711,6 +1895,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -1755,6 +1940,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -1783,6 +1969,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickProfileInput = {
@@ -1811,6 +1998,7 @@ export type UserCreateWithoutTimePickProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickProfileInput = {
@@ -1839,6 +2027,7 @@ export type UserUncheckedCreateWithoutTimePickProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickProfileInput = {
@@ -1883,6 +2072,7 @@ export type UserUpdateWithoutTimePickProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickProfileInput = {
@@ -1911,6 +2101,7 @@ export type UserUncheckedUpdateWithoutTimePickProfileInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickRolesInput = {
@@ -1939,6 +2130,7 @@ export type UserCreateWithoutTimePickRolesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickRolesInput = {
@@ -1967,6 +2159,7 @@ export type UserUncheckedCreateWithoutTimePickRolesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickRolesInput = {
@@ -2011,6 +2204,7 @@ export type UserUpdateWithoutTimePickRolesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickRolesInput = {
@@ -2039,6 +2233,7 @@ export type UserUncheckedUpdateWithoutTimePickRolesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickFoldersInput = {
@@ -2067,6 +2262,7 @@ export type UserCreateWithoutTimePickFoldersInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickFoldersInput = {
@@ -2095,6 +2291,7 @@ export type UserUncheckedCreateWithoutTimePickFoldersInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickFoldersInput = {
@@ -2139,6 +2336,7 @@ export type UserUpdateWithoutTimePickFoldersInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickFoldersInput = {
@@ -2167,6 +2365,7 @@ export type UserUncheckedUpdateWithoutTimePickFoldersInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickResourcesInput = {
@@ -2195,6 +2394,7 @@ export type UserCreateWithoutTimePickResourcesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickResourcesInput = {
@@ -2223,6 +2423,7 @@ export type UserUncheckedCreateWithoutTimePickResourcesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickResourcesInput = {
@@ -2267,6 +2468,7 @@ export type UserUpdateWithoutTimePickResourcesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickResourcesInput = {
@@ -2295,6 +2497,7 @@ export type UserUncheckedUpdateWithoutTimePickResourcesInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickInspirationsInput = {
@@ -2323,6 +2526,7 @@ export type UserCreateWithoutTimePickInspirationsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickInspirationsInput = {
@@ -2351,6 +2555,7 @@ export type UserUncheckedCreateWithoutTimePickInspirationsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickInspirationsInput = {
@@ -2395,6 +2600,7 @@ export type UserUpdateWithoutTimePickInspirationsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickInspirationsInput = {
@@ -2423,6 +2629,7 @@ export type UserUncheckedUpdateWithoutTimePickInspirationsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickSearchHistoryInput = {
@@ -2451,6 +2658,7 @@ export type UserCreateWithoutTimePickSearchHistoryInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickSearchHistoryInput = {
@@ -2479,6 +2687,7 @@ export type UserUncheckedCreateWithoutTimePickSearchHistoryInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickSearchHistoryInput = {
@@ -2523,6 +2732,7 @@ export type UserUpdateWithoutTimePickSearchHistoryInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickSearchHistoryInput = {
@@ -2551,6 +2761,7 @@ export type UserUncheckedUpdateWithoutTimePickSearchHistoryInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickTagGroupsInput = {
@@ -2579,6 +2790,7 @@ export type UserCreateWithoutTimePickTagGroupsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickTagGroupsInput = {
@@ -2607,6 +2819,7 @@ export type UserUncheckedCreateWithoutTimePickTagGroupsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickTagGroupsInput = {
@@ -2651,6 +2864,7 @@ export type UserUpdateWithoutTimePickTagGroupsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickTagGroupsInput = {
@@ -2679,6 +2893,7 @@ export type UserUncheckedUpdateWithoutTimePickTagGroupsInput = {
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickLearningFocusInput = {
@@ -2707,6 +2922,7 @@ export type UserCreateWithoutTimePickLearningFocusInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickLearningFocusInput = {
@@ -2735,6 +2951,7 @@ export type UserUncheckedCreateWithoutTimePickLearningFocusInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickLearningFocusInput = {
@@ -2779,6 +2996,7 @@ export type UserUpdateWithoutTimePickLearningFocusInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickLearningFocusInput = {
@@ -2807,6 +3025,7 @@ export type UserUncheckedUpdateWithoutTimePickLearningFocusInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickTryQueueLinksInput = {
@@ -2835,6 +3054,7 @@ export type UserCreateWithoutTimePickTryQueueLinksInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupCreateNestedManyWithoutUserInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickTryQueueLinksInput = {
@@ -2863,6 +3083,7 @@ export type UserUncheckedCreateWithoutTimePickTryQueueLinksInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUncheckedCreateNestedManyWithoutUserInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickTryQueueLinksInput = {
@@ -2907,6 +3128,7 @@ export type UserUpdateWithoutTimePickTryQueueLinksInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUpdateManyWithoutUserNestedInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickTryQueueLinksInput = {
@@ -2935,6 +3157,7 @@ export type UserUncheckedUpdateWithoutTimePickTryQueueLinksInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUncheckedUpdateManyWithoutUserNestedInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTimePickFortuneDrawsInput = {
@@ -2963,6 +3186,7 @@ export type UserCreateWithoutTimePickFortuneDrawsInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupCreateNestedManyWithoutUserInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTimePickFortuneDrawsInput = {
@@ -2991,6 +3215,7 @@ export type UserUncheckedCreateWithoutTimePickFortuneDrawsInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUncheckedCreateNestedManyWithoutUserInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTimePickFortuneDrawsInput = {
@@ -3035,6 +3260,7 @@ export type UserUpdateWithoutTimePickFortuneDrawsInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUpdateManyWithoutUserNestedInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTimePickFortuneDrawsInput = {
@@ -3063,6 +3289,7 @@ export type UserUncheckedUpdateWithoutTimePickFortuneDrawsInput = {
   timePickTagGroups?: Prisma.TimePickTagGroupUncheckedUpdateManyWithoutUserNestedInput
   timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
   timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -3087,6 +3314,7 @@ export type UserCountOutputType = {
   timePickLearningFocus: number
   timePickTryQueueLinks: number
   timePickFortuneDraws: number
+  aiGatewayRequestLogs: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3106,6 +3334,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   timePickLearningFocus?: boolean | UserCountOutputTypeCountTimePickLearningFocusArgs
   timePickTryQueueLinks?: boolean | UserCountOutputTypeCountTimePickTryQueueLinksArgs
   timePickFortuneDraws?: boolean | UserCountOutputTypeCountTimePickFortuneDrawsArgs
+  aiGatewayRequestLogs?: boolean | UserCountOutputTypeCountAiGatewayRequestLogsArgs
 }
 
 /**
@@ -3230,6 +3459,13 @@ export type UserCountOutputTypeCountTimePickFortuneDrawsArgs<ExtArgs extends run
   where?: Prisma.TimePickFortuneDrawWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAiGatewayRequestLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AiGatewayRequestLogWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3258,6 +3494,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   timePickLearningFocus?: boolean | Prisma.User$timePickLearningFocusArgs<ExtArgs>
   timePickTryQueueLinks?: boolean | Prisma.User$timePickTryQueueLinksArgs<ExtArgs>
   timePickFortuneDraws?: boolean | Prisma.User$timePickFortuneDrawsArgs<ExtArgs>
+  aiGatewayRequestLogs?: boolean | Prisma.User$aiGatewayRequestLogsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3314,6 +3551,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   timePickLearningFocus?: boolean | Prisma.User$timePickLearningFocusArgs<ExtArgs>
   timePickTryQueueLinks?: boolean | Prisma.User$timePickTryQueueLinksArgs<ExtArgs>
   timePickFortuneDraws?: boolean | Prisma.User$timePickFortuneDrawsArgs<ExtArgs>
+  aiGatewayRequestLogs?: boolean | Prisma.User$aiGatewayRequestLogsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -3340,6 +3578,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     timePickLearningFocus: Prisma.$TimePickLearningFocusPayload<ExtArgs>[]
     timePickTryQueueLinks: Prisma.$TimePickTryQueueLinkPayload<ExtArgs>[]
     timePickFortuneDraws: Prisma.$TimePickFortuneDrawPayload<ExtArgs>[]
+    aiGatewayRequestLogs: Prisma.$AiGatewayRequestLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3762,6 +4001,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   timePickLearningFocus<T extends Prisma.User$timePickLearningFocusArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timePickLearningFocusArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimePickLearningFocusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timePickTryQueueLinks<T extends Prisma.User$timePickTryQueueLinksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timePickTryQueueLinksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimePickTryQueueLinkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timePickFortuneDraws<T extends Prisma.User$timePickFortuneDrawsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timePickFortuneDrawsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimePickFortuneDrawPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  aiGatewayRequestLogs<T extends Prisma.User$aiGatewayRequestLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$aiGatewayRequestLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiGatewayRequestLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4611,6 +4851,30 @@ export type User$timePickFortuneDrawsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.TimePickFortuneDrawScalarFieldEnum | Prisma.TimePickFortuneDrawScalarFieldEnum[]
+}
+
+/**
+ * User.aiGatewayRequestLogs
+ */
+export type User$aiGatewayRequestLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AiGatewayRequestLog
+   */
+  select?: Prisma.AiGatewayRequestLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AiGatewayRequestLog
+   */
+  omit?: Prisma.AiGatewayRequestLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AiGatewayRequestLogInclude<ExtArgs> | null
+  where?: Prisma.AiGatewayRequestLogWhereInput
+  orderBy?: Prisma.AiGatewayRequestLogOrderByWithRelationInput | Prisma.AiGatewayRequestLogOrderByWithRelationInput[]
+  cursor?: Prisma.AiGatewayRequestLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AiGatewayRequestLogScalarFieldEnum | Prisma.AiGatewayRequestLogScalarFieldEnum[]
 }
 
 /**

@@ -1,0 +1,36 @@
+# T160 完成记录：工具站冰视频背景延展
+
+- 任务编号：T160
+- 负责人：Lee
+- 完成日期：2026-06-12
+- 修改文件：
+  - `apps/web/src/components/ChannelPage.tsx`
+  - `apps/web/src/app/globals.css`
+  - `docs/tasks/items/T160-tools-ice-video-background.md`
+  - `docs/tasks/claims/T160-lee.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-06-12-lee.md`
+  - `docs/completion/2026-06-12-task-160-tools-ice-video-background.md`
+- 实现内容：
+  - `/tools` 频道页沿用 T159 的冰视频作为整页动态背景。
+  - `ChannelPage` 仅在 `variant="tools"` 时渲染视频背景层。
+  - 工具频道增加暗色遮罩和冷色光感，保证页头、搜索、筛选和卡片可读。
+  - 未修改游戏频道、工具工作台或业务逻辑。
+- 验证命令：
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 类型检查：通过。
+  - 生产构建：通过。
+  - 右侧内置浏览器默认视口 `/tools`：通过，1 个冰视频背景自动播放，7 张工具卡片正常渲染，无横向溢出。
+  - 右侧内置浏览器桌面端 `/tools` 1280 x 820：通过，视频自动播放，页头和卡片区正常，无横向溢出。
+  - 右侧内置浏览器移动端 `/tools` 390 x 844：通过，视频自动播放，首张卡片和页头正常，无横向溢出。
+  - `npm run docs:sync`：通过。
+  - T160 相关文件限定 `git diff --check`：通过。
+- 遗留问题：
+  - 本任务只延展工具频道页背景，不涉及工具工作台内部页面。

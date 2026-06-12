@@ -4,6 +4,9 @@ import {
   computeCreditBalance,
   generatePlatformApiKeySecret,
   hashPlatformApiKey,
+  shouldGrantStarterPlatformCredits,
+  starterPlatformCreditNote,
+  starterPlatformCredits,
   sanitizeReturnUrl
 } from "./account-security";
 import {
@@ -24,6 +27,10 @@ export async function findAccountUserByEmail(email: string) {
 export async function getAccountDashboard(email: string) {
   const user = await db.user.findUnique({
     include: {
+      aiGatewayRequestLogs: {
+        orderBy: { createdAt: "desc" },
+        take: 8
+      },
       apiKeys: {
         orderBy: { createdAt: "desc" },
         take: 10
@@ -66,10 +73,33 @@ export async function getAccountDashboard(email: string) {
       createdAt: log.createdAt,
       id: log.id
     })),
+    aiGatewayRequestLogs: user.aiGatewayRequestLogs.map((log) => ({
+      capability: log.capability,
+      createdAt: log.createdAt,
+      creditCost: log.creditCost,
+      credentialSource: log.credentialSource,
+      errorCode: log.errorCode,
+      id: log.id,
+      modelId: log.modelId,
+      outputSummary: log.outputSummary,
+      productSlug: log.productSlug,
+      providerId: log.providerId,
+      status: log.status,
+      toolSlug: log.toolSlug
+    })),
     creditBalance,
     email: user.email,
     emailVerified: user.emailVerified,
     id: user.id,
+    platformLedger: platformWallet
+      ? platformWallet.ledger.map((entry) => ({
+          amount: entry.amount,
+          createdAt: entry.createdAt,
+          id: entry.id,
+          note: entry.note,
+          type: entry.type
+        }))
+      : [],
     name: user.profile?.displayName || user.name || "未设置昵称"
   };
 }
@@ -253,6 +283,123 @@ export async function recordAccountAuditLog(userId: string | null, action: Param
     data: {
       action,
       userId
+    }
+  });
+}
+
+export async function ensureStarterPlatformCreditsForUser(userId: string) {
+  const wallet = await db.creditWallet.upsert({
+    create: {
+      scope: "platform",
+      userId
+    },
+    update: {},
+    where: {
+      userId_scope: {
+        scope: "platform",
+        userId
+      }
+    }
+  });
+  const existingLedgerCount = await db.creditLedger.count({
+    where: {
+      walletId: wallet.id
+    }
+  });
+
+  if (!shouldGrantStarterPlatformCredits(existingLedgerCount)) {
+    return {
+      granted: false,
+      walletId: wallet.id
+    };
+  }
+
+  await db.creditLedger.create({
+    data: {
+      amount: starterPlatformCredits,
+      note: starterPlatformCreditNote,
+      type: "grant",
+      walletId: wallet.id
+    }
+  });
+
+  return {
+    granted: true,
+    walletId: wallet.id
+  };
+}
+
+export async function chargePlatformCreditsForUser(input: {
+  amount: number;
+  note: string;
+  scope: string;
+  userId: string;
+}) {
+  await ensureStarterPlatformCreditsForUser(input.userId);
+
+  const wallet = await db.creditWallet.upsert({
+    create: {
+      scope: input.scope,
+      userId: input.userId
+    },
+    update: {},
+    where: {
+      userId_scope: {
+        scope: input.scope,
+        userId: input.userId
+      }
+    }
+  });
+  const totals = await db.creditLedger.aggregate({
+    _sum: {
+      amount: true
+    },
+    where: {
+      walletId: wallet.id
+    }
+  });
+  const currentBalance = totals._sum.amount ?? 0;
+
+  if (currentBalance < input.amount) {
+    throw new Error("平台积分不足。");
+  }
+
+  await db.creditLedger.create({
+    data: {
+      amount: -input.amount,
+      note: input.note,
+      type: "usage",
+      walletId: wallet.id
+    }
+  });
+}
+
+export async function refundPlatformCreditsForUser(input: {
+  amount: number;
+  note: string;
+  scope: string;
+  userId: string;
+}) {
+  const wallet = await db.creditWallet.upsert({
+    create: {
+      scope: input.scope,
+      userId: input.userId
+    },
+    update: {},
+    where: {
+      userId_scope: {
+        scope: input.scope,
+        userId: input.userId
+      }
+    }
+  });
+
+  await db.creditLedger.create({
+    data: {
+      amount: input.amount,
+      note: input.note,
+      type: "refund",
+      walletId: wallet.id
     }
   });
 }

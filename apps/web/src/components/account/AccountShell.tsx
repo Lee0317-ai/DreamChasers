@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentType, ReactNode } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Boxes, Coins, KeyRound, LayoutDashboard, Shield, User } from "lucide-react";
@@ -28,9 +29,41 @@ export function AccountShell({
 }) {
   const pathname = usePathname();
   const active = findActiveAccountNavItem(pathname || "/account");
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+
+    if (!shell) {
+      return;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const rect = shell.getBoundingClientRect();
+      shell.style.setProperty("--account-mouse-x", `${event.clientX - rect.left}px`);
+      shell.style.setProperty("--account-mouse-y", `${event.clientY - rect.top}px`);
+
+      const activeSurface = (event.target as Element | null)?.closest<HTMLElement>(
+        ".account-card, .account-stat, .account-action, .account-list-row"
+      );
+
+      if (!activeSurface) {
+        return;
+      }
+
+      const surfaceRect = activeSurface.getBoundingClientRect();
+      activeSurface.style.setProperty("--surface-mouse-x", `${event.clientX - surfaceRect.left}px`);
+      activeSurface.style.setProperty("--surface-mouse-y", `${event.clientY - surfaceRect.top}px`);
+    };
+
+    shell.addEventListener("pointermove", handlePointerMove);
+
+    return () => shell.removeEventListener("pointermove", handlePointerMove);
+  }, []);
 
   return (
-    <div className="account-shell">
+    <div className="account-shell" ref={shellRef}>
+      <div aria-hidden="true" className="account-ambient" />
       <aside aria-label="账号中心导航" className="account-sidebar">
         <Link className="account-sidebar-logo" href="/account">
           <span className="account-logo-mark">D</span>

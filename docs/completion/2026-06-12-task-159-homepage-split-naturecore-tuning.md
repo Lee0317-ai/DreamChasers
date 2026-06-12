@@ -1,0 +1,39 @@
+# T159 完成记录：首页 Naturecore 左右分区回调
+
+- 任务编号：T159
+- 负责人：Lee
+- 完成日期：2026-06-12
+- 修改文件：
+  - `apps/web/src/components/HomeExperience.tsx`
+  - `apps/web/src/app/globals.css`
+  - `apps/web/public/videos/home/ice-portal.mp4`
+  - `apps/web/public/videos/home/fire-portal.mp4`
+  - `docs/tasks/items/T159-homepage-split-naturecore-tuning.md`
+  - `docs/tasks/claims/T159-lee.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/progress/2026-06-12-lee.md`
+  - `docs/completion/2026-06-12-task-159-homepage-split-naturecore-tuning.md`
+- 实现内容：
+  - 首页从中央双入口改为斜线切割左右分区入口。
+  - 左侧入口为工具站，右侧入口为游戏馆，中间 `OR` 已移除。
+  - 使用 Lee 提供的冰视频与火视频作为两侧真实动态背景。
+  - 两侧视频配置 `autoplay`、`muted`、`loop`、`playsInline`，只保留暗色遮罩和冷暖光感。
+  - 保留深色质感、玻璃按钮、冷暖点缀和 hover 光扫。
+  - 去掉复杂中心标题、月环和森林背景装饰，让入口更简单明了。
+  - 移动端保持上下堆叠。
+- 验证命令：
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 类型检查：通过。
+  - 生产构建：通过。
+  - 右侧内置浏览器默认视口 `/`：通过，斜线首页存在，2 个入口，本地冰/火视频自动播放，无 `OR`，无横向溢出。
+  - 右侧内置浏览器桌面端 `/` 1280 x 820：通过，斜线切割左右分区，两个视频自动播放，无横向溢出。
+  - 右侧内置浏览器移动端 `/` 390 x 844：通过，上下堆叠，火焰主体可见，无横向溢出。
+  - `npm run docs:sync`：待补充。
+  - `git diff --check`：待补充。
+- 遗留问题：
+  - 本任务只调整首页入口，不涉及内页和业务逻辑。

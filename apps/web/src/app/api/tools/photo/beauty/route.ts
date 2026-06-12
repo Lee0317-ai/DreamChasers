@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth/session";
 import {
   assertSupportedBeautyInput,
   naturalPortraitBeautyType
@@ -8,6 +9,12 @@ import { createBeautyTask } from "@/lib/tools/photo/beauty-task-store";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const user = await getCurrentUser();
+
+  if (!user?.id) {
+    return NextResponse.json({ error: "请先登录。" }, { status: 401 });
+  }
+
   try {
     const formData = await request.formData();
     const image = formData.get("image");
@@ -22,7 +29,9 @@ export async function POST(request: Request) {
 
     assertSupportedBeautyInput({ beautyType, image });
 
-    const task = createBeautyTask(image);
+    const task = createBeautyTask(image, {
+      userId: user.id
+    });
 
     return NextResponse.json(task, {
       headers: {

@@ -1,0 +1,36 @@
+# T161 完成记录：游戏站火视频背景延展
+
+- 任务编号：T161
+- 负责人：Lee
+- 完成日期：2026-06-12
+- 修改文件：
+  - `apps/web/src/components/ChannelPage.tsx`
+  - `apps/web/src/app/globals.css`
+  - `docs/tasks/items/T161-games-fire-video-background.md`
+  - `docs/tasks/claims/T161-lee.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/progress/2026-06-12-lee.md`
+  - `docs/completion/2026-06-12-task-161-games-fire-video-background.md`
+- 实现内容：
+  - `/games` 频道页沿用 T159 的火视频作为整页动态背景。
+  - `ChannelPage` 根据 `variant` 选择冰/火频道背景视频。
+  - 游戏频道增加火色视频遮罩，保证页头、搜索、筛选和卡片可读。
+  - 未修改具体游戏页或业务逻辑。
+- 验证命令：
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 类型检查：通过。
+  - 生产构建：通过。
+  - 右侧内置浏览器默认视口 `/games`：通过，1 个火视频背景自动播放，5 张游戏卡片正常渲染，无横向溢出。
+  - 右侧内置浏览器桌面端 `/games` 1280 x 820：通过，视频自动播放，页头和卡片区正常，无横向溢出。
+  - 右侧内置浏览器移动端 `/games` 390 x 844：通过，视频自动播放，首张卡片和页头正常，无横向溢出。
+  - `npm run docs:sync`：通过。
+  - T161 相关文件限定 `git diff --check`：通过。
+- 遗留问题：
+  - 本任务只延展游戏频道页背景，不涉及具体游戏页。
