@@ -66,7 +66,9 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain('"support-column"');
     expect(playHtml).toContain('"side-scatter"');
     expect(playHtml).toContain("const MOUNTAIN_AUTO_TEMPLATE_IDS = [");
+    expect(playHtml).toContain("const MOUNTAIN_HIGH_PRESSURE_AUTO_TEMPLATE_IDS = [");
     expect(playHtml).toContain("function getAutoMountainTemplateIds()");
+    expect(playHtml).toContain("function shouldUseHighPressureMountainAutoPool");
     expect(playHtml).toContain("function getMountainTemplateGenerationCandidates");
     expect(playHtml).toContain("function shouldRetryAutoMountainTemplate");
     expect(playHtml).toContain("function getGeneratedInitialAvailableCount");
@@ -118,7 +120,6 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("body.play-view .board[data-mode=\"mountain\"]");
     expect(playHtml).toContain("grid-template-rows: auto auto auto auto auto;");
     expect(playHtml).toContain("width: min(100%, 330px);");
-    expect(playHtml).toContain("width: min(100%, 350px);");
     expect(playHtml).toContain("width: 11.4285714286%;");
     expect(playHtml).toContain("aspect-ratio: 52 / 70;");
     expect(playHtml).toContain("aspect-ratio: 560 / 640;");
@@ -144,7 +145,7 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain('<div class="action-strip">');
     expect(playHtml).toContain("grid-template-columns: repeat(5, minmax(48px, 64px));");
     expect(playHtml).toContain("body.play-view .slot-area {");
-    expect(playHtml).toContain("margin-bottom: 76px;");
+    expect(playHtml).toContain("margin-bottom: 112px;");
     expect(playHtml).toContain("function renderPlayHud()");
     expect(playHtml).toContain("function getHudGoalText()");
     expect(playHtml).toContain("view.hudRemaining.textContent");
@@ -154,6 +155,9 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("const FRIEND_DEMO_LEVEL_COUNT = 10;");
     expect(playHtml).toContain("const FRIEND_DEMO_TUTORIAL_SLOT_LIMIT = 6;");
     expect(playHtml).toContain("const FRIEND_DEMO_FULL_SLOT_LIMIT = 8;");
+    expect(playHtml).toContain("const FRIEND_DEMO_BOSS_TRIAL_LEVEL_INDEX = 9;");
+    expect(playHtml).toContain("const FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS = 180;");
+    expect(playHtml).toContain('const FRIEND_DEMO_BOSS_TRIAL_TITLE = "终局试炼";');
     expect(playHtml).toContain('const FRIEND_DEMO_FIRST_REWARD_ID = "demo_slot_plus_2";');
     expect(playHtml).toContain("const FRIEND_DEMO_TUTORIAL_COMBOS = [\"peng\", \"chi\", \"gang\", \"hu\"];");
     expect(playHtml).toContain("const FRIEND_DEMO_DIFFICULTY_PROFILES = [");
@@ -164,6 +168,8 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("function getFriendDemoSlotLimit");
     expect(playHtml).toContain("function getFriendDemoLevelMode");
     expect(playHtml).toContain("function getFriendDemoDifficultyProfile");
+    expect(playHtml).toContain("function getFriendDemoBossTrialGoals");
+    expect(playHtml).toContain("function claimBossTrialReward");
     expect(playHtml).toContain("function getEffectiveMountainTuningForLevel");
     expect(playHtml).toContain("function getFriendDemoTutorialRequiredCombo");
     expect(playHtml).toContain("function hasCompletedFriendDemoTutorialCombo");
@@ -230,6 +236,45 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("胡后清河");
   });
 
+  it("试玩 Demo 暴露残局收官第一阶段入口", () => {
+    expect(playHtml).toContain("function resolveLevelClear");
+    expect(playHtml).toContain("function shouldEnterEndgameSettlement");
+    expect(playHtml).toContain("function showEndgameSettlement");
+    expect(playHtml).toContain("function completeEndgameByDiscard");
+    expect(playHtml).toContain("function startEndgamePrimerSelection");
+    expect(playHtml).toContain("function pickEndgamePrimerTile");
+    expect(playHtml).toContain("function applyPendingGuideTileToLevel");
+    expect(playHtml).toContain("残局收官");
+    expect(playHtml).toContain("弃牌通关");
+    expect(playHtml).toContain("选作牌引");
+    expect(playHtml).toContain("牌引");
+    expect(playHtml).toContain("endgamePrimerSelecting");
+    expect(playHtml).toContain("pendingGuideTile");
+  });
+
+  it("试玩 Demo 暴露关前特殊事件第一版入口", () => {
+    expect(playHtml).toContain("const SPECIAL_EVENT_TRIGGER_LEVELS = [5, 7, 9];");
+    expect(playHtml).toContain("const SPECIAL_EVENT_POOL = [");
+    expect(playHtml).toContain("function maybeShowSpecialEventBeforeLevel");
+    expect(playHtml).toContain("function showSpecialEventOverlay");
+    expect(playHtml).toContain("function chooseSpecialEventOption");
+    expect(playHtml).toContain("function applySpecialEventEffect");
+    expect(playHtml).toContain("function applyPendingLevelModifier");
+    expect(playHtml).toContain("function isToolDisabledByModifier");
+    expect(playHtml).toContain("function getActiveLevelModifierText");
+    expect(playHtml).toContain("activeLevelModifier");
+    expect(playHtml).toContain("pendingLevelModifier");
+    expect(playHtml).toContain("pendingSpecialEvent");
+    expect(playHtml).toContain("specialEventsSeen");
+    expect(playHtml).toContain("路遇老雀");
+    expect(playHtml).toContain("旧牌匣");
+    expect(playHtml).toContain("加注一局");
+    expect(playHtml).toContain("暗灯牌局");
+    expect(playHtml).toContain("禁洗牌");
+    expect(playHtml).toContain("禁透视");
+    expect(playHtml).toContain("高压牌山");
+  });
+
   it("默认玩家页压缩 HUD，保证操作区优先留在一屏", () => {
     expect(playHtml).toContain("body.play-view .topbar {");
     expect(playHtml).toContain("display: none;");
@@ -244,12 +289,12 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("body.play-view .tool-button {");
     expect(playHtml).toContain("min-height: 36px;");
     expect(playHtml).toContain("body.play-view .slot-area {");
-    expect(playHtml).toContain("margin-bottom: 76px;");
+    expect(playHtml).toContain("margin-bottom: 112px;");
   });
 
   it("失败状态使用显眼弹层并提供重开本关入口", () => {
-    expect(playHtml).toContain("function failLevel(reason)");
-    expect(playHtml).toContain("function showLevelFailed(reason)");
+    expect(playHtml).toContain('function failLevel(reason, statusMessage = "本关失败")');
+    expect(playHtml).toContain('function showLevelFailed(reason, statusMessage = "本关失败")');
     expect(playHtml).toContain('view.rewardTitle.textContent = "本关失败";');
     expect(playHtml).toContain('restart.textContent = "重开本关";');
     expect(playHtml).toContain("主槽已满，且当前没有可发动的组合或可用救场。");

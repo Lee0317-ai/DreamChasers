@@ -1,0 +1,85 @@
+# T163：胡了卜特殊事件 Demo 第一版
+
+- 任务编号：T163
+- 优先级：P1
+- 任务名称：胡了卜特殊事件 Demo 第一版
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：已完成
+- 依赖：T101, T102, T105, T162, D006
+- 背景：T162 已完成残局收官和高压窄腰池。Lee 提醒胡了卜早期规划里还有特殊事件；D006 和玩法规划已确认高阶挑战应由词缀系统、随机事件和 Boss 试炼等共同组成，不应只靠增加牌数或堆叠层数。
+- 目标：
+  - 默认朋友试玩 Demo 在第 6、8、10 关前弹出特殊事件选择。
+  - 事件选项覆盖低风险收益、道具补给和主动加压换奖励。
+  - 下一关小词缀至少支持禁洗牌、禁透视或高压牌山。
+  - 玩家能在 HUD 或状态栏看到当前事件/词缀提示。
+  - 站内静态 Demo 同步发布副本。
+- 不做：
+  - 不实现完整无尽高阶周目。
+  - 不做完整 Boss 试炼系统。
+  - 不改 Cocos 正式工程。
+  - 不做永久能力卡槽压缩。
+  - 不改 PDF、AI 修图、账号中心或站点视觉。
+  - 不加入无预警纯惩罚事件。
+- 允许修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T163-hulebu-special-events-demo.md`
+  - `docs/tasks/claims/T163-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-13-hulebu-special-events-demo-design.md`
+  - `docs/superpowers/plans/2026-06-13-hulebu-special-events-demo.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - HTML 内联脚本语法检查
+  - `npm run test -w apps/web -- hulebu`
+  - `/games/hulebu` 桌面端浏览器检查
+  - `/games/hulebu` 390px 移动端浏览器检查
+  - `npm run docs:sync`
+  - `git diff --check`
+- 拆分子任务：
+  - 已完成特殊事件 Demo 设计稿和实施计划。
+  - 已新增回归测试保护事件池、触发关卡、事件选择效果、HUD 提示和词缀不串关。
+  - 已实现关前事件 overlay、事件选择和当前关 modifier。
+  - 已同步站内静态 Demo。
+  - 已完成浏览器和文档验收。
+- 完成内容：
+  - 默认朋友试玩 Demo 会在第 6、8、10 关前触发一次特殊事件选择。
+  - 第一版事件池包含 `路遇老雀`、`旧牌匣`、`加注一局`、`暗灯牌局`，选项覆盖铜钱、道具补给和主动加压。
+  - 词缀支持 `禁洗牌`、`禁透视`、`高压牌山`；负面词缀只来自玩家主动选择。
+  - 高压牌山会提高当前关牌量压力并纳入高压模板池；禁洗牌会禁用洗牌按钮并给状态提示。
+  - HUD 会显示当前事件词缀，事件通关奖励会结算到铜钱。
+  - 站内静态 Demo `/games/hulebu-demo/index.html` 已同步。
+- 验证结果：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`：通过。
+  - `npm run test -w packages/shared -- mahjong-config`：通过。
+  - HTML 内联脚本语法检查：通过，源原型和站内静态副本均可解析。
+  - `npm run test -w apps/web -- hulebu`：通过。
+  - 右侧内置浏览器桌面端检查：通过，第 6 关前 `路遇老雀` 弹层三选项正确，高压入局后 HUD 显示 `事件 高压牌山`。
+  - 右侧内置浏览器 390px 移动端检查：通过，事件卡片不溢出，牌面约 `40x54`，记牌器上下两层可读，卡槽和底部工具栏无重叠。
+- 遗留问题：
+  - `禁透视` 当前保留为词缀状态和 HUD 提示；默认朋友 Demo 还没有单独透视按钮，后续如果恢复透视工具再接实际按钮禁用。
+  - Boss 试炼和完整高阶周目不在本任务范围内。

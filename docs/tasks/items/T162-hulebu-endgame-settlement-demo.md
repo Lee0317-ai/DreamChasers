@@ -1,0 +1,81 @@
+# T162：胡了卜残局收官和悬台窄腰高压池
+
+- 任务编号：T162
+- 优先级：P1
+- 任务名称：胡了卜残局收官和悬台窄腰高压池
+- 默认负责人：Lee
+- 状态：已完成
+- 依赖：T094, T101, T102, T104, T105
+- 背景：站内 Demo 已能试玩有限牌河、补杠、杠/胡震落和悬台窄腰调牌器模板。Lee 确认继续推进：把悬台窄腰纳入后期高压随机池，并落地 T094 的残局收官第一阶段。
+- 目标：
+  - 默认玩家 Demo 第 8-10 关 auto 随机池包含 `suspended-waist / 悬台窄腰`。
+  - 普通关牌桌清空但主槽有残张时进入 `残局收官`，不直接无成本通关。
+  - Demo 第一阶段实现 `弃牌通关` 和 `选作牌引`。
+  - `选作牌引` 只影响下一关，并在玩家可见状态中提示。
+- 不做：
+  - 不实现 `收入牌河` 跨关兑换。
+  - 不改 Cocos 正式工程。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或全站视觉。
+  - 不重做牌山生成器地基和完整 20 关平衡。
+- 允许修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T162-hulebu-endgame-settlement-demo.md`
+  - `docs/tasks/claims/T162-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - HTML 内联脚本 `node --check`
+  - `npm run test -w apps/web -- hulebu`
+  - `/games/hulebu` 桌面端浏览器检查
+  - `/games/hulebu` 390px 移动端浏览器检查
+  - `npm run docs:sync`
+  - `git diff --check`
+- 拆分子任务：
+  - 新增回归测试保护高压模板池和残局收官状态。
+  - 修改 auto 模板池，让第 8-10 关包含 `悬台窄腰`。
+  - 收口清场判定，普通关残张进入残局 overlay。
+  - 实现 `弃牌通关`、`选作牌引` 和下一关牌引注入/提示。
+  - 同步站内静态 Demo，完成浏览器和文档验收。
+
+## 实现记录
+
+- 新增高压关 auto 模板池，朋友 Demo 第 8-10 关会把 `suspended-waist / 悬台窄腰` 纳入随机候选；第 5-7 关仍保持原基础模板池。
+- 普通玩家关牌桌清空但主槽仍有残张时，不再直接无成本过关，而是进入 `残局收官` overlay。
+- `残局收官` 第一阶段提供两个处理：
+  - `弃牌通关`：清掉主槽残张并正常进入下一关。
+  - `选作牌引`：玩家从主槽选择 1 张残张，下一关开局自动带入主槽并在 HUD 中提示。
+- 同步更新站内静态 Demo `/games/hulebu-demo/index.html`，保留静态配置 fetch 路径。
+
+## 验证结果
+
+- `npm run test -w packages/shared -- mahjong-config-playable-prototype`：通过。
+- `npm run test -w packages/shared -- mahjong-config`：通过。
+- HTML 内联脚本语法检查：通过，源原型和站内静态副本均可解析。
+- `npm run test -w apps/web -- hulebu`：通过。
+- 右侧内置浏览器检查 `/games/hulebu` 和 `/games/hulebu-demo/index.html`：桌面端与 390px 移动端均无记牌器、动作栏、卡槽和底部道具重叠。
+- `npm run docs:sync`：通过。
+- `git diff --check`：通过。

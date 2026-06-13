@@ -759,6 +759,35 @@
         display: block;
       }
 
+      .play-boss-goal {
+        display: none;
+      }
+
+      body.play-view .play-boss-goal.show {
+        display: block;
+        padding: 4px;
+        border: 1px solid rgba(200, 61, 47, 0.35);
+        background: #fff1df;
+        color: #7c241b;
+      }
+
+      body.play-view .play-boss-goal .boss-goal-title {
+        margin-bottom: 3px;
+        font-size: 11px;
+        line-height: 1.1;
+      }
+
+      body.play-view .play-boss-goal .boss-goal-list {
+        gap: 3px;
+      }
+
+      body.play-view .play-boss-goal .boss-goal-chip {
+        min-height: 22px;
+        padding: 2px 5px;
+        font-size: 10px;
+        line-height: 1.1;
+      }
+
       .tuning-panel {
         border: 1px solid rgba(31, 138, 112, 0.24);
         background: rgba(237, 249, 242, 0.72);
@@ -1235,7 +1264,7 @@
           width: 100vw;
           max-width: 100vw;
           margin: 0;
-          padding: 10px 10px 70px;
+          padding: 10px 10px 128px;
         }
 
         .play,
@@ -1346,8 +1375,8 @@
         }
 
         body.play-view .board[data-mode="mountain"] {
-          width: min(100%, 350px);
-          max-width: 350px;
+          width: min(100%, 330px);
+          max-width: 330px;
         }
 
         body.play-view .counts {
@@ -1383,7 +1412,7 @@
         }
 
         body.play-view .slot-area {
-          margin-bottom: 76px;
+          margin-bottom: 112px;
         }
 
         .metrics {
@@ -1471,6 +1500,8 @@
             <strong id="hudCoins">0</strong>
           </div>
         </section>
+
+        <div class="play-boss-goal" id="playBossGoal"></div>
 
         <section class="board-wrap">
           <div class="board" id="board" data-testid="board"></div>
@@ -1665,6 +1696,14 @@
       const FRIEND_DEMO_LEVEL_COUNT = 10;
       const FRIEND_DEMO_TUTORIAL_SLOT_LIMIT = 6;
       const FRIEND_DEMO_FULL_SLOT_LIMIT = 8;
+      const FRIEND_DEMO_BOSS_TRIAL_LEVEL_INDEX = 9;
+      const FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS = 180;
+      const FRIEND_DEMO_BOSS_TRIAL_TITLE = "终局试炼";
+      const FRIEND_DEMO_BOSS_TRIAL_GOALS = [
+        { type: "combo_count", combo: "gang", target: 1 },
+        { type: "combo_count", combo: "hu", target: 1 },
+        { type: "score_target", target: 180 },
+      ];
       const FRIEND_DEMO_FIRST_REWARD_ID = "demo_slot_plus_2";
       const FRIEND_DEMO_DISCARD_REWARD_ID = "discard_plus_1";
       const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
@@ -1674,6 +1713,49 @@
         { key: "discard", label: "丢弃" },
       ];
       const FRIEND_DEMO_DEFAULT_TOOLS = { shuffle: 1, undo: 1, discard: 1 };
+      const SPECIAL_EVENT_TRIGGER_LEVELS = [5, 7, 9];
+      const SPECIAL_EVENT_POOL = [
+        {
+          id: "old-sparrow",
+          title: "路遇老雀",
+          summary: "老雀递来几句牌桌门道。稳稳拿钱，或者赌下一关更肥。",
+          options: [
+            { id: "coins", label: "收下 80 铜钱", effect: { type: "coins", amount: 80 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +120 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 120, label: "高压牌山" } } },
+          ],
+        },
+        {
+          id: "old-tile-box",
+          title: "旧牌匣",
+          summary: "牌匣里有旧道具，也可能藏着一局硬仗。",
+          options: [
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "shuffle", label: "补 1 次洗牌", effect: { type: "tool", tool: "shuffle", amount: 1 } },
+            { id: "disable-peek", label: "下一关禁透视，通关 +100 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 100, label: "禁透视" } } },
+          ],
+        },
+        {
+          id: "raise-stakes",
+          title: "加注一局",
+          summary: "桌面风向变急。可以保守拿补给，也可以主动加压。",
+          options: [
+            { id: "coins", label: "先拿 60 铜钱", effect: { type: "coins", amount: 60 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "high-pressure", label: "下一关高压，通关 +140 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 140, label: "高压牌山" } } },
+          ],
+        },
+        {
+          id: "dark-table",
+          title: "暗灯牌局",
+          summary: "灯暗一半，手感全靠记牌。接受限制，收益更高。",
+          options: [
+            { id: "avoid", label: "花 40 铜钱避开", effect: { type: "coins", amount: -40 } },
+            { id: "disable-shuffle", label: "下一关禁洗牌，通关 +120 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 120, label: "禁洗牌" } } },
+            { id: "disable-peek", label: "下一关禁透视，通关 +120 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 120, label: "禁透视" } } },
+          ],
+        },
+      ];
       const FRIEND_DEMO_DIFFICULTY_PROFILES = [
         { levelIndex: 4, label: "正式入门", tileCount: 72, stackDepth: 3, huPacks: 0, gangPacks: 2, orphanBudget: 1, numberSuits: ["wan"], honorRanks: [], honorWeight: 0 },
         { levelIndex: 5, label: "轻压练习", tileCount: 96, stackDepth: 3, huPacks: 0, gangPacks: 2, orphanBudget: 2, numberSuits: ["wan", "tiao"], honorRanks: [], honorWeight: 0 },
@@ -1711,6 +1793,10 @@
         "ring",
         "islands",
         "canyon",
+      ];
+      const MOUNTAIN_HIGH_PRESSURE_AUTO_TEMPLATE_IDS = [
+        ...MOUNTAIN_AUTO_TEMPLATE_IDS,
+        "suspended-waist",
       ];
       const MOUNTAIN_TEMPLATE_LABELS = {
         "center-tower": "中心塔",
@@ -1751,6 +1837,7 @@
         levelSubtitle: document.querySelector("#levelSubtitle"),
         featuredCombos: document.querySelector("#featuredCombos"),
         bossGoal: document.querySelector("#bossGoal"),
+        playBossGoal: document.querySelector("#playBossGoal"),
         mountainTuningPanel: document.querySelector("#mountainTuningPanel"),
         mountainSeed: document.querySelector("#mountainSeed"),
         mountainTemplate: document.querySelector("#mountainTemplate"),
@@ -1797,6 +1884,7 @@
         mountainTuning: { ...DEFAULT_MOUNTAIN_TUNING },
         activeMountainTemplate: getMountainTemplateDefinition("center-tower"),
         autoMountainTemplateSeed: "",
+        loadingLevelModifier: null,
         state: null,
         run: {
           slotDelta: 0,
@@ -1806,6 +1894,12 @@
           tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
           bonuses: { chi: 0, peng: 0, gang: 0, hu: 0 },
           pickedRewards: [],
+          pendingGuideTile: null,
+          guideSerial: 0,
+          specialEventsSeen: [],
+          pendingSpecialEvent: null,
+          pendingLevelModifier: null,
+          lastSpecialEventMessage: "",
         },
         visionTimer: null,
         bossProgressTimer: null,
@@ -1987,6 +2081,132 @@
         return model.levelsConfig.levels.slice(0, getPlayableLevelCount());
       }
 
+      function getSpecialEventForLevel(levelIndex) {
+        const triggerIndex = SPECIAL_EVENT_TRIGGER_LEVELS.indexOf(levelIndex);
+        if (triggerIndex < 0) return null;
+        return SPECIAL_EVENT_POOL[triggerIndex % SPECIAL_EVENT_POOL.length] ?? null;
+      }
+
+      function maybeShowSpecialEventBeforeLevel(levelIndex) {
+        if (!isFriendDemoMode()) return false;
+        if (!SPECIAL_EVENT_TRIGGER_LEVELS.includes(levelIndex)) return false;
+        if (model.run.specialEventsSeen.includes(levelIndex)) return false;
+        const event = getSpecialEventForLevel(levelIndex);
+        if (!event) return false;
+
+        model.run.specialEventsSeen.push(levelIndex);
+        model.run.pendingSpecialEvent = event;
+        if (model.state) {
+          model.state.phase = "event";
+          model.state.discardSelecting = false;
+          model.state.endgamePrimerSelecting = false;
+        }
+        showSpecialEventOverlay(event);
+        return true;
+      }
+
+      function showSpecialEventOverlay(event) {
+        view.rewardTitle.textContent = event.title;
+        view.rewardGrid.innerHTML = "";
+        view.rewardGrid.style.display = "grid";
+        view.runComplete.innerHTML = "";
+        view.runComplete.classList.add("show");
+
+        const summary = document.createElement("p");
+        summary.textContent = event.summary;
+        view.runComplete.append(summary);
+
+        for (const option of event.options) {
+          const card = document.createElement("article");
+          card.className = "reward-card";
+          const title = document.createElement("strong");
+          title.textContent = option.label;
+          const desc = document.createElement("p");
+          desc.textContent = describeSpecialEventEffect(option.effect);
+          const button = document.createElement("button");
+          button.className = "reward-button";
+          button.type = "button";
+          button.textContent = "选择并开局";
+          button.addEventListener("click", () => chooseSpecialEventOption(event.id, option.id));
+          card.append(title, desc, button);
+          view.rewardGrid.append(card);
+        }
+
+        view.rewardOverlay.classList.add("show");
+        if (view.status) view.status.textContent = `特殊事件：${event.title}`;
+      }
+
+      function chooseSpecialEventOption(eventId, optionId) {
+        const event = model.run.pendingSpecialEvent?.id === eventId
+          ? model.run.pendingSpecialEvent
+          : SPECIAL_EVENT_POOL.find((item) => item.id === eventId);
+        if (!event) return;
+        const option = event.options.find((item) => item.id === optionId);
+        if (!option) return;
+
+        const effectMessage = applySpecialEventEffect(option.effect, event.title, option.label);
+        model.run.pendingSpecialEvent = null;
+        model.run.lastSpecialEventMessage = effectMessage;
+        view.rewardOverlay.classList.remove("show");
+        loadLevel(model.levelIndex, { resetFixedMountainTemplate: true });
+      }
+
+      function applySpecialEventEffect(effect, eventTitle, optionLabel) {
+        if (effect.type === "coins") {
+          model.run.coins = Math.max(0, model.run.coins + effect.amount);
+          if (model.state) model.state.coins = model.run.coins;
+          const prefix = effect.amount >= 0 ? "+" : "";
+          return `${eventTitle}：${optionLabel}（铜钱 ${prefix}${effect.amount}）`;
+        }
+
+        if (effect.type === "tool") {
+          model.run.tools[effect.tool] = Math.max(0, (model.run.tools[effect.tool] ?? 0) + effect.amount);
+          return `${eventTitle}：${optionLabel}`;
+        }
+
+        if (effect.type === "modifier") {
+          model.run.pendingLevelModifier = { ...effect.modifier };
+          return `${eventTitle}：${effect.modifier.label}`;
+        }
+
+        return `${eventTitle}：${optionLabel}`;
+      }
+
+      function applyPendingLevelModifier() {
+        const modifier = model.run.pendingLevelModifier ? { ...model.run.pendingLevelModifier } : null;
+        model.run.pendingLevelModifier = null;
+        return modifier;
+      }
+
+      function getCurrentLevelModifier() {
+        return model.state?.activeLevelModifier ?? model.loadingLevelModifier ?? null;
+      }
+
+      function isToolDisabledByModifier(tool) {
+        const modifier = getCurrentLevelModifier();
+        return modifier?.type === "disableTool" && modifier.tool === tool;
+      }
+
+      function getActiveLevelModifierText() {
+        const modifier = getCurrentLevelModifier();
+        return modifier?.label ?? "";
+      }
+
+      function describeSpecialEventEffect(effect) {
+        if (effect.type === "coins") {
+          const prefix = effect.amount >= 0 ? "+" : "";
+          return `立即获得 ${prefix}${effect.amount} 铜钱。`;
+        }
+        if (effect.type === "tool") {
+          const toolLabel = FRIEND_DEMO_TOOLS.find((tool) => tool.key === effect.tool)?.label ?? effect.tool;
+          return `立即补充 ${effect.amount} 次${toolLabel}。`;
+        }
+        if (effect.type === "modifier") {
+          return `下一关带入「${effect.modifier.label}」，通关奖励 +${effect.modifier.rewardCoins ?? 0} 铜钱。`;
+        }
+        return "立即生效。";
+      }
+
       function getFriendDemoSlotLimit(levelIndex) {
         return levelIndex < 3 ? FRIEND_DEMO_TUTORIAL_SLOT_LIMIT : FRIEND_DEMO_FULL_SLOT_LIMIT;
       }
@@ -2001,13 +2221,32 @@
         return FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === levelIndex) ?? null;
       }
 
+      function isFriendDemoBossTrialLevel(levelIndex = model.levelIndex) {
+        return isFriendDemoMode() && levelIndex === FRIEND_DEMO_BOSS_TRIAL_LEVEL_INDEX;
+      }
+
+      function getFriendDemoBossTrialGoals(levelIndex = model.levelIndex) {
+        if (!isFriendDemoBossTrialLevel(levelIndex)) return null;
+        return FRIEND_DEMO_BOSS_TRIAL_GOALS.map((goal) => ({ ...goal }));
+      }
+
+      function getBossGoalTitleText() {
+        return isFriendDemoBossTrialLevel() ? FRIEND_DEMO_BOSS_TRIAL_TITLE : "Boss 目标";
+      }
+
+      function getBossHudLabelText() {
+        return isFriendDemoBossTrialLevel() ? "试炼" : "Boss";
+      }
+
       function getEffectiveMountainTuningForLevel(level, levelIndex = model.levelIndex) {
         const profile = getFriendDemoDifficultyProfile(levelIndex);
         if (!profile) return model.mountainTuning;
+        const activeModifier = model.state?.activeLevelModifier ?? model.loadingLevelModifier;
+        const highPressureBonus = activeModifier?.type === "highPressure" ? 24 : 0;
         return {
           ...model.mountainTuning,
-          tileCount: profile.tileCount,
-          stackDepth: profile.stackDepth,
+          tileCount: Math.min(MOUNTAIN_TILE_COUNT_RANGE.max, profile.tileCount + highPressureBonus),
+          stackDepth: Math.min(6, profile.stackDepth + (highPressureBonus ? 1 : 0)),
           huPacks: profile.huPacks,
           gangPacks: profile.gangPacks,
           numberSuits: profile.numberSuits,
@@ -2135,10 +2374,15 @@
       function loadLevel(index, options = {}) {
         resetMountainTemplateForLevelTransition(index, options);
         model.levelIndex = Math.min(index, getPlayableLevelCount() - 1);
+        if (maybeShowSpecialEventBeforeLevel(model.levelIndex)) return;
         refreshAutoMountainTemplateSeedForLoad(options);
         const level = currentLevel();
         const defaults = model.levelsConfig.defaults;
+        const activeLevelModifier = applyPendingLevelModifier();
+        if (model.state) model.state.activeLevelModifier = activeLevelModifier;
+        model.loadingLevelModifier = activeLevelModifier;
         const playableTiles = getPlayableTilesForLevel(level, model.levelIndex);
+        model.loadingLevelModifier = null;
         const initialSlotOrder = getInitialSlotOrderForLevel(level, model.levelIndex);
         const initialReserveOrder = getInitialReserveOrderForLevel(level, model.levelIndex);
         model.state = {
@@ -2148,6 +2392,12 @@
           river: [],
           riverLimit: DEFAULT_RIVER_LIMIT,
           discardSelecting: false,
+          endgameSettlement: null,
+          endgamePrimerSelecting: false,
+          activeLevelModifier,
+          specialEventMessage: model.run.lastSpecialEventMessage ?? "",
+          modifierRewardClaimed: false,
+          bossTrialRewardClaimed: false,
           openMelds: [],
           slotLimit: isFriendDemoMode() ? getFriendDemoSlotLimit(model.levelIndex) : clampSlotLimit(defaults.slotLimit + model.run.slotDelta),
           reserveLimit: isFriendDemoMode() ? 0 : defaults.reserveLimit + model.run.reserveDelta,
@@ -2166,8 +2416,15 @@
           recentBossProgress: [],
           phase: "playing",
         };
+        model.loadingLevelModifier = null;
+        applyPendingGuideTileToLevel();
         syncTileLocations();
-        renderAll(`第 ${level.order} 关`);
+        const guideText = model.state.guideTileApplied ? ` · 牌引 ${model.state.guideTileApplied.label}` : "";
+        const modifierText = getActiveLevelModifierText();
+        const modifierMessage = modifierText ? ` · 事件 ${modifierText}` : "";
+        const eventMessage = model.run.lastSpecialEventMessage ? ` · ${model.run.lastSpecialEventMessage}` : "";
+        renderAll(`第 ${level.order} 关${guideText}${modifierMessage}${eventMessage}`);
+        model.run.lastSpecialEventMessage = "";
       }
 
       function renderAll(message) {
@@ -2236,10 +2493,14 @@
       }
 
       function getHudGoalText() {
+        const modifierText = getActiveLevelModifierText();
+        if (modifierText) return `事件 ${modifierText}`;
+        if (model.run.pendingGuideTile) return `牌引 ${model.run.pendingGuideTile.label}`;
+        if (model.state.guideTileApplied) return `牌引 ${model.state.guideTileApplied.label}`;
         const bossGoals = model.state.bossGoals ?? [];
         if (bossGoals.length > 0) {
           const completed = bossGoals.filter(isBossGoalItemComplete).length;
-          return `Boss ${completed}/${bossGoals.length}`;
+          return `${getBossHudLabelText()} ${completed}/${bossGoals.length}`;
         }
 
         const featuredCombos = isFriendDemoMode()
@@ -2318,15 +2579,21 @@
         if (!goals || goals.length === 0) {
           view.bossGoal.classList.remove("show");
           view.bossGoal.innerHTML = "";
+          view.playBossGoal.classList.remove("show");
+          view.playBossGoal.innerHTML = "";
           return;
         }
 
-        view.bossGoal.classList.add("show");
-        view.bossGoal.innerHTML = "";
+        renderBossGoalPanel(view.bossGoal, goals);
+        renderBossGoalPanel(view.playBossGoal, goals);
+      }
 
+      function renderBossGoalPanel(container, goals) {
+        container.classList.add("show");
+        container.innerHTML = "";
         const title = document.createElement("strong");
         title.className = "boss-goal-title";
-        title.textContent = "Boss 目标";
+        title.textContent = getBossGoalTitleText();
         const list = document.createElement("div");
         list.className = "boss-goal-list";
 
@@ -2341,7 +2608,7 @@
           list.append(chip);
         });
 
-        view.bossGoal.append(title, list);
+        container.append(title, list);
       }
 
       function renderBoard() {
@@ -2548,6 +2815,7 @@
       }
 
       function shouldRebalanceRuntimeInitialMixedWindow(level, mountainTemplate = null) {
+        if (isFriendDemoBossTrialLevel()) return true;
         if (mountainTemplate?.id === "suspended-waist") return true;
         const profile = getFriendDemoDifficultyProfile(model.levelIndex);
         if (profile && (profile.huPacks ?? 0) === 0 && getActiveBossGoals(model.levelIndex).length === 0) return true;
@@ -2573,7 +2841,14 @@
       }
 
       function getAutoMountainTemplateIds() {
-        return MOUNTAIN_AUTO_TEMPLATE_IDS;
+        return shouldUseHighPressureMountainAutoPool() || getCurrentLevelModifier()?.type === "highPressure"
+          ? MOUNTAIN_HIGH_PRESSURE_AUTO_TEMPLATE_IDS
+          : MOUNTAIN_AUTO_TEMPLATE_IDS;
+      }
+
+      function shouldUseHighPressureMountainAutoPool(levelIndex = model.levelIndex) {
+        if (!isFriendDemoMode()) return false;
+        return levelIndex >= 7 && levelIndex < FRIEND_DEMO_LEVEL_COUNT;
       }
 
       function getMountainTemplateGenerationCandidates(level, tuning) {
@@ -4173,14 +4448,22 @@
           const tileId = model.state.slot[index];
           const tile = tileId ? findTile(tileId) : null;
           const cell = document.createElement("div");
-          const selectable = Boolean(tile && model.state.discardSelecting && model.state.phase === "playing");
+          const selectable = Boolean(tile && (
+            (model.state.discardSelecting && model.state.phase === "playing")
+            || (model.state.endgamePrimerSelecting && model.state.phase === "endgame")
+          ));
           cell.className = `slot-cell${tile ? " filled" : ""}${selectable ? " selectable" : ""}`;
           cell.textContent = tile ? tileLabel(tile) : "";
           if (selectable) {
             cell.type = "button";
             cell.setAttribute("role", "button");
-            cell.setAttribute("aria-label", `打出${tileLabel(tile)}到牌河`);
-            cell.addEventListener("click", () => discardSlotTile(index));
+            if (model.state.endgamePrimerSelecting && model.state.phase === "endgame") {
+              cell.setAttribute("aria-label", `选择${tileLabel(tile)}作为牌引`);
+              cell.addEventListener("click", () => pickEndgamePrimerTile(index));
+            } else {
+              cell.setAttribute("aria-label", `打出${tileLabel(tile)}到牌河`);
+              cell.addEventListener("click", () => discardSlotTile(index));
+            }
           }
           view.slotGrid.append(cell);
         }
@@ -4387,6 +4670,7 @@
       }
 
       function renderStats() {
+        const shuffleDisabledByModifier = isToolDisabledByModifier("shuffle");
         view.score.textContent = model.state.score;
         view.coins.textContent = model.state.coins;
         view.shields.textContent = model.state.shields;
@@ -4397,7 +4681,8 @@
         const riverUsed = (model.state.river ?? []).length;
         view.discardCount.textContent = `${riverUsed}/${riverLimit}`;
         view.slotLimit.textContent = model.state.slotLimit;
-        view.shuffleButton.disabled = model.state.phase !== "playing" || model.state.tools.shuffle <= 0 || getBoardTiles().length < 2;
+        view.shuffleButton.disabled = model.state.phase !== "playing" || shuffleDisabledByModifier || model.state.tools.shuffle <= 0 || getBoardTiles().length < 2;
+        view.shuffleButton.title = shuffleDisabledByModifier ? "特殊事件：禁洗牌" : "";
         view.undoButton.disabled = model.state.phase !== "playing" || model.state.tools.undo <= 0 || model.state.history.length === 0;
         view.discardButton.disabled = model.state.phase !== "playing" || model.state.slot.length === 0 || !canUseRiverDiscard();
       }
@@ -4441,18 +4726,7 @@
         }
 
         if (isLevelClear()) {
-          if (!canClearCurrentLevel()) {
-            renderAll(getCurrentClearRequirementText());
-            return;
-          }
-          if (!isBossGoalComplete()) {
-            failLevel(getBossGoalMissingText());
-            return;
-          }
-          model.state.phase = "won";
-          model.state.history = [];
-          renderAll(`第 ${currentLevel().order} 关通关`);
-          showLevelClear();
+          resolveLevelClear();
           return;
         }
 
@@ -4540,21 +4814,61 @@
 
       function finishComboAction(message) {
         if (isLevelClear()) {
-          if (!canClearCurrentLevel()) {
-            renderAll(getCurrentClearRequirementText());
-            return;
-          }
-          if (!isBossGoalComplete()) {
-            failLevel(getBossGoalMissingText());
-            return;
-          }
-          model.state.phase = "won";
-          renderAll(`第 ${currentLevel().order} 关通关`);
-          showLevelClear();
+          resolveLevelClear();
           return;
         }
 
         renderAll(message);
+      }
+
+      function resolveLevelClear(message = `第 ${currentLevel().order} 关通关`) {
+        if (!canClearCurrentLevel()) {
+          renderAll(getCurrentClearRequirementText());
+          return false;
+        }
+        if (!isBossGoalComplete()) {
+          failLevel(getBossGoalMissingText(), "目标未完成");
+          return false;
+        }
+        if (shouldEnterEndgameSettlement()) {
+          enterEndgameSettlement();
+          return true;
+        }
+        completeCurrentLevel(message);
+        return true;
+      }
+
+      function completeCurrentLevel(message = `第 ${currentLevel().order} 关通关`) {
+        const rewardMessages = [
+          claimActiveLevelModifierReward(),
+          claimBossTrialReward(),
+        ].filter(Boolean);
+        model.state.phase = "won";
+        model.state.history = [];
+        model.state.discardSelecting = false;
+        model.state.endgamePrimerSelecting = false;
+        model.state.endgameSettlement = null;
+        renderAll(rewardMessages.length ? `${message} · ${rewardMessages.join(" · ")}` : message);
+        showLevelClear();
+      }
+
+      function claimActiveLevelModifierReward() {
+        const modifier = model.state.activeLevelModifier;
+        if (!modifier?.rewardCoins || model.state.modifierRewardClaimed) return "";
+        model.state.modifierRewardClaimed = true;
+        model.state.coins += modifier.rewardCoins;
+        model.run.coins = model.state.coins;
+        return `事件奖励 +${modifier.rewardCoins} 铜钱`;
+      }
+
+      function claimBossTrialReward() {
+        if (!isFriendDemoBossTrialLevel()) return "";
+        if (!isBossGoalComplete()) return "";
+        if (model.state.bossTrialRewardClaimed) return "";
+        model.state.bossTrialRewardClaimed = true;
+        model.state.coins += FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS;
+        model.run.coins = model.state.coins;
+        return `试炼奖励 +${FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS} 铜钱`;
       }
 
       function addOpenMeld(type, candidate, source) {
@@ -4746,6 +5060,10 @@
 
       function useShuffleTool() {
         if (model.state.phase !== "playing") return;
+        if (isToolDisabledByModifier("shuffle")) {
+          renderAll("特殊事件：禁洗牌，本关不能使用洗牌");
+          return;
+        }
         if (model.state.tools.shuffle <= 0 || getBoardTiles().length < 2) return;
         model.state.tools.shuffle -= 1;
         shuffleBoardTileFaces();
@@ -4792,6 +5110,7 @@
       }
 
       function getClearSummaryText() {
+        if (isFriendDemoBossTrialLevel()) return "终局试炼已击破，本轮完成。";
         if (getActiveBossGoals(model.levelIndex).length > 0) return "Boss 关已清空，本章完成。";
         if (shouldOfferRewardAfterLevel(model.levelIndex)) return "下一关前可选择一次奖励。";
         return "牌山已清空，可以进入下一关。";
@@ -4832,7 +5151,9 @@
         view.runComplete.classList.add("show");
 
         const summary = document.createElement("p");
-        const bossText = getActiveBossGoals(model.levelIndex).length > 0 ? "Boss 已击破。" : "";
+        const bossText = getActiveBossGoals(model.levelIndex).length > 0
+          ? `${getBossGoalTitleText()}已击破。`
+          : "";
         summary.textContent = `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
         const restart = document.createElement("button");
         restart.className = "reward-button";
@@ -4843,15 +5164,124 @@
         view.rewardOverlay.classList.add("show");
       }
 
-      function failLevel(reason) {
-        model.state.phase = "failed";
-        model.state.history = [];
-        showLevelFailed(reason);
+      function shouldEnterEndgameSettlement() {
+        if (model.prototypeView !== "play") return false;
+        if (isFriendDemoTutorialLevel()) return false;
+        if ((model.state.bossGoals ?? []).length > 0) return false;
+        return model.state.slot.length > 0;
       }
 
-      function showLevelFailed(reason) {
+      function enterEndgameSettlement() {
+        model.state.phase = "endgame";
+        model.state.history = [];
+        model.state.discardSelecting = false;
+        model.state.endgamePrimerSelecting = false;
+        model.state.endgameSettlement = {
+          residualTileIds: [...model.state.slot],
+        };
+        renderAll("残局收官：处理主槽残张");
+        showEndgameSettlement();
+      }
+
+      function showEndgameSettlement() {
+        const residualIds = model.state.endgameSettlement?.residualTileIds ?? [...model.state.slot];
+        const labels = residualIds
+          .map((tileId) => findTile(tileId))
+          .filter(Boolean)
+          .map(tileLabel)
+          .join(" / ");
+        view.rewardTitle.textContent = "残局收官";
+        view.rewardGrid.innerHTML = "";
+        view.rewardGrid.style.display = "none";
+        view.runComplete.innerHTML = "";
+        view.runComplete.classList.add("show");
+
+        const summary = document.createElement("p");
+        summary.textContent = `牌桌已清空，主槽还有 ${residualIds.length} 张残张${labels ? `：${labels}` : ""}。`;
+        const discard = document.createElement("button");
+        discard.className = "reward-button";
+        discard.type = "button";
+        discard.textContent = "弃牌通关";
+        discard.addEventListener("click", completeEndgameByDiscard);
+        const primer = document.createElement("button");
+        primer.className = "reward-button";
+        primer.type = "button";
+        primer.textContent = "选作牌引";
+        primer.addEventListener("click", startEndgamePrimerSelection);
+        view.runComplete.append(summary, discard, primer);
+        view.rewardOverlay.classList.add("show");
+      }
+
+      function completeEndgameByDiscard() {
+        clearEndgameResidualTiles(null);
+        completeCurrentLevel(`弃牌通关：第 ${currentLevel().order} 关通关`);
+      }
+
+      function startEndgamePrimerSelection() {
+        if (model.state.phase !== "endgame") return;
+        model.state.endgamePrimerSelecting = true;
+        view.rewardOverlay.classList.remove("show");
+        renderAll("请选择 1 张主槽牌作为下一关牌引");
+      }
+
+      function pickEndgamePrimerTile(slotIndex) {
+        if (model.state.phase !== "endgame" || !model.state.endgamePrimerSelecting) return;
+        const tileId = model.state.slot[slotIndex];
+        const tile = findTile(tileId);
+        if (!tile) return;
+        model.run.pendingGuideTile = {
+          suit: tile.suit,
+          rank: tile.rank,
+          label: tileLabel(tile),
+        };
+        clearEndgameResidualTiles(tileId);
+        completeCurrentLevel(`牌引 ${tileLabel(tile)} 已带入下一关`);
+      }
+
+      function clearEndgameResidualTiles(guideTileId) {
+        const residualIds = model.state.endgameSettlement?.residualTileIds ?? [...model.state.slot];
+        for (const tileId of residualIds) {
+          const tile = findTile(tileId);
+          if (tile) tile.location = "removed";
+        }
+        model.state.slot = [];
+        model.state.endgameSettlement = null;
+        model.state.endgamePrimerSelecting = false;
+        return guideTileId;
+      }
+
+      function applyPendingGuideTileToLevel() {
+        const guide = model.run.pendingGuideTile;
+        if (!guide) return;
+        if (model.state.slot.length >= model.state.slotLimit) return;
+        const guideId = `guide-${model.levelIndex + 1}-${model.run.guideSerial + 1}`;
+        model.run.guideSerial += 1;
+        const guideTile = {
+          id: guideId,
+          suit: guide.suit,
+          rank: guide.rank,
+          x: 0,
+          y: 0,
+          layer: 0,
+          blockedBy: [],
+          location: "slot",
+          sourcePackage: "endgame-guide",
+        };
+        model.state.tiles.push(guideTile);
+        model.state.slot.push(guideId);
+        model.state.guideTileApplied = { ...guide };
+        model.run.pendingGuideTile = null;
+      }
+
+      function failLevel(reason, statusMessage = "本关失败") {
+        model.state.phase = "failed";
+        model.state.history = [];
+        showLevelFailed(reason, statusMessage);
+      }
+
+      function showLevelFailed(reason, statusMessage = "本关失败") {
         const failureText = reason || "主槽已满，且当前没有可发动的组合或可用救场。";
-        renderAll("本关失败");
+        renderAll(statusMessage);
         view.rewardTitle.textContent = "本关失败";
         view.rewardGrid.innerHTML = "";
         view.rewardGrid.style.display = "none";
@@ -4912,7 +5342,14 @@
           tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
           bonuses: { chi: 0, peng: 0, gang: 0, hu: 0 },
           pickedRewards: [],
+          pendingGuideTile: null,
+          guideSerial: 0,
+          specialEventsSeen: [],
+          pendingSpecialEvent: null,
+          pendingLevelModifier: null,
+          lastSpecialEventMessage: "",
         };
+        model.loadingLevelModifier = null;
         view.rewardOverlay.classList.remove("show");
         loadLevel(0, { resetFixedMountainTemplate: true, forceResetMountainTemplate: true });
       }
@@ -5341,6 +5778,8 @@
       }
 
       function getActiveBossGoals(levelIndex = model.levelIndex) {
+        const friendDemoTrialGoals = getFriendDemoBossTrialGoals(levelIndex);
+        if (friendDemoTrialGoals) return friendDemoTrialGoals;
         if (getFriendDemoDifficultyProfile(levelIndex)) return [];
         return getBossGoals(levelIndex) ?? [];
       }

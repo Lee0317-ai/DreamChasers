@@ -1,0 +1,54 @@
+# T163 完成记录：胡了卜特殊事件 Demo 第一版
+
+- 任务编号：T163
+- 负责人：Lee
+- 完成日期：2026-06-13
+- 修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T163-hulebu-special-events-demo.md`
+  - `docs/tasks/claims/T163-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-13-hulebu-special-events-demo-design.md`
+  - `docs/superpowers/plans/2026-06-13-hulebu-special-events-demo.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/2026-06-13-task-163-hulebu-special-events-demo.md`
+- 实现内容：
+  - 默认朋友试玩 Demo 第 6、8、10 关前会弹出一次特殊事件选择。
+  - 第一版事件池包含 `路遇老雀`、`旧牌匣`、`加注一局`、`暗灯牌局`。
+  - 事件选项覆盖立即铜钱、救场道具补给和主动词缀换通关奖励。
+  - 第一版词缀支持 `禁洗牌`、`禁透视`、`高压牌山`。
+  - `禁洗牌` 会禁用洗牌按钮并显示状态提示。
+  - `高压牌山` 会提高当前关牌量压力并纳入高压模板池。
+  - HUD 和状态栏会提示当前事件/词缀；事件通关奖励会结算到铜钱。
+  - 已补回归测试确认词缀不会串到下一关。
+  - 站内静态 Demo `/games/hulebu-demo/index.html` 已同步。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - HTML 内联脚本语法检查
+  - `npm run test -w apps/web -- hulebu`
+  - 右侧内置浏览器桌面端检查 `/games/hulebu-demo/index.html?level=6&mode=mountain`
+  - 右侧内置浏览器 390px 移动端检查 `/games/hulebu-demo/index.html?level=6&mode=mountain`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 共享测试：通过。
+  - HTML 内联脚本语法检查：通过，源原型和站内静态副本均可解析。
+  - Web 站内接入测试：通过。
+  - 浏览器桌面检查：通过，第 6 关前 `路遇老雀` 弹层三选项正确，高压入局后 HUD 显示 `事件 高压牌山`。
+  - 浏览器 390px 移动端检查：通过，事件卡片不溢出，牌面约 `40x54`，记牌器上下两层可读，卡槽和底部工具栏无重叠。
+  - 文档同步：通过。
+  - Diff 空白检查：通过。
+- 遗留问题：
+  - `禁透视` 当前保留为词缀状态和 HUD 提示；默认朋友 Demo 暂无独立透视按钮，后续恢复透视工具时再接实际禁用。
+  - Boss 试炼、事件池扩容、事件奖励品质和完整高阶周目不在本任务范围内。

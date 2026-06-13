@@ -1,0 +1,47 @@
+# T162 完成记录：胡了卜残局收官和悬台窄腰高压池
+
+- 任务编号：T162
+- 负责人：Lee
+- 完成日期：2026-06-13
+- 修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T162-hulebu-endgame-settlement-demo.md`
+  - `docs/tasks/claims/T162-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/2026-06-13-task-162-hulebu-endgame-settlement-demo.md`
+- 实现内容：
+  - 默认玩家 Demo 第 8-10 关 auto 随机池加入 `suspended-waist / 悬台窄腰`。
+  - 普通关牌桌清空但主槽仍有残张时进入 `残局收官`，避免直接无成本通关。
+  - `残局收官` 第一阶段提供 `弃牌通关` 与 `选作牌引`。
+  - `选作牌引` 会从主槽选 1 张残张带到下一关开局，并在 HUD 中提示。
+  - 站内静态 Demo `/games/hulebu-demo/index.html` 已同步。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - HTML 内联脚本语法检查
+  - `npm run test -w apps/web -- hulebu`
+  - 右侧内置浏览器桌面端检查 `/games/hulebu` 与 `/games/hulebu-demo/index.html`
+  - 右侧内置浏览器 390px 移动端检查 `/games/hulebu-demo/index.html`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 共享测试：通过。
+  - HTML 内联脚本语法检查：通过，源原型和站内静态副本均可解析。
+  - Web 站内接入测试：通过。
+  - 浏览器布局检查：通过，桌面端和 390px 移动端无记牌器、动作栏、卡槽、底部道具重叠。
+  - 文档同步：通过。
+  - Diff 空白检查：通过。
+- 遗留问题：
+  - `收入牌河` 暂未实现，保留为后续正式构筑方向。
+  - 特殊事件、高阶词缀和 Boss 试炼需要另开任务规划。

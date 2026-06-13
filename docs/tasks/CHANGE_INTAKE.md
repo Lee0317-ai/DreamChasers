@@ -48,6 +48,60 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260613-02：胡了卜 Boss 试炼 Demo 第一版
+
+- 提出人：Lee
+- 提出时间：2026-06-13
+- 背景：T163 已把特殊事件第一版接入朋友试玩 Demo。早期规划 D006 和 GAMEPLAY_PLAN 16.6 仍保留 Boss 试炼方向；当前朋友 Demo 第 10 关只是“综合高压”，没有阶段终点记忆点。
+- 目标：新增 T164，把默认朋友试玩 Demo 第 10 关做成轻量 Boss 试炼第一版：进入关卡前/关卡 HUD 明确展示试炼主题；第 10 关启用少量 Boss 目标；完成后给一次可见试炼奖励。
+- 不做：不实现完整高阶周目；不改 Cocos 正式工程；不改完整 20 关配置；不做永久成就、皮肤或局外解锁；不改 PDF、AI 修图、账号中心或站点视觉。
+- 用户价值：朋友试玩 10 关小 run 有一个明确终点，玩家不只是觉得“第 10 关牌更多”，而是知道这是一次主题试炼。
+- 涉及模块：胡了卜站内 Demo / HTML 试玩原型 / 共享测试 / 玩法文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config.test.ts`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-13-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜试玩 Demo 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认朋友 Demo 第 10 关启用 Boss 试炼；HUD/目标栏显示试炼主题；至少包含 `杠 1`、`胡 1`、`积分目标` 三类轻量目标；牌山生成能承接目标包；通关后显示 Boss 已击破/试炼奖励；测试、脚本语法、桌面和移动端浏览器检查通过。
+- AI 初步方案：复用已有 `bossGoals`、Boss 目标栏和目标校验，不新增独立 Boss 状态机。新增 friend demo trial helper，让第 10 关在默认玩家页返回一组轻量 Boss 目标，并覆盖 HUD 标题/通关文案/奖励结算。静态 Demo 同步源 HTML，保留静态 fetch 路径。
+- 处理结论：已入任务池
+- 对应任务编号：T164
+
+### IDEA-20260613-01：胡了卜特殊事件 Demo 第一版
+
+- 提出人：Lee
+- 提出时间：2026-06-13
+- 背景：T162 已完成残局收官和高压窄腰池。Lee 提醒胡了卜早期规划里还有特殊事件；D006 和玩法规划已确认高阶挑战应由词缀系统、随机事件和 Boss 试炼等共同组成，不能只靠增加牌数或堆叠层数。
+- 目标：新增 T163，在默认朋友试玩 Demo 中落地特殊事件第一版：第 6、8、10 关前出现一次关前事件选择；事件给出低风险资源、道具补给或下一关小词缀三类选择；玩家能在 HUD 中看到当前事件/词缀影响。
+- 不做：不实现完整无尽高阶周目；不做完整 Boss 试炼系统；不改 Cocos 正式工程；不做永久能力卡槽压缩；不改 PDF、AI 修图、账号中心或站点视觉；不引入随机无预警惩罚。
+- 用户价值：朋友试玩版开始出现 Roguelike 事件选择和“自愿加压换奖励”的感觉，让关卡变化不只来自牌量和模板。
+- 涉及模块：胡了卜站内 Demo / HTML 试玩原型 / 共享测试 / 玩法文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config.test.ts`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-13-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜试玩 Demo 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：第 6、8、10 关前会弹出特殊事件选择；选项至少覆盖加铜钱、补道具、下一关禁洗牌/禁透视或高压牌山；事件选择会影响下一关状态并有可见提示；负面效果来自玩家主动选择；测试、脚本语法、桌面和移动端浏览器检查通过。
+- AI 初步方案：新增轻量事件池和 run-level pending modifier，不引入正式高阶系统。关前 overlay 复用现有弹层；事件选择写入 `activeSpecialEvent` 或 `pendingLevelModifier`；下一关加载时应用到工具次数、铜钱、模板/牌量或工具禁用状态；HUD/状态栏展示事件短文案。
+- 处理结论：已入任务池
+- 对应任务编号：T163
+
+### IDEA-20260612-04：胡了卜残局收官和悬台窄腰高压池
+
+- 提出人：Lee
+- 提出时间：2026-06-12
+- 背景：Lee 试玩站内 Demo 后确认当前第 5 关整体可接受，并继续要求把已验证的 `悬台窄腰` 高堆叠结构纳入后期高压关；同时 T094 已设计但尚未实现的 `残局收官` 需要落到朋友试玩 Demo，避免牌桌清空后槽内残张被无成本跳过。
+- 目标：新增 T162，在默认玩家 Demo 中让第 8-10 关 auto 随机池包含 `suspended-waist / 悬台窄腰`；普通关牌桌清空但主槽仍有残张时进入 `残局收官`，先实现 `弃牌通关` 和 `选作牌引` 两个出口。
+- 不做：不实现 `收入牌河` 跨关兑换；不改 Cocos 正式工程；不改 AI、PDF、账号中心或站点视觉；不重做牌山生成器地基。
+- 用户价值：后期关卡更接近 Lee 认可的高压立体堆叠；残局不再是无成本过关或生成器死局，而变成一个短决策。
+- 涉及模块：胡了卜站内 Demo / HTML 试玩原型 / 共享测试。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config.test.ts`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/**`, `docs/progress/2026-06-12-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜试玩 Demo 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：第 8-10 关 auto 模板候选包含 `悬台窄腰`；第 5-7 关仍保持较稳的基础高压池；普通关清空牌桌但槽内有残张时弹出 `残局收官`；`弃牌通关` 清槽并进入正常通关流程；`选作牌引` 可选一张槽牌并在下一关 HUD/状态中体现；测试、脚本语法、桌面和移动端浏览器检查通过。
+- AI 初步方案：复用 T094 设计，不引入完整正式状态机。新增高压 auto 模板池 helper；把 `moveTileToSlot` 和 `finishComboAction` 的清场结算收口到统一函数；残局弹层复用现有 overlay；牌引只保存一张 tile identity，下一关轻量注入主槽并在 HUD/状态文案提示。
+- 处理结论：已入任务池
+- 对应任务编号：T162
+
 ### IDEA-20260612-03：首页 Naturecore 左右分区回调
 
 - 提出人：Lee

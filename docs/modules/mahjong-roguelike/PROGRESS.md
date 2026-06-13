@@ -1,5 +1,27 @@
 # 胡了卜进展
 
+## 2026-06-13
+
+- 创建并完成 T164 胡了卜 Boss 试炼 Demo 第一版。
+- 默认朋友试玩 Demo 第 10 关启用 `终局试炼`，目标为 `杠 1 / 胡 1 / 积分 180`；HUD 显示 `试炼 x/3`，玩家页新增紧凑试炼目标条。
+- 清空牌山但试炼目标未完成时会进入失败弹层，并明确提示 `目标未完成` 和具体缺口；击破试炼后一次性发放 `试炼奖励 +180 铜钱`。
+- 第 10 关密集牌山生成器已能承接试炼目标包，并启用起手窗口平衡，避免起手直接露出完整答案组。
+- 站内静态 Demo `/games/hulebu-demo/index.html` 已同步；390px 移动端牌山宽度收敛为 `330px`，卡槽与底部工具栏保持间距不重叠。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w packages/shared -- mahjong-config`；`npm run test -w apps/web -- hulebu`；HTML 内联脚本语法检查；右侧内置浏览器桌面端和 390px 移动端试炼/布局检查。
+- 创建并完成 T163 胡了卜特殊事件 Demo 第一版。
+- 默认玩家 Demo 现在会在第 6、8、10 关前弹出一次关前特殊事件选择；第一版事件池包含 `路遇老雀`、`旧牌匣`、`加注一局`、`暗灯牌局`。
+- 事件选项覆盖三类结果：立即获得铜钱、补充 `洗牌 / 丢弃` 等救场道具、主动选择下一关词缀换通关额外铜钱。
+- 第一版词缀已接入 `禁洗牌`、`禁透视` 和 `高压牌山`。`禁洗牌` 会禁用洗牌按钮并显示状态提示；`高压牌山` 会让当前事件关提高牌量压力并纳入高压模板池；HUD 会显示当前事件词缀。
+- 事件状态只作用玩家主动选择后的当前关，下一关会清空，避免词缀串关；站内静态 Demo `/games/hulebu-demo/index.html` 已同步。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w packages/shared -- mahjong-config`；HTML 内联脚本语法检查；`npm run test -w apps/web -- hulebu`；右侧内置浏览器桌面端和 390px 移动端事件/布局检查。
+- 创建并完成 T162 胡了卜残局收官和悬台窄腰高压池。
+- 默认玩家 Demo 第 8-10 关的 auto 随机池已加入 `suspended-waist / 悬台窄腰`；第 5-7 关继续使用基础模板池，避免过早把高压窄腰结构推给新手。
+- 普通关牌桌清空但主槽仍有残张时会进入 `残局收官`，不再直接无成本通关。
+- `残局收官` 第一阶段已落地 `弃牌通关` 与 `选作牌引`：弃牌会清掉残张通关；牌引会让玩家选 1 张主槽残张带入下一关，并在 HUD 中显示提示。
+- 站内静态 Demo `/games/hulebu-demo/index.html` 已同步，保留静态配置路径；`/games/hulebu` 继续通过 iframe 承载试玩。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w packages/shared -- mahjong-config`；HTML 内联脚本语法检查；`npm run test -w apps/web -- hulebu`；右侧内置浏览器桌面端和 390px 移动端布局检查；`npm run docs:sync`；`git diff --check`。
+- Lee 提到的特殊事件不并入 T162，已在交接中标为后续单独任务方向：高阶词缀、随机事件和 Boss 试炼。
+
 ## 2026-06-03
 
 - 创建并完成 T105 胡了卜震落牌平铺和遮挡点击修复。

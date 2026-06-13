@@ -447,7 +447,7 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.mountainLevels.map((level) => level.stackDepth)).toEqual([3, 3, 4, 5, 6, 6]);
     expect(summary.mountainLevels.map((level) => level.huPacks)).toEqual([0, 0, 1, 1, 1, 0]);
     expect(summary.mountainLevels.map((level) => level.honorWeight)).toEqual([0, 0, 0, 12, 24, 40]);
-    expect(summary.mountainLevels.map((level) => level.naturalGangGroups)).toEqual([2, 2, 2, 2, 2, 2]);
+    expect(summary.mountainLevels.map((level) => level.naturalGangGroups)).toEqual([2, 2, 2, 2, 2, 3]);
     expect(summary.mountainLevels.map((level) => level.orphanBudget)).toEqual([1, 2, 3, 3, 4, 4]);
     for (const level of summary.mountainLevels) {
       expect(level.orphanRisk, `level ${level.levelOrder} orphan risk should stay within budget`).toBeLessThanOrEqual(level.orphanBudget);
@@ -521,11 +521,15 @@ describe("胡了卜配置加载验证", () => {
     }
   });
 
-  it("调牌器可以指定悬台窄腰模板且默认 auto 池暂不使用它", () => {
+  it("调牌器可以指定悬台窄腰模板，且高压关 auto 池包含它", () => {
     const summary = readPrototypeMountainSummary(
       10,
       "?view=tuner&mode=mountain&level=10&template=suspended-waist&seed=waist-check",
     );
+    const level7Summary = readPrototypeMountainSummary(7, "?level=7&mode=mountain&seed=stable-base");
+    const level8Summary = readPrototypeMountainSummary(8, "?level=8&mode=mountain&seed=high-pressure");
+    const level9Summary = readPrototypeMountainSummary(9, "?level=9&mode=mountain&seed=high-pressure");
+    const level10Summary = readPrototypeMountainSummary(10, "?level=10&mode=mountain&seed=high-pressure");
 
     expect(summary.tuning.templateId).toBe("suspended-waist");
     expect(summary.templateId).toBe("suspended-waist");
@@ -537,6 +541,113 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.initialCompleteSolutionGroups).toEqual([]);
     expect(summary.templateRegions).toEqual(["side-scatter", "support-column", "top-platform", "waist"]);
     expect(summary.autoTemplateIds).not.toContain("suspended-waist");
+    expect(level7Summary.effectiveAutoTemplateIds).not.toContain("suspended-waist");
+    expect(level8Summary.effectiveAutoTemplateIds).toContain("suspended-waist");
+    expect(level9Summary.effectiveAutoTemplateIds).toContain("suspended-waist");
+    expect(level10Summary.effectiveAutoTemplateIds).toContain("suspended-waist");
+  });
+
+  it("普通关牌桌清空但槽内有残张时进入残局收官", () => {
+    const summary = readPrototypeEndgameSettlementSummary();
+
+    expect(summary.enter.phase).toBe("endgame");
+    expect(summary.enter.overlayShown).toBe(true);
+    expect(summary.enter.titleText).toBe("残局收官");
+    expect(summary.enter.summaryText).toContain("主槽还有 2 张残张");
+    expect(summary.enter.actionTexts).toEqual(["弃牌通关", "选作牌引"]);
+    expect(summary.enter.slotLength).toBe(2);
+    expect(summary.enter.settlementIds).toEqual(["settle-a", "settle-b"]);
+
+    expect(summary.discard.phase).toBe("won");
+    expect(summary.discard.overlayShown).toBe(true);
+    expect(summary.discard.slotLength).toBe(0);
+    expect(summary.discard.removedIds).toEqual(["discard-a", "discard-b"]);
+    expect(summary.discard.titleText).toContain("第 5 关通关");
+
+    expect(summary.primer.selectingBeforePick).toBe(true);
+    expect(summary.primer.phaseAfterPick).toBe("won");
+    expect(summary.primer.pendingGuideTile).toEqual({ suit: "tong", rank: 6, label: "6筒" });
+    expect(summary.primer.slotAfterPick).toEqual([]);
+    expect(summary.primer.removedIdsAfterPick).toEqual(["primer-a", "primer-b"]);
+    expect(summary.primer.nextLevelSlotLabels).toEqual(["6筒"]);
+    expect(summary.primer.pendingGuideAfterLoad).toBeNull();
+    expect(summary.primer.statusText).toContain("牌引");
+  });
+
+  it("朋友试玩 Demo 在关键关前触发特殊事件选择并应用效果", () => {
+    const summary = readPrototypeSpecialEventsSummary();
+
+    expect(summary.triggers.level6.titleText).toBe("路遇老雀");
+    expect(summary.triggers.level6.phase).toBe("event");
+    expect(summary.triggers.level6.actionTexts).toEqual([
+      "收下 80 铜钱",
+      "补 1 次丢弃",
+      "下一关高压，通关 +120 铜钱",
+    ]);
+    expect(summary.triggers.level8.titleText).toBe("旧牌匣");
+    expect(summary.triggers.level10.titleText).toBe("加注一局");
+
+    expect(summary.coins.before).toBe(0);
+    expect(summary.coins.after).toBe(80);
+    expect(summary.coins.phaseAfterChoice).toBe("playing");
+    expect(summary.coins.statusText).toContain("路遇老雀");
+
+    expect(summary.tool.beforeDiscard).toBe(1);
+    expect(summary.tool.afterDiscard).toBe(2);
+    expect(summary.tool.statusText).toContain("丢弃");
+
+    expect(summary.disableShuffle.pendingModifier).toEqual({
+      type: "disableTool",
+      tool: "shuffle",
+      rewardCoins: 120,
+      label: "禁洗牌",
+    });
+    expect(summary.disableShuffle.activeModifier).toEqual({
+      type: "disableTool",
+      tool: "shuffle",
+      rewardCoins: 120,
+      label: "禁洗牌",
+    });
+    expect(summary.disableShuffle.shuffleDisabled).toBe(true);
+    expect(summary.disableShuffle.statusText).toContain("禁洗牌");
+
+    expect(summary.highPressure.pendingModifier?.type).toBe("highPressure");
+    expect(summary.highPressure.activeModifier?.type).toBe("highPressure");
+    expect(summary.highPressure.tileCount).toBeGreaterThan(summary.highPressure.baseTileCount);
+    expect(summary.highPressure.hudGoalText).toContain("高压牌山");
+    expect(summary.highPressure.nextLevelModifier).toBeNull();
+  });
+
+  it("朋友试玩 Demo 第 10 关启用终局试炼目标和一次性奖励", () => {
+    const summary = readPrototypeBossTrialSummary();
+
+    expect(summary.initial.levelOrder).toBe(10);
+    expect(summary.initial.phase).toBe("playing");
+    expect(summary.initial.bossGoals).toEqual([
+      { type: "combo_count", combo: "gang", target: 1 },
+      { type: "combo_count", combo: "hu", target: 1 },
+      { type: "score_target", target: 180 },
+    ]);
+    expect(summary.initial.hudGoalText).toBe("试炼 0/3");
+    expect(summary.initial.goalTitleText).toBe("终局试炼");
+    expect(summary.initial.goalTexts.join(" ")).toContain("杠 0/1");
+    expect(summary.initial.goalTexts.join(" ")).toContain("胡 0/1");
+    expect(summary.initial.goalTexts.join(" ")).toContain("积分 0/180");
+
+    expect(summary.failedClear.phase).toBe("failed");
+    expect(summary.failedClear.overlayShown).toBe(true);
+    expect(summary.failedClear.statusText).toContain("目标未完成");
+    expect(summary.failedClear.summaryText).toContain("杠 0/1");
+    expect(summary.failedClear.summaryText).toContain("胡 0/1");
+    expect(summary.failedClear.summaryText).toContain("积分 0/180");
+
+    expect(summary.rewardClear.phase).toBe("won");
+    expect(summary.rewardClear.coinDelta).toBe(180);
+    expect(summary.rewardClear.overlayShown).toBe(true);
+    expect(summary.rewardClear.statusText).toContain("试炼奖励 +180 铜钱");
+    expect(summary.rewardClear.summaryText).toContain("终局试炼");
+
+    expect(summary.duplicateReward.coinDelta).toBe(0);
   });
 
   it("调牌器固定模板只作用当前调试关，切关后恢复自动模板", () => {
@@ -716,6 +827,7 @@ interface PrototypeMountainSummary {
   stackCoverModes: string[];
   templateRegions: string[];
   autoTemplateIds: string[];
+  effectiveAutoTemplateIds: string[];
   primaryStackTileShare: number;
   largestStackTileShare: number;
   solutionStepCount: number;
@@ -831,6 +943,110 @@ interface PrototypeRiverKongHuSummary {
     coveredByLooseBlocked: boolean;
     coverLooseAvailable: boolean;
   };
+}
+
+interface PrototypeEndgameSettlementSummary {
+  enter: {
+    phase: string;
+    overlayShown: boolean;
+    titleText: string;
+    summaryText: string;
+    actionTexts: string[];
+    slotLength: number;
+    settlementIds: string[];
+  };
+  discard: {
+    phase: string;
+    overlayShown: boolean;
+    slotLength: number;
+    removedIds: string[];
+    titleText: string;
+  };
+  primer: {
+    selectingBeforePick: boolean;
+    phaseAfterPick: string;
+    pendingGuideTile: {
+      suit: string;
+      rank: number;
+      label: string;
+    } | null;
+    slotAfterPick: string[];
+    removedIdsAfterPick: string[];
+    nextLevelSlotLabels: string[];
+    pendingGuideAfterLoad: unknown;
+    statusText: string;
+  };
+}
+
+interface PrototypeSpecialEventsSummary {
+  triggers: {
+    level6: PrototypeSpecialEventTriggerSnapshot;
+    level8: PrototypeSpecialEventTriggerSnapshot;
+    level10: PrototypeSpecialEventTriggerSnapshot;
+  };
+  coins: {
+    before: number;
+    after: number;
+    phaseAfterChoice: string;
+    statusText: string;
+  };
+  tool: {
+    beforeDiscard: number;
+    afterDiscard: number;
+    statusText: string;
+  };
+  disableShuffle: {
+    pendingModifier: unknown;
+    activeModifier: unknown;
+    shuffleDisabled: boolean;
+    statusText: string;
+  };
+  highPressure: {
+    pendingModifier: { type?: string } | null;
+    activeModifier: { type?: string } | null;
+    baseTileCount: number;
+    tileCount: number;
+    hudGoalText: string;
+    nextLevelModifier: unknown;
+  };
+}
+
+interface PrototypeBossTrialSummary {
+  initial: {
+    levelOrder: number;
+    phase: string;
+    bossGoals: Array<{
+      type: string;
+      combo?: string;
+      target: number;
+    }>;
+    hudGoalText: string;
+    goalTitleText: string;
+    goalTexts: string[];
+  };
+  failedClear: {
+    phase: string;
+    statusText: string;
+    overlayShown: boolean;
+    summaryText: string;
+  };
+  rewardClear: {
+    phase: string;
+    coinDelta: number;
+    statusText: string;
+    overlayShown: boolean;
+    summaryText: string;
+  };
+  duplicateReward: {
+    coinDelta: number;
+  };
+}
+
+interface PrototypeSpecialEventTriggerSnapshot {
+  phase: string;
+  titleText: string;
+  summaryText: string;
+  actionTexts: string[];
 }
 
 interface PrototypeHuHintSummary {
@@ -1115,6 +1331,7 @@ function readPrototypeMountainSummary(levelOrder: number, routeSearch = ""): Pro
         .filter(Boolean)
       )).sort(),
       autoTemplateIds: MOUNTAIN_AUTO_TEMPLATE_IDS,
+      effectiveAutoTemplateIds: getAutoMountainTemplateIds(),
       primaryStackTileShare: stackColumnCounts.slice(0, 4).reduce((sum, count) => sum + count, 0) / generatedTiles.length,
       largestStackTileShare: (stackColumnCounts[0] ?? 0) / generatedTiles.length,
       solutionStepCount: new Set(generatedTiles.map((tile) => tile.solutionStep)).size,
@@ -1765,6 +1982,261 @@ function readPrototypeRiverKongHuSummary(): PrototypeRiverKongHuSummary {
   `, context) as PrototypeRiverKongHuSummary;
 }
 
+function readPrototypeSpecialEventsSummary(): PrototypeSpecialEventsSummary {
+  const script = readPrototypeScriptForVm();
+  const elements = new Map<string, PrototypeDummyElement>();
+  const getElement = (selector: string): PrototypeDummyElement => {
+    const element = elements.get(selector) ?? createPrototypeDummyElement();
+    elements.set(selector, element);
+    return element;
+  };
+  const body = getElement("body");
+  const context = {
+    console,
+    Math,
+    Date,
+    setTimeout,
+    clearTimeout,
+    URLSearchParams,
+    fetch(): never {
+      throw new Error("fetch is skipped in prototype VM tests");
+    },
+    document: {
+      title: "",
+      body,
+      documentElement: createPrototypeDummyElement(),
+      createElement(): PrototypeDummyElement {
+        return createPrototypeDummyElement();
+      },
+      querySelector(selector: string): PrototypeDummyElement {
+        return getElement(selector);
+      },
+      querySelectorAll(): PrototypeDummyElement[] {
+        return [];
+      },
+    },
+    window: {
+      location: { search: "" },
+      scrollX: 0,
+      scrollY: 0,
+      innerWidth: 472,
+      innerHeight: 779,
+    },
+    __levelsConfig: levelsConfig,
+    __rewardsConfig: rewardsConfig,
+  };
+
+  createContext(context);
+
+  return runInContext(`
+    ${script}
+    model.levelsConfig = __levelsConfig;
+    model.rewardsConfig = __rewardsConfig;
+    applyInitialRouteState();
+    model.mode = "mountain";
+    model.prototypeView = "play";
+
+    function snapshotTrigger(levelIndex) {
+      restartRun();
+      view.rewardOverlay.classList.remove("show");
+      loadLevel(levelIndex);
+      return {
+        phase: model.state.phase,
+        titleText: view.rewardTitle.textContent,
+        summaryText: view.runComplete.children[0]?.textContent ?? "",
+        actionTexts: view.rewardGrid.children.map((child) => child.children[0]?.textContent ?? child.textContent),
+      };
+    }
+
+    const level6 = snapshotTrigger(5);
+    const level8 = snapshotTrigger(7);
+    const level10 = snapshotTrigger(9);
+
+    restartRun();
+    loadLevel(5);
+    const coinBefore = model.run.coins;
+    chooseSpecialEventOption("old-sparrow", "coins");
+    const coins = {
+      before: coinBefore,
+      after: model.run.coins,
+      phaseAfterChoice: model.state.phase,
+      statusText: view.status.textContent,
+    };
+
+    restartRun();
+    loadLevel(5);
+    const beforeDiscard = model.run.tools.discard + FRIEND_DEMO_DEFAULT_TOOLS.discard;
+    chooseSpecialEventOption("old-sparrow", "discard");
+    const tool = {
+      beforeDiscard,
+      afterDiscard: model.state.tools.discard,
+      statusText: view.status.textContent,
+    };
+
+    restartRun();
+    loadLevel(5);
+    const expectedDisable = SPECIAL_EVENT_POOL
+      .find((event) => event.id === "dark-table")
+      .options.find((option) => option.id === "disable-shuffle")
+      .effect.modifier;
+    chooseSpecialEventOption("dark-table", "disable-shuffle");
+    useShuffleTool();
+    const disableShuffle = {
+      pendingModifier: expectedDisable,
+      activeModifier: model.state.activeLevelModifier ? { ...model.state.activeLevelModifier } : null,
+      shuffleDisabled: view.shuffleButton.disabled,
+      statusText: view.status.textContent,
+    };
+
+    restartRun();
+    loadLevel(5);
+    const expectedHighPressure = SPECIAL_EVENT_POOL
+      .find((event) => event.id === "raise-stakes")
+      .options.find((option) => option.id === "high-pressure")
+      .effect.modifier;
+    const baseTileCount = getFriendDemoDifficultyProfile(5).tileCount;
+    chooseSpecialEventOption("raise-stakes", "high-pressure");
+    const highPressure = {
+      pendingModifier: expectedHighPressure,
+      activeModifier: model.state.activeLevelModifier ? { ...model.state.activeLevelModifier } : null,
+      baseTileCount,
+      tileCount: model.state.tiles.length,
+      hudGoalText: view.hudGoal.textContent,
+      nextLevelModifier: null,
+    };
+    loadLevel(6, { resetFixedMountainTemplate: true });
+    highPressure.nextLevelModifier = model.state.activeLevelModifier;
+
+    ({
+      triggers: { level6, level8, level10 },
+      coins,
+      tool,
+      disableShuffle,
+      highPressure,
+    });
+  `, context) as PrototypeSpecialEventsSummary;
+}
+
+function readPrototypeBossTrialSummary(): PrototypeBossTrialSummary {
+  const script = readPrototypeScriptForVm();
+  const elements = new Map<string, PrototypeDummyElement>();
+  const getElement = (selector: string): PrototypeDummyElement => {
+    const element = elements.get(selector) ?? createPrototypeDummyElement();
+    elements.set(selector, element);
+    return element;
+  };
+  const body = getElement("body");
+  const context = {
+    console,
+    Math,
+    Date,
+    setTimeout,
+    clearTimeout,
+    URLSearchParams,
+    fetch(): never {
+      throw new Error("fetch is skipped in prototype VM tests");
+    },
+    document: {
+      title: "",
+      body,
+      documentElement: createPrototypeDummyElement(),
+      createElement(): PrototypeDummyElement {
+        return createPrototypeDummyElement();
+      },
+      querySelector(selector: string): PrototypeDummyElement {
+        return getElement(selector);
+      },
+      querySelectorAll(): PrototypeDummyElement[] {
+        return [];
+      },
+    },
+    window: {
+      location: { search: "" },
+      scrollX: 0,
+      scrollY: 0,
+      innerWidth: 472,
+      innerHeight: 779,
+    },
+    __levelsConfig: levelsConfig,
+    __rewardsConfig: rewardsConfig,
+  };
+
+  createContext(context);
+
+  return runInContext(`
+    ${script}
+    model.levelsConfig = __levelsConfig;
+    model.rewardsConfig = __rewardsConfig;
+    applyInitialRouteState();
+    model.mode = "mountain";
+    model.prototypeView = "play";
+
+    function enterTrialLevel() {
+      restartRun();
+      model.run.specialEventsSeen.push(9);
+      loadLevel(9, { resetFixedMountainTemplate: true });
+    }
+
+    function getRunCompleteSummaryText() {
+      return view.runComplete.children.map((child) => child.textContent).join(" ");
+    }
+
+    function clearBoardForResolution() {
+      model.state.tiles.forEach((tile) => {
+        tile.location = "removed";
+      });
+      model.state.slot = [];
+    }
+
+    enterTrialLevel();
+    const initial = {
+      levelOrder: model.levelIndex + 1,
+      phase: model.state.phase,
+      bossGoals: model.state.bossGoals.map((goal) => ({ ...goal })),
+      hudGoalText: view.hudGoal.textContent,
+      goalTitleText: view.bossGoal.children[0]?.textContent ?? "",
+      goalTexts: (view.bossGoal.children[1]?.children ?? []).map((child) => child.textContent),
+    };
+
+    clearBoardForResolution();
+    resolveLevelClear("测试试炼未达标");
+    const failedClear = {
+      phase: model.state.phase,
+      statusText: view.status.textContent,
+      overlayShown: view.rewardOverlay.classList.contains("show"),
+      summaryText: getRunCompleteSummaryText(),
+    };
+
+    enterTrialLevel();
+    const coinsBeforeReward = model.run.coins;
+    model.state.comboCounts.gang = 1;
+    model.state.comboCounts.hu = 1;
+    model.state.score = 180;
+    clearBoardForResolution();
+    resolveLevelClear("测试试炼通关");
+    const coinsAfterReward = model.run.coins;
+    const rewardClear = {
+      phase: model.state.phase,
+      coinDelta: coinsAfterReward - coinsBeforeReward,
+      statusText: view.status.textContent,
+      overlayShown: view.rewardOverlay.classList.contains("show"),
+      summaryText: getRunCompleteSummaryText(),
+    };
+
+    completeCurrentLevel("重复结算测试");
+    const duplicateReward = {
+      coinDelta: model.run.coins - coinsAfterReward,
+    };
+
+    ({
+      initial,
+      failedClear,
+      rewardClear,
+      duplicateReward,
+    });
+  `, context) as PrototypeBossTrialSummary;
+}
+
 function readPrototypeHuHintSummary(): PrototypeHuHintSummary {
   const script = readPrototypeScriptForVm();
   const elements = new Map<string, PrototypeDummyElement>();
@@ -2241,6 +2713,150 @@ function readPrototypeFriendDemoSummary(): PrototypeFriendDemoSummary {
       return count ? face + ":" + count : face;
     }
   `, context) as PrototypeFriendDemoSummary;
+}
+
+function readPrototypeEndgameSettlementSummary(): PrototypeEndgameSettlementSummary {
+  const script = readPrototypeScriptForVm();
+  const elements = new Map<string, PrototypeDummyElement>();
+  const getElement = (selector: string): PrototypeDummyElement => {
+    const element = elements.get(selector) ?? createPrototypeDummyElement();
+    elements.set(selector, element);
+    return element;
+  };
+  const body = getElement("body");
+  const context = {
+    console,
+    Math,
+    Date,
+    setTimeout,
+    clearTimeout,
+    URLSearchParams,
+    fetch(): never {
+      throw new Error("fetch is skipped in prototype VM tests");
+    },
+    document: {
+      title: "",
+      body,
+      documentElement: createPrototypeDummyElement(),
+      createElement(): PrototypeDummyElement {
+        return createPrototypeDummyElement();
+      },
+      querySelector(selector: string): PrototypeDummyElement {
+        return getElement(selector);
+      },
+      querySelectorAll(): PrototypeDummyElement[] {
+        return [];
+      },
+    },
+    window: {
+      location: { search: "" },
+      scrollX: 0,
+      scrollY: 0,
+      innerWidth: 472,
+      innerHeight: 779,
+    },
+    __levelsConfig: levelsConfig,
+    __rewardsConfig: rewardsConfig,
+  };
+
+  createContext(context);
+
+  return runInContext(`
+    ${script}
+    model.levelsConfig = __levelsConfig;
+    model.rewardsConfig = __rewardsConfig;
+    applyInitialRouteState();
+    model.mode = "config";
+    model.levelIndex = 4;
+
+    model.state = createPrototypeState([
+      { id: "settle-a", suit: "wan", rank: 2, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+      { id: "settle-b", suit: "tiao", rank: 3, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+    ], ["settle-a", "settle-b"]);
+    finishComboAction("测试清桌");
+    const enter = {
+      phase: model.state.phase,
+      overlayShown: view.rewardOverlay.classList.contains("show"),
+      titleText: view.rewardTitle.textContent,
+      summaryText: view.runComplete.children.map((child) => child.textContent).join(" "),
+      actionTexts: view.runComplete.children
+        .filter((child) => child.type === "button")
+        .map((child) => child.textContent),
+      slotLength: model.state.slot.length,
+      settlementIds: [...(model.state.endgameSettlement?.residualTileIds ?? [])],
+    };
+
+    model.state = createPrototypeState([
+      { id: "discard-a", suit: "wan", rank: 4, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+      { id: "discard-b", suit: "tiao", rank: 5, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+    ], ["discard-a", "discard-b"]);
+    finishComboAction("测试弃牌");
+    completeEndgameByDiscard();
+    const discard = {
+      phase: model.state.phase,
+      overlayShown: view.rewardOverlay.classList.contains("show"),
+      slotLength: model.state.slot.length,
+      removedIds: model.state.tiles.filter((tile) => tile.location === "removed").map((tile) => tile.id).sort(),
+      titleText: view.rewardTitle.textContent,
+    };
+
+    model.state = createPrototypeState([
+      { id: "primer-a", suit: "tong", rank: 6, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+      { id: "primer-b", suit: "honor", rank: 5, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+    ], ["primer-a", "primer-b"]);
+    finishComboAction("测试牌引");
+    startEndgamePrimerSelection();
+    const selectingBeforePick = model.state.endgamePrimerSelecting;
+    pickEndgamePrimerTile(0);
+    const pendingGuideTile = model.run.pendingGuideTile ? { ...model.run.pendingGuideTile } : null;
+    const phaseAfterPick = model.state.phase;
+    const slotAfterPick = [...model.state.slot];
+    const removedIdsAfterPick = model.state.tiles.filter((tile) => tile.location === "removed").map((tile) => tile.id).sort();
+    loadLevel(5, { resetFixedMountainTemplate: true });
+    if (model.state.phase === "event") chooseSpecialEventOption("old-sparrow", "coins");
+    const nextLevelSlotLabels = model.state.slot.map((tileId) => tileLabel(findTile(tileId)));
+    const primer = {
+      selectingBeforePick,
+      phaseAfterPick,
+      pendingGuideTile,
+      slotAfterPick,
+      removedIdsAfterPick,
+      nextLevelSlotLabels,
+      pendingGuideAfterLoad: model.run.pendingGuideTile ?? null,
+      statusText: view.status.textContent,
+    };
+
+    ({ enter, discard, primer });
+
+    function createPrototypeState(tiles, slot = []) {
+      return {
+        tiles,
+        slot,
+        reserve: [],
+        river: [],
+        riverLimit: 3,
+        discardSelecting: false,
+        endgameSettlement: null,
+        endgamePrimerSelecting: false,
+        openMelds: [],
+        slotLimit: 8,
+        reserveLimit: 0,
+        shields: 0,
+        firstProtect: false,
+        score: 0,
+        coins: 0,
+        comboCounts: { chi: 0, peng: 0, gang: 0, hu: 0, bugang: 0 },
+        suitComboCounts: createEmptySuitTotals(),
+        bossGoals: [],
+        tools: { shuffle: 0, undo: 0, discard: 0 },
+        bonuses: { chi: 0, peng: 0, gang: 0, hu: 0, bugang: 0 },
+        history: [],
+        visionActive: false,
+        phase: "playing",
+        recentBossProgress: [],
+      };
+    }
+  `, context) as PrototypeEndgameSettlementSummary;
 }
 
 function readPrototypeScriptForVm(): string {

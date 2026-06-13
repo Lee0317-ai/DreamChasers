@@ -1,0 +1,75 @@
+# T164：胡了卜 Boss 试炼 Demo 第一版
+
+- 任务编号：T164
+- 优先级：P1
+- 任务名称：胡了卜 Boss 试炼 Demo 第一版
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：已完成
+- 依赖：T101, T102, T105, T162, T163, D006, D030
+- 背景：T163 已完成特殊事件第一版。当前朋友试玩 Demo 第 10 关只是综合高压终点，但缺少 Boss 试炼的阶段记忆点；早期规划要求高阶挑战包含 Boss 试炼，且 Boss 应有明确主题和奖励。
+- 目标：
+  - 默认朋友试玩 Demo 第 10 关启用轻量 Boss 试炼。
+  - 第 10 关 HUD 和目标栏明确显示试炼主题。
+  - 试炼目标至少包含 `杠 1`、`胡 1`、`积分目标`。
+  - 密集牌山生成能承接试炼目标包。
+  - 击破试炼后给一次可见铜钱奖励。
+  - 站内静态 Demo 同步发布副本。
+- 不做：
+  - 不实现完整高阶周目。
+  - 不做完整 Boss 试炼系统。
+  - 不改 Cocos 正式工程。
+  - 不做永久成就、皮肤或局外解锁。
+  - 不改 PDF、AI 修图、账号中心或站点视觉。
+- 允许修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T164-hulebu-boss-trial-demo.md`
+  - `docs/tasks/claims/T164-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-13-hulebu-boss-trial-demo-design.md`
+  - `docs/superpowers/plans/2026-06-13-hulebu-boss-trial-demo.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - HTML 内联脚本语法检查
+  - `npm run test -w apps/web -- hulebu`
+  - `/games/hulebu` 桌面端浏览器检查
+  - `/games/hulebu` 390px 移动端浏览器检查
+  - `npm run docs:sync`
+  - `git diff --check`
+- 拆分子任务：
+  - [x] 写 Boss 试炼 Demo 设计稿和实施计划。
+  - [x] 新增回归测试保护第 10 关试炼目标、HUD、奖励和生成器承接。
+  - [x] 实现朋友 Demo 第 10 关试炼目标和试炼文案。
+  - [x] 同步站内静态 Demo。
+  - [x] 完成浏览器和文档验收。
+- 完成记录：
+  - 默认朋友试玩 Demo 第 10 关启用 `终局试炼`，目标为 `杠 1 / 胡 1 / 积分 180`。
+  - HUD 显示 `试炼 x/3`；玩家页新增紧凑试炼目标条，移动端可直接看到三项目标。
+  - 清空牌山但试炼目标未完成时进入失败弹层，状态提示为 `目标未完成` 并列出缺口。
+  - 击破试炼后一次性发放 `试炼奖励 +180 铜钱`，重复结算不重复发奖。
+  - 第 10 关密集牌山生成器能承接试炼目标包，并启用起手窗口平衡，避免起手直接暴露完整答案组。
+  - `/games/hulebu-demo/index.html` 静态副本已同步，移动端牌山宽度收敛到 330px，卡槽与底部工具栏不重叠。
