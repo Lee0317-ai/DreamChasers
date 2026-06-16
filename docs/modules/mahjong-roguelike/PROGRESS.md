@@ -4,6 +4,7 @@
 
 - 对 T176 高阶周目做了一轮后续加深补丁。
 - 原型新增更深的高阶 identity：补了 `高阶构筑：河杠连锁 / 收官定局 / 顺手成胡 / 稳压续命` 以及 `封盘护河 / 续战筹码 / 牌尾缓冲` 等北风场专属能力与奖励链。
+- 高阶事件池也补了第二轮 identity 差异：新增 `顺手摸牌 / 稳压补墙 / 河杠涨潮 / 收官落灯` 四个更贴构筑的事件，并把 `东风试胆 / 南桌续押 / 西风照听 / 北风断尾` 接入更深层的档位事件轮换。
 - 高阶结算 payload 新增 `settlementHighlights`，会把本轮更关键的高阶构筑收益收束成结构化摘要。
 - `/games/hulebu` 外层结算页把高阶复盘进一步抬成更像专属页的结构，明确显示 `构筑回顾 / 关键收益 / 关键失误 / 下一轮建议`。
 - 本轮验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`、`npm run test -w apps/web -- hulebu`、`npm run typecheck -w apps/web`、`npm run build -w apps/web`、两份 HTML inline script `node --check`、`git diff --check`。

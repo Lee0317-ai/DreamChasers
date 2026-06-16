@@ -265,6 +265,10 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("牌尾缓冲");
     expect(playHtml).toContain("function getAscensionSettlementHighlights");
     expect(playHtml).toContain("settlementHighlights");
+    expect(playHtml).toContain("顺手成胡");
+    expect(playHtml).toContain("稳压续命");
+    expect(playHtml).toContain("河杠连锁");
+    expect(playHtml).toContain("收官定局");
     expect(playHtml).toContain("ascensionReview");
     expect(playHtml).toContain("failureType");
     expect(playHtml).toContain("Boss 目标不匹配");
@@ -272,6 +276,14 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("南桌偏门");
     expect(playHtml).toContain("西窗压注");
     expect(playHtml).toContain("北斗封台");
+    expect(playHtml).toContain("东风试胆");
+    expect(playHtml).toContain("南桌续押");
+    expect(playHtml).toContain("西风照听");
+    expect(playHtml).toContain("北风断尾");
+    expect(playHtml).toContain("顺手摸牌");
+    expect(playHtml).toContain("稳压补墙");
+    expect(playHtml).toContain("河杠涨潮");
+    expect(playHtml).toContain("收官落灯");
     expect(playHtml).toContain("东风奖赏：起手顺风");
     expect(playHtml).toContain("南风奖赏：偏门换气");
     expect(playHtml).toContain("西风奖赏：试炼压线");

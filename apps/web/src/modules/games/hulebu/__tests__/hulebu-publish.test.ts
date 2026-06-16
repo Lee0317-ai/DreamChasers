@@ -187,6 +187,10 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("牌尾缓冲");
     expect(demo).toContain("function getAscensionSettlementHighlights");
     expect(demo).toContain("settlementHighlights");
+    expect(demo).toContain("顺手成胡");
+    expect(demo).toContain("稳压续命");
+    expect(demo).toContain("河杠连锁");
+    expect(demo).toContain("收官定局");
     expect(demo).toContain("ascensionReview");
     expect(demo).toContain("failureType");
     expect(demo).toContain("Boss 目标不匹配");
@@ -212,6 +216,14 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("南桌偏门");
     expect(demo).toContain("西窗压注");
     expect(demo).toContain("北斗封台");
+    expect(demo).toContain("东风试胆");
+    expect(demo).toContain("南桌续押");
+    expect(demo).toContain("西风照听");
+    expect(demo).toContain("北风断尾");
+    expect(demo).toContain("顺手摸牌");
+    expect(demo).toContain("稳压补墙");
+    expect(demo).toContain("河杠涨潮");
+    expect(demo).toContain("收官落灯");
     expect(tuner).toContain("<title>胡了卜调牌器</title>");
     expect(readWebFile("public/games/hulebu-demo/config/levels.json")).toContain('"displayName": "胡了卜"');
     expect(readWebFile("public/games/hulebu-demo/config/rewards.json")).toContain('"rewards"');

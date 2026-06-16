@@ -2102,6 +2102,16 @@
             { id: "pressure", label: "下一关高压，通关 +150 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 150, label: "胡流压注" } } },
           ],
         },
+        "顺手成胡": {
+          id: "ascension-route-draw",
+          title: "顺手摸牌",
+          summary: "这手牌从起手就顺到牌尾。你可以稳稳补节奏，或者顺势把下一关抬成胡流连段。",
+          options: [
+            { id: "undo", label: "补 1 次撤回", effect: { type: "tool", tool: "undo", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +16 分", effect: { type: "comboBonus", combo: "hu", amount: 16, label: "顺手摸牌" } },
+            { id: "pressure", label: "下一关高压，通关 +180 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 180, label: "顺手摸牌" } } },
+          ],
+        },
         "救场流": {
           id: "ascension-rescue-cache",
           title: "压箱补给",
@@ -2112,6 +2122,16 @@
             { id: "pressure", label: "下一关禁洗牌，通关 +160 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 160, label: "背水硬顶" } } },
           ],
         },
+        "稳压续命": {
+          id: "ascension-rescue-wall",
+          title: "稳压补墙",
+          summary: "你把快塌的那面墙又顶住了一层。可以直接补厚容错，或者把下一关压成硬顶收益局。",
+          options: [
+            { id: "shield", label: "补 1 次护符", effect: { type: "shield", amount: 1 } },
+            { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
+            { id: "pressure", label: "下一关禁洗牌，通关 +190 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 190, label: "稳压补墙" } } },
+          ],
+        },
         "河杠流": {
           id: "ascension-river-engine",
           title: "河口换气",
@@ -2120,6 +2140,16 @@
             { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
             { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
             { id: "gang-bonus", label: "下一关杠流 +12 分", effect: { type: "comboBonus", combo: "gang", amount: 12, label: "河杠连压" } },
+          ],
+        },
+        "河杠连锁": {
+          id: "ascension-river-tide",
+          title: "河杠涨潮",
+          summary: "牌河和杠线一起抬潮，节奏比前一轮更顺。现在补河控，或者把下一关抬成连锁杠局。",
+          options: [
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "gang-bonus", label: "下一关杠流 +18 分", effect: { type: "comboBonus", combo: "gang", amount: 18, label: "河杠涨潮" } },
           ],
         },
         "杠流": {
@@ -2150,6 +2180,16 @@
             { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
             { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
             { id: "pressure", label: "下一关高压，通关 +190 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 190, label: "牌尾收刀" } } },
+          ],
+        },
+        "收官定局": {
+          id: "ascension-deadwall-lantern",
+          title: "收官落灯",
+          summary: "桌边的灯一盏盏暗下去，正好适合把终局做实。可以先补残局资源，或者直接压成收官定局局。",
+          options: [
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +210 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 210, label: "收官落灯" } } },
           ],
         },
         "封尾流": {
@@ -2204,6 +2244,16 @@
             { id: "coins", label: "拿 90 铜钱", effect: { type: "coins", amount: 90 } },
           ],
         },
+        11: {
+          id: "ascension-east-gamble",
+          title: "东风试胆",
+          summary: "东风场第二轮不再只是试手，而是开始试胆。你可以拿一口稳手节奏，或者提前把下一关推向目标局。",
+          options: [
+            { id: "undo", label: "补 1 次撤回", effect: { type: "tool", tool: "undo", amount: 1 } },
+            { id: "peng-bonus", label: "下一关碰流 +12 分", effect: { type: "comboBonus", combo: "peng", amount: 12, label: "东风试胆" } },
+            { id: "coins", label: "拿 120 铜钱", effect: { type: "coins", amount: 120 } },
+          ],
+        },
         2: {
           id: "ascension-south-branch",
           title: "南桌偏门",
@@ -2212,6 +2262,16 @@
             { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
             { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
             { id: "pressure", label: "下一关禁洗牌，通关 +170 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 170, label: "南桌偏门" } } },
+          ],
+        },
+        12: {
+          id: "ascension-south-extend",
+          title: "南桌续押",
+          summary: "南风场已经不是偏门试探，而是要你把贪线续押到底。补一口容错，或者继续把收益压到后段。",
+          options: [
+            { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "pressure", label: "下一关禁洗牌，通关 +200 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 200, label: "南桌续押" } } },
           ],
         },
         3: {
@@ -2224,6 +2284,16 @@
             { id: "pressure", label: "下一关禁透视，通关 +190 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 190, label: "西窗压注" } } },
           ],
         },
+        13: {
+          id: "ascension-west-listen",
+          title: "西风照听",
+          summary: "西风场已经把信息亮到桌面上了。你可以补一口看山节奏，或者把下一关直接压成胡流听牌局。",
+          options: [
+            { id: "vision", label: "补 1 次看山", effect: { type: "tool", tool: "vision", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +16 分", effect: { type: "comboBonus", combo: "hu", amount: 16, label: "西风照听" } },
+            { id: "pressure", label: "下一关禁透视，通关 +210 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 210, label: "西风照听" } } },
+          ],
+        },
         4: {
           id: "ascension-north-lockdown",
           title: "北斗封台",
@@ -2232,6 +2302,16 @@
             { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
             { id: "gang-bonus", label: "下一关杠流 +18 分", effect: { type: "comboBonus", combo: "gang", amount: 18, label: "北斗封台" } },
             { id: "pressure", label: "下一关高压，通关 +220 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 220, label: "北斗封台" } } },
+          ],
+        },
+        14: {
+          id: "ascension-north-cutoff",
+          title: "北风断尾",
+          summary: "北风场开始直接截断尾巡容错。你可以先补牌尾资源，或者把下一关锁成真正的死斗终局。",
+          options: [
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "gang-bonus", label: "下一关杠流 +22 分", effect: { type: "comboBonus", combo: "gang", amount: 22, label: "北风断尾" } },
+            { id: "pressure", label: "下一关高压，通关 +240 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 240, label: "北风断尾" } } },
           ],
         },
       };
@@ -2900,11 +2980,20 @@
         return model.levelsConfig.levels.slice(0, getPlayableLevelCount());
       }
 
+      function getAscensionTierEvent(levelIndex) {
+        const baseLevel = model.ascensionLevel ?? 0;
+        if (!baseLevel) return null;
+        const advancedLevel = baseLevel + 10;
+        const shouldUseAdvancedTierEvent = levelIndex >= 12 || (levelIndex >= 8 && levelIndex % 4 === 0);
+        if (shouldUseAdvancedTierEvent) return ASCENSION_TIER_EVENT_POOL[advancedLevel] ?? ASCENSION_TIER_EVENT_POOL[baseLevel] ?? null;
+        return ASCENSION_TIER_EVENT_POOL[baseLevel] ?? null;
+      }
+
       function getSpecialEventForLevel(levelIndex) {
         if (isAscensionMode()) {
           const buildProfile = getAscensionBuildProfile();
           const ascensionEvent = buildProfile ? ASCENSION_SPECIAL_EVENT_POOL[buildProfile.name] : null;
-          const tierEvent = ASCENSION_TIER_EVENT_POOL[model.ascensionLevel] ?? null;
+          const tierEvent = getAscensionTierEvent(levelIndex);
           if (tierEvent && levelIndex % 2 === 0) return tierEvent;
           if (ascensionEvent) return ascensionEvent;
           if (buildProfile?.name === "河控流") return SPECIAL_EVENT_POOL[1] ?? null;
