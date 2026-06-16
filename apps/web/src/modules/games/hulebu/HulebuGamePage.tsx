@@ -230,6 +230,9 @@ type AscensionConfig = {
   description: string;
   modifiers: string[];
   perkSlots: number;
+  identity: string;
+  buildAngle: string;
+  contentFocus: string;
 };
 
 type AscensionPerkConfig = {
@@ -443,6 +446,9 @@ const ASCENSION_CONFIGS: AscensionConfig[] = [
     description: "通关后的第一档高阶轮回，先把主线打熟，再开始加压。",
     modifiers: ["奖励铜钱略减", "Boss 目标更紧", "牌山更密一点"],
     perkSlots: 1,
+    identity: "先学会在轻压下读 Boss 目标和事件风向。",
+    buildAngle: "稳手、顺路、起手顺风",
+    contentFocus: "东风更像试手档，重点是把 build 起手和目标线接顺。",
   },
   {
     level: 2,
@@ -450,6 +456,9 @@ const ASCENSION_CONFIGS: AscensionConfig[] = [
     description: "在第一档之上再加一点限制，开始出现更明显的高阶味道。",
     modifiers: ["禁洗牌", "起始道具 -1", "高压模板更常见"],
     perkSlots: 1,
+    identity: "开始逼你靠容错和偏门奖励活过中段。",
+    buildAngle: "稳压、封盘、偏门换气",
+    contentFocus: "南风更像续押档，重点是容错墙和贪收益路线能不能一起成立。",
   },
   {
     level: 3,
@@ -457,6 +466,9 @@ const ASCENSION_CONFIGS: AscensionConfig[] = [
     description: "高阶配置开始真正成型，外层可装备能力会开始影响整轮手感。",
     modifiers: ["奖励池更偏能力", "连胜压力更明显", "高压关卡更密"],
     perkSlots: 2,
+    identity: "开始要求你主动围绕 build 选事件、选奖励、对齐 Boss 缺口。",
+    buildAngle: "试锋、收官、信息压线",
+    contentFocus: "西风更像成型档，重点是 build identity 和目标彩排能不能提前对齐。",
   },
   {
     level: 4,
@@ -464,6 +476,9 @@ const ASCENSION_CONFIGS: AscensionConfig[] = [
     description: "完整高阶轮回，外层能力和内层奖励都会一起压到位。",
     modifiers: ["外层能力槽上限提升", "高阶奖励池全开", "Boss 压力最大"],
     perkSlots: 3,
+    identity: "完整死斗档，要把能力、事件、奖励和终局爆发接成整套线。",
+    buildAngle: "封终、迟火、河杠、牌尾死斗",
+    contentFocus: "北风更像完整 build 档，重点是专属奖励链和终局收刀手感。",
   },
 ];
 
@@ -2043,16 +2058,18 @@ export function HulebuGamePage() {
                         <p>
                           已开放 {highestUnlockedAscension}/4 档，当前选择这一档可装备 {selectedAscensionPerkSlots} 个高阶能力。
                         </p>
+                        <p>{selectedAscensionConfig.identity}</p>
                       </article>
                       <article className={styles.codexCard}>
                         <span>equippedAscensionLoadout</span>
                         <strong>{equippedAscensionLoadout.length > 0 ? equippedAscensionLoadout.join(", ") : "未装备"}</strong>
                         <p>当前这套会在开始高阶 run 时直接写进 iframe 参数。当前构筑：{ascensionBuildSummary}。{ascensionBuildFocus.keyGain}</p>
+                        <p>这一档更偏：{selectedAscensionConfig.buildAngle}。</p>
                       </article>
                       <article className={styles.codexCard}>
                         <span>unlockedAscensionPerks</span>
                         <strong>{ascensionPerks.filter((perk) => perk.isUnlocked).length}/{ascensionPerks.length}</strong>
-                        <p>随着周目推进，更多高阶能力会加入可装备列表。</p>
+                        <p>随着周目推进，更多高阶能力会加入可装备列表。当前档位重点：{selectedAscensionConfig.contentFocus}</p>
                       </article>
                     </div>
                     <div className={styles.ascensionConfigGrid}>
@@ -2063,9 +2080,14 @@ export function HulebuGamePage() {
                             <strong>{config.name}</strong>
                           </div>
                           <p className={styles.achievementDescription}>{config.description}</p>
+                          <p className={styles.achievementDescription}>{config.identity}</p>
                           <div className={styles.achievementMeta}>
                             <span>能力槽</span>
                             <strong>{config.perkSlots}</strong>
+                          </div>
+                          <div className={styles.achievementMeta}>
+                            <span>这一档更偏</span>
+                            <strong>{config.buildAngle}</strong>
                           </div>
                           <button
                             className={styles.secondaryButton}

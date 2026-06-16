@@ -75,6 +75,14 @@ describe("hulebu web game publishing", () => {
     expect(component).toContain("南风场");
     expect(component).toContain("西风场");
     expect(component).toContain("北风场");
+    expect(component).toContain("先学会在轻压下读 Boss 目标和事件风向。");
+    expect(component).toContain("开始逼你靠容错和偏门奖励活过中段。");
+    expect(component).toContain("开始要求你主动围绕 build 选事件、选奖励、对齐 Boss 缺口。");
+    expect(component).toContain("完整死斗档，要把能力、事件、奖励和终局爆发接成整套线。");
+    expect(component).toContain("稳手、顺路、起手顺风");
+    expect(component).toContain("稳压、封盘、偏门换气");
+    expect(component).toContain("试锋、收官、信息压线");
+    expect(component).toContain("封终、迟火、河杠、牌尾死斗");
     expect(component).toContain("高阶配置");
     expect(component).toContain("equippedAscensionLoadout");
     expect(component).toContain("unlockedAscensionPerks");
