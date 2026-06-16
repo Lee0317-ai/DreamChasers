@@ -1934,37 +1934,37 @@
         },
       };
       const ASCENSION_REWARD_POOL = {
-        1: ["ascension_reserve_plus_1"],
-        2: ["ascension_undo_plus_1", "ascension_hu_score_plus_12", "ascension_river_plus_1"],
-        3: ["ascension_shield_plus_1", "ascension_gang_score_plus_18", "ascension_discard_plus_1", "ascension_vision_plus_1"],
-        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1", "ascension_river_lock_plus_1", "ascension_surge_cache_plus_1", "ascension_deadwall_buffer_plus_1", "ascension_target_rehearsal_plus_1", "ascension_north_pressure_plus_1"],
+        1: ["ascension_reserve_plus_1", "ascension_wind_open_plus_1", "ascension_wind_scout_plus_1"],
+        2: ["ascension_undo_plus_1", "ascension_hu_score_plus_12", "ascension_river_plus_1", "ascension_seal_pressure_plus_1", "ascension_route_shield_plus_1"],
+        3: ["ascension_shield_plus_1", "ascension_gang_score_plus_18", "ascension_discard_plus_1", "ascension_vision_plus_1", "ascension_west_trial_plus_1", "ascension_west_tide_plus_1"],
+        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1", "ascension_river_lock_plus_1", "ascension_surge_cache_plus_1", "ascension_deadwall_buffer_plus_1", "ascension_target_rehearsal_plus_1", "ascension_north_pressure_plus_1", "ascension_north_lockdown_plus_1"],
       };
       const ASCENSION_TIER_REWARD_BONUSES = {
-        1: ["ascension_east_open_plus_1"],
-        2: ["ascension_south_bank_plus_1"],
-        3: ["ascension_west_trial_plus_1"],
-        4: ["ascension_north_finisher_plus_1"],
+        1: ["ascension_east_open_plus_1", "ascension_east_hold_plus_1"],
+        2: ["ascension_south_bank_plus_1", "ascension_south_wall_plus_1"],
+        3: ["ascension_west_trial_plus_1", "ascension_west_lock_plus_1"],
+        4: ["ascension_north_finisher_plus_1", "ascension_north_bastion_plus_1"],
       };
       const ASCENSION_BUILD_REWARD_BONUSES = {
-        "steady-hand": ["ascension_undo_plus_1"],
-        "reserve-flow": ["ascension_reserve_plus_1"],
-        "storm-guard": ["ascension_shield_plus_1"],
-        "lucky-route": ["ascension_hu_score_plus_12"],
-        "river-sense": ["ascension_river_plus_1", "ascension_discard_plus_1"],
-        "kong-engine": ["ascension_gang_score_plus_18", "ascension_kong_chain_plus_1"],
-        "trial-sight": ["ascension_vision_plus_1", "ascension_trial_finish_plus_1"],
-        "deadwall-cache": ["ascension_discard_plus_1", "ascension_deadwall_route_plus_1"],
-        "seal-table": ["ascension_shield_plus_1", "ascension_north_guard_plus_1"],
-        "late-flare": ["ascension_hu_finisher_plus_1", "ascension_late_flare_plus_1"],
-        "steady-hand+lucky-route": ["ascension_route_mix_plus_1", "ascension_route_snowball_plus_1"],
-        "reserve-flow+storm-guard": ["ascension_rescue_coin_plus_30", "ascension_rescue_wall_plus_1"],
+        "steady-hand": ["ascension_undo_plus_1", "ascension_east_hold_plus_1"],
+        "reserve-flow": ["ascension_reserve_plus_1", "ascension_wind_open_plus_1"],
+        "storm-guard": ["ascension_shield_plus_1", "ascension_south_wall_plus_1"],
+        "lucky-route": ["ascension_hu_score_plus_12", "ascension_route_snowball_plus_1"],
+        "river-sense": ["ascension_river_plus_1", "ascension_discard_plus_1", "ascension_river_tide_plus_1"],
+        "kong-engine": ["ascension_gang_score_plus_18", "ascension_kong_chain_plus_1", "ascension_west_lock_plus_1"],
+        "trial-sight": ["ascension_vision_plus_1", "ascension_trial_finish_plus_1", "ascension_target_rehearsal_plus_1"],
+        "deadwall-cache": ["ascension_discard_plus_1", "ascension_deadwall_route_plus_1", "ascension_wind_scout_plus_1"],
+        "seal-table": ["ascension_shield_plus_1", "ascension_north_guard_plus_1", "ascension_north_bastion_plus_1"],
+        "late-flare": ["ascension_hu_finisher_plus_1", "ascension_late_flare_plus_1", "ascension_north_lockdown_plus_1"],
+        "steady-hand+lucky-route": ["ascension_route_mix_plus_1", "ascension_route_snowball_plus_1", "ascension_east_open_plus_1"],
+        "reserve-flow+storm-guard": ["ascension_rescue_coin_plus_30", "ascension_rescue_wall_plus_1", "ascension_seal_pressure_plus_1"],
         "kong-engine+river-sense": ["ascension_kong_river_mix_plus_1", "ascension_river_tide_plus_1"],
-        "deadwall-cache+trial-sight": ["ascension_deadwall_trial_mix_plus_1", "ascension_deadwall_settle_plus_1"],
-        "deadwall-cache+seal-table": ["ascension_sealed_deadwall_mix_plus_1"],
-        "late-flare+trial-sight": ["ascension_trial_flare_mix_plus_1"],
-        "deadwall-cache+late-flare": ["ascension_late_deadwall_mix_plus_1"],
+        "deadwall-cache+trial-sight": ["ascension_deadwall_trial_mix_plus_1", "ascension_deadwall_settle_plus_1", "ascension_target_rehearsal_plus_1"],
+        "deadwall-cache+seal-table": ["ascension_sealed_deadwall_mix_plus_1", "ascension_north_bastion_plus_1"],
+        "late-flare+trial-sight": ["ascension_trial_flare_mix_plus_1", "ascension_north_lockfire_plus_1"],
+        "deadwall-cache+late-flare": ["ascension_late_deadwall_mix_plus_1", "ascension_north_lockdown_plus_1"],
         "late-flare+seal-table": ["ascension_sealed_flare_mix_plus_1", "ascension_north_lockfire_plus_1"],
-        "steady-hand+reserve-flow": ["ascension_steady_route_mix_plus_1"],
+        "steady-hand+reserve-flow": ["ascension_steady_route_mix_plus_1", "ascension_wind_open_plus_1"],
       };
       const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
       const FRIEND_DEMO_TOOLS = [
@@ -3647,6 +3647,26 @@
             description: "高阶奖励让胡流终结分更高。",
             effects: [{ type: "combo_score_bonus", combo: "hu", value: 10 }],
           },
+          ascension_wind_open_plus_1: {
+            id: "ascension_wind_open_plus_1",
+            name: "东风能力：顺风起手",
+            category: "tool",
+            description: "东风能力让起手更顺，先把节奏带起来。",
+            effects: [
+              { type: "tool_delta", tool: "undo", value: 1 },
+              { type: "reserve_limit_delta", value: 1 },
+            ],
+          },
+          ascension_wind_scout_plus_1: {
+            id: "ascension_wind_scout_plus_1",
+            name: "东风能力：探手看线",
+            category: "info",
+            description: "东风能力让你更早看见这一轮会往哪条线走。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "peng", value: 4 },
+            ],
+          },
           ascension_target_rehearsal_plus_1: {
             id: "ascension_target_rehearsal_plus_1",
             name: "高阶构筑：目标彩排",
@@ -3665,6 +3685,26 @@
             effects: [
               { type: "shield_delta", value: 1 },
               { type: "river_limit_delta", value: 1 },
+            ],
+          },
+          ascension_seal_pressure_plus_1: {
+            id: "ascension_seal_pressure_plus_1",
+            name: "南风能力：封压续手",
+            category: "rescue",
+            description: "南风能力让容错和节奏能一起拖过中段。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "tool_delta", tool: "discard", value: 1 },
+            ],
+          },
+          ascension_route_shield_plus_1: {
+            id: "ascension_route_shield_plus_1",
+            name: "南风构筑：偏门护路",
+            category: "rescue",
+            description: "南风构筑让偏门收益线不至于一碰就断。",
+            effects: [
+              { type: "reserve_limit_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 6 },
             ],
           },
           ascension_route_mix_plus_1: {
@@ -3724,6 +3764,16 @@
               { type: "combo_score_bonus", combo: "gang", value: 12 },
             ],
           },
+          ascension_west_tide_plus_1: {
+            id: "ascension_west_tide_plus_1",
+            name: "西风能力：照听抬潮",
+            category: "info",
+            description: "西风能力让信息线和杠/胡收益一起抬一档。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "gang", value: 6 },
+            ],
+          },
           ascension_deadwall_route_plus_1: {
             id: "ascension_deadwall_route_plus_1",
             name: "高阶奖励：牌尾转路",
@@ -3774,6 +3824,16 @@
               { type: "combo_score_bonus", combo: "hu", value: 10 },
             ],
           },
+          ascension_west_lock_plus_1: {
+            id: "ascension_west_lock_plus_1",
+            name: "西风奖赏：照听定线",
+            category: "info",
+            description: "西风场专属奖励，让目标线更早定下来。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "peng", value: 8 },
+            ],
+          },
           ascension_north_finisher_plus_1: {
             id: "ascension_north_finisher_plus_1",
             name: "北风奖赏：封台收刀",
@@ -3782,6 +3842,16 @@
             effects: [
               { type: "river_limit_delta", value: 1 },
               { type: "combo_score_bonus", combo: "gang", value: 10 },
+            ],
+          },
+          ascension_north_bastion_plus_1: {
+            id: "ascension_north_bastion_plus_1",
+            name: "北风奖赏：封台堡垒",
+            category: "rescue",
+            description: "北风场专属奖励，把封盘和残局容错一起抬厚。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "reserve_limit_delta", value: 1 },
             ],
           },
           ascension_north_guard_plus_1: {
@@ -3841,6 +3911,16 @@
             effects: [
               { type: "shield_delta", value: 1 },
               { type: "combo_score_bonus", combo: "hu", value: 12 },
+            ],
+          },
+          ascension_north_lockdown_plus_1: {
+            id: "ascension_north_lockdown_plus_1",
+            name: "北风能力：死斗封尾",
+            category: "rescue",
+            description: "北风能力把牌尾容错和死斗收官更深地压在一起。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "tool_delta", tool: "discard", value: 1 },
             ],
           },
           ascension_sealed_deadwall_mix_plus_1: {

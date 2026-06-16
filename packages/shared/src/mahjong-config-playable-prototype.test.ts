@@ -293,8 +293,16 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("高阶构筑：目标彩排");
     expect(playHtml).toContain("高阶构筑：稳压补墙");
     expect(playHtml).toContain("高阶构筑：河杠涨潮");
+    expect(playHtml).toContain("东风能力：顺风起手");
+    expect(playHtml).toContain("东风能力：探手看线");
+    expect(playHtml).toContain("南风能力：封压续手");
+    expect(playHtml).toContain("南风构筑：偏门护路");
+    expect(playHtml).toContain("西风能力：照听抬潮");
+    expect(playHtml).toContain("西风奖赏：照听定线");
     expect(playHtml).toContain("北风能力：压台风口");
+    expect(playHtml).toContain("北风奖赏：封台堡垒");
     expect(playHtml).toContain("北风能力：锁火开台");
+    expect(playHtml).toContain("北风能力：死斗封尾");
     expect(playHtml).toContain("东风奖赏：起手顺风");
     expect(playHtml).toContain("南风奖赏：偏门换气");
     expect(playHtml).toContain("西风奖赏：试炼压线");

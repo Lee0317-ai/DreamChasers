@@ -241,8 +241,16 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("高阶构筑：目标彩排");
     expect(demo).toContain("高阶构筑：稳压补墙");
     expect(demo).toContain("高阶构筑：河杠涨潮");
+    expect(demo).toContain("东风能力：顺风起手");
+    expect(demo).toContain("东风能力：探手看线");
+    expect(demo).toContain("南风能力：封压续手");
+    expect(demo).toContain("南风构筑：偏门护路");
+    expect(demo).toContain("西风能力：照听抬潮");
+    expect(demo).toContain("西风奖赏：照听定线");
     expect(demo).toContain("北风能力：压台风口");
+    expect(demo).toContain("北风奖赏：封台堡垒");
     expect(demo).toContain("北风能力：锁火开台");
+    expect(demo).toContain("北风能力：死斗封尾");
     expect(tuner).toContain("<title>胡了卜调牌器</title>");
     expect(readWebFile("public/games/hulebu-demo/config/levels.json")).toContain('"displayName": "胡了卜"');
     expect(readWebFile("public/games/hulebu-demo/config/rewards.json")).toContain('"rewards"');
