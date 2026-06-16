@@ -265,6 +265,10 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("牌尾缓冲");
     expect(playHtml).toContain("function getAscensionSettlementHighlights");
     expect(playHtml).toContain("settlementHighlights");
+    expect(playHtml).toContain("buildHeadline");
+    expect(playHtml).toContain("failureBottleneck");
+    expect(playHtml).toContain("failureReviewLine");
+    expect(playHtml).toContain("rewardDepth");
     expect(playHtml).toContain("顺手成胡");
     expect(playHtml).toContain("稳压续命");
     expect(playHtml).toContain("河杠连锁");
@@ -272,6 +276,7 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("ascensionReview");
     expect(playHtml).toContain("failureType");
     expect(playHtml).toContain("Boss 目标不匹配");
+    expect(playHtml).toContain("失败卡点");
     expect(playHtml).toContain("起风试手");
     expect(playHtml).toContain("南桌偏门");
     expect(playHtml).toContain("西窗压注");
@@ -284,6 +289,12 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("稳压补墙");
     expect(playHtml).toContain("河杠涨潮");
     expect(playHtml).toContain("收官落灯");
+    expect(playHtml).toContain("高阶构筑：顺路滚雪球");
+    expect(playHtml).toContain("高阶构筑：目标彩排");
+    expect(playHtml).toContain("高阶构筑：稳压补墙");
+    expect(playHtml).toContain("高阶构筑：河杠涨潮");
+    expect(playHtml).toContain("北风能力：压台风口");
+    expect(playHtml).toContain("北风能力：锁火开台");
     expect(playHtml).toContain("东风奖赏：起手顺风");
     expect(playHtml).toContain("南风奖赏：偏门换气");
     expect(playHtml).toContain("西风奖赏：试炼压线");

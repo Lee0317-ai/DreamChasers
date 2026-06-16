@@ -1937,7 +1937,7 @@
         1: ["ascension_reserve_plus_1"],
         2: ["ascension_undo_plus_1", "ascension_hu_score_plus_12", "ascension_river_plus_1"],
         3: ["ascension_shield_plus_1", "ascension_gang_score_plus_18", "ascension_discard_plus_1", "ascension_vision_plus_1"],
-        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1", "ascension_river_lock_plus_1", "ascension_surge_cache_plus_1", "ascension_deadwall_buffer_plus_1"],
+        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1", "ascension_river_lock_plus_1", "ascension_surge_cache_plus_1", "ascension_deadwall_buffer_plus_1", "ascension_target_rehearsal_plus_1", "ascension_north_pressure_plus_1"],
       };
       const ASCENSION_TIER_REWARD_BONUSES = {
         1: ["ascension_east_open_plus_1"],
@@ -1956,14 +1956,14 @@
         "deadwall-cache": ["ascension_discard_plus_1", "ascension_deadwall_route_plus_1"],
         "seal-table": ["ascension_shield_plus_1", "ascension_north_guard_plus_1"],
         "late-flare": ["ascension_hu_finisher_plus_1", "ascension_late_flare_plus_1"],
-        "steady-hand+lucky-route": ["ascension_route_mix_plus_1"],
-        "reserve-flow+storm-guard": ["ascension_rescue_coin_plus_30"],
-        "kong-engine+river-sense": ["ascension_kong_river_mix_plus_1"],
+        "steady-hand+lucky-route": ["ascension_route_mix_plus_1", "ascension_route_snowball_plus_1"],
+        "reserve-flow+storm-guard": ["ascension_rescue_coin_plus_30", "ascension_rescue_wall_plus_1"],
+        "kong-engine+river-sense": ["ascension_kong_river_mix_plus_1", "ascension_river_tide_plus_1"],
         "deadwall-cache+trial-sight": ["ascension_deadwall_trial_mix_plus_1", "ascension_deadwall_settle_plus_1"],
         "deadwall-cache+seal-table": ["ascension_sealed_deadwall_mix_plus_1"],
         "late-flare+trial-sight": ["ascension_trial_flare_mix_plus_1"],
         "deadwall-cache+late-flare": ["ascension_late_deadwall_mix_plus_1"],
-        "late-flare+seal-table": ["ascension_sealed_flare_mix_plus_1"],
+        "late-flare+seal-table": ["ascension_sealed_flare_mix_plus_1", "ascension_north_lockfire_plus_1"],
         "steady-hand+reserve-flow": ["ascension_steady_route_mix_plus_1"],
       };
       const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
@@ -2956,6 +2956,26 @@
         return [...new Set(combined)].slice(0, 3);
       }
 
+      function getAscensionRewardDepthText() {
+        if (!isAscensionMode()) return "";
+        const ascensionRewards = (model.run.pickedRewards ?? [])
+          .filter((rewardId) => isAscensionRewardId(rewardId))
+          .map((rewardId) => findReward(rewardId)?.name ?? rewardId);
+        if (ascensionRewards.length === 0) return "这轮几乎没有吃到高阶专属奖励。";
+        if (ascensionRewards.length === 1) return `这轮只接到 1 个高阶奖励：${ascensionRewards[0]}。`;
+        return `这轮已经接到 ${ascensionRewards.length} 个高阶奖励：${ascensionRewards.slice(0, 3).join(" / ")}${ascensionRewards.length > 3 ? " ..." : ""}。`;
+      }
+
+      function getAscensionBossMismatchText(failureAnalysis, buildProfile, buildFocus) {
+        if (!failureAnalysis || failureAnalysis.type !== "目标完成度") return "";
+        const buildName = buildProfile?.name ?? "当前构筑";
+        const focusText = buildFocus?.summary ?? buildProfile?.detail ?? "当前路线";
+        if (failureAnalysis.bossMismatchLevel === "hard") {
+          return `Boss 目标不匹配：${buildName} 当前更偏 ${focusText}，但本关缺口落在另一条目标线上。`;
+        }
+        return `Boss 目标不匹配：${buildName} 已经接近目标线，只差最后一口完成度。`;
+      }
+
       function getAscensionPerkSummaryText() {
         if (!isAscensionMode()) return "";
         if (model.equippedAscensionPerks.length === 0) return "高阶能力：未装备";
@@ -3627,6 +3647,26 @@
             description: "高阶奖励让胡流终结分更高。",
             effects: [{ type: "combo_score_bonus", combo: "hu", value: 10 }],
           },
+          ascension_target_rehearsal_plus_1: {
+            id: "ascension_target_rehearsal_plus_1",
+            name: "高阶构筑：目标彩排",
+            category: "info",
+            description: "高阶奖励让 Boss 目标再预演一轮，尽早对齐目标线。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "peng", value: 6 },
+            ],
+          },
+          ascension_north_pressure_plus_1: {
+            id: "ascension_north_pressure_plus_1",
+            name: "北风能力：压台风口",
+            category: "rescue",
+            description: "北风能力让护符、牌河和高压节奏再接一层。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "river_limit_delta", value: 1 },
+            ],
+          },
           ascension_route_mix_plus_1: {
             id: "ascension_route_mix_plus_1",
             name: "高阶构筑：顺手转路",
@@ -3637,12 +3677,32 @@
               { type: "combo_score_bonus", combo: "hu", value: 8 },
             ],
           },
+          ascension_route_snowball_plus_1: {
+            id: "ascension_route_snowball_plus_1",
+            name: "高阶构筑：顺路滚雪球",
+            category: "hu",
+            description: "构筑奖励让顺手路线更容易一路滚到终局。",
+            effects: [
+              { type: "tool_delta", tool: "undo", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 12 },
+            ],
+          },
           ascension_rescue_coin_plus_30: {
             id: "ascension_rescue_coin_plus_30",
             name: "高阶构筑：稳压补给",
             category: "rescue",
             description: "构筑奖励，护符路线额外补 30 铜钱。",
             effects: [{ type: "coin_delta", value: 30 }],
+          },
+          ascension_rescue_wall_plus_1: {
+            id: "ascension_rescue_wall_plus_1",
+            name: "高阶构筑：稳压补墙",
+            category: "rescue",
+            description: "构筑奖励让容错墙再抬一层。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "reserve_limit_delta", value: 1 },
+            ],
           },
           ascension_kong_river_mix_plus_1: {
             id: "ascension_kong_river_mix_plus_1",
@@ -3652,6 +3712,16 @@
             effects: [
               { type: "river_limit_delta", value: 1 },
               { type: "combo_score_bonus", combo: "gang", value: 8 },
+            ],
+          },
+          ascension_river_tide_plus_1: {
+            id: "ascension_river_tide_plus_1",
+            name: "高阶构筑：河杠涨潮",
+            category: "gang",
+            description: "构筑奖励让牌河和杠流一起抬潮。",
+            effects: [
+              { type: "river_limit_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "gang", value: 12 },
             ],
           },
           ascension_deadwall_route_plus_1: {
@@ -3761,6 +3831,16 @@
             effects: [
               { type: "shield_delta", value: 1 },
               { type: "combo_score_bonus", combo: "hu", value: 10 },
+            ],
+          },
+          ascension_north_lockfire_plus_1: {
+            id: "ascension_north_lockfire_plus_1",
+            name: "北风能力：锁火开台",
+            category: "hu",
+            description: "北风能力让封盘和胡流终局再接一口火。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 12 },
             ],
           },
           ascension_sealed_deadwall_mix_plus_1: {
@@ -7148,6 +7228,9 @@
             summary: `${buildName} 没有把本关目标打满。`,
             detail: mismatchText,
             miss: `关键失误：Boss 目标缺口还在 ${missingGoalText}。`,
+            bottleneck: missesPreferredGoal ? "目标线和当前 build 方向错位" : "目标完成度只差最后一口",
+            bossMismatchLevel: missesPreferredGoal ? "hard" : "soft",
+            reviewLine: missesPreferredGoal ? "这轮不是单纯没打满，而是 build 方向和 Boss 目标线没有完全接上。" : "这轮 build 方向基本对，只是在目标完成度上差最后一口。",
           };
         }
         if (slotFull && noReserveRoom && shieldsSpent) {
@@ -7156,6 +7239,9 @@
             summary: `${buildName} 的容错已经被打空了。`,
             detail: "这一轮更像是护符、备用位和牌河缓冲一起见底，后半程没有多余空间接失误。",
             miss: "关键失误：没能把容错留到高压段。",
+            bottleneck: "护符、备用位和牌河缓冲一起见底",
+            bossMismatchLevel: "none",
+            reviewLine: "这轮更像是资源层先塌了，没能把容错留到最后的高压段。",
           };
         }
         if (slotFull) {
@@ -7164,6 +7250,9 @@
             summary: `${buildName} 这局更像是主槽节奏断掉了。`,
             detail: `当前构筑更偏 ${buildFocus?.summary ?? "基础节奏"}，但这一轮没能及时把它接成清槽动作。`,
             miss: "关键失误：卡槽压力先爆了，节奏没有滚起来。",
+            bottleneck: "主槽清不动，组合节奏先断",
+            bossMismatchLevel: "none",
+            reviewLine: "这轮更多是动作节奏没有滚起来，卡槽压力先一步爆掉了。",
           };
         }
         return {
@@ -7171,6 +7260,9 @@
           summary: `${buildName} 这局没有把高阶节奏接起来。`,
           detail: `这套更偏 ${buildFocus?.summary ?? "当前路线"}，但这一轮的奖励、事件或收官点没有把 build 真正接实。`,
           miss: "关键失误：构筑成型速度慢于本关压力。",
+          bottleneck: "事件、奖励和收官点没有接成一条线",
+          bossMismatchLevel: "soft",
+          reviewLine: "这轮不是单点失误，而是 build 成型速度慢于关卡压力推进。",
         };
       }
 
@@ -7206,22 +7298,24 @@
           : lowRewardDepth
             ? "关键失误：这轮高阶奖励吃得还不够深，build 成型速度偏慢。"
             : "关键失误：这一轮已经通了，但 Boss 目标和构筑节奏还能继续压深。";
-        const mismatch = failureAnalysis?.detail?.includes("Boss 缺口")
-          ? "Boss 目标不匹配：当前构筑和本关目标没有完全接上。"
-          : failureAnalysis?.type === "目标完成度"
-            ? "Boss 目标不匹配：完成度差最后一口。"
-            : "";
+        const mismatch = failureAnalysis?.type === "目标完成度"
+          ? getAscensionBossMismatchText(failureAnalysis, buildProfile, buildFocus)
+          : "";
         const settlementHighlights = getAscensionSettlementHighlights();
 
         return {
           build: buildProfile?.name ?? "当前构筑",
           buildDetail: buildProfile?.detail ?? "高阶构筑继续成型中。",
+          buildHeadline: `${buildProfile?.name ?? "当前构筑"} · ${buildFocus?.summary ?? buildProfile?.detail ?? "高阶路线继续成型中。"}`,
           keyGain: `本轮铜钱 ${model.run.coins} · 高阶奖励 ${ascensionRewards.length} 个${buildFocus ? ` · ${buildFocus.summary}` : ""}`,
           keyMiss: failureAnalysis?.miss ?? completionMiss,
           nextAdvice: getAscensionRunSuggestions().join(" "),
           failureType: failureAnalysis?.type ?? null,
           detail: failureAnalysis?.detail ?? "",
           mismatch,
+          failureBottleneck: failureAnalysis?.bottleneck ?? "",
+          failureReviewLine: failureAnalysis?.reviewLine ?? "",
+          rewardDepth: getAscensionRewardDepthText(),
           settlementHighlights,
         };
       }
@@ -7276,6 +7370,10 @@
         if (ascensionFailureAnalysis) {
           ascensionFailureMiss.textContent = ascensionFailureAnalysis.miss;
         }
+        const ascensionFailureBottleneck = document.createElement("p");
+        if (ascensionFailureAnalysis?.bottleneck) {
+          ascensionFailureBottleneck.textContent = `失败卡点：${ascensionFailureAnalysis.bottleneck}`;
+        }
         const restart = document.createElement("button");
         restart.className = "reward-button";
         restart.type = "button";
@@ -7288,6 +7386,7 @@
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionSummary);
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionFailureDetail);
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionFailureMiss);
+        if (ascensionFailureAnalysis?.bottleneck) view.runComplete.append(ascensionFailureBottleneck);
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionAdvice);
         if (bossReviewPayload) view.runComplete.append(createBossReviewCard(bossReviewPayload));
         view.runComplete.append(restart);

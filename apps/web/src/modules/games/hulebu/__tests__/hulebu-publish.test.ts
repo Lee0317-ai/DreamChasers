@@ -187,6 +187,10 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("牌尾缓冲");
     expect(demo).toContain("function getAscensionSettlementHighlights");
     expect(demo).toContain("settlementHighlights");
+    expect(demo).toContain("buildHeadline");
+    expect(demo).toContain("failureBottleneck");
+    expect(demo).toContain("failureReviewLine");
+    expect(demo).toContain("rewardDepth");
     expect(demo).toContain("顺手成胡");
     expect(demo).toContain("稳压续命");
     expect(demo).toContain("河杠连锁");
@@ -194,6 +198,7 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("ascensionReview");
     expect(demo).toContain("failureType");
     expect(demo).toContain("Boss 目标不匹配");
+    expect(demo).toContain("失败卡点");
     expect(demo).toContain("BOSS_TRIAL_PHASES");
     expect(demo).toContain("BOSS_TRIAL_VARIANTS");
     expect(demo).toContain("function getBossTrialDeck");
@@ -224,6 +229,12 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("稳压补墙");
     expect(demo).toContain("河杠涨潮");
     expect(demo).toContain("收官落灯");
+    expect(demo).toContain("高阶构筑：顺路滚雪球");
+    expect(demo).toContain("高阶构筑：目标彩排");
+    expect(demo).toContain("高阶构筑：稳压补墙");
+    expect(demo).toContain("高阶构筑：河杠涨潮");
+    expect(demo).toContain("北风能力：压台风口");
+    expect(demo).toContain("北风能力：锁火开台");
     expect(tuner).toContain("<title>胡了卜调牌器</title>");
     expect(readWebFile("public/games/hulebu-demo/config/levels.json")).toContain('"displayName": "胡了卜"');
     expect(readWebFile("public/games/hulebu-demo/config/rewards.json")).toContain('"rewards"');

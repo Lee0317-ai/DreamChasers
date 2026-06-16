@@ -39,12 +39,16 @@ type AscensionPerkId =
 type AscensionReview = {
   build?: string;
   buildDetail?: string;
+  buildHeadline?: string;
   keyGain?: string;
   keyMiss?: string;
   nextAdvice?: string;
   failureType?: string;
   detail?: string;
   mismatch?: string;
+  failureBottleneck?: string;
+  failureReviewLine?: string;
+  rewardDepth?: string;
   settlementHighlights?: string[];
 };
 type BossReview = {
@@ -1793,7 +1797,7 @@ export function HulebuGamePage() {
                     <article className={styles.settlementReviewCard}>
                       <span>构筑回顾</span>
                       <strong>{settlementAscensionReview?.build ?? settlementAscensionFocus.build}</strong>
-                      <p>{settlementAscensionReview?.buildDetail ?? settlementAscensionFocus.keyGain}</p>
+                      <p>{settlementAscensionReview?.buildHeadline ?? settlementAscensionReview?.buildDetail ?? settlementAscensionFocus.keyGain}</p>
                     </article>
                     <article className={styles.settlementReviewCard}>
                       <span>{lastSettlement.result === "failed" ? "失败归因" : "本轮高阶能力"}</span>
@@ -1806,7 +1810,7 @@ export function HulebuGamePage() {
                       </strong>
                       <p>
                         {lastSettlement.result === "failed"
-                          ? settlementAscensionReview?.detail ?? "Boss 目标不匹配、容错耗尽或节奏断档会在这里拆开。"
+                          ? settlementAscensionReview?.failureReviewLine ?? settlementAscensionReview?.detail ?? "Boss 目标不匹配、容错耗尽或节奏断档会在这里拆开。"
                           : "这套能力已经跟着本轮结算一起记下来了。"}
                       </p>
                     </article>
@@ -1814,7 +1818,9 @@ export function HulebuGamePage() {
                       <span>关键收益</span>
                       <strong>{settlementAscensionReview?.keyGain ?? (lastSettlement.pickedRewards > 0 ? `拿到 ${lastSettlement.pickedRewards} 个奖励` : "奖励段偏少")}</strong>
                       <p>
-                        {settlementAscensionReview?.settlementHighlights?.length
+                        {settlementAscensionReview?.rewardDepth
+                          ? settlementAscensionReview.rewardDepth
+                          : settlementAscensionReview?.settlementHighlights?.length
                           ? `本轮关键收益：${settlementAscensionReview.settlementHighlights.join(" / ")}`
                           : lastSettlement.runMode === "endless"
                             ? "无尽层数推进已经记下。"
@@ -1826,7 +1832,7 @@ export function HulebuGamePage() {
                     <article className={styles.settlementReviewCard}>
                       <span>关键失误</span>
                       <strong>{settlementAscensionReview?.keyMiss ?? (lastSettlement.result === "failed" ? "Boss 目标不匹配" : "仍可继续压构筑")}</strong>
-                      <p>{settlementAscensionReview?.mismatch ?? "构筑、目标完成度、容错和节奏都会在高阶失败后拆开看。"}</p>
+                      <p>{settlementAscensionReview?.mismatch ?? settlementAscensionReview?.failureBottleneck ?? "构筑、目标完成度、容错和节奏都会在高阶失败后拆开看。"}</p>
                     </article>
                     <article className={styles.settlementReviewCard}>
                       <span>下一轮建议</span>
