@@ -48,6 +48,24 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260616-02：胡了卜高阶周目完整版
+
+- 提出人：Lee
+- 提出时间：2026-06-16
+- 背景：T175 已确认后续优先补 Web 完整版内容。当前高阶周目仍停留在 T173 的第一版，只开放 `东风场 / 南风场` 两档，词缀和限制较轻，也没有把局外可装备能力和高阶专属奖励真正接进体系。
+- 目标：新增 T176，把高阶周目补成完整版：扩展到 `东风场 / 南风场 / 西风场 / 北风场` 四档；新增局外可装备高阶能力；在高阶 run 中开放专属奖励和能力组合；把能力槽限制、起始工具限制、洗牌限制、奖励衰减和更高 Boss 压力真正接到 Web 壳层和试玩页逻辑。
+- 不做：不改 Cocos 工程；不做 Boss 试炼第二版、特殊事件池第二版、排行榜、付费、广告、多端同步或普通局外升级重构；不改 PDF、AI 修图、TimePick、账号中心或 AI Gateway。
+- 用户价值：主线通关后的高阶玩法不再只是两档轻度词缀，而是形成一个完整的长期挑战结构，既有更明确的限制，也有专属构筑空间。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 共享测试 / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/**`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜 Web 侧和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外页可见四档高阶与解锁链；高阶配置面板支持装备局外能力；高阶 run 中可见专属奖励和能力组合；内层 HUD 与结算能显示当前高阶档与限制；测试、类型检查、构建、脚本检查和文档同步通过。
+- AI 初步方案：先新增 T176 文档和规格；再用 TDD 锁定四档高阶、局外能力存档、高阶奖励和限制文案；随后实现 Web 壳层配置面板、原型参数和高阶专属奖励；最后同步静态 Demo 和模块文档。
+- 处理结论：已入任务池
+- 对应任务编号：T176
+
 ### IDEA-20260616-01：胡了卜先完成网页版完整版再追平 Cocos
 
 - 提出人：Lee

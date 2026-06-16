@@ -1747,6 +1747,7 @@
           disableShuffle: false,
           forcedModifierInterval: 6,
           forcedModifier: { type: "highPressure", rewardCoins: 80, label: "东风压场" },
+          ascensionPerkSlots: 1,
         },
         2: {
           level: 2,
@@ -1758,7 +1759,126 @@
           disableShuffle: true,
           forcedModifierInterval: 4,
           forcedModifier: { type: "highPressure", rewardCoins: 120, label: "南风急场" },
+          ascensionPerkSlots: 1,
         },
+        3: {
+          level: 3,
+          name: "西风场",
+          extraTileCount: 48,
+          extraHonorWeight: 20,
+          rewardCoinPenalty: 55,
+          startToolPenalty: 1,
+          disableShuffle: true,
+          forcedModifierInterval: 3,
+          forcedModifier: { type: "highPressure", rewardCoins: 140, label: "西风连压" },
+          ascensionPerkSlots: 2,
+        },
+        4: {
+          level: 4,
+          name: "北风场",
+          extraTileCount: 64,
+          extraHonorWeight: 28,
+          rewardCoinPenalty: 70,
+          startToolPenalty: 2,
+          disableShuffle: true,
+          forcedModifierInterval: 2,
+          forcedModifier: { type: "highPressure", rewardCoins: 180, label: "北风死斗" },
+          ascensionPerkSlots: 3,
+        },
+      };
+      const ASCENSION_PERK_POOL = {
+        "steady-hand": {
+          id: "steady-hand",
+          label: "稳手",
+          description: "开局补 1 次撤回。",
+          effect: { type: "tool_delta", tool: "undo", value: 1 },
+        },
+        "reserve-flow": {
+          id: "reserve-flow",
+          label: "余槽",
+          description: "起始备用位 +1。",
+          effect: { type: "reserve_limit_delta", value: 1 },
+        },
+        "storm-guard": {
+          id: "storm-guard",
+          label: "风盾",
+          description: "起始护符 +1。",
+          effect: { type: "shield_delta", value: 1 },
+        },
+        "lucky-route": {
+          id: "lucky-route",
+          label: "顺路",
+          description: "胡流额外 +8 分。",
+          effect: { type: "combo_score_bonus", combo: "hu", value: 8 },
+        },
+        "river-sense": {
+          id: "river-sense",
+          label: "河眼",
+          description: "牌河上限 +1，更擅长靠弃牌找节奏。",
+          effect: { type: "river_limit_delta", value: 1 },
+        },
+        "kong-engine": {
+          id: "kong-engine",
+          label: "杠擎",
+          description: "杠流额外 +10 分。",
+          effect: { type: "combo_score_bonus", combo: "gang", value: 10 },
+        },
+        "trial-sight": {
+          id: "trial-sight",
+          label: "试锋",
+          description: "开局补 1 次看山，更容易提早接上试炼目标。",
+          effect: { type: "tool_delta", tool: "vision", value: 1 },
+        },
+        "deadwall-cache": {
+          id: "deadwall-cache",
+          label: "牌尾",
+          description: "开局补 1 次丢弃，更擅长整理残局和牌尾。",
+          effect: { type: "tool_delta", tool: "discard", value: 1 },
+        },
+        "seal-table": {
+          id: "seal-table",
+          label: "封盘",
+          description: "北风场补 1 次护符，更适合封台死斗。",
+          effect: { type: "shield_delta", value: 1 },
+        },
+        "late-flare": {
+          id: "late-flare",
+          label: "迟火",
+          description: "胡流额外 +14 分，越到终局越能翻。",
+          effect: { type: "combo_score_bonus", combo: "hu", value: 14 },
+        },
+      };
+      const ASCENSION_REWARD_POOL = {
+        1: ["ascension_reserve_plus_1"],
+        2: ["ascension_undo_plus_1", "ascension_hu_score_plus_12", "ascension_river_plus_1"],
+        3: ["ascension_shield_plus_1", "ascension_gang_score_plus_18", "ascension_discard_plus_1", "ascension_vision_plus_1"],
+        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1"],
+      };
+      const ASCENSION_TIER_REWARD_BONUSES = {
+        1: ["ascension_east_open_plus_1"],
+        2: ["ascension_south_bank_plus_1"],
+        3: ["ascension_west_trial_plus_1"],
+        4: ["ascension_north_finisher_plus_1"],
+      };
+      const ASCENSION_BUILD_REWARD_BONUSES = {
+        "steady-hand": ["ascension_undo_plus_1"],
+        "reserve-flow": ["ascension_reserve_plus_1"],
+        "storm-guard": ["ascension_shield_plus_1"],
+        "lucky-route": ["ascension_hu_score_plus_12"],
+        "river-sense": ["ascension_river_plus_1", "ascension_discard_plus_1"],
+        "kong-engine": ["ascension_gang_score_plus_18", "ascension_kong_chain_plus_1"],
+        "trial-sight": ["ascension_vision_plus_1", "ascension_trial_finish_plus_1"],
+        "deadwall-cache": ["ascension_discard_plus_1", "ascension_deadwall_route_plus_1"],
+        "seal-table": ["ascension_shield_plus_1", "ascension_north_guard_plus_1"],
+        "late-flare": ["ascension_hu_finisher_plus_1", "ascension_late_flare_plus_1"],
+        "steady-hand+lucky-route": ["ascension_route_mix_plus_1"],
+        "reserve-flow+storm-guard": ["ascension_rescue_coin_plus_30"],
+        "kong-engine+river-sense": ["ascension_kong_river_mix_plus_1"],
+        "deadwall-cache+trial-sight": ["ascension_deadwall_trial_mix_plus_1"],
+        "deadwall-cache+seal-table": ["ascension_sealed_deadwall_mix_plus_1"],
+        "late-flare+trial-sight": ["ascension_trial_flare_mix_plus_1"],
+        "deadwall-cache+late-flare": ["ascension_late_deadwall_mix_plus_1"],
+        "late-flare+seal-table": ["ascension_sealed_flare_mix_plus_1"],
       };
       const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
       const FRIEND_DEMO_TOOLS = [
@@ -1821,6 +1941,140 @@
           ],
         },
       ];
+      const ASCENSION_SPECIAL_EVENT_POOL = {
+        "顺手胡流": {
+          id: "ascension-route-scout",
+          title: "探路好牌",
+          summary: "你摸到一手能顺路往胡流滚的路数。稳稳拿补给，或者把路线压得更深。",
+          options: [
+            { id: "undo", label: "补 1 次撤回", effect: { type: "tool", tool: "undo", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +12 分", effect: { type: "comboBonus", combo: "hu", amount: 12, label: "胡流压注" } },
+            { id: "pressure", label: "下一关高压，通关 +150 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 150, label: "胡流压注" } } },
+          ],
+        },
+        "救场流": {
+          id: "ascension-rescue-cache",
+          title: "压箱补给",
+          summary: "旧桌底下翻出一份保命补给。可以直接补厚，也可以把这口气压到下一关。",
+          options: [
+            { id: "shield", label: "补 1 次护符", effect: { type: "shield", amount: 1 } },
+            { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
+            { id: "pressure", label: "下一关禁洗牌，通关 +160 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 160, label: "背水硬顶" } } },
+          ],
+        },
+        "河杠流": {
+          id: "ascension-river-engine",
+          title: "河口换气",
+          summary: "牌河节奏对上了，杠流机器开始转起来。现在决定是补节奏，还是把下关彻底拉满。",
+          options: [
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "gang-bonus", label: "下一关杠流 +12 分", effect: { type: "comboBonus", combo: "gang", amount: 12, label: "河杠连压" } },
+          ],
+        },
+        "杠流": {
+          id: "ascension-kong-motor",
+          title: "杠机升温",
+          summary: "你能感觉到这套牌快进到了杠流爆发段。补资源稳一手，或者直接加转速。",
+          options: [
+            { id: "undo", label: "补 1 次撤回", effect: { type: "tool", tool: "undo", amount: 1 } },
+            { id: "gang-bonus", label: "下一关杠流 +15 分", effect: { type: "comboBonus", combo: "gang", amount: 15, label: "杠机升温" } },
+            { id: "pressure", label: "下一关高压，通关 +170 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 170, label: "杠机升温" } } },
+          ],
+        },
+        "试炼流": {
+          id: "ascension-trial-scout",
+          title: "试炼牌谱",
+          summary: "你提前看清了这一轮试炼的锋口。现在可以拿信息，也可以把这一关压成目标局。",
+          options: [
+            { id: "vision", label: "补 1 次看山", effect: { type: "tool", tool: "vision", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +10 分", effect: { type: "comboBonus", combo: "hu", amount: 10, label: "试炼引胡" } },
+            { id: "pressure", label: "下一关禁透视，通关 +180 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 180, label: "试炼压注" } } },
+          ],
+        },
+        "收官流": {
+          id: "ascension-deadwall-finish",
+          title: "牌尾收刀",
+          summary: "你已经闻到牌尾那口气了。要么稳稳补残局工具，要么直接把这一关压成收官局。",
+          options: [
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +190 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 190, label: "牌尾收刀" } } },
+          ],
+        },
+        "封尾流": {
+          id: "ascension-sealed-deadwall",
+          title: "封盘闭门",
+          summary: "封盘护符把门先关上，牌尾整理负责最后一口。你可以补容错，也可以把下一关锁成残局收官局。",
+          options: [
+            { id: "shield", label: "补 1 次护符", effect: { type: "shield", amount: 1 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +210 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 210, label: "封盘闭门" } } },
+          ],
+        },
+        "试火流": {
+          id: "ascension-trial-flare",
+          title: "迟火试锋",
+          summary: "试锋先看目标缺口，迟火负责后半程点燃。要么拿信息，要么把下一关压成胡流目标局。",
+          options: [
+            { id: "vision", label: "补 1 次看山", effect: { type: "tool", tool: "vision", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +18 分", effect: { type: "comboBonus", combo: "hu", amount: 18, label: "迟火试锋" } },
+            { id: "pressure", label: "下一关禁透视，通关 +210 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 210, label: "迟火试锋" } } },
+          ],
+        },
+        "迟尾流": {
+          id: "ascension-late-deadwall",
+          title: "牌尾迟燃",
+          summary: "牌尾把残局拖住，迟火把最后一口翻成爆发。稳一手丢弃，或者把下一关压成终局胡流局。",
+          options: [
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +16 分", effect: { type: "comboBonus", combo: "hu", amount: 16, label: "牌尾迟燃" } },
+            { id: "pressure", label: "下一关高压，通关 +220 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 220, label: "牌尾迟燃" } } },
+          ],
+        },
+      };
+      const ASCENSION_TIER_EVENT_POOL = {
+        1: {
+          id: "ascension-east-opening",
+          title: "起风试手",
+          summary: "东风场刚起，桌面还在试探你会走哪条线。先拿一口顺手资源，或者提早点火。",
+          options: [
+            { id: "undo", label: "补 1 次撤回", effect: { type: "tool", tool: "undo", amount: 1 } },
+            { id: "peng-bonus", label: "下一关碰流 +8 分", effect: { type: "comboBonus", combo: "peng", amount: 8, label: "东风试手" } },
+            { id: "coins", label: "拿 90 铜钱", effect: { type: "coins", amount: 90 } },
+          ],
+        },
+        2: {
+          id: "ascension-south-branch",
+          title: "南桌偏门",
+          summary: "南风场开始逼你走偏门。可以补一口容错，也可以接一条更贪的奖励支线。",
+          options: [
+            { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "pressure", label: "下一关禁洗牌，通关 +170 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 170, label: "南桌偏门" } } },
+          ],
+        },
+        3: {
+          id: "ascension-west-wager",
+          title: "西窗压注",
+          summary: "西风场开始真正压注，试炼和信息都在往你脸上贴。要稳信息，还是直接抬高目标局收益？",
+          options: [
+            { id: "vision", label: "补 1 次看山", effect: { type: "tool", tool: "vision", amount: 1 } },
+            { id: "hu-bonus", label: "下一关胡流 +12 分", effect: { type: "comboBonus", combo: "hu", amount: 12, label: "西窗压注" } },
+            { id: "pressure", label: "下一关禁透视，通关 +190 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 190, label: "西窗压注" } } },
+          ],
+        },
+        4: {
+          id: "ascension-north-lockdown",
+          title: "北斗封台",
+          summary: "北风场不再只是高压，它会逼你把收官和爆发都接实。现在就决定是补牌尾，还是把下一关锁成死斗。",
+          options: [
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "gang-bonus", label: "下一关杠流 +18 分", effect: { type: "comboBonus", combo: "gang", amount: 18, label: "北斗封台" } },
+            { id: "pressure", label: "下一关高压，通关 +220 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 220, label: "北斗封台" } } },
+          ],
+        },
+      };
       const FRIEND_DEMO_DIFFICULTY_PROFILES = [
         { levelIndex: 4, label: "正式入门", tileCount: 72, stackDepth: 3, huPacks: 0, gangPacks: 2, orphanBudget: 1, numberSuits: ["wan"], honorRanks: [], honorWeight: 0 },
         { levelIndex: 5, label: "轻压练习", tileCount: 96, stackDepth: 3, huPacks: 0, gangPacks: 2, orphanBudget: 2, numberSuits: ["wan", "tiao"], honorRanks: [], honorWeight: 0 },
@@ -1961,6 +2215,8 @@
         embedShell: false,
         ascensionLevel: 0,
         ascensionName: "",
+        equippedAscensionPerks: [],
+        ascensionPerkSlots: 0,
         shellSessionKey: "",
         shellBonuses: { reserve: 0, shield: 0, tool: 0 },
         mountainTuning: { ...DEFAULT_MOUNTAIN_TUNING },
@@ -1971,6 +2227,7 @@
         run: {
           slotDelta: 0,
           reserveDelta: 0,
+          riverDelta: 0,
           shieldsDelta: 0,
           coins: 0,
           tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
@@ -2039,12 +2296,16 @@
         const requestedDailySeed = String(params.get("dailySeed") ?? "").trim();
         const requestedAscensionLevel = Number.parseInt(params.get("ascensionLevel") ?? "", 10);
         const requestedAscensionName = String(params.get("ascensionName") ?? "").trim();
+        const requestedAscensionPerks = String(params.get("ascensionPerks") ?? "").trim();
+        const requestedAscensionPerkSlots = Number.parseInt(params.get("ascensionPerkSlots") ?? "", 10);
         const requestedReserveBonus = Number.parseInt(params.get("reserveBonus") ?? "", 10);
         const requestedShieldBonus = Number.parseInt(params.get("shieldBonus") ?? "", 10);
         const requestedToolBonus = Number.parseInt(params.get("toolBonus") ?? "", 10);
 
         model.ascensionLevel = 0;
         model.ascensionName = "";
+        model.equippedAscensionPerks = [];
+        model.ascensionPerkSlots = 0;
 
         if (PROTOTYPE_VIEW_MODES.has(requestedView)) {
           model.prototypeView = requestedView;
@@ -2063,8 +2324,15 @@
         } else if (requestedMode === "ascension") {
           model.runMode = "mainline";
           model.mode = "mountain";
-          model.ascensionLevel = Number.isNaN(requestedAscensionLevel) ? 1 : Math.max(1, Math.min(2, requestedAscensionLevel));
-          model.ascensionName = requestedAscensionName || (model.ascensionLevel >= 2 ? "南风场" : "东风场");
+          model.ascensionLevel = Number.isNaN(requestedAscensionLevel) ? 1 : Math.max(1, Math.min(4, requestedAscensionLevel));
+          model.ascensionName = requestedAscensionName
+            || ({ 1: "东风场", 2: "南风场", 3: "西风场", 4: "北风场" }[model.ascensionLevel] ?? "东风场");
+          model.ascensionPerkSlots = Number.isNaN(requestedAscensionPerkSlots)
+            ? (ASCENSION_CONFIGS[model.ascensionLevel]?.ascensionPerkSlots ?? 1)
+            : Math.max(0, requestedAscensionPerkSlots);
+          model.equippedAscensionPerks = requestedAscensionPerks
+            ? requestedAscensionPerks.split(",").map((item) => item.trim()).filter((item) => Boolean(ASCENSION_PERK_POOL[item]))
+            : [];
         } else if (requestedMode === "mountain" || requestedMode === "config") {
           model.mode = requestedMode;
         }
@@ -2238,6 +2506,196 @@
         return ASCENSION_CONFIGS[level] ?? null;
       }
 
+      function getAscensionPerkPool() {
+        return model.equippedAscensionPerks
+          .map((perkId) => ASCENSION_PERK_POOL[perkId])
+          .filter(Boolean);
+      }
+
+      function getAscensionRewardPool(level = model.ascensionLevel) {
+        const basePool = [
+          ...(ASCENSION_REWARD_POOL[level] ?? []),
+          ...(ASCENSION_TIER_REWARD_BONUSES[level] ?? []),
+        ];
+        const perkIds = [...model.equippedAscensionPerks].sort();
+        for (const perkId of perkIds) {
+          basePool.push(...(ASCENSION_BUILD_REWARD_BONUSES[perkId] ?? []));
+        }
+        const comboKey = perkIds.join("+");
+        if (comboKey) {
+          basePool.push(...(ASCENSION_BUILD_REWARD_BONUSES[comboKey] ?? []));
+        }
+        return [...new Set(basePool)];
+      }
+
+      function getAscensionBuildProfile() {
+        if (!isAscensionMode()) return null;
+        const perkIds = [...model.equippedAscensionPerks].sort();
+        const comboKey = perkIds.join("+");
+        if (comboKey === "late-flare+seal-table") {
+          return { name: "封终流", detail: "偏封盘护符和终局胡流爆发。" };
+        }
+        if (comboKey === "deadwall-cache+seal-table") {
+          return { name: "封尾流", detail: "偏封盘护符、牌尾整理和残局闭门。" };
+        }
+        if (comboKey === "late-flare+trial-sight") {
+          return { name: "试火流", detail: "偏试炼预判和终局胡流点火。" };
+        }
+        if (comboKey === "deadwall-cache+late-flare") {
+          return { name: "迟尾流", detail: "偏牌尾整理和终局迟火翻盘。" };
+        }
+        if (comboKey === "deadwall-cache+trial-sight") {
+          return { name: "收官流", detail: "偏牌尾整理、残局收刀和试炼收官。" };
+        }
+        if (comboKey === "kong-engine+river-sense") {
+          return { name: "河杠流", detail: "偏弃牌找节奏，再靠杠流爆发收场。" };
+        }
+        if (comboKey === "reserve-flow+storm-guard") {
+          return { name: "救场流", detail: "偏护符、备用位和保命铜钱。" };
+        }
+        if (comboKey === "lucky-route+steady-hand") {
+          return { name: "顺手胡流", detail: "偏撤回、胡流和路线滚雪球。" };
+        }
+        if (perkIds.includes("kong-engine")) {
+          return { name: "杠流", detail: "偏杠流爆发和后半程提速。" };
+        }
+        if (perkIds.includes("trial-sight")) {
+          return { name: "试炼流", detail: "偏看山、目标预判和试炼节奏。" };
+        }
+        if (perkIds.includes("deadwall-cache")) {
+          return { name: "牌尾流", detail: "偏牌尾整理和残局收束。" };
+        }
+        if (perkIds.includes("seal-table")) {
+          return { name: "封盘流", detail: "偏护符和封台压力。" };
+        }
+        if (perkIds.includes("late-flare")) {
+          return { name: "迟火流", detail: "偏终局胡流和后半程爆发。" };
+        }
+        if (perkIds.includes("river-sense")) {
+          return { name: "河控流", detail: "偏弃牌找节奏和牌河换气。" };
+        }
+        if (perkIds.includes("storm-guard") || perkIds.includes("reserve-flow")) {
+          return { name: "稳压流", detail: "偏容错和续航。" };
+        }
+        if (perkIds.includes("lucky-route")) {
+          return { name: "路线流", detail: "偏胡流和高阶奖励连锁。" };
+        }
+        if (perkIds.includes("steady-hand")) {
+          return { name: "稳手流", detail: "偏撤回和局面修正。" };
+        }
+        return { name: "白板流", detail: "只吃基础高阶压力。" };
+      }
+
+      function getAscensionBuildFocus() {
+        const buildProfile = getAscensionBuildProfile();
+        if (!buildProfile) return null;
+        const focusMap = {
+          "河杠流": {
+            featuredCombos: ["gang", "peng"],
+            extraBossGoals: [{ type: "combo_count", combo: "gang", target: 2 }],
+            summary: "主攻 杠/碰，靠牌河换气后爆发。",
+          },
+          "收官流": {
+            featuredCombos: ["hu", "peng"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 1 }],
+            summary: "主攻 胡/碰，靠牌尾整理后收刀。",
+          },
+          "封终流": {
+            featuredCombos: ["hu", "gang"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 2 }],
+            summary: "主攻 胡/杠，靠封盘护符顶住北风终局。",
+          },
+          "封尾流": {
+            featuredCombos: ["peng", "chi"],
+            extraBossGoals: [{ type: "combo_count", combo: "peng", target: 2 }],
+            summary: "主攻 碰/吃，靠封盘护符把残局闭门。",
+          },
+          "试火流": {
+            featuredCombos: ["hu", "chi"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 2 }],
+            summary: "主攻 胡/吃，先看目标再迟火点燃。",
+          },
+          "迟尾流": {
+            featuredCombos: ["hu", "peng"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 1 }],
+            summary: "主攻 胡/碰，靠牌尾整理拖到终局翻盘。",
+          },
+          "救场流": {
+            featuredCombos: ["peng", "gang"],
+            extraBossGoals: [{ type: "combo_count", combo: "peng", target: 2 }],
+            summary: "主攻 碰/杠，靠稳压把局拖住。",
+          },
+          "顺手胡流": {
+            featuredCombos: ["hu", "chi"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 1 }],
+            summary: "主攻 胡，靠路线奖励滚雪球。",
+          },
+          "稳压流": {
+            featuredCombos: ["peng", "gang"],
+            extraBossGoals: [{ type: "combo_count", combo: "gang", target: 1 }],
+            summary: "主攻 碰/杠，优先保命和续航。",
+          },
+          "路线流": {
+            featuredCombos: ["hu", "gang"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 1 }],
+            summary: "主攻 胡/杠，吃高阶奖励连锁。",
+          },
+          "稳手流": {
+            featuredCombos: ["chi", "peng"],
+            extraBossGoals: [{ type: "combo_count", combo: "peng", target: 1 }],
+            summary: "主攻 吃/碰，靠撤回修节奏。",
+          },
+          "杠流": {
+            featuredCombos: ["gang", "hu"],
+            extraBossGoals: [{ type: "combo_count", combo: "gang", target: 2 }],
+            summary: "主攻 杠，靠后半程爆发收场。",
+          },
+          "试炼流": {
+            featuredCombos: ["hu", "chi"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 1 }],
+            summary: "主攻 胡/吃，靠看山和试炼节奏接目标。",
+          },
+          "牌尾流": {
+            featuredCombos: ["peng", "chi"],
+            extraBossGoals: [{ type: "combo_count", combo: "peng", target: 1 }],
+            summary: "主攻 碰/吃，靠牌尾整理把残局收住。",
+          },
+          "封盘流": {
+            featuredCombos: ["gang", "peng"],
+            extraBossGoals: [{ type: "combo_count", combo: "gang", target: 1 }],
+            summary: "主攻 碰/杠，靠护符顶住封盘压力。",
+          },
+          "迟火流": {
+            featuredCombos: ["hu", "gang"],
+            extraBossGoals: [{ type: "combo_count", combo: "hu", target: 1 }],
+            summary: "主攻 胡/杠，后半程会越打越热。",
+          },
+          "河控流": {
+            featuredCombos: ["peng", "chi"],
+            extraBossGoals: [{ type: "combo_count", combo: "peng", target: 1 }],
+            summary: "主攻 碰/吃，靠牌河腾挪找节奏。",
+          },
+          "白板流": {
+            featuredCombos: ["peng"],
+            extraBossGoals: [],
+            summary: "主攻 碰，先把基础压力吃熟。",
+          },
+        };
+        return focusMap[buildProfile.name] ?? null;
+      }
+
+      function getAscensionPerkSummaryText() {
+        if (!isAscensionMode()) return "";
+        if (model.equippedAscensionPerks.length === 0) return "高阶能力：未装备";
+        const labels = getAscensionPerkPool().map((perk) => perk.label);
+        const buildProfile = getAscensionBuildProfile();
+        return `高阶能力：${labels.join(" / ")}${buildProfile ? ` · 构筑 ${buildProfile.name}` : ""}`;
+      }
+
+      function isAscensionRewardId(rewardId) {
+        return rewardId.startsWith("ascension_");
+      }
+
       function getPlayableLevelCount() {
         if (isEndlessMode() || isDailyMode()) return model.levelsConfig.levels.length;
         return isFriendDemoMode()
@@ -2251,6 +2709,16 @@
       }
 
       function getSpecialEventForLevel(levelIndex) {
+        if (isAscensionMode()) {
+          const buildProfile = getAscensionBuildProfile();
+          const ascensionEvent = buildProfile ? ASCENSION_SPECIAL_EVENT_POOL[buildProfile.name] : null;
+          const tierEvent = ASCENSION_TIER_EVENT_POOL[model.ascensionLevel] ?? null;
+          if (tierEvent && levelIndex % 2 === 0) return tierEvent;
+          if (ascensionEvent) return ascensionEvent;
+          if (buildProfile?.name === "河控流") return SPECIAL_EVENT_POOL[1] ?? null;
+          if (buildProfile?.name === "稳手流") return SPECIAL_EVENT_POOL[0] ?? null;
+          if (buildProfile?.name === "稳压流") return SPECIAL_EVENT_POOL[3] ?? null;
+        }
         const triggerIndex = SPECIAL_EVENT_TRIGGER_LEVELS.indexOf(levelIndex);
         if (triggerIndex < 0) return null;
         return SPECIAL_EVENT_POOL[triggerIndex % SPECIAL_EVENT_POOL.length] ?? null;
@@ -2308,7 +2776,8 @@
       function chooseSpecialEventOption(eventId, optionId) {
         const event = model.run.pendingSpecialEvent?.id === eventId
           ? model.run.pendingSpecialEvent
-          : SPECIAL_EVENT_POOL.find((item) => item.id === eventId);
+          : SPECIAL_EVENT_POOL.find((item) => item.id === eventId)
+            ?? Object.values(ASCENSION_SPECIAL_EVENT_POOL).find((item) => item.id === eventId);
         if (!event) return;
         const option = event.options.find((item) => item.id === optionId);
         if (!option) return;
@@ -2330,6 +2799,26 @@
 
         if (effect.type === "tool") {
           model.run.tools[effect.tool] = Math.max(0, (model.run.tools[effect.tool] ?? 0) + effect.amount);
+          return `${eventTitle}：${optionLabel}`;
+        }
+
+        if (effect.type === "comboBonus") {
+          model.run.bonuses[effect.combo] = (model.run.bonuses[effect.combo] ?? 0) + effect.amount;
+          return `${eventTitle}：${effect.label ?? optionLabel}`;
+        }
+
+        if (effect.type === "shield") {
+          model.run.shieldsDelta += effect.amount;
+          return `${eventTitle}：${optionLabel}`;
+        }
+
+        if (effect.type === "reserve") {
+          model.run.reserveDelta += effect.amount;
+          return `${eventTitle}：${optionLabel}`;
+        }
+
+        if (effect.type === "river") {
+          model.run.riverDelta = (model.run.riverDelta ?? 0) + effect.amount;
           return `${eventTitle}：${optionLabel}`;
         }
 
@@ -2372,6 +2861,18 @@
           const toolLabel = FRIEND_DEMO_TOOLS.find((tool) => tool.key === effect.tool)?.label ?? effect.tool;
           return `立即补充 ${effect.amount} 次${toolLabel}。`;
         }
+        if (effect.type === "comboBonus") {
+          return `下一关 ${TYPE_LABELS[effect.combo]} 额外 +${effect.amount} 分。`;
+        }
+        if (effect.type === "shield") {
+          return `立即补充 ${effect.amount} 次护符。`;
+        }
+        if (effect.type === "reserve") {
+          return `下一关备用位 +${effect.amount}。`;
+        }
+        if (effect.type === "river") {
+          return `下一关牌河上限 +${effect.amount}。`;
+        }
         if (effect.type === "modifier") {
           return `下一关带入「${effect.modifier.label}」，通关奖励 +${effect.modifier.rewardCoins ?? 0} 铜钱。`;
         }
@@ -2395,13 +2896,28 @@
       function getAscensionDifficultyProfile(levelIndex = model.levelIndex) {
         if (!isAscensionMode()) return null;
         const ascension = getAscensionConfig();
+        const ascensionBaseLevelIndex = Math.min(
+          FRIEND_DEMO_DIFFICULTY_PROFILES[FRIEND_DEMO_DIFFICULTY_PROFILES.length - 1]?.levelIndex ?? levelIndex,
+          levelIndex + 4,
+        );
         const baseProfile =
-          FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === levelIndex)
+          FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === ascensionBaseLevelIndex)
           ?? FRIEND_DEMO_DIFFICULTY_PROFILES[FRIEND_DEMO_DIFFICULTY_PROFILES.length - 1];
         if (!ascension || !baseProfile) return null;
+        const ascensionLabels = [
+          "压场起手",
+          "连压试探",
+          "高阶换气",
+          "风场上桌",
+          "紧局成型",
+          "高压接力",
+          "风压转折",
+          "连战门前",
+          "周目决战",
+        ];
         return {
           ...baseProfile,
-          label: `${ascension.name} · 高阶周目`,
+          label: `${ascension.name} · ${ascensionLabels[Math.max(0, Math.min(ascensionLabels.length - 1, levelIndex - 4))] ?? "高阶周目"}`,
           tileCount: Math.min(MOUNTAIN_TILE_COUNT_RANGE.max, (baseProfile.tileCount ?? 240) + ascension.extraTileCount),
           stackDepth: Math.min(6, (baseProfile.stackDepth ?? 5) + (ascension.level >= 2 ? 1 : 0)),
           huPacks: Math.min(3, (baseProfile.huPacks ?? 0) + (ascension.level >= 2 ? 1 : 0)),
@@ -2549,7 +3065,11 @@
           if (dayNumber <= 4) return ["peng"];
           return ["chi"];
         }
-        const tutorialCombo = FRIEND_DEMO_TUTORIAL_COMBOS[levelIndex];
+        if (isAscensionMode()) {
+          const buildFocus = getAscensionBuildFocus();
+          if (buildFocus?.featuredCombos?.length) return buildFocus.featuredCombos;
+        }
+        const tutorialCombo = !isAscensionMode() ? FRIEND_DEMO_TUTORIAL_COMBOS[levelIndex] : null;
         if (tutorialCombo) return [tutorialCombo];
         return model.levelsConfig.levels[levelIndex]?.featuredCombos ?? [];
       }
@@ -2565,10 +3085,11 @@
             ?? FRIEND_DEMO_ROUTE_REWARD_POOLS[(hashText(model.run.dailySeed || "daily") + levelIndex) % FRIEND_DEMO_ROUTE_REWARD_POOLS.length]
             ?? (model.levelsConfig.levels[levelIndex]?.rewardPool ?? []);
         }
-        if (levelIndex === 2) return [FRIEND_DEMO_FIRST_REWARD_ID];
+        if (!isAscensionMode() && levelIndex === 2) return [FRIEND_DEMO_FIRST_REWARD_ID];
         if (FRIEND_DEMO_ROUTE_REWARD_POOLS[levelIndex]) return FRIEND_DEMO_ROUTE_REWARD_POOLS[levelIndex];
         const rewardPool = model.levelsConfig.levels[levelIndex]?.rewardPool ?? [];
-        return rewardPool.map((rewardId) => rewardId === "vision_plus_1" ? FRIEND_DEMO_DISCARD_REWARD_ID : rewardId);
+        const normalized = rewardPool.map((rewardId) => rewardId === "vision_plus_1" ? FRIEND_DEMO_DISCARD_REWARD_ID : rewardId);
+        return isAscensionMode() ? [...normalized, ...getAscensionRewardPool()] : normalized;
       }
 
       function createFriendDemoFixedReward() {
@@ -2589,6 +3110,251 @@
           description: "获得 1 次丢弃卡槽末尾牌的机会。",
           effects: [{ type: "tool_delta", tool: "discard", value: 1 }],
         };
+      }
+
+      function createAscensionReward(rewardId) {
+        const rewardMap = {
+          ascension_reserve_plus_1: {
+            id: "ascension_reserve_plus_1",
+            name: "高阶能力：余槽 +1",
+            category: "rescue",
+            description: "高阶奖励，备用位再加 1。",
+            effects: [{ type: "reserve_limit_delta", value: 1 }],
+          },
+          ascension_undo_plus_1: {
+            id: "ascension_undo_plus_1",
+            name: "高阶能力：撤回 +1",
+            category: "tool",
+            description: "高阶能力补给，立刻获得 1 次撤回。",
+            effects: [{ type: "tool_delta", tool: "undo", value: 1 }],
+          },
+          ascension_hu_score_plus_12: {
+            id: "ascension_hu_score_plus_12",
+            name: "高阶奖励：胡流 +12",
+            category: "hu",
+            description: "高阶奖励，让胡流继续滚起来。",
+            effects: [{ type: "combo_score_bonus", combo: "hu", value: 12 }],
+          },
+          ascension_shield_plus_1: {
+            id: "ascension_shield_plus_1",
+            name: "高阶能力：风盾 +1",
+            category: "rescue",
+            description: "高阶奖励，补 1 次护符。",
+            effects: [{ type: "shield_delta", value: 1 }],
+          },
+          ascension_gang_score_plus_18: {
+            id: "ascension_gang_score_plus_18",
+            name: "高阶奖励：杠流 +18",
+            category: "gang",
+            description: "高阶奖励，杠流抬高一档分数。",
+            effects: [{ type: "combo_score_bonus", combo: "gang", value: 18 }],
+          },
+          ascension_slot_plus_1: {
+            id: "ascension_slot_plus_1",
+            name: "高阶能力：卡槽 +1",
+            category: "slot",
+            description: "高阶能力让主槽再扩 1 格。",
+            effects: [{ type: "slot_limit_delta", value: 1 }],
+          },
+          ascension_coin_plus_40: {
+            id: "ascension_coin_plus_40",
+            name: "高阶奖励：铜钱 +40",
+            category: "economy",
+            description: "高阶奖励补一笔铜钱，缓一口气。",
+            effects: [{ type: "coin_delta", value: 40 }],
+          },
+          ascension_river_plus_1: {
+            id: "ascension_river_plus_1",
+            name: "高阶能力：牌河 +1",
+            category: "rescue",
+            description: "高阶能力让牌河再多 1 格。",
+            effects: [{ type: "river_limit_delta", value: 1 }],
+          },
+          ascension_discard_plus_1: {
+            id: "ascension_discard_plus_1",
+            name: "高阶奖励：丢弃 +1",
+            category: "tool",
+            description: "高阶奖励补 1 次丢弃，给河控流更多换气空间。",
+            effects: [{ type: "tool_delta", tool: "discard", value: 1 }],
+          },
+          ascension_vision_plus_1: {
+            id: "ascension_vision_plus_1",
+            name: "高阶奖励：看山 +1",
+            category: "info",
+            description: "高阶奖励补 1 次看山，方便提早接目标。",
+            effects: [{ type: "tool_delta", tool: "vision", value: 1 }],
+          },
+          ascension_kong_chain_plus_1: {
+            id: "ascension_kong_chain_plus_1",
+            name: "高阶奖励：杠连动",
+            category: "gang",
+            description: "高阶奖励让杠流再抬一档。",
+            effects: [{ type: "combo_score_bonus", combo: "gang", value: 12 }],
+          },
+          ascension_hu_finisher_plus_1: {
+            id: "ascension_hu_finisher_plus_1",
+            name: "高阶奖励：胡收尾",
+            category: "hu",
+            description: "高阶奖励让胡流终结分更高。",
+            effects: [{ type: "combo_score_bonus", combo: "hu", value: 10 }],
+          },
+          ascension_route_mix_plus_1: {
+            id: "ascension_route_mix_plus_1",
+            name: "高阶构筑：顺手转路",
+            category: "info",
+            description: "构筑奖励，补 1 次撤回并给胡流再抬一档。",
+            effects: [
+              { type: "tool_delta", tool: "undo", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 8 },
+            ],
+          },
+          ascension_rescue_coin_plus_30: {
+            id: "ascension_rescue_coin_plus_30",
+            name: "高阶构筑：稳压补给",
+            category: "rescue",
+            description: "构筑奖励，护符路线额外补 30 铜钱。",
+            effects: [{ type: "coin_delta", value: 30 }],
+          },
+          ascension_kong_river_mix_plus_1: {
+            id: "ascension_kong_river_mix_plus_1",
+            name: "高阶构筑：河杠连锁",
+            category: "gang",
+            description: "构筑奖励，牌河 +1 且杠流继续提速。",
+            effects: [
+              { type: "river_limit_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "gang", value: 8 },
+            ],
+          },
+          ascension_deadwall_route_plus_1: {
+            id: "ascension_deadwall_route_plus_1",
+            name: "高阶奖励：牌尾转路",
+            category: "tool",
+            description: "高阶奖励补 1 次丢弃，并让胡流收尾更顺。",
+            effects: [
+              { type: "tool_delta", tool: "discard", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 6 },
+            ],
+          },
+          ascension_trial_finish_plus_1: {
+            id: "ascension_trial_finish_plus_1",
+            name: "高阶奖励：试炼收口",
+            category: "info",
+            description: "高阶奖励补 1 次看山，并抬高碰流收口分。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "peng", value: 8 },
+            ],
+          },
+          ascension_east_open_plus_1: {
+            id: "ascension_east_open_plus_1",
+            name: "东风奖赏：起手顺风",
+            category: "tool",
+            description: "东风场专属奖励，补 1 次撤回并让碰流更顺手。",
+            effects: [
+              { type: "tool_delta", tool: "undo", value: 1 },
+              { type: "combo_score_bonus", combo: "peng", value: 6 },
+            ],
+          },
+          ascension_south_bank_plus_1: {
+            id: "ascension_south_bank_plus_1",
+            name: "南风奖赏：偏门换气",
+            category: "rescue",
+            description: "南风场专属奖励，补 1 次丢弃并加厚容错。",
+            effects: [
+              { type: "tool_delta", tool: "discard", value: 1 },
+              { type: "reserve_limit_delta", value: 1 },
+            ],
+          },
+          ascension_west_trial_plus_1: {
+            id: "ascension_west_trial_plus_1",
+            name: "西风奖赏：试炼压线",
+            category: "info",
+            description: "西风场专属奖励，补 1 次看山并抬高胡流目标收益。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 10 },
+            ],
+          },
+          ascension_north_finisher_plus_1: {
+            id: "ascension_north_finisher_plus_1",
+            name: "北风奖赏：封台收刀",
+            category: "gang",
+            description: "北风场专属奖励，让牌尾、牌河和杠流一起抬一档。",
+            effects: [
+              { type: "river_limit_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "gang", value: 10 },
+            ],
+          },
+          ascension_north_guard_plus_1: {
+            id: "ascension_north_guard_plus_1",
+            name: "北风能力：封盘护符",
+            category: "rescue",
+            description: "北风场能力奖励，额外补 1 次护符并给杠流一点终局空间。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "gang", value: 6 },
+            ],
+          },
+          ascension_late_flare_plus_1: {
+            id: "ascension_late_flare_plus_1",
+            name: "北风能力：迟火翻局",
+            category: "hu",
+            description: "北风场能力奖励，让胡流后半程继续加温。",
+            effects: [{ type: "combo_score_bonus", combo: "hu", value: 14 }],
+          },
+          ascension_deadwall_trial_mix_plus_1: {
+            id: "ascension_deadwall_trial_mix_plus_1",
+            name: "高阶构筑：牌尾定锋",
+            category: "info",
+            description: "构筑奖励，让试炼流和残局收官真正接到一起。",
+            effects: [
+              { type: "tool_delta", tool: "discard", value: 1 },
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 8 },
+            ],
+          },
+          ascension_sealed_flare_mix_plus_1: {
+            id: "ascension_sealed_flare_mix_plus_1",
+            name: "高阶构筑：封终迟火",
+            category: "hu",
+            description: "北风组合奖励，护符封盘后把胡流终局爆发再抬一档。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 10 },
+            ],
+          },
+          ascension_sealed_deadwall_mix_plus_1: {
+            id: "ascension_sealed_deadwall_mix_plus_1",
+            name: "高阶构筑：封尾闭门",
+            category: "rescue",
+            description: "北风组合奖励，封盘护符接牌尾整理，把残局闭门做成一条线。",
+            effects: [
+              { type: "shield_delta", value: 1 },
+              { type: "tool_delta", tool: "discard", value: 1 },
+            ],
+          },
+          ascension_trial_flare_mix_plus_1: {
+            id: "ascension_trial_flare_mix_plus_1",
+            name: "高阶构筑：试火开锋",
+            category: "info",
+            description: "北风组合奖励，试锋先找目标缺口，迟火再把胡流点起来。",
+            effects: [
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 12 },
+            ],
+          },
+          ascension_late_deadwall_mix_plus_1: {
+            id: "ascension_late_deadwall_mix_plus_1",
+            name: "高阶构筑：迟尾燃尽",
+            category: "hu",
+            description: "北风组合奖励，牌尾拖住残局，迟火负责最后一口翻盘。",
+            effects: [
+              { type: "tool_delta", tool: "discard", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 12 },
+            ],
+          },
+        };
+        return rewardMap[rewardId] ?? null;
       }
 
       function createFriendDemoTutorialTiles(level) {
@@ -2638,7 +3404,7 @@
       }
 
       function getPlayableTilesForLevel(level, index) {
-        if (isFriendDemoMode() && getFriendDemoLevelMode(index) === "tutorial") {
+        if (isFriendDemoTutorialLevel(index)) {
           return createFriendDemoTutorialTiles(level);
         }
 
@@ -2646,12 +3412,12 @@
       }
 
       function getInitialSlotOrderForLevel(level, index) {
-        if (isFriendDemoMode() && getFriendDemoLevelMode(index) === "tutorial") return [];
+        if (isFriendDemoTutorialLevel(index)) return [];
         return model.mode === "mountain" ? [] : level.initialSlotOrder;
       }
 
       function getInitialReserveOrderForLevel(level, index) {
-        if (isFriendDemoMode() && getFriendDemoLevelMode(index) === "tutorial") return [];
+        if (isFriendDemoTutorialLevel(index)) return [];
         return model.mode === "mountain" ? [] : level.initialReserveOrder;
       }
 
@@ -2659,10 +3425,17 @@
         const baseTools = isFriendDemoMode() ? FRIEND_DEMO_DEFAULT_TOOLS : defaults.tools;
         const ascension = getAscensionConfig();
         const startToolPenalty = isAscensionMode() ? (ascension?.startToolPenalty ?? 0) : 0;
+        const ascensionPerkTools = getAscensionPerkPool().reduce(
+          (acc, perk) => {
+            if (perk.effect.type === "tool_delta") acc[perk.effect.tool] = (acc[perk.effect.tool] ?? 0) + perk.effect.value;
+            return acc;
+          },
+          { shuffle: 0, undo: 0, discard: 0, vision: 0 },
+        );
         return {
-          shuffle: Math.max(0, (baseTools.shuffle ?? 0) + (model.run.tools.shuffle ?? 0) + model.shellBonuses.tool - startToolPenalty),
-          undo: Math.max(0, (baseTools.undo ?? 0) + (model.run.tools.undo ?? 0) + model.shellBonuses.tool - startToolPenalty),
-          discard: Math.max(0, (baseTools.discard ?? 0) + (model.run.tools.discard ?? 0) + model.shellBonuses.tool - startToolPenalty),
+          shuffle: Math.max(0, (baseTools.shuffle ?? 0) + (model.run.tools.shuffle ?? 0) + model.shellBonuses.tool + (ascensionPerkTools.shuffle ?? 0) - startToolPenalty),
+          undo: Math.max(0, (baseTools.undo ?? 0) + (model.run.tools.undo ?? 0) + model.shellBonuses.tool + (ascensionPerkTools.undo ?? 0) - startToolPenalty),
+          discard: Math.max(0, (baseTools.discard ?? 0) + (model.run.tools.discard ?? 0) + model.shellBonuses.tool + (ascensionPerkTools.discard ?? 0) - startToolPenalty),
           vision: (baseTools.vision ?? 0) + (model.run.tools.vision ?? 0),
         };
       }
@@ -2691,7 +3464,10 @@
           slot: [...initialSlotOrder],
           reserve: [...initialReserveOrder],
           river: [],
-          riverLimit: DEFAULT_RIVER_LIMIT,
+          riverLimit:
+            DEFAULT_RIVER_LIMIT
+            + (model.run.riverDelta ?? 0)
+            + getAscensionPerkPool().reduce((sum, perk) => sum + (perk.effect.type === "river_limit_delta" ? perk.effect.value : 0), 0),
           discardSelecting: false,
           endgameSettlement: null,
           endgamePrimerSelecting: false,
@@ -2700,10 +3476,22 @@
           modifierRewardClaimed: false,
           bossTrialRewardClaimed: false,
           openMelds: [],
-          slotLimit: isFriendDemoMode() ? getFriendDemoSlotLimit(model.levelIndex) : clampSlotLimit(defaults.slotLimit + model.run.slotDelta),
+          slotLimit: isFriendDemoMode()
+            ? (isAscensionMode() ? FRIEND_DEMO_FULL_SLOT_LIMIT : getFriendDemoSlotLimit(model.levelIndex))
+            : clampSlotLimit(
+              defaults.slotLimit
+              + model.run.slotDelta
+              + getAscensionPerkPool().reduce((sum, perk) => sum + (perk.effect.type === "slot_limit_delta" ? perk.effect.value : 0), 0),
+            ),
           reserveLimit:
-            (isFriendDemoMode() ? 0 : defaults.reserveLimit + model.run.reserveDelta) + model.shellBonuses.reserve,
-          shields: defaults.shields + model.run.shieldsDelta + model.shellBonuses.shield,
+            (isFriendDemoMode() ? 0 : defaults.reserveLimit + model.run.reserveDelta)
+            + model.shellBonuses.reserve
+            + getAscensionPerkPool().reduce((sum, perk) => sum + (perk.effect.type === "reserve_limit_delta" ? perk.effect.value : 0), 0),
+          shields:
+            defaults.shields
+            + model.run.shieldsDelta
+            + model.shellBonuses.shield
+            + getAscensionPerkPool().reduce((sum, perk) => sum + (perk.effect.type === "shield_delta" ? perk.effect.value : 0), 0),
           firstProtect: defaults.firstProtect,
           score: 0,
           coins: model.run.coins,
@@ -2711,7 +3499,11 @@
           suitComboCounts: createEmptySuitTotals(),
           bossGoals: getActiveBossGoals(model.levelIndex),
           tools: getToolsForLevel(defaults),
-          bonuses: { ...model.run.bonuses },
+          bonuses: {
+            ...model.run.bonuses,
+            hu: (model.run.bonuses.hu ?? 0)
+              + getAscensionPerkPool().reduce((sum, perk) => sum + (perk.effect.type === "combo_score_bonus" && perk.effect.combo === "hu" ? perk.effect.value : 0), 0),
+          },
           history: [],
           looseMountainDropIndex: 0,
           visionActive: false,
@@ -2868,7 +3660,8 @@
           return `日签 ${model.run.dailySeed || "today"}`;
         }
         if (isAscensionMode()) {
-          return `周目 ${model.ascensionName || "高阶周目"}`;
+          const buildFocus = getAscensionBuildFocus();
+          return `周目 ${model.ascensionName || "高阶周目"} · 高阶能力 ${model.equippedAscensionPerks.length}/${model.ascensionPerkSlots}${buildFocus ? ` · ${buildFocus.summary}` : ""}`;
         }
         if (featuredCombos.length > 0) {
           return `重点 ${featuredCombos.map((combo) => TYPE_LABELS[combo]).join("/")}`;
@@ -5117,6 +5910,12 @@
 
       function renderPickedRewards() {
         view.pickedRewards.innerHTML = "";
+        if (isAscensionMode()) {
+          const perkPill = document.createElement("div");
+          perkPill.className = "reward-pill";
+          perkPill.textContent = getAscensionPerkSummaryText();
+          view.pickedRewards.append(perkPill);
+        }
         if (model.run.pickedRewards.length === 0) {
           const empty = document.createElement("div");
           empty.className = "reward-pill";
@@ -5129,7 +5928,9 @@
           const reward = findReward(rewardId);
           const item = document.createElement("div");
           item.className = "reward-pill";
-          item.textContent = reward ? `${reward.name} · ${getRewardRouteLabel(reward)}` : rewardId;
+          item.textContent = reward
+            ? `${isAscensionRewardId(rewardId) ? "高阶奖励 · " : ""}${reward.name} · ${getRewardRouteLabel(reward)}`
+            : rewardId;
           view.pickedRewards.append(item);
         }
       }
@@ -5586,11 +6387,17 @@
       }
 
       function showRewards() {
-        view.rewardTitle.textContent = "选择奖励";
+        view.rewardTitle.textContent = isAscensionMode() ? "选择高阶奖励" : "选择奖励";
         view.rewardGrid.innerHTML = "";
         view.rewardGrid.style.display = "grid";
         view.runComplete.classList.remove("show");
         view.runComplete.innerHTML = "";
+        if (isAscensionMode()) {
+          const summary = document.createElement("p");
+          const buildProfile = getAscensionBuildProfile();
+          summary.textContent = `${model.ascensionName || "高阶周目"} · ${getAscensionPerkSummaryText()}${buildProfile ? ` · ${buildProfile.detail}` : ""}`;
+          view.runComplete.append(summary);
+        }
         for (const rewardId of getRewardPoolForCurrentLevel()) {
           const reward = findReward(rewardId);
           if (!reward) continue;
@@ -5603,7 +6410,7 @@
           route.className = "reward-route";
           route.textContent = getRewardRouteLabel(reward);
           const desc = document.createElement("p");
-          desc.textContent = reward.description;
+          desc.textContent = isAscensionMode() ? `高阶奖励：${reward.description}` : reward.description;
           const button = document.createElement("button");
           button.className = "reward-button";
           button.type = "button";
@@ -5635,15 +6442,53 @@
           : isAscensionMode()
             ? `${bossText}${model.ascensionName || "高阶周目"} 已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`
           : `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
+        const ascensionSummary = document.createElement("p");
+        if (isAscensionMode()) {
+          const buildProfile = getAscensionBuildProfile();
+          const ascensionRewards = model.run.pickedRewards
+            .filter((rewardId) => isAscensionRewardId(rewardId))
+            .map((rewardId) => findReward(rewardId)?.name ?? rewardId);
+          ascensionSummary.textContent = `${getAscensionPerkSummaryText()}${buildProfile ? ` · ${buildProfile.detail}` : ""}${ascensionRewards.length > 0 ? ` · 高阶奖励：${ascensionRewards.join(" / ")}` : ""}`;
+        }
+        const ascensionReview = document.createElement("article");
+        if (isAscensionMode()) {
+          const buildProfile = getAscensionBuildProfile();
+          const buildFocus = getAscensionBuildFocus();
+          const ascensionRewards = (model.run.pickedRewards ?? [])
+            .filter((rewardId) => isAscensionRewardId(rewardId))
+            .map((rewardId) => findReward(rewardId)?.name ?? rewardId);
+          const spentShields = (model.state?.shields ?? 0) <= 0;
+          const lowRewardDepth = ascensionRewards.length < 2;
+          ascensionReview.className = "reward-card";
+          const reviewTitle = document.createElement("strong");
+          reviewTitle.textContent = `${model.ascensionName || "高阶周目"} 结算复盘`;
+          const reviewBuild = document.createElement("p");
+          reviewBuild.textContent = `${buildProfile?.name ?? "当前构筑"} · ${buildProfile?.detail ?? "高阶构筑继续成型中。"}`;
+          const reviewGain = document.createElement("p");
+          reviewGain.textContent = `关键收益：本轮铜钱 ${model.run.coins} · 高阶奖励 ${ascensionRewards.length} 个${buildFocus ? ` · ${buildFocus.summary}` : ""}`;
+          const reviewMiss = document.createElement("p");
+          reviewMiss.textContent = spentShields
+            ? "关键失误：虽然通关了，但护符已经见底，说明容错被压得很紧。"
+            : lowRewardDepth
+              ? "关键失误：这轮高阶奖励吃得还不够深，build 成型速度偏慢。"
+              : "关键失误：这一轮主线已经通了，但仍可以把构筑和 Boss 节奏接得更深。";
+          const reviewTips = document.createElement("p");
+          reviewTips.textContent = `下一轮建议：${getAscensionRunSuggestions().join(" ")}`;
+          ascensionReview.append(reviewTitle, reviewBuild, reviewGain, reviewMiss, reviewTips);
+        }
         const restart = document.createElement("button");
         restart.className = "reward-button";
         restart.type = "button";
         restart.textContent = "重开第一关";
         restart.addEventListener("click", () => restartRun());
-        view.runComplete.append(summary, restart);
+        view.runComplete.append(summary);
+        if (isAscensionMode()) view.runComplete.append(ascensionSummary);
+        if (isAscensionMode()) view.runComplete.append(ascensionReview);
+        view.runComplete.append(restart);
         view.rewardOverlay.classList.add("show");
         emitShellEvent("hulebu:run-complete", {
           summary: summary.textContent,
+          ascensionReview: getAscensionReviewPayload({ result: "completed" }),
         });
       }
 
@@ -5762,6 +6607,109 @@
         showLevelFailed(reason, statusMessage);
       }
 
+      function getAscensionFailureAnalysis() {
+        if (!isAscensionMode()) return null;
+        const buildProfile = getAscensionBuildProfile();
+        const buildFocus = getAscensionBuildFocus();
+        const remainingBossGoals = (model.state.bossGoals ?? []).filter((goal) => !isBossGoalItemComplete(goal));
+        const noReserveRoom = (model.state.reserve?.length ?? 0) >= (model.state.reserveLimit ?? 0);
+        const slotFull = (model.state.slot?.length ?? 0) >= (model.state.slotLimit ?? 0);
+        const shieldsSpent = (model.state.shields ?? 0) <= 0;
+        const buildName = buildProfile?.name ?? "当前构筑";
+        const preferredCombos = buildFocus?.featuredCombos ?? [];
+        const missingGoalCombos = remainingBossGoals
+          .filter((goal) => goal.type === "combo_count")
+          .map((goal) => goal.combo);
+        const missesPreferredGoal = missingGoalCombos.some((combo) => !preferredCombos.includes(combo));
+        const missingGoalText = remainingBossGoals.length > 0
+          ? remainingBossGoals.map(formatBossGoalProgress).join("，")
+          : "";
+
+        if (remainingBossGoals.length > 0) {
+          const mismatchText = missesPreferredGoal
+            ? `${buildName} 这局更偏 ${buildFocus?.summary ?? "当前路线"}，但 Boss 缺口落在 ${missingGoalText}，说明构筑方向和本关目标没有完全接上。`
+            : `${buildName} 已经接近本关路线，但目标还差 ${missingGoalText}，更像是完成度差最后一口。`;
+          return {
+            type: "目标完成度",
+            summary: `${buildName} 没有把本关目标打满。`,
+            detail: mismatchText,
+            miss: `关键失误：Boss 目标缺口还在 ${missingGoalText}。`,
+          };
+        }
+        if (slotFull && noReserveRoom && shieldsSpent) {
+          return {
+            type: "容错耗尽",
+            summary: `${buildName} 的容错已经被打空了。`,
+            detail: "这一轮更像是护符、备用位和牌河缓冲一起见底，后半程没有多余空间接失误。",
+            miss: "关键失误：没能把容错留到高压段。",
+          };
+        }
+        if (slotFull) {
+          return {
+            type: "节奏断档",
+            summary: `${buildName} 这局更像是主槽节奏断掉了。`,
+            detail: `当前构筑更偏 ${buildFocus?.summary ?? "基础节奏"}，但这一轮没能及时把它接成清槽动作。`,
+            miss: "关键失误：卡槽压力先爆了，节奏没有滚起来。",
+          };
+        }
+        return {
+          type: "构筑失配",
+          summary: `${buildName} 这局没有把高阶节奏接起来。`,
+          detail: `这套更偏 ${buildFocus?.summary ?? "当前路线"}，但这一轮的奖励、事件或收官点没有把 build 真正接实。`,
+          miss: "关键失误：构筑成型速度慢于本关压力。",
+        };
+      }
+
+      function getAscensionRunSuggestions() {
+        if (!isAscensionMode()) return [];
+        const buildProfile = getAscensionBuildProfile();
+        const buildFocus = getAscensionBuildFocus();
+        const failureAnalysis = getAscensionFailureAnalysis();
+        const suggestions = [];
+        if (failureAnalysis?.type === "容错耗尽") suggestions.push("下轮优先补护符、备用位或牌河缓冲。");
+        if (failureAnalysis?.type === "节奏断档") suggestions.push("下轮先把主攻组合接顺，再拿高阶奖励。");
+        if (failureAnalysis?.type === "目标完成度") suggestions.push("下轮先看 Boss 缺口，再决定走哪条 build。");
+        if (failureAnalysis?.type === "构筑失配") suggestions.push("下轮顺着事件和奖励把 build 尽早定型。");
+        if ((model.state?.shields ?? 0) <= 0) suggestions.push("下轮优先补护符或备用位。");
+        if ((model.run.pickedRewards ?? []).filter((rewardId) => isAscensionRewardId(rewardId)).length < 2) suggestions.push("高阶奖励拿得还不够深，可以更顺着构筑去选。");
+        if (buildFocus?.featuredCombos?.length) suggestions.push(`围绕 ${buildFocus.featuredCombos.map((combo) => TYPE_LABELS[combo]).join("/")} 去滚会更顺。`);
+        if (suggestions.length === 0) suggestions.push(`${buildProfile?.name ?? "当前构筑"} 已经比较完整，下轮重点看 Boss 偏好。`);
+        return [...new Set(suggestions)];
+      }
+
+      function getAscensionReviewPayload({ result = "completed" } = {}) {
+        if (!isAscensionMode()) return null;
+        const buildProfile = getAscensionBuildProfile();
+        const buildFocus = getAscensionBuildFocus();
+        const failureAnalysis = result === "failed" ? getAscensionFailureAnalysis() : null;
+        const ascensionRewards = (model.run.pickedRewards ?? [])
+          .filter((rewardId) => isAscensionRewardId(rewardId))
+          .map((rewardId) => findReward(rewardId)?.name ?? rewardId);
+        const lowRewardDepth = ascensionRewards.length < 2;
+        const shieldsSpent = (model.state?.shields ?? 0) <= 0;
+        const completionMiss = shieldsSpent
+          ? "关键失误：虽然通关了，但护符已经见底，说明容错被压得很紧。"
+          : lowRewardDepth
+            ? "关键失误：这轮高阶奖励吃得还不够深，build 成型速度偏慢。"
+            : "关键失误：这一轮已经通了，但 Boss 目标和构筑节奏还能继续压深。";
+        const mismatch = failureAnalysis?.detail?.includes("Boss 缺口")
+          ? "Boss 目标不匹配：当前构筑和本关目标没有完全接上。"
+          : failureAnalysis?.type === "目标完成度"
+            ? "Boss 目标不匹配：完成度差最后一口。"
+            : "";
+
+        return {
+          build: buildProfile?.name ?? "当前构筑",
+          buildDetail: buildProfile?.detail ?? "高阶构筑继续成型中。",
+          keyGain: `本轮铜钱 ${model.run.coins} · 高阶奖励 ${ascensionRewards.length} 个${buildFocus ? ` · ${buildFocus.summary}` : ""}`,
+          keyMiss: failureAnalysis?.miss ?? completionMiss,
+          nextAdvice: getAscensionRunSuggestions().join(" "),
+          failureType: failureAnalysis?.type ?? null,
+          detail: failureAnalysis?.detail ?? "",
+          mismatch,
+        };
+      }
+
       function showLevelFailed(reason, statusMessage = "本关失败") {
         const failureText = reason || "主槽已满，且当前没有可发动的组合或可用救场。";
         renderAll(statusMessage);
@@ -5773,6 +6721,23 @@
 
         const summary = document.createElement("p");
         summary.textContent = failureText;
+        const ascensionSummary = document.createElement("p");
+        const ascensionFailureAnalysis = getAscensionFailureAnalysis();
+        if (ascensionFailureAnalysis) {
+          ascensionSummary.textContent = `${getAscensionPerkSummaryText()} · ${ascensionFailureAnalysis.summary}`;
+        }
+        const ascensionAdvice = document.createElement("p");
+        if (ascensionFailureAnalysis) {
+          ascensionAdvice.textContent = `下一轮建议：${getAscensionRunSuggestions().join(" ")}`;
+        }
+        const ascensionFailureDetail = document.createElement("p");
+        if (ascensionFailureAnalysis) {
+          ascensionFailureDetail.textContent = `${ascensionFailureAnalysis.type} · ${ascensionFailureAnalysis.detail}`;
+        }
+        const ascensionFailureMiss = document.createElement("p");
+        if (ascensionFailureAnalysis) {
+          ascensionFailureMiss.textContent = ascensionFailureAnalysis.miss;
+        }
         const restart = document.createElement("button");
         restart.className = "reward-button";
         restart.type = "button";
@@ -5781,10 +6746,16 @@
           view.rewardOverlay.classList.remove("show");
           loadLevel(model.levelIndex);
         });
-        view.runComplete.append(summary, restart);
+        view.runComplete.append(summary);
+        if (ascensionFailureAnalysis) view.runComplete.append(ascensionSummary);
+        if (ascensionFailureAnalysis) view.runComplete.append(ascensionFailureDetail);
+        if (ascensionFailureAnalysis) view.runComplete.append(ascensionFailureMiss);
+        if (ascensionFailureAnalysis) view.runComplete.append(ascensionAdvice);
+        view.runComplete.append(restart);
         view.rewardOverlay.classList.add("show");
         emitShellEvent("hulebu:run-failed", {
           summary: failureText,
+          ascensionReview: getAscensionReviewPayload({ result: "failed" }),
         });
       }
 
@@ -5795,6 +6766,7 @@
             model.run.slotDelta = clampSlotLimit(baseLimit + model.run.slotDelta + effect.value) - baseLimit;
           }
           if (effect.type === "reserve_limit_delta") model.run.reserveDelta += effect.value;
+          if (effect.type === "river_limit_delta" && model.state) model.state.riverLimit = Math.max(1, (model.state.riverLimit ?? DEFAULT_RIVER_LIMIT) + effect.value);
           if (effect.type === "shield_delta") model.run.shieldsDelta += effect.value;
           if (effect.type === "coin_delta") model.run.coins = Math.max(0, model.run.coins + effect.value);
           if (effect.type === "tool_delta") model.run.tools[effect.tool] = Math.max(0, model.run.tools[effect.tool] + effect.value);
@@ -6199,14 +7171,16 @@
       }
 
       function canClearCurrentLevel() {
+        if (isAscensionMode()) return true;
         return hasCompletedFriendDemoTutorialCombo(model.levelIndex);
       }
 
       function isFriendDemoTutorialLevel(levelIndex = model.levelIndex) {
-        return isFriendDemoMode() && getFriendDemoLevelMode(levelIndex) === "tutorial";
+        return isFriendDemoMode() && !isAscensionMode() && getFriendDemoLevelMode(levelIndex) === "tutorial";
       }
 
       function getCurrentClearRequirementText() {
+        if (isAscensionMode()) return "";
         const requiredCombo = getFriendDemoTutorialRequiredCombo(model.levelIndex);
         if (!requiredCombo) return "";
         return `教学目标：请点击 ${TYPE_LABELS[requiredCombo]} 完成本关。`;
@@ -6307,15 +7281,20 @@
         if (!isBossLevel(levelIndex)) return null;
         const level = model.levelsConfig.levels[levelIndex];
         if (Array.isArray(level.bossGoals) && level.bossGoals.length > 0) {
-          return level.bossGoals;
+          return isAscensionMode()
+            ? [...level.bossGoals, ...(getAscensionBuildFocus()?.extraBossGoals ?? [])]
+            : level.bossGoals;
         }
 
         const chapter = Math.max(1, Math.ceil(level.order / 10));
-        return [
+        const baseGoals = [
           { type: "combo_count", combo: "gang", target: chapter },
           { type: "combo_count", combo: "peng", target: chapter + 1 },
           { type: "score_target", target: 100 + chapter * 20 },
         ];
+        return isAscensionMode()
+          ? [...baseGoals, ...(getAscensionBuildFocus()?.extraBossGoals ?? [])]
+          : baseGoals;
       }
 
       function getEndlessBossGoals() {
@@ -6341,6 +7320,7 @@
       function findReward(rewardId) {
         if (rewardId === FRIEND_DEMO_FIRST_REWARD_ID) return createFriendDemoFixedReward();
         if (rewardId === FRIEND_DEMO_DISCARD_REWARD_ID) return createFriendDemoDiscardReward();
+        if (rewardId.startsWith("ascension_")) return createAscensionReward(rewardId);
         return model.rewardsConfig.rewards.find((reward) => reward.id === rewardId);
       }
 

@@ -281,4 +281,5 @@
 | T173 | P1 | 胡了卜高阶周目第一版 | Lee | 待验收 | T165, T166, T167, T168, T169, T170, T171, T172 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T174 | P1 | 胡了卜账号进度续层 | Lee | 待验收 | T167, T170, T171, T172, T173 | - `apps/web/prisma/schema.prisma` | - `npm run test -w apps/web -- hulebu` |
 | T175 | P1 | 胡了卜网页版完整版路线重排和缺口拆分 | Lee | 待验收 | T165, T166, T167, T168, T169, T170, T171, T172, T173, T174, D041 | - `docs/tasks/CHANGE_INTAKE.md` | - `npm run docs:sync` |
+| T176 | P1 | 胡了卜高阶周目完整版 | Lee | 待验收 | T173, T175 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 <!-- DOCS_SYNC_TASKS_END -->

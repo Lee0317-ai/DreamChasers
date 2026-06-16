@@ -24,7 +24,28 @@ type LobbyPanel = "mainline" | "upgrades" | "collection" | "endless" | "daily" |
 type Screen = "lobby" | "playing" | "settlement";
 type SettlementResult = "completed" | "failed";
 type RunMode = "mainline" | "endless" | "daily";
-type AscensionLevel = 1 | 2;
+type AscensionLevel = 1 | 2 | 3 | 4;
+type AscensionPerkId =
+  | "steady-hand"
+  | "reserve-flow"
+  | "storm-guard"
+  | "lucky-route"
+  | "river-sense"
+  | "kong-engine"
+  | "trial-sight"
+  | "deadwall-cache"
+  | "seal-table"
+  | "late-flare";
+type AscensionReview = {
+  build?: string;
+  buildDetail?: string;
+  keyGain?: string;
+  keyMiss?: string;
+  nextAdvice?: string;
+  failureType?: string;
+  detail?: string;
+  mismatch?: string;
+};
 type AchievementId =
   | "mainline-first-clear"
   | "boss-hulebu-king"
@@ -40,6 +61,7 @@ type ActiveRun = {
   runMode: RunMode;
   ascensionLevel: AscensionLevel | null;
   ascensionName: string | null;
+  ascensionPerks: AscensionPerkId[];
   dailySeed: string | null;
   iframeSrc: string;
   latestCoins: number;
@@ -55,6 +77,7 @@ type SettlementState = {
   runMode: RunMode;
   ascensionLevel: AscensionLevel | null;
   ascensionName: string | null;
+  ascensionPerks: AscensionPerkId[];
   dailySeed: string | null;
   result: SettlementResult;
   coinsEarned: number;
@@ -65,6 +88,7 @@ type SettlementState = {
   bestDailyLevelOrder: number;
   pickedRewards: number;
   summary: string;
+  ascensionReview: AscensionReview | null;
 };
 
 type UpgradeId = "reserve" | "shield" | "tools";
@@ -79,6 +103,8 @@ type PersistedShellState = {
   achievements: Record<string, string>;
   lastSettlement: SettlementState | null;
   upgrades: UpgradeState;
+  equippedAscensionLoadout: AscensionPerkId[];
+  unlockedAscensionPerks: Partial<Record<AscensionPerkId, boolean>>;
 };
 
 type AccountProgressState = {
@@ -86,6 +112,11 @@ type AccountProgressState = {
   syncReady: boolean;
   syncError: string | null;
 };
+
+type RemoteProgressState = Pick<
+  PersistedShellState,
+  "achievements" | "bankedCoins" | "bestAscensionLevel" | "bestEndlessLayer" | "dailyBestLevels"
+>;
 
 type HulebuShellPayload = {
   sessionKey?: string;
@@ -99,6 +130,7 @@ type HulebuShellPayload = {
   endlessLayer?: number;
   pickedRewards?: number;
   summary?: string;
+  ascensionReview?: AscensionReview | null;
 };
 
 type HulebuShellMessage = {
@@ -136,6 +168,14 @@ type AscensionConfig = {
   name: string;
   description: string;
   modifiers: string[];
+  perkSlots: number;
+};
+
+type AscensionPerkConfig = {
+  id: AscensionPerkId;
+  label: string;
+  description: string;
+  unlockLevel: AscensionLevel;
 };
 
 const DEFAULT_UPGRADES: UpgradeState = {
@@ -228,12 +268,91 @@ const ASCENSION_CONFIGS: AscensionConfig[] = [
     name: "东风场",
     description: "通关后的第一档高阶轮回，先把主线打熟，再开始加压。",
     modifiers: ["奖励铜钱略减", "Boss 目标更紧", "牌山更密一点"],
+    perkSlots: 1,
   },
   {
     level: 2,
     name: "南风场",
     description: "在第一档之上再加一点限制，开始出现更明显的高阶味道。",
     modifiers: ["禁洗牌", "起始道具 -1", "高压模板更常见"],
+    perkSlots: 1,
+  },
+  {
+    level: 3,
+    name: "西风场",
+    description: "高阶配置开始真正成型，外层可装备能力会开始影响整轮手感。",
+    modifiers: ["奖励池更偏能力", "连胜压力更明显", "高压关卡更密"],
+    perkSlots: 2,
+  },
+  {
+    level: 4,
+    name: "北风场",
+    description: "完整高阶轮回，外层能力和内层奖励都会一起压到位。",
+    modifiers: ["外层能力槽上限提升", "高阶奖励池全开", "Boss 压力最大"],
+    perkSlots: 3,
+  },
+];
+
+const ASCENSION_PERKS: AscensionPerkConfig[] = [
+  {
+    id: "steady-hand",
+    label: "稳手",
+    description: "开局额外补 1 次撤回，适合稳住高阶开局。",
+    unlockLevel: 1,
+  },
+  {
+    id: "reserve-flow",
+    label: "余槽",
+    description: "起始备用位 +1，让高阶周目的容错更厚一点。",
+    unlockLevel: 2,
+  },
+  {
+    id: "storm-guard",
+    label: "风盾",
+    description: "高阶牌局里多送 1 次护符，更容易顶住终局压力。",
+    unlockLevel: 3,
+  },
+  {
+    id: "lucky-route",
+    label: "顺路",
+    description: "高阶奖励更容易拿到路线型收益，适合追 build。",
+    unlockLevel: 4,
+  },
+  {
+    id: "river-sense",
+    label: "河眼",
+    description: "更擅长处理牌河与弃牌节奏，适合稳压和救场流。",
+    unlockLevel: 3,
+  },
+  {
+    id: "kong-engine",
+    label: "杠擎",
+    description: "高阶杠流更容易成型，适合把后半程拉成爆发节奏。",
+    unlockLevel: 4,
+  },
+  {
+    id: "trial-sight",
+    label: "试锋",
+    description: "开局补 1 次看山，更容易提早接上试炼目标和信息流。",
+    unlockLevel: 3,
+  },
+  {
+    id: "deadwall-cache",
+    label: "牌尾",
+    description: "开局补 1 次丢弃，更擅长处理残局和收官节奏。",
+    unlockLevel: 4,
+  },
+  {
+    id: "seal-table",
+    label: "封盘",
+    description: "北风场额外补 1 次护符，开局更能顶住封台压力。",
+    unlockLevel: 4,
+  },
+  {
+    id: "late-flare",
+    label: "迟火",
+    description: "北风场把胡流再抬一档，更容易在终局翻成爆发。",
+    unlockLevel: 4,
   },
 ];
 
@@ -314,9 +433,180 @@ function sanitizeAchievements(achievements?: Record<string, unknown> | null) {
 
 function sanitizeAscensionLevel(value?: unknown) {
   const numeric = Number(value);
+  if (numeric >= 4) return 4;
+  if (numeric >= 3) return 3;
   if (numeric >= 2) return 2;
   if (numeric >= 1) return 1;
   return DEFAULT_ASCENSION_LEVEL;
+}
+
+function sanitizeAscensionLoadout(loadout?: unknown) {
+  if (!Array.isArray(loadout)) return [];
+  const allowed = new Set(ASCENSION_PERKS.map((perk) => perk.id));
+  return loadout.flatMap((item) => (typeof item === "string" && allowed.has(item as AscensionPerkId) ? [item as AscensionPerkId] : []));
+}
+
+function sanitizeUnlockedAscensionPerks(perks?: Record<string, unknown> | null) {
+  const allowed = new Set(ASCENSION_PERKS.map((perk) => perk.id));
+  return Object.fromEntries(
+    Object.entries(perks ?? {}).flatMap(([perkId, value]) =>
+      allowed.has(perkId as AscensionPerkId) && Boolean(value) ? [[perkId as AscensionPerkId, true] as const] : [],
+    ),
+  ) as Partial<Record<AscensionPerkId, boolean>>;
+}
+
+function getAscensionPerkSlots(level: AscensionLevel) {
+  return ASCENSION_CONFIGS.find((item) => item.level === level)?.perkSlots ?? 1;
+}
+
+function summarizeAscensionBuild(perks: AscensionPerkId[]) {
+  const perkIds = [...perks].sort().join("+");
+  if (perkIds === "late-flare+seal-table") return "封终流";
+  if (perkIds === "deadwall-cache+seal-table") return "封尾流";
+  if (perkIds === "late-flare+trial-sight") return "试火流";
+  if (perkIds === "deadwall-cache+late-flare") return "迟尾流";
+  if (perkIds === "deadwall-cache+trial-sight") return "收官流";
+  if (perkIds === "lucky-route+steady-hand") return "顺手胡流";
+  if (perkIds === "reserve-flow+storm-guard") return "救场流";
+  if (perkIds === "kong-engine+river-sense") return "河杠流";
+  if (perks.includes("seal-table")) return "封盘流";
+  if (perks.includes("late-flare")) return "迟火流";
+  if (perks.includes("trial-sight")) return "试炼流";
+  if (perks.includes("deadwall-cache")) return "牌尾流";
+  if (perks.includes("kong-engine")) return "杠流";
+  if (perks.includes("river-sense")) return "河控流";
+  if (perks.includes("lucky-route")) return "路线流";
+  if (perks.includes("storm-guard") || perks.includes("reserve-flow")) return "稳压流";
+  if (perks.includes("steady-hand")) return "稳手流";
+  return perks.length > 0 ? "混合流" : "未成型";
+}
+
+function describeAscensionBuildFocus(perks: AscensionPerkId[]) {
+  const build = summarizeAscensionBuild(perks);
+  if (build === "顺手胡流") {
+    return {
+      build,
+      keyGain: "更容易把高阶奖励滚成顺手胡节奏。",
+      nextTip: "继续追胡流和路线奖励，让后半程更顺。",
+    };
+  }
+  if (build === "救场流") {
+    return {
+      build,
+      keyGain: "容错和护符更厚，适合先撑住高压局。",
+      nextTip: "下一轮优先补奖励效率，别只堆容错。",
+    };
+  }
+  if (build === "收官流") {
+    return {
+      build,
+      keyGain: "残局整理和试炼接目标都更顺，后半段很像独立套路。",
+      nextTip: "继续追牌尾和试炼奖励链，把北风场拉成完整收官 build。",
+    };
+  }
+  if (build === "封终流") {
+    return {
+      build,
+      keyGain: "封盘护符和迟火胡流接在一起，北风场会更像最终档。",
+      nextTip: "继续追封终迟火奖励，把护符缓冲换成终局爆发。",
+    };
+  }
+  if (build === "封尾流") {
+    return {
+      build,
+      keyGain: "封盘护符和牌尾整理连在一起，失败前会多一层残局缓冲。",
+      nextTip: "继续追封尾闭门奖励，把护符保命转成牌尾收官。",
+    };
+  }
+  if (build === "试火流") {
+    return {
+      build,
+      keyGain: "试锋信息和迟火胡流叠在一起，更容易把 Boss 缺口提前看清。",
+      nextTip: "继续追试火开锋奖励，让目标预判直接变成胡流爆发。",
+    };
+  }
+  if (build === "迟尾流") {
+    return {
+      build,
+      keyGain: "牌尾整理会把迟火爆发拖到最后一口，北风场更有翻盘感。",
+      nextTip: "继续追迟尾燃尽奖励，把残局丢弃和终局胡流接起来。",
+    };
+  }
+  if (build === "封盘流") {
+    return {
+      build,
+      keyGain: "开局封盘和终局护符更厚，北风场的压力更像死斗。",
+      nextTip: "继续补牌尾或迟火，把封盘转成终结 build。",
+    };
+  }
+  if (build === "迟火流") {
+    return {
+      build,
+      keyGain: "胡流会在后半程继续加温，更适合北风场的终局收刀。",
+      nextTip: "继续补试锋或牌尾，让爆发和收官一起到位。",
+    };
+  }
+  if (build === "河杠流") {
+    return {
+      build,
+      keyGain: "牌河控制和杠爆发开始形成联动。",
+      nextTip: "继续追事件和奖励链，把河杠连锁拉满。",
+    };
+  }
+  if (build === "试炼流") {
+    return {
+      build,
+      keyGain: "更容易提早看清 Boss 压力，并把目标接进本轮节奏。",
+      nextTip: "下一轮继续补胡流或碰流收益，让试炼线别只剩信息。",
+    };
+  }
+  if (build === "牌尾流") {
+    return {
+      build,
+      keyGain: "残局整理更主动，牌尾和弃牌手感更清楚。",
+      nextTip: "可以继续补试锋，把牌尾节奏接成收官 build。",
+    };
+  }
+  if (build === "杠流") {
+    return {
+      build,
+      keyGain: "杠相关奖励更容易接成爆发段。",
+      nextTip: "下一轮尽量补河眼或容错，避免只靠爆发硬顶。",
+    };
+  }
+  if (build === "河控流") {
+    return {
+      build,
+      keyGain: "牌河和弃牌节奏更稳，残局更好收。",
+      nextTip: "可以继续补杠擎，把河控转成更强联动。",
+    };
+  }
+  if (build === "路线流") {
+    return {
+      build,
+      keyGain: "路线奖励更集中，build 分流更清楚。",
+      nextTip: "下一轮补稳手或胡流奖励，让路线别空转。",
+    };
+  }
+  if (build === "稳压流") {
+    return {
+      build,
+      keyGain: "高压关的顶压能力更强，容错不容易断。",
+      nextTip: "可以继续补输出向奖励，别让节奏只剩拖住。",
+    };
+  }
+  if (build === "稳手流") {
+    return {
+      build,
+      keyGain: "开局更稳，前几关更容易铺出安全节奏。",
+      nextTip: "下一轮补顺路或河眼，把中后段拉开。",
+    };
+  }
+  return {
+    build,
+    keyGain: "这一轮还在搭高阶骨架，构筑感刚起步。",
+    nextTip: "先把能力槽装满，再看哪条路线更顺手。",
+  };
 }
 
 function countUnlockedUpgrades(upgrades: UpgradeState) {
@@ -371,6 +661,7 @@ function buildAscensionFrameSrc(
   sessionKey: string,
   upgrades: UpgradeState,
   ascensionLevel: AscensionLevel,
+  equippedAscensionLoadout: AscensionPerkId[],
 ) {
   const ascension = ASCENSION_CONFIGS.find((item) => item.level === ascensionLevel) ?? ASCENSION_CONFIGS[0];
   const params = new URLSearchParams({
@@ -382,6 +673,8 @@ function buildAscensionFrameSrc(
     reserveBonus: String(upgrades.reserve),
     shieldBonus: String(upgrades.shield),
     toolBonus: String(upgrades.tools),
+    ascensionPerkSlots: String(ascension.perkSlots),
+    ascensionPerks: equippedAscensionLoadout.join(","),
   });
   return `${FRAME_BASE}?${params.toString()}`;
 }
@@ -407,6 +700,8 @@ function readPersistedShellState(): PersistedShellState {
       achievements: {},
       lastSettlement: null,
       upgrades: DEFAULT_UPGRADES,
+      equippedAscensionLoadout: [],
+      unlockedAscensionPerks: {},
     };
   }
 
@@ -421,17 +716,27 @@ function readPersistedShellState(): PersistedShellState {
         achievements: {},
         lastSettlement: null,
         upgrades: DEFAULT_UPGRADES,
+        equippedAscensionLoadout: [],
+        unlockedAscensionPerks: {},
       };
     }
     const parsed = JSON.parse(raw) as PersistedShellState;
+    const persistedSettlement = parsed.lastSettlement
+      ? {
+          ...parsed.lastSettlement,
+          ascensionReview: parsed.lastSettlement.ascensionReview ?? null,
+        }
+      : null;
     return {
       bankedCoins: Number.isFinite(parsed.bankedCoins) ? parsed.bankedCoins : 0,
       bestEndlessLayer: Number.isFinite(parsed.bestEndlessLayer) ? Math.max(0, parsed.bestEndlessLayer) : 0,
       bestAscensionLevel: sanitizeAscensionLevel((parsed as PersistedShellState & { bestAscensionLevel?: unknown }).bestAscensionLevel),
       dailyBestLevels: sanitizeDailyBestLevels((parsed as PersistedShellState & { dailyBestScores?: Record<string, unknown> }).dailyBestLevels ?? (parsed as PersistedShellState & { dailyBestScores?: Record<string, unknown> }).dailyBestScores),
       achievements: sanitizeAchievements((parsed as PersistedShellState & { achievements?: Record<string, unknown> }).achievements),
-      lastSettlement: parsed.lastSettlement ?? null,
+      lastSettlement: persistedSettlement,
       upgrades: sanitizeUpgrades(parsed.upgrades),
+      equippedAscensionLoadout: sanitizeAscensionLoadout((parsed as PersistedShellState & { equippedAscensionLoadout?: unknown }).equippedAscensionLoadout),
+      unlockedAscensionPerks: sanitizeUnlockedAscensionPerks((parsed as PersistedShellState & { unlockedAscensionPerks?: Record<string, unknown> }).unlockedAscensionPerks),
     };
   } catch {
     return {
@@ -442,6 +747,8 @@ function readPersistedShellState(): PersistedShellState {
       achievements: {},
       lastSettlement: null,
       upgrades: DEFAULT_UPGRADES,
+      equippedAscensionLoadout: [],
+      unlockedAscensionPerks: {},
     };
   }
 }
@@ -473,7 +780,7 @@ async function fetchAccountProgress() {
       bestAscensionLevel: sanitizeAscensionLevel(payload.bestAscensionLevel),
       bestEndlessLayer: Number.isFinite(payload.bestEndlessLayer) ? Math.max(0, Number(payload.bestEndlessLayer)) : 0,
       dailyBestLevels: sanitizeDailyBestLevels(payload.dailyBestLevels),
-    },
+    } satisfies RemoteProgressState,
   };
 }
 
@@ -514,6 +821,11 @@ export function HulebuGamePage() {
   const [activeRun, setActiveRun] = useState<ActiveRun | null>(null);
   const [lastSettlement, setLastSettlement] = useState<SettlementState | null>(null);
   const [upgrades, setUpgrades] = useState<UpgradeState>(DEFAULT_UPGRADES);
+  const [equippedAscensionLoadout, setEquippedAscensionLoadout] = useState<AscensionPerkId[]>([]);
+  const [selectedAscensionLevel, setSelectedAscensionLevel] = useState<AscensionLevel>(DEFAULT_ASCENSION_LEVEL);
+  const [unlockedAscensionPerks, setUnlockedAscensionPerks] = useState<Partial<Record<AscensionPerkId, boolean>>>({
+    "steady-hand": true,
+  });
   const [accountProgress, setAccountProgress] = useState<AccountProgressState>({
     isSignedIn: false,
     syncError: null,
@@ -525,7 +837,23 @@ export function HulebuGamePage() {
   const nextLockedAchievement = ACHIEVEMENTS.find((achievement) => !achievements[achievement.id]) ?? null;
   const highestUnlockedAscension = bestAscensionLevel;
   const currentAscensionConfig = ASCENSION_CONFIGS.find((item) => item.level === highestUnlockedAscension) ?? ASCENSION_CONFIGS[0];
-  const nextAscensionUnlock = highestUnlockedAscension >= 2 ? 2 : ((highestUnlockedAscension + 1) as AscensionLevel);
+  const selectedAscensionConfig = ASCENSION_CONFIGS.find((item) => item.level === selectedAscensionLevel) ?? ASCENSION_CONFIGS[0];
+  const nextAscensionUnlock = highestUnlockedAscension >= 4 ? 4 : ((highestUnlockedAscension + 1) as AscensionLevel);
+  const ascensionPerkSlots = getAscensionPerkSlots(highestUnlockedAscension);
+  const selectedAscensionPerkSlots = getAscensionPerkSlots(selectedAscensionLevel);
+  const ascensionPerks = ASCENSION_PERKS.map((perk) => ({
+    ...perk,
+    isUnlocked: perk.unlockLevel <= highestUnlockedAscension || Boolean(unlockedAscensionPerks[perk.id]),
+    isEquipped: equippedAscensionLoadout.includes(perk.id),
+  }));
+  const ascensionBuildSummary = useMemo(
+    () => summarizeAscensionBuild(equippedAscensionLoadout),
+    [equippedAscensionLoadout],
+  );
+  const ascensionBuildFocus = useMemo(
+    () => describeAscensionBuildFocus(equippedAscensionLoadout),
+    [equippedAscensionLoadout],
+  );
 
   useEffect(() => {
     const persisted = readPersistedShellState();
@@ -547,6 +875,14 @@ export function HulebuGamePage() {
     );
     setLastSettlement(persisted.lastSettlement);
     setUpgrades(persisted.upgrades);
+    setEquippedAscensionLoadout(persisted.equippedAscensionLoadout.slice(0, getAscensionPerkSlots(persisted.bestAscensionLevel)));
+    setSelectedAscensionLevel(persisted.bestAscensionLevel);
+    setUnlockedAscensionPerks({
+      ...persisted.unlockedAscensionPerks,
+      ...Object.fromEntries(
+        ASCENSION_PERKS.filter((perk) => perk.unlockLevel <= persisted.bestAscensionLevel).map((perk) => [perk.id, true] as const),
+      ),
+    });
     setHydrated(true);
   }, []);
 
@@ -592,8 +928,15 @@ export function HulebuGamePage() {
         setBankedCoins(mergedBankedCoins);
         setBestEndlessLayer(mergedBestEndless);
         setBestAscensionLevel(mergedBestAscension);
+        setSelectedAscensionLevel(mergedBestAscension);
         setDailyBestLevels(mergedDailyBestLevels);
         setAchievements((current) => mergeAchievementMap(mergedAchievements, current));
+        setUnlockedAscensionPerks((current) => ({
+          ...current,
+          ...Object.fromEntries(
+            ASCENSION_PERKS.filter((perk) => perk.unlockLevel <= mergedBestAscension).map((perk) => [perk.id, true] as const),
+          ),
+        }));
         setAccountProgress({
           isSignedIn: true,
           syncError: null,
@@ -625,6 +968,8 @@ export function HulebuGamePage() {
       achievements,
       lastSettlement,
       upgrades,
+      equippedAscensionLoadout,
+      unlockedAscensionPerks,
     };
     writePersistedShellState(state);
 
@@ -650,17 +995,20 @@ export function HulebuGamePage() {
     hydrated,
     lastSettlement,
     upgrades,
+    equippedAscensionLoadout,
+    unlockedAscensionPerks,
   ]);
 
   const startRun = useCallback(() => {
     const sessionKey = createSessionKey();
-    setActiveRun({
-      sessionKey,
-      runMode: "mainline",
-      ascensionLevel: null,
-      ascensionName: null,
-      dailySeed: null,
-      iframeSrc: buildRunFrameSrc(sessionKey, upgrades),
+      setActiveRun({
+        sessionKey,
+        runMode: "mainline",
+        ascensionLevel: null,
+        ascensionName: null,
+        ascensionPerks: [],
+        dailySeed: null,
+        iframeSrc: buildRunFrameSrc(sessionKey, upgrades),
       latestCoins: 0,
       latestScore: 0,
       latestLevelOrder: 1,
@@ -674,13 +1022,14 @@ export function HulebuGamePage() {
 
   const startEndlessRun = useCallback(() => {
     const sessionKey = createSessionKey();
-    setActiveRun({
-      sessionKey,
-      runMode: "endless",
-      ascensionLevel: null,
-      ascensionName: null,
-      dailySeed: null,
-      iframeSrc: buildEndlessFrameSrc(sessionKey, upgrades),
+      setActiveRun({
+        sessionKey,
+        runMode: "endless",
+        ascensionLevel: null,
+        ascensionName: null,
+        ascensionPerks: [],
+        dailySeed: null,
+        iframeSrc: buildEndlessFrameSrc(sessionKey, upgrades),
       latestCoins: 0,
       latestScore: 0,
       latestLevelOrder: ENDLESS_START_LAYER,
@@ -694,13 +1043,14 @@ export function HulebuGamePage() {
 
   const startDailyRun = useCallback(() => {
     const sessionKey = createSessionKey();
-    setActiveRun({
-      sessionKey,
-      runMode: "daily",
-      ascensionLevel: null,
-      ascensionName: null,
-      dailySeed: todayDailySeed,
-      iframeSrc: buildDailyFrameSrc(sessionKey, upgrades, todayDailySeed),
+      setActiveRun({
+        sessionKey,
+        runMode: "daily",
+        ascensionLevel: null,
+        ascensionName: null,
+        ascensionPerks: [],
+        dailySeed: todayDailySeed,
+        iframeSrc: buildDailyFrameSrc(sessionKey, upgrades, todayDailySeed),
       latestCoins: 0,
       latestScore: 0,
       latestLevelOrder: 1,
@@ -716,13 +1066,15 @@ export function HulebuGamePage() {
     (ascensionLevel: AscensionLevel) => {
       const sessionKey = createSessionKey();
       const ascension = ASCENSION_CONFIGS.find((item) => item.level === ascensionLevel) ?? ASCENSION_CONFIGS[0];
+      const allowedLoadout = equippedAscensionLoadout.slice(0, getAscensionPerkSlots(ascensionLevel));
       setActiveRun({
         sessionKey,
         runMode: "mainline",
         ascensionLevel,
         ascensionName: ascension.name,
+        ascensionPerks: allowedLoadout,
         dailySeed: null,
-        iframeSrc: buildAscensionFrameSrc(sessionKey, upgrades, ascensionLevel),
+        iframeSrc: buildAscensionFrameSrc(sessionKey, upgrades, ascensionLevel, allowedLoadout),
         latestCoins: 0,
         latestScore: 0,
         latestLevelOrder: 1,
@@ -733,7 +1085,21 @@ export function HulebuGamePage() {
       setPanel("ascension");
       setScreen("playing");
     },
-    [upgrades],
+    [equippedAscensionLoadout, upgrades],
+  );
+
+  const toggleAscensionPerk = useCallback(
+    (perkId: AscensionPerkId) => {
+      setEquippedAscensionLoadout((current) => {
+        if (current.includes(perkId)) {
+          return current.filter((id) => id !== perkId);
+        }
+        if ((unlockedAscensionPerks[perkId] ?? false) === false) return current;
+        if (current.length >= ascensionPerkSlots) return current;
+        return [...current, perkId];
+      });
+    },
+    [ascensionPerkSlots, unlockedAscensionPerks],
   );
 
   const restartRun = useCallback(() => {
@@ -835,6 +1201,7 @@ export function HulebuGamePage() {
         runMode,
         ascensionLevel,
         ascensionName,
+        ascensionPerks: activeRun.ascensionPerks,
         dailySeed,
         result: data.type === "hulebu:run-complete" ? "completed" : "failed",
         coinsEarned,
@@ -845,12 +1212,14 @@ export function HulebuGamePage() {
         bestDailyLevelOrder: updatedBestDailyLevelOrder,
         pickedRewards: data.payload.pickedRewards ?? activeRun.pickedRewards,
         summary: data.payload.summary ?? activeRun.latestSummary,
+        ascensionReview: data.payload.ascensionReview ?? null,
       };
 
       setBankedCoins(updatedBank);
       setBestEndlessLayer(updatedBestEndlessLayer);
       if (runMode === "mainline" && ascensionLevel && data.type === "hulebu:run-complete") {
         setBestAscensionLevel((current) => (current >= nextAscensionUnlock ? current : nextAscensionUnlock));
+        setSelectedAscensionLevel((current) => (current >= nextAscensionUnlock ? current : nextAscensionUnlock));
       }
       if (runMode === "daily" && dailySeed) {
         setDailyBestLevels((current) => ({
@@ -950,16 +1319,18 @@ export function HulebuGamePage() {
       ascension: {
         eyebrow: "高阶周目",
         title: "通关之后，可以开始打更紧的轮回了",
-        description: "高阶周目第一版先开放固定周目和稳定词缀，不把完整事件扩容一次塞进来。先让通关后的长期挑战入口成立。",
+        description: "高阶配置现在会先在局外页装备好，再带进试玩页。完整版先把四档周目、能力槽和高阶奖励骨架立起来。",
         bullets: [
           `当前已解锁：${currentAscensionConfig.name}`,
-          "东风场先从轻压开始，南风场再加工具与压力限制",
-          "第一版继续复用现有 20 关主线和路线型奖励池",
+          `当前准备进入：${selectedAscensionConfig.name}`,
+          "东风场 / 南风场 / 西风场 / 北风场依次解锁",
+          "高阶能力会先在局外装备，再随本轮进入高阶奖励池",
+          "第一版继续复用现有 20 关主线，但会接入独立高阶奖励",
         ],
-        status: `已解锁到 ${currentAscensionConfig.name}`,
+        status: `已解锁到 ${currentAscensionConfig.name} · 当前选择 ${selectedAscensionConfig.name}`,
       },
     }),
-    [activeRun, bestEndlessLayer, currentAscensionConfig.name, todayBestDailyLevel, todayDailySeed, unlockedAchievementCount],
+    [activeRun, bestEndlessLayer, currentAscensionConfig.name, selectedAscensionConfig.name, todayBestDailyLevel, todayDailySeed, unlockedAchievementCount],
   );
 
   const endlessSummary = activeRun?.runMode === "endless"
@@ -984,6 +1355,14 @@ export function HulebuGamePage() {
       : lastSettlement?.result === "completed"
       ? "胡了卜王这轮已经被你打穿了。"
       : "这轮先收下已结算铜钱，回局外整顿再来。";
+  const settlementAscensionNote =
+    lastSettlement?.ascensionLevel
+      ? `${lastSettlement.ascensionName ?? "高阶周目"} · ${lastSettlement.ascensionPerks.length > 0 ? lastSettlement.ascensionPerks.join(", ") : "未装备高阶能力"}`
+      : "";
+  const settlementAscensionFocus = lastSettlement?.ascensionLevel
+    ? describeAscensionBuildFocus(lastSettlement.ascensionPerks)
+    : null;
+  const settlementAscensionReview = lastSettlement?.ascensionReview ?? null;
   const upgradeCards = UPGRADES.map((upgrade) => {
     const level = upgrades[upgrade.id];
     const nextCost = upgrade.costs[level] ?? null;
@@ -1079,6 +1458,48 @@ export function HulebuGamePage() {
                 </article>
               </div>
               <p className={styles.resultSummary}>{lastSettlement.summary}</p>
+              {settlementAscensionNote ? <p className={styles.resultSummary}>{settlementAscensionNote}</p> : null}
+              {settlementAscensionFocus ? (
+                <section className={styles.settlementReview} aria-label="高阶复盘">
+                  <div className={styles.settlementReviewGrid}>
+                    <article className={styles.settlementReviewCard}>
+                      <span>当前构筑</span>
+                      <strong>{settlementAscensionReview?.build ?? settlementAscensionFocus.build}</strong>
+                      <p>{settlementAscensionReview?.buildDetail ?? settlementAscensionFocus.keyGain}</p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>{lastSettlement.result === "failed" ? "失败归因" : "本轮高阶能力"}</span>
+                      <strong>
+                        {lastSettlement.result === "failed"
+                          ? settlementAscensionReview?.failureType ?? "构筑失配"
+                          : lastSettlement.ascensionPerks.length > 0
+                            ? lastSettlement.ascensionPerks.join(", ")
+                            : "未装备"}
+                      </strong>
+                      <p>
+                        {lastSettlement.result === "failed"
+                          ? settlementAscensionReview?.detail ?? "Boss 目标不匹配、容错耗尽或节奏断档会在这里拆开。"
+                          : "这套能力已经跟着本轮结算一起记下来了。"}
+                      </p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>关键收益</span>
+                      <strong>{settlementAscensionReview?.keyGain ?? (lastSettlement.pickedRewards > 0 ? `拿到 ${lastSettlement.pickedRewards} 个奖励` : "奖励段偏少")}</strong>
+                      <p>{lastSettlement.runMode === "endless" ? "无尽层数推进已经记下。" : lastSettlement.runMode === "daily" ? "今日牌局进度已经记下。" : "主线推进和高阶压力都已经结算。"}</p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>关键失误</span>
+                      <strong>{settlementAscensionReview?.keyMiss ?? (lastSettlement.result === "failed" ? "Boss 目标不匹配" : "仍可继续压构筑")}</strong>
+                      <p>{settlementAscensionReview?.mismatch ?? "构筑、目标完成度、容错和节奏都会在高阶失败后拆开看。"}</p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>下一轮建议</span>
+                      <strong>{settlementAscensionReview?.nextAdvice ?? settlementAscensionFocus.nextTip}</strong>
+                      <p>{lastSettlement.result === "failed" ? "这一轮更适合先补短板，再追强度。" : "这一轮已经成型，可以继续往更高压打。"}</p>
+                    </article>
+                  </div>
+                </section>
+              ) : null}
               <div className={styles.primaryActions}>
                 <button className={styles.primaryButton} type="button" onClick={restartRun}>
                   <RotateCcw size={16} strokeWidth={2.2} />
@@ -1140,14 +1561,25 @@ export function HulebuGamePage() {
                       <span>开始今日牌局</span>
                     </button>
                   ) : panel === "ascension" ? (
-                    <button
-                      className={styles.primaryButton}
-                      type="button"
-                      onClick={() => startAscensionRun(highestUnlockedAscension)}
-                    >
-                      <Lock size={16} strokeWidth={2.2} />
-                      <span>开始高阶周目</span>
-                    </button>
+                    <>
+                      <button
+                        className={styles.primaryButton}
+                        type="button"
+                        onClick={() => startAscensionRun(selectedAscensionLevel)}
+                      >
+                        <Lock size={16} strokeWidth={2.2} />
+                        <span>开始高阶周目</span>
+                      </button>
+                      <button
+                        className={styles.secondaryButton}
+                        type="button"
+                        onClick={() => startAscensionRun(nextAscensionUnlock)}
+                        disabled={nextAscensionUnlock > highestUnlockedAscension + 1 && highestUnlockedAscension < 4}
+                      >
+                        <Lock size={16} strokeWidth={2.2} />
+                        <span>预览下一档</span>
+                      </button>
+                    </>
                   ) : null}
                   <button
                     className={styles.secondaryButton}
@@ -1228,6 +1660,87 @@ export function HulebuGamePage() {
                           <div className={styles.achievementMeta}>
                             <span>{achievement.isUnlocked ? "解锁时间" : "达成提示"}</span>
                             <strong>{achievement.isUnlocked ? achievement.unlockedAt?.slice(0, 10) : achievement.hint}</strong>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+                {panel === "ascension" ? (
+                  <section className={styles.ascensionPanel} aria-label="高阶配置">
+                    <div className={styles.ascensionSummary}>
+                      <article className={styles.codexCard}>
+                        <span>高阶配置</span>
+                        <strong>{selectedAscensionConfig.name}</strong>
+                        <p>
+                          已开放 {highestUnlockedAscension}/4 档，当前选择这一档可装备 {selectedAscensionPerkSlots} 个高阶能力。
+                        </p>
+                      </article>
+                      <article className={styles.codexCard}>
+                        <span>equippedAscensionLoadout</span>
+                        <strong>{equippedAscensionLoadout.length > 0 ? equippedAscensionLoadout.join(", ") : "未装备"}</strong>
+                        <p>当前这套会在开始高阶 run 时直接写进 iframe 参数。当前构筑：{ascensionBuildSummary}。{ascensionBuildFocus.keyGain}</p>
+                      </article>
+                      <article className={styles.codexCard}>
+                        <span>unlockedAscensionPerks</span>
+                        <strong>{ascensionPerks.filter((perk) => perk.isUnlocked).length}/{ascensionPerks.length}</strong>
+                        <p>随着周目推进，更多高阶能力会加入可装备列表。</p>
+                      </article>
+                    </div>
+                    <div className={styles.ascensionConfigGrid}>
+                      {ASCENSION_CONFIGS.map((config) => (
+                        <article key={config.level} className={styles.achievementCard}>
+                          <div className={styles.achievementHead}>
+                            <span>A{config.level}</span>
+                            <strong>{config.name}</strong>
+                          </div>
+                          <p className={styles.achievementDescription}>{config.description}</p>
+                          <div className={styles.achievementMeta}>
+                            <span>能力槽</span>
+                            <strong>{config.perkSlots}</strong>
+                          </div>
+                          <button
+                            className={styles.secondaryButton}
+                            type="button"
+                            disabled={config.level > highestUnlockedAscension}
+                            onClick={() => setSelectedAscensionLevel(config.level)}
+                          >
+                            <Lock size={16} strokeWidth={2.2} />
+                            <span>{selectedAscensionLevel === config.level ? "当前周目" : config.level > highestUnlockedAscension ? "未解锁" : "选择周目"}</span>
+                          </button>
+                        </article>
+                      ))}
+                    </div>
+                    <div className={styles.ascensionPerkHeader}>
+                      <strong>高阶能力</strong>
+                      <span>ascensionPerks</span>
+                    </div>
+                    <div className={styles.ascensionConfigGrid}>
+                      {ascensionPerks.map((perk) => (
+                        <article key={perk.id} className={styles.upgradeCard}>
+                          <div className={styles.upgradeHead}>
+                            <div className={styles.upgradeTitleBlock}>
+                              <span className={styles.upgradeLabel}>{perk.label}</span>
+                              <strong className={styles.upgradeLevel}>A{perk.unlockLevel}</strong>
+                            </div>
+                            <span className={styles.upgradeEffect}>
+                              {perk.isUnlocked ? (perk.isEquipped ? "已装备" : "可装备") : "未解锁"}
+                            </span>
+                          </div>
+                          <p className={styles.upgradeDescription}>{perk.description}</p>
+                          <div className={styles.upgradeActions}>
+                            <span className={styles.upgradeCost}>
+                              {perk.isUnlocked ? "高阶能力" : `解锁于 ${ASCENSION_CONFIGS[perk.unlockLevel - 1]?.name ?? "更高周目"}`}
+                            </span>
+                            <button
+                              className={styles.secondaryButton}
+                              type="button"
+                              disabled={!perk.isUnlocked || (!perk.isEquipped && equippedAscensionLoadout.length >= selectedAscensionPerkSlots)}
+                              onClick={() => toggleAscensionPerk(perk.id)}
+                            >
+                              <Lock size={16} strokeWidth={2.2} />
+                              <span>{perk.isEquipped ? "卸下" : "装备"}</span>
+                            </button>
                           </div>
                         </article>
                       ))}
@@ -1340,11 +1853,15 @@ export function HulebuGamePage() {
                     <div className={styles.previewUpgradeList}>
                       <div className={styles.previewUpgradeRow}>
                         <span>当前周目</span>
-                        <strong>{currentAscensionConfig.name}</strong>
+                        <strong>{selectedAscensionConfig.name}</strong>
                       </div>
                       <div className={styles.previewUpgradeRow}>
                         <span>下一档</span>
-                        <strong>{highestUnlockedAscension >= 2 ? "已解锁上限" : "南风场"}</strong>
+                        <strong>{highestUnlockedAscension >= 4 ? "已解锁上限" : ASCENSION_CONFIGS[nextAscensionUnlock - 1]?.name ?? "进行中"}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>高阶能力</span>
+                        <strong>{equippedAscensionLoadout.length}/{selectedAscensionPerkSlots}</strong>
                       </div>
                     </div>
                   ) : null}

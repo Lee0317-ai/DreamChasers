@@ -262,6 +262,10 @@
 
 .codexPanel,
 .codexSummary,
+.ascensionPanel,
+.ascensionSummary,
+.ascensionConfigGrid,
+.ascensionPerkHeader,
 .codexGrid,
 .codexCard,
 .achievementCard,
@@ -275,9 +279,29 @@
   gap: 14px;
 }
 
+.ascensionPanel {
+  display: grid;
+  gap: 14px;
+}
+
 .codexSummary,
+.ascensionSummary,
+.ascensionConfigGrid,
 .codexGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ascensionPerkHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ascensionPerkHeader span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
 }
 
 .codexCard,
@@ -402,6 +426,42 @@
   gap: 10px;
 }
 
+.settlementReview,
+.settlementReviewGrid,
+.settlementReviewCard {
+  display: grid;
+  gap: 10px;
+}
+
+.settlementReviewGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settlementReviewCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(34 26 18 / 0.76);
+  padding: 14px;
+}
+
+.settlementReviewCard span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
+}
+
+.settlementReviewCard strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.settlementReviewCard p {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 .playStage {
   min-height: 100dvh;
   display: grid;
@@ -472,7 +532,10 @@
   }
 
   .codexSummary,
-  .codexGrid {
+  .ascensionSummary,
+  .ascensionConfigGrid,
+  .codexGrid,
+  .settlementReviewGrid {
     grid-template-columns: 1fr;
   }
 }

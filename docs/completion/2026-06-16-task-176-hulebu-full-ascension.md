@@ -1,0 +1,48 @@
+# 2026-06-16 Task 176 胡了卜高阶周目完整版
+
+- 任务编号：T176
+- 负责人：Lee
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T176-hulebu-full-ascension.md`
+  - `docs/tasks/claims/T176-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`
+  - `docs/modules/mahjong-roguelike/DECISIONS.md`
+  - `docs/progress/2026-06-16-lee.md`
+- 实现内容：
+  - 将高阶周目从两档扩展为四档，并在局外页新增 `高阶配置` 面板。
+  - 为高阶 run 接入局外能力槽、专属奖励、档位事件、构筑识别、失败复盘和结算复盘。
+  - 增补 `封尾流`、`试火流`、`迟尾流` 等更强差异化构筑线，以及对应专属事件和奖励链。
+  - 将高阶失败反馈拆分为 `目标完成度 / 容错耗尽 / 节奏断档 / 构筑失配`，并把结构化复盘透传到壳层结算页。
+  - 同步站内静态 Demo，补齐高阶相关文本测试与回归测试。
+- 验证命令：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run typecheck -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - `apps/web` 和 `packages/shared` 的高阶回归测试均通过。
+  - `apps/web` 类型检查通过。
+  - 两份内联脚本语法检查通过。
+  - `apps/web` 构建通过。
+  - `npm run docs:sync` 通过，已同步任务和领取摘要。
+  - `git diff --check` 通过。
+  - 内置浏览器桌面端确认 `/games/hulebu` 高阶配置面板可见，包含四档周目和新增 A4 能力。
+  - 内置浏览器 390px 移动端确认高阶配置和高阶牌桌无横向溢出，高阶第 1 关目标为 `周目 东风场`，未出现普通教程目标。
+- 遗留问题：
+  - T176 仍未覆盖 Boss 试炼第二版、特殊事件池扩容、成就图鉴扩容、无尽/每日深度化、路线奖励和局外能力深化、数值平衡和内容冻结。
+  - Cocos 和音画资源仍按 T175 路线后置。
