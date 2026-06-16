@@ -1914,12 +1914,30 @@
           description: "胡流额外 +14 分，越到终局越能翻。",
           effect: { type: "combo_score_bonus", combo: "hu", value: 14 },
         },
+        "river-lock": {
+          id: "river-lock",
+          label: "封盘护河",
+          description: "牌河上限 +1，且开局额外补 1 次丢弃。",
+          effect: { type: "river_limit_delta", value: 1 },
+        },
+        "surge-cache": {
+          id: "surge-cache",
+          label: "续战筹码",
+          description: "开局额外补 30 铜钱，适合把高阶长线拖住。",
+          effect: { type: "coin_delta", value: 30 },
+        },
+        "deadwall-buffer": {
+          id: "deadwall-buffer",
+          label: "牌尾缓冲",
+          description: "起始备用位 +1，牌尾局更容易接到下一口。",
+          effect: { type: "reserve_limit_delta", value: 1 },
+        },
       };
       const ASCENSION_REWARD_POOL = {
         1: ["ascension_reserve_plus_1"],
         2: ["ascension_undo_plus_1", "ascension_hu_score_plus_12", "ascension_river_plus_1"],
         3: ["ascension_shield_plus_1", "ascension_gang_score_plus_18", "ascension_discard_plus_1", "ascension_vision_plus_1"],
-        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1"],
+        4: ["ascension_slot_plus_1", "ascension_coin_plus_40", "ascension_kong_chain_plus_1", "ascension_hu_finisher_plus_1", "ascension_deadwall_route_plus_1", "ascension_trial_finish_plus_1", "ascension_river_lock_plus_1", "ascension_surge_cache_plus_1", "ascension_deadwall_buffer_plus_1"],
       };
       const ASCENSION_TIER_REWARD_BONUSES = {
         1: ["ascension_east_open_plus_1"],
@@ -1941,11 +1959,12 @@
         "steady-hand+lucky-route": ["ascension_route_mix_plus_1"],
         "reserve-flow+storm-guard": ["ascension_rescue_coin_plus_30"],
         "kong-engine+river-sense": ["ascension_kong_river_mix_plus_1"],
-        "deadwall-cache+trial-sight": ["ascension_deadwall_trial_mix_plus_1"],
+        "deadwall-cache+trial-sight": ["ascension_deadwall_trial_mix_plus_1", "ascension_deadwall_settle_plus_1"],
         "deadwall-cache+seal-table": ["ascension_sealed_deadwall_mix_plus_1"],
         "late-flare+trial-sight": ["ascension_trial_flare_mix_plus_1"],
         "deadwall-cache+late-flare": ["ascension_late_deadwall_mix_plus_1"],
         "late-flare+seal-table": ["ascension_sealed_flare_mix_plus_1"],
+        "steady-hand+reserve-flow": ["ascension_steady_route_mix_plus_1"],
       };
       const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
       const FRIEND_DEMO_TOOLS = [
@@ -2835,6 +2854,28 @@
         return focusMap[buildProfile.name] ?? null;
       }
 
+      function getAscensionSettlementHighlights() {
+        if (!isAscensionMode()) return [];
+        const buildProfile = getAscensionBuildProfile();
+        const buildFocus = getAscensionBuildFocus();
+        const ascensionRewards = (model.run.pickedRewards ?? [])
+          .filter((rewardId) => isAscensionRewardId(rewardId))
+          .map((rewardId) => findReward(rewardId)?.name ?? rewardId);
+        const highlightMap = {
+          "河杠流": ["高阶构筑：河杠连锁", "杠河双响"],
+          "收官流": ["高阶构筑：收官定局", "尾巡定局"],
+          "顺手胡流": ["高阶构筑：顺手成胡", "稳手成胡"],
+          "救场流": ["高阶构筑：稳压续命", "续战筹码"],
+          "封尾流": ["高阶构筑：封尾闭门", "牌尾缓冲"],
+          "试火流": ["高阶构筑：试火开锋", "试火开锋"],
+          "迟尾流": ["高阶构筑：迟尾燃尽", "迟尾燃尽"],
+          "封终流": ["高阶构筑：封终迟火", "封盘护河"],
+        };
+        const rewardNames = highlightMap[buildProfile?.name] ?? [];
+        const combined = [...rewardNames, ...ascensionRewards];
+        return [...new Set(combined)].slice(0, 3);
+      }
+
       function getAscensionPerkSummaryText() {
         if (!isAscensionMode()) return "";
         if (model.equippedAscensionPerks.length === 0) return "高阶能力：未装备";
@@ -3612,6 +3653,17 @@
               { type: "combo_score_bonus", combo: "hu", value: 8 },
             ],
           },
+          ascension_deadwall_settle_plus_1: {
+            id: "ascension_deadwall_settle_plus_1",
+            name: "高阶构筑：收官定局",
+            category: "tool",
+            description: "构筑奖励，让牌尾整理、试炼收口和残局终结真正收成一线。",
+            effects: [
+              { type: "tool_delta", tool: "discard", value: 1 },
+              { type: "tool_delta", tool: "vision", value: 1 },
+              { type: "combo_score_bonus", combo: "peng", value: 8 },
+            ],
+          },
           ascension_sealed_flare_mix_plus_1: {
             id: "ascension_sealed_flare_mix_plus_1",
             name: "高阶构筑：封终迟火",
@@ -3651,6 +3703,47 @@
               { type: "tool_delta", tool: "discard", value: 1 },
               { type: "combo_score_bonus", combo: "hu", value: 12 },
             ],
+          },
+          ascension_steady_route_mix_plus_1: {
+            id: "ascension_steady_route_mix_plus_1",
+            name: "高阶构筑：顺手成胡",
+            category: "hu",
+            description: "构筑奖励，让稳手修节奏和顺路胡流真正滚成一套线。",
+            effects: [
+              { type: "tool_delta", tool: "undo", value: 1 },
+              { type: "combo_score_bonus", combo: "hu", value: 10 },
+            ],
+          },
+          ascension_river_lock_plus_1: {
+            id: "ascension_river_lock_plus_1",
+            name: "北风能力：封盘护河",
+            category: "rescue",
+            description: "北风能力奖励，让牌河和封盘护符一起抬一档。",
+            effects: [
+              { type: "river_limit_delta", value: 1 },
+              { type: "shield_delta", value: 1 },
+            ],
+          },
+          ascension_surge_cache_plus_1: {
+            id: "ascension_surge_cache_plus_1",
+            name: "北风能力：续战筹码",
+            category: "economy",
+            description: "北风能力奖励，补 30 铜钱并继续拖长高压局的续战空间。",
+            effects: [{ type: "coin_delta", value: 30 }],
+          },
+          ascension_deadwall_buffer_plus_1: {
+            id: "ascension_deadwall_buffer_plus_1",
+            name: "北风能力：牌尾缓冲",
+            category: "rescue",
+            description: "北风能力奖励，让牌尾收官前再多一口备用缓冲。",
+            effects: [{ type: "reserve_limit_delta", value: 1 }],
+          },
+          ascension_rescue_coin_plus_30: {
+            id: "ascension_rescue_coin_plus_30",
+            name: "高阶构筑：稳压续命",
+            category: "rescue",
+            description: "构筑奖励，护符、备用位和续战铜钱终于接成完整保命线。",
+            effects: [{ type: "coin_delta", value: 30 }],
           },
         };
         return rewardMap[rewardId] ?? null;
@@ -7029,6 +7122,7 @@
           : failureAnalysis?.type === "目标完成度"
             ? "Boss 目标不匹配：完成度差最后一口。"
             : "";
+        const settlementHighlights = getAscensionSettlementHighlights();
 
         return {
           build: buildProfile?.name ?? "当前构筑",
@@ -7039,6 +7133,7 @@
           failureType: failureAnalysis?.type ?? null,
           detail: failureAnalysis?.detail ?? "",
           mismatch,
+          settlementHighlights,
         };
       }
 

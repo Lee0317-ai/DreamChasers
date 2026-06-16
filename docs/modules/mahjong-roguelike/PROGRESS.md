@@ -2,6 +2,11 @@
 
 ## 2026-06-16
 
+- 对 T176 高阶周目做了一轮后续加深补丁。
+- 原型新增更深的高阶 identity：补了 `高阶构筑：河杠连锁 / 收官定局 / 顺手成胡 / 稳压续命` 以及 `封盘护河 / 续战筹码 / 牌尾缓冲` 等北风场专属能力与奖励链。
+- 高阶结算 payload 新增 `settlementHighlights`，会把本轮更关键的高阶构筑收益收束成结构化摘要。
+- `/games/hulebu` 外层结算页把高阶复盘进一步抬成更像专属页的结构，明确显示 `构筑回顾 / 关键收益 / 关键失误 / 下一轮建议`。
+- 本轮验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`、`npm run test -w apps/web -- hulebu`、`npm run typecheck -w apps/web`、`npm run build -w apps/web`、两份 HTML inline script `node --check`、`git diff --check`。
 - 创建并完成 T180 胡了卜无尽和每日深度化。
 - HTML 原型新增 `getEndlessChapterProfile()` 和 `getDailyMutatorProfile()`，无尽第 21 层后开始按每 5 层一个章节推进，并在章节尾部挂 `章节 Boss` 信号。
 - 每日牌局第二版新增 `今日词缀 / 今日奖励 / 连续参与` 三个局外和结算信号；原型与 `/games/hulebu` 壳层都会同步显示。

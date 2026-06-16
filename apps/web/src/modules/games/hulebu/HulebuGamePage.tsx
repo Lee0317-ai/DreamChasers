@@ -45,6 +45,7 @@ type AscensionReview = {
   failureType?: string;
   detail?: string;
   mismatch?: string;
+  settlementHighlights?: string[];
 };
 type BossReview = {
   result?: SettlementResult;
@@ -1790,7 +1791,7 @@ export function HulebuGamePage() {
                 <section className={styles.settlementReview} aria-label="高阶复盘">
                   <div className={styles.settlementReviewGrid}>
                     <article className={styles.settlementReviewCard}>
-                      <span>当前构筑</span>
+                      <span>构筑回顾</span>
                       <strong>{settlementAscensionReview?.build ?? settlementAscensionFocus.build}</strong>
                       <p>{settlementAscensionReview?.buildDetail ?? settlementAscensionFocus.keyGain}</p>
                     </article>
@@ -1812,7 +1813,15 @@ export function HulebuGamePage() {
                     <article className={styles.settlementReviewCard}>
                       <span>关键收益</span>
                       <strong>{settlementAscensionReview?.keyGain ?? (lastSettlement.pickedRewards > 0 ? `拿到 ${lastSettlement.pickedRewards} 个奖励` : "奖励段偏少")}</strong>
-                      <p>{lastSettlement.runMode === "endless" ? "无尽层数推进已经记下。" : lastSettlement.runMode === "daily" ? "今日牌局进度已经记下。" : "主线推进和高阶压力都已经结算。"}</p>
+                      <p>
+                        {settlementAscensionReview?.settlementHighlights?.length
+                          ? `本轮关键收益：${settlementAscensionReview.settlementHighlights.join(" / ")}`
+                          : lastSettlement.runMode === "endless"
+                            ? "无尽层数推进已经记下。"
+                            : lastSettlement.runMode === "daily"
+                              ? "今日牌局进度已经记下。"
+                              : "主线推进和高阶压力都已经结算。"}
+                      </p>
                     </article>
                     <article className={styles.settlementReviewCard}>
                       <span>关键失误</span>
