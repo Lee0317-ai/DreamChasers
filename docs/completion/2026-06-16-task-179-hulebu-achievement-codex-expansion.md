@@ -1,0 +1,38 @@
+# 2026-06-16 T179 胡了卜成就图鉴扩容完成记录
+
+- 任务编号：T179
+- 负责人：Lee
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T179-hulebu-achievement-codex-expansion.md`
+  - `docs/tasks/claims/T179-lee.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-achievement-codex-expansion-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-achievement-codex-expansion.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/DECISIONS.md`
+  - `docs/progress/2026-06-16-lee.md`
+- 实现内容：
+  - 成就图鉴从第一版 8 张平铺卡扩成 `图鉴总览 / 分类进度 / 分组列表` 的第二版结构。
+  - 新增 Boss、事件、高阶和路线相关成就，分类覆盖 `主线碑记 / Boss 纪录 / 无尽牌山 / 每日留痕 / 局外积累 / 高阶征途 / 事件见闻 / 路线收束`。
+  - 为部分高阶 / Boss / 事件目标补了 `未揭示目标` 隐藏态，未解锁时仅显示模糊提示。
+  - 旧存档 hydration 继续复用 `bestEndlessLayer / dailyBestLevels / bestAscensionLevel / upgrades / lastSettlement / bossReview / specialEventReview` 自动补算新增成就，不新增后端字段。
+- 验证命令：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - `apps/web` 定向测试通过。
+  - `apps/web` 类型检查和生产构建通过。
+  - 文档同步通过。
+  - 待补桌面端和 390px 移动端 `/games/hulebu` 图鉴布局浏览器检查结果后即可最终验收。
+- 遗留问题：
+  - 当前仍是图鉴第二版第一轮扩容，不含事件词条库、Boss 档案页、路线收藏页或成就奖励发放。
+  - 无尽 / 每日深度化、路线奖励和局外能力深化、Web 数值冻结仍在后续任务中。

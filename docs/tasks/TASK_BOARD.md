@@ -284,4 +284,5 @@
 | T176 | P1 | 胡了卜高阶周目完整版 | Lee | 待验收 | T173, T175 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T177 | P1 | 胡了卜 Boss 试炼第二版 | Lee | 待验收 | T164, T175, T176 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T178 | P1 | 胡了卜特殊事件池扩容 | Lee | 待验收 | T163, T175, T176, T177 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T179 | P1 | 胡了卜成就图鉴扩容 | Lee | 待验收 | T172, T175, T176, T177, T178 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w apps/web -- hulebu` |
 <!-- DOCS_SYNC_TASKS_END -->

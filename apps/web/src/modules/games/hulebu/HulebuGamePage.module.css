@@ -262,6 +262,9 @@
 
 .codexPanel,
 .codexSummary,
+.codexSection,
+.codexSectionHead,
+.codexGroupGrid,
 .ascensionPanel,
 .ascensionSummary,
 .ascensionConfigGrid,
@@ -279,16 +282,34 @@
   gap: 14px;
 }
 
+.codexSection {
+  gap: 12px;
+}
+
 .ascensionPanel {
   display: grid;
   gap: 14px;
 }
 
 .codexSummary,
+.codexGroupGrid,
 .ascensionSummary,
 .ascensionConfigGrid,
 .codexGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.codexSectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.codexSectionHead span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
 }
 
 .ascensionPerkHeader {
@@ -342,6 +363,10 @@
 
 .achievementLocked {
   opacity: 0.86;
+}
+
+.achievementHidden {
+  border-style: dashed;
 }
 
 .upgradeCard {
@@ -532,6 +557,7 @@
   }
 
   .codexSummary,
+  .codexGroupGrid,
   .ascensionSummary,
   .ascensionConfigGrid,
   .codexGrid,

@@ -65,15 +65,31 @@ type SpecialEventReview = {
   summary?: string;
   detail?: string;
 };
+type AchievementGroup =
+  | "mainline"
+  | "endless"
+  | "daily"
+  | "upgrades"
+  | "boss"
+  | "events"
+  | "ascension"
+  | "builds";
 type AchievementId =
   | "mainline-first-clear"
+  | "mainline-master"
   | "boss-hulebu-king"
+  | "boss-ascension-warden"
   | "endless-first-step"
   | "endless-layer-25"
   | "daily-first-checkin"
   | "daily-clear"
   | "upgrade-first-buy"
-  | "upgrade-all-basic";
+  | "upgrade-all-basic"
+  | "ascension-west-clear"
+  | "ascension-north-clear"
+  | "event-rare-encounter"
+  | "event-ascension-encounter"
+  | "build-reward-streak";
 
 type ActiveRun = {
   sessionKey: string;
@@ -185,6 +201,10 @@ type AchievementConfig = {
   title: string;
   description: string;
   hint: string;
+  group: AchievementGroup;
+  hidden?: boolean;
+  hiddenTitle?: string;
+  hiddenHint?: string;
 };
 
 type AscensionConfig = {
@@ -241,48 +261,161 @@ const ACHIEVEMENTS: AchievementConfig[] = [
     title: "主线首通",
     description: "完成一轮主线通关。",
     hint: "把 20 关主线打穿一次。",
+    group: "mainline",
+  },
+  {
+    id: "mainline-master",
+    title: "主线熟手",
+    description: "主线结算时拿到至少 5 个奖励节点。",
+    hint: "把整轮主线尽量完整地滚到后半段。",
+    group: "mainline",
   },
   {
     id: "boss-hulebu-king",
     title: "胡了卜王",
     description: "击破第 20 关终章 Boss。",
     hint: "在主线终章拿下胡了卜王。",
+    group: "boss",
+  },
+  {
+    id: "boss-ascension-warden",
+    title: "高阶镇台",
+    description: "完成一轮带高阶 Boss 复盘的通关。",
+    hint: "去高阶周目完成一轮 Boss 结算。",
+    group: "boss",
+    hidden: true,
+    hiddenTitle: "未揭示目标",
+    hiddenHint: "继续推进 Boss 纪录和高阶试炼。",
   },
   {
     id: "endless-first-step",
     title: "无尽起步",
     description: "首次进入无尽牌山。",
     hint: "把无尽面板点开并打到第 21 层起步。",
+    group: "endless",
   },
   {
     id: "endless-layer-25",
     title: "冲到 25 层",
     description: "无尽最高层达到第 25 层。",
     hint: "继续往后冲到第 25 层。",
+    group: "endless",
   },
   {
     id: "daily-first-checkin",
     title: "每日打卡",
     description: "第一次挑战每日牌局。",
     hint: "今天先开一局每日。",
+    group: "daily",
   },
   {
     id: "daily-clear",
     title: "每日完成",
     description: "任意一天完成过每日牌局。",
     hint: "把当天的每日打穿一次。",
+    group: "daily",
   },
   {
     id: "upgrade-first-buy",
     title: "第一次升级",
     description: "买下任意一项局外升级。",
     hint: "先花一次铜钱。",
+    group: "upgrades",
   },
   {
     id: "upgrade-all-basic",
     title: "三项全开",
     description: "三项基础升级都至少买过 1 级。",
     hint: "把备用槽、护符和初始道具都点到 1 级。",
+    group: "upgrades",
+  },
+  {
+    id: "ascension-west-clear",
+    title: "西风立住",
+    description: "把高阶推进到西风场并完成过结算。",
+    hint: "先把高阶周目推进到第三档。",
+    group: "ascension",
+  },
+  {
+    id: "ascension-north-clear",
+    title: "北风入局",
+    description: "解锁北风场，摸到完整高阶轮回门槛。",
+    hint: "继续往北风场推进，完整高阶才刚开始。",
+    group: "ascension",
+    hidden: true,
+    hiddenTitle: "未揭示目标",
+    hiddenHint: "继续推进高阶征途。",
+  },
+  {
+    id: "event-rare-encounter",
+    title: "稀有事件",
+    description: "经历过一次带稀有事件标记的结算。",
+    hint: "在主线或长 run 中继续碰稀有事件。",
+    group: "events",
+  },
+  {
+    id: "event-ascension-encounter",
+    title: "高阶事件",
+    description: "在高阶 run 中带着事件摘要结算。",
+    hint: "去高阶周目再看看事件池会给你什么。",
+    group: "events",
+    hidden: true,
+    hiddenTitle: "未揭示目标",
+    hiddenHint: "继续推进事件见闻。",
+  },
+  {
+    id: "build-reward-streak",
+    title: "路线收束",
+    description: "单轮结算时拿到至少 4 个奖励节点，开始像一套完整 build。",
+    hint: "把奖励一路吃到后半程，让构筑真正成型。",
+    group: "builds",
+  },
+];
+
+const ACHIEVEMENT_GROUPS: Array<{
+  id: AchievementGroup;
+  label: string;
+  description: string;
+}> = [
+  {
+    id: "mainline",
+    label: "主线碑记",
+    description: "记录通关和完整主线推进。",
+  },
+  {
+    id: "boss",
+    label: "Boss 纪录",
+    description: "记录终章与高阶 Boss 的试炼结果。",
+  },
+  {
+    id: "endless",
+    label: "无尽牌山",
+    description: "记录冲层和长线推进。",
+  },
+  {
+    id: "daily",
+    label: "每日留痕",
+    description: "记录今天是否来过，以及是否打穿。",
+  },
+  {
+    id: "upgrades",
+    label: "局外积累",
+    description: "记录铜钱是否开始变成长期成长。",
+  },
+  {
+    id: "ascension",
+    label: "高阶征途",
+    description: "记录周目推进到第几档。",
+  },
+  {
+    id: "events",
+    label: "事件见闻",
+    description: "记录你是否已经摸到更深层事件池。",
+  },
+  {
+    id: "builds",
+    label: "路线收束",
+    description: "记录单轮构筑是否已经像一套完整 build。",
   },
 ];
 
@@ -655,6 +788,9 @@ function buildAchievementUnlocks(state: {
     if ((state.lastSettlement.reachedLevelOrder ?? 0) >= 20) {
       unlocks["boss-hulebu-king"] = now;
     }
+    if ((state.lastSettlement.pickedRewards ?? 0) >= 5) {
+      unlocks["mainline-master"] = now;
+    }
   }
 
   if (state.bestEndlessLayer >= 21) {
@@ -676,6 +812,28 @@ function buildAchievementUnlocks(state: {
   }
   if (hasAllUpgrades) {
     unlocks["upgrade-all-basic"] = now;
+  }
+  if (state.bestAscensionLevel >= 3) {
+    unlocks["ascension-west-clear"] = now;
+  }
+  if (state.bestAscensionLevel >= 4) {
+    unlocks["ascension-north-clear"] = now;
+  }
+  if ((state.lastSettlement?.pickedRewards ?? 0) >= 4) {
+    unlocks["build-reward-streak"] = now;
+  }
+  if (state.lastSettlement?.bossReview?.bossVariant === "ascension-warden") {
+    unlocks["boss-ascension-warden"] = now;
+  }
+  if (state.lastSettlement?.specialEventReview?.summary?.includes("稀有事件")) {
+    unlocks["event-rare-encounter"] = now;
+  }
+  if (
+    state.lastSettlement?.specialEventReview &&
+    ((state.lastSettlement.ascensionLevel ?? 0) > 0 ||
+      state.lastSettlement.specialEventReview.summary?.includes("高阶事件"))
+  ) {
+    unlocks["event-ascension-encounter"] = now;
   }
 
   return unlocks;
@@ -861,6 +1019,45 @@ export function HulebuGamePage() {
   const todayBestDailyLevel = dailyBestLevels[todayDailySeed] ?? 0;
   const unlockedAchievementCount = Object.keys(achievements).length;
   const nextLockedAchievement = ACHIEVEMENTS.find((achievement) => !achievements[achievement.id]) ?? null;
+  const achievementCards = useMemo(
+    () =>
+      ACHIEVEMENTS.map((achievement) => {
+        const unlockedAt = achievements[achievement.id] ?? null;
+        const isUnlocked = Boolean(unlockedAt);
+        return {
+          ...achievement,
+          unlockedAt,
+          isUnlocked,
+          displayTitle: !isUnlocked && achievement.hidden ? achievement.hiddenTitle ?? "未揭示目标" : achievement.title,
+          displayDescription:
+            !isUnlocked && achievement.hidden
+              ? achievement.hiddenHint ?? "继续推进后续内容。"
+              : achievement.description,
+          displayMetaLabel: isUnlocked ? "解锁时间" : achievement.hidden ? "隐藏提示" : "达成提示",
+          displayMetaValue:
+            isUnlocked
+              ? unlockedAt?.slice(0, 10)
+              : achievement.hidden
+                ? achievement.hiddenHint ?? achievement.hint
+                : achievement.hint,
+        };
+      }),
+    [achievements],
+  );
+  const achievementGroups = useMemo(
+    () =>
+      ACHIEVEMENT_GROUPS.map((group) => {
+        const items = achievementCards.filter((achievement) => achievement.group === group.id);
+        const unlocked = items.filter((achievement) => achievement.isUnlocked).length;
+        return {
+          ...group,
+          items,
+          unlocked,
+          total: items.length,
+        };
+      }).filter((group) => group.total > 0),
+    [achievementCards],
+  );
   const highestUnlockedAscension = bestAscensionLevel;
   const currentAscensionConfig = ASCENSION_CONFIGS.find((item) => item.level === highestUnlockedAscension) ?? ASCENSION_CONFIGS[0];
   const selectedAscensionConfig = ASCENSION_CONFIGS.find((item) => item.level === selectedAscensionLevel) ?? ASCENSION_CONFIGS[0];
@@ -1319,12 +1516,12 @@ export function HulebuGamePage() {
       },
       collection: {
         eyebrow: "成就图鉴",
-        title: "长期进度现在开始往图鉴里沉淀了",
-        description: "第一版先把主线、无尽、每日和局外升级这几条长期信号收进本地图鉴。先让你看见进度，再逐步补事件词条、Boss 记录和路线收藏。",
+        title: "长期进度现在开始往更完整的图鉴里沉淀了",
+        description: "第二版开始把主线、无尽、每日、升级、Boss、事件和高阶这些信号收进同一张图鉴。先看总览，再逐步把隐藏目标揭出来。",
         bullets: [
-          "主线首通和胡了卜王会留下已达成标记",
-          "无尽层数、每日打卡和今日破关会进长期记录",
-          "三项局外升级也会变成可见的成长里程碑",
+          "主线首通、Boss 试炼和高阶征途会分开记下",
+          "无尽、每日、事件和升级会沉淀成分类进度",
+          "部分目标会先以未揭示状态存在，解锁后再展开",
         ],
         status: `${unlockedAchievementCount}/${ACHIEVEMENTS.length} 项已解锁`,
       },
@@ -1412,12 +1609,6 @@ export function HulebuGamePage() {
       nextEffect: nextCost !== null ? upgrade.effectText[level] : "已满级",
     };
   });
-  const achievementCards = ACHIEVEMENTS.map((achievement) => ({
-    ...achievement,
-    unlockedAt: achievements[achievement.id] ?? null,
-    isUnlocked: Boolean(achievements[achievement.id]),
-  }));
-
   return (
     <main className={styles.shell} aria-label="胡了卜网页试玩">
       {screen !== "playing" ? (
@@ -1707,36 +1898,62 @@ export function HulebuGamePage() {
                   <section className={styles.codexPanel} aria-label="胡了卜成就图鉴">
                     <div className={styles.codexSummary}>
                       <article className={styles.codexCard}>
-                        <span>已解锁</span>
+                        <span>图鉴总览</span>
                         <strong>
                           {unlockedAchievementCount}/{ACHIEVEMENTS.length}
                         </strong>
-                        <p>先用本地图鉴收住这几条长期进度。</p>
+                        <p>第二版开始把主线、Boss、事件和高阶征途一起沉进来。</p>
                       </article>
                       <article className={styles.codexCard}>
                         <span>下一步</span>
                         <strong>{nextLockedAchievement?.title ?? "图鉴首批已齐"}</strong>
-                        <p>{nextLockedAchievement?.hint ?? "后续可以继续补事件词条和 Boss 记录。"}</p>
+                        <p>{nextLockedAchievement?.hint ?? "后续可以继续补更深的图鉴回放和收藏。"}</p>
+                      </article>
+                      <article className={styles.codexCard}>
+                        <span>分类进度</span>
+                        <strong>{achievementGroups.length} 组已开放</strong>
+                        <p>现在会按主线、Boss、事件、高阶等分类记录，不再只是平铺卡片。</p>
                       </article>
                     </div>
-                    <div className={styles.codexGrid}>
-                      {achievementCards.map((achievement) => (
-                        <article
-                          key={achievement.id}
-                          className={`${styles.achievementCard} ${achievement.isUnlocked ? styles.achievementUnlocked : styles.achievementLocked}`}
-                        >
-                          <div className={styles.achievementHead}>
-                            <span>{achievement.isUnlocked ? "已达成" : "未解锁"}</span>
-                            <strong>{achievement.title}</strong>
-                          </div>
-                          <p className={styles.achievementDescription}>{achievement.description}</p>
-                          <div className={styles.achievementMeta}>
-                            <span>{achievement.isUnlocked ? "解锁时间" : "达成提示"}</span>
-                            <strong>{achievement.isUnlocked ? achievement.unlockedAt?.slice(0, 10) : achievement.hint}</strong>
-                          </div>
+                    <div className={styles.codexGroupGrid}>
+                      {achievementGroups.map((group) => (
+                        <article key={group.id} className={styles.codexCard}>
+                          <span>{group.label}</span>
+                          <strong>
+                            {group.unlocked}/{group.total}
+                          </strong>
+                          <p>{group.description}</p>
                         </article>
                       ))}
                     </div>
+                    {achievementGroups.map((group) => (
+                      <section key={group.id} className={styles.codexSection} aria-label={group.label}>
+                        <div className={styles.codexSectionHead}>
+                          <strong>{group.label}</strong>
+                          <span>
+                            {group.unlocked}/{group.total}
+                          </span>
+                        </div>
+                        <div className={styles.codexGrid}>
+                          {group.items.map((achievement) => (
+                            <article
+                              key={achievement.id}
+                              className={`${styles.achievementCard} ${achievement.isUnlocked ? styles.achievementUnlocked : styles.achievementLocked} ${!achievement.isUnlocked && achievement.hidden ? styles.achievementHidden : ""}`}
+                            >
+                              <div className={styles.achievementHead}>
+                                <span>{achievement.isUnlocked ? "已达成" : achievement.hidden ? "隐藏目标" : "未解锁"}</span>
+                                <strong>{achievement.displayTitle}</strong>
+                              </div>
+                              <p className={styles.achievementDescription}>{achievement.displayDescription}</p>
+                              <div className={styles.achievementMeta}>
+                                <span>{achievement.displayMetaLabel}</span>
+                                <strong>{achievement.displayMetaValue}</strong>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
                   </section>
                 ) : null}
                 {panel === "ascension" ? (

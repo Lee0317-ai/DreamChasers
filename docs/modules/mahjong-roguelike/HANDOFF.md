@@ -229,4 +229,6 @@ T177 已完成 Boss 试炼第二版。当前 HTML 原型已具备 `BOSS_TRIAL_PH
 
 T178 已完成特殊事件池第二版第一轮扩容。当前 HTML 原型已具备 `SPECIAL_EVENT_RARITIES`、`SPECIAL_EVENT_TAGS`、`EVENT_BUILD_LINKS` 和更贴构筑线的事件选择逻辑；普通 run 新增 `河灯旧约 / 封盘押后 / 险招翻倍`，高阶 run 会优先出现更贴当前构筑的事件。`/games/hulebu` 外层结算页已接入 `最近事件` 卡片。
 
-后续建议顺序改为：T179 成就图鉴扩容；T180 无尽和每日深度化；T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。
+T179 已完成成就图鉴第二版第一轮扩容。当前 `/games/hulebu` 的图鉴面板已从第一版 8 张平铺卡扩成 `图鉴总览 / 分类进度 / 分组列表` 结构；新增 Boss、事件、高阶和路线目标，并为一部分高阶 / Boss / 事件目标增加了 `未揭示目标` 隐藏态。旧存档 hydration 会继续按 `bestEndlessLayer / dailyBestLevels / bestAscensionLevel / upgrades / lastSettlement / bossReview / specialEventReview` 自动补算新增成就，不需要新增后端字段。
+
+后续建议顺序改为：T180 无尽和每日深度化；T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。

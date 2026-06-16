@@ -359,3 +359,11 @@
 - 决策：T178 不新增全新的事件效果系统，而是在 HTML 原型和 Web 壳层中继续复用 `coins / tool / comboBonus / shield / reserve / river / modifier`，重点补齐事件稀有度、构筑联动和高阶事件说明。
 - 原因：当前 Web 完整版仍在补内容深度；如果事件第二版同时引入新 effect 类型和新长线状态，容易和 T179-T181 范围缠在一起，也会放大后续 Cocos 追平成本。
 - 影响：后续成就图鉴、路线奖励和局外能力深化可以继续围绕现有事件结果扩展，不必回头拆一轮新的事件底座。
+
+## D046：成就图鉴第二版继续只吃壳层已有信号
+
+- 日期：2026-06-16
+- 状态：已确认
+- 决策：T179 不为图鉴第二版新增后端字段、原型消息或奖励发放系统，而是继续只使用 Web 壳层现有的 `bestEndlessLayer / dailyBestLevels / bestAscensionLevel / upgrades / lastSettlement / bossReview / specialEventReview` 来补算新增成就。
+- 原因：当前图鉴扩容目标是把已有长期系统收束成更完整的展示层，而不是再次扩玩法协议。如果现在为了图鉴回头改原型 payload 或 Prisma，会把 T179 和 T180-T182 绑得过紧。
+- 影响：图鉴第二版可以快速补到 Boss / 事件 / 高阶 / 路线层级，但更细的事件词条库、Boss 档案页和奖励发放仍需后续单独开任务。
