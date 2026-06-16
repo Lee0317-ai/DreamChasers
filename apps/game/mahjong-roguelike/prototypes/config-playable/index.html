@@ -2382,6 +2382,7 @@
           lastSpecialEventMessage: "",
           endlessLayer: ENDLESS_START_LAYER,
           dailySeed: "",
+          dailyParticipationStreak: 1,
         },
         visionTimer: null,
         bossProgressTimer: null,
@@ -2517,6 +2518,8 @@
 
       function buildShellPayload(extra = {}) {
         const level = model.levelsConfig && model.state ? currentLevel() : null;
+        const endlessChapter = isEndlessMode() ? getEndlessChapterProfile() : null;
+        const dailyMutator = isDailyMode() ? getDailyMutatorProfile() : null;
         return {
           sessionKey: model.shellSessionKey,
           levelOrder: level?.order ?? null,
@@ -2526,6 +2529,11 @@
           ascensionName: model.ascensionName || null,
           dailySeed: isDailyMode() ? model.run.dailySeed : null,
           endlessLayer: isEndlessMode() ? getEndlessLayerOrder() : null,
+          endlessChapterLabel: endlessChapter?.label ?? null,
+          endlessChapterBoss: endlessChapter?.bossTitle ?? null,
+          dailyMutatorLabel: dailyMutator?.label ?? null,
+          dailyRewardLabel: dailyMutator?.rewardLabel ?? null,
+          dailyStreak: isDailyMode() ? getDailyParticipationStreak() : null,
           coins: model.run.coins,
           score: model.state?.score ?? 0,
           pickedRewards: model.run.pickedRewards.length,
@@ -3142,6 +3150,23 @@
         };
       }
 
+      function getEndlessChapterProfile(layer = getEndlessLayerOrder()) {
+        if (!isEndlessMode()) return null;
+        const chapter = Math.max(1, Math.floor((layer - ENDLESS_START_LAYER) / 5) + 1);
+        const phase = ((chapter - 1) % 4) + 1;
+        const chapterStart = ENDLESS_START_LAYER + (chapter - 1) * 5;
+        const chapterEnd = chapterStart + 4;
+        const bossLayer = chapterStart + 4;
+        return {
+          chapter,
+          phase,
+          label: `第 ${chapter} 章`,
+          detail: `无尽第 ${chapterStart}-${chapterEnd} 层`,
+          bossTitle: `章节 Boss · ${phase === 1 ? "河灯守门人" : phase === 2 ? "封盘押局者" : phase === 3 ? "险招翻倍客" : "断幺巡山将"}`,
+          bossLayer,
+        };
+      }
+
       function getDailyLevelIndex(levelIndex = model.levelIndex) {
         if (!isDailyMode()) return levelIndex;
         return Math.max(0, Math.min(model.levelsConfig.levels.length - 1, levelIndex));
@@ -3170,6 +3195,37 @@
           honorRanks: baseIndex >= 5 ? [1, 3, 5, 7] : [],
           honorWeight: Math.min(72, baseIndex * 4),
         };
+      }
+
+      function getDailyMutatorProfile(seed = model.run.dailySeed || "today") {
+        if (!isDailyMode()) return null;
+        const profiles = [
+          {
+            key: "river-pressure",
+            label: "今日词缀：牌河压顶",
+            detail: "前中段更容易遇到弃牌与河控压力，适合走稳手或河控路线。",
+            rewardLabel: "今日奖励：河灯筹码",
+          },
+          {
+            key: "late-sprint",
+            label: "今日词缀：牌尾追击",
+            detail: "残局节奏更紧，牌尾流和胡流更容易打出完整收官。",
+            rewardLabel: "今日奖励：尾巡印记",
+          },
+          {
+            key: "kong-engine",
+            label: "今日词缀：杠响回巡",
+            detail: "杠相关机会更密集，适合拿路线奖励去追爆发。",
+            rewardLabel: "今日奖励：杠响铜契",
+          },
+        ];
+        let hash = 0;
+        for (const char of String(seed)) hash = (hash * 33 + char.charCodeAt(0)) % 2147483647;
+        return profiles[hash % profiles.length];
+      }
+
+      function getDailyParticipationStreak() {
+        return Math.max(1, model.run.dailyParticipationStreak || 1);
       }
 
       function isFriendDemoBossTrialLevel(levelIndex = model.levelIndex) {
@@ -6585,14 +6641,17 @@
 
       function showLevelClear() {
         if (isEndlessMode()) {
-          view.rewardTitle.textContent = `无尽第 ${getEndlessLayerOrder()} 层通关`;
+          const chapter = getEndlessChapterProfile();
+          view.rewardTitle.textContent = `${chapter ? `${chapter.label} · ` : ""}无尽第 ${getEndlessLayerOrder()} 层通关`;
           view.rewardGrid.innerHTML = "";
           view.rewardGrid.style.display = "none";
           view.runComplete.innerHTML = "";
           view.runComplete.classList.add("show");
 
           const summary = document.createElement("p");
-          summary.textContent = shouldOfferRewardAfterLevel(model.levelIndex) ? "下一层前可选择一次奖励。" : "牌山已清空，可以进入下一层。";
+          summary.textContent = shouldOfferRewardAfterLevel(model.levelIndex)
+            ? `${chapter ? `${chapter.label} · ` : ""}${isBossLevel() && chapter ? `${chapter.bossTitle} 已解除压力，` : ""}下一层前可选择一次奖励。`
+            : `${chapter ? `${chapter.label} · ` : ""}牌山已清空，可以进入下一层。`;
           const next = document.createElement("button");
           next.className = "reward-button";
           next.type = "button";
@@ -6637,8 +6696,15 @@
       }
 
       function getClearSummaryText() {
-        if (isEndlessMode()) return `无尽第 ${getEndlessLayerOrder()} 层已清空。`;
-        if (isDailyMode()) return `每日牌局 ${model.run.dailySeed || "today"} 已清空第 ${currentLevel().order} 关。`;
+        if (isEndlessMode()) {
+          const chapter = getEndlessChapterProfile();
+          const bossText = isBossLevel() && chapter ? ` · ${chapter.bossTitle}` : "";
+          return `${chapter ? `${chapter.label} · ` : ""}无尽第 ${getEndlessLayerOrder()} 层已清空${bossText}。`;
+        }
+        if (isDailyMode()) {
+          const mutator = getDailyMutatorProfile();
+          return `每日牌局 ${model.run.dailySeed || "today"} 已清空第 ${currentLevel().order} 关。${mutator ? `${mutator.label}。` : ""}`;
+        }
         if (isFriendDemoBossTrialLevel()) return "终局试炼已击破，本轮完成。";
         if (isFriendDemoFinalBossLevel()) return "胡了卜王已击破，本轮完成。";
         if (getActiveBossGoals(model.levelIndex).length > 0) return "Boss 关已清空，本章完成。";
@@ -6697,11 +6763,12 @@
         const bossText = getActiveBossGoals(model.levelIndex).length > 0
           ? `${getBossGoalTitleText()}已击破。`
           : "";
+        const dailyMutator = getDailyMutatorProfile();
         summary.textContent = isDailyMode()
-          ? `${bossText}今日牌局 ${model.run.dailySeed || "today"} 已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`
+          ? `${bossText}今日牌局 ${model.run.dailySeed || "today"} 已清完 ${getPlayableLevelCount()} 关。${dailyMutator ? `${dailyMutator.label}。${dailyMutator.rewardLabel}。` : ""}连续参与 ${getDailyParticipationStreak()} 天。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`
           : isAscensionMode()
             ? `${bossText}${model.ascensionName || "高阶周目"} 已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`
-          : `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
+            : `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
         const ascensionSummary = document.createElement("p");
         if (isAscensionMode()) {
           const buildProfile = getAscensionBuildProfile();
@@ -7122,6 +7189,7 @@
           lastSpecialEventMessage: "",
           endlessLayer: isEndlessMode() ? getEndlessLayerOrder() : ENDLESS_START_LAYER,
           dailySeed: model.run.dailySeed,
+          dailyParticipationStreak: model.run.dailyParticipationStreak,
         };
         model.loadingLevelModifier = null;
         view.rewardOverlay.classList.remove("show");
@@ -7591,7 +7659,7 @@
       function getEndlessBossGoals() {
         if (!isBossLevel()) return [];
         const layer = getEndlessLayerOrder();
-        const chapter = Math.max(1, Math.floor((layer - ENDLESS_START_LAYER) / 5) + 1);
+        const chapter = getEndlessChapterProfile(layer)?.chapter ?? Math.max(1, Math.floor((layer - ENDLESS_START_LAYER) / 5) + 1);
         const goals = [
           { type: "combo_count", combo: "gang", target: layer % 10 === 0 ? 2 : 1 },
           { type: "score_target", target: 180 + chapter * 20 },

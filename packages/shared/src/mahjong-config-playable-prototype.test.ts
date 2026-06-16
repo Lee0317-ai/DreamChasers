@@ -196,9 +196,15 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("function getEndlessLayerOrder");
     expect(playHtml).toContain("function getEndlessLevelIndex");
     expect(playHtml).toContain("function getEndlessDifficultyProfile");
+    expect(playHtml).toContain("function getEndlessChapterProfile");
     expect(playHtml).toContain("function advanceAfterEndlessClear");
+    expect(playHtml).toContain("章节 Boss");
     expect(playHtml).toContain("endlessLayer");
     expect(playHtml).toContain('requestedMode === "endless"');
+    expect(playHtml).toContain("function getDailyMutatorProfile");
+    expect(playHtml).toContain("今日词缀");
+    expect(playHtml).toContain("今日奖励");
+    expect(playHtml).toContain("连续参与");
     expect(playHtml).toContain("function createFriendDemoFixedReward");
     expect(playHtml).toContain("function useDiscardTool");
     expect(playHtml).toContain('id="discardButton"');

@@ -231,4 +231,6 @@ T178 已完成特殊事件池第二版第一轮扩容。当前 HTML 原型已具
 
 T179 已完成成就图鉴第二版第一轮扩容。当前 `/games/hulebu` 的图鉴面板已从第一版 8 张平铺卡扩成 `图鉴总览 / 分类进度 / 分组列表` 结构；新增 Boss、事件、高阶和路线目标，并为一部分高阶 / Boss / 事件目标增加了 `未揭示目标` 隐藏态。旧存档 hydration 会继续按 `bestEndlessLayer / dailyBestLevels / bestAscensionLevel / upgrades / lastSettlement / bossReview / specialEventReview` 自动补算新增成就，不需要新增后端字段。
 
-后续建议顺序改为：T180 无尽和每日深度化；T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。
+T180 已完成无尽和每日深度化。当前 HTML 原型已新增 `getEndlessChapterProfile()` 和 `getDailyMutatorProfile()`：无尽第 21 层后按每 5 层一个章节推进，并在章节尾部挂 `章节 Boss` 压力；每日牌局第二版新增 `今日词缀 / 今日奖励 / 连续参与` 三个长期信号。`/games/hulebu` 外层局外页现在会显示 `当前章节 / 章节 Boss / 无尽最高` 与 `今日词缀 / 今日奖励 / 连续参与 / 今日最佳`，结算页也会显示对应摘要。站内静态 Demo 已同步保持 `/games/hulebu-demo/config/*.json` 绝对资源路径。
+
+后续建议顺序改为：T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。

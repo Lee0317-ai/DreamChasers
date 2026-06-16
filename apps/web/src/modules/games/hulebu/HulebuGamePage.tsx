@@ -123,6 +123,11 @@ type SettlementState = {
   bestDailyLevelOrder: number;
   pickedRewards: number;
   summary: string;
+  endlessChapterLabel: string | null;
+  endlessChapterBoss: string | null;
+  dailyMutatorLabel: string | null;
+  dailyRewardLabel: string | null;
+  dailyStreak: number;
   ascensionReview: AscensionReview | null;
   bossReview: BossReview | null;
   specialEventReview: SpecialEventReview | null;
@@ -137,6 +142,8 @@ type PersistedShellState = {
   bestEndlessLayer: number;
   bestAscensionLevel: AscensionLevel;
   dailyBestLevels: Record<string, number>;
+  dailyStreak: number;
+  lastDailySeed: string | null;
   achievements: Record<string, string>;
   lastSettlement: SettlementState | null;
   upgrades: UpgradeState;
@@ -165,6 +172,11 @@ type HulebuShellPayload = {
   score?: number;
   levelOrder?: number;
   endlessLayer?: number;
+  endlessChapterLabel?: string | null;
+  endlessChapterBoss?: string | null;
+  dailyMutatorLabel?: string | null;
+  dailyRewardLabel?: string | null;
+  dailyStreak?: number | null;
   pickedRewards?: number;
   summary?: string;
   ascensionReview?: AscensionReview | null;
@@ -879,6 +891,8 @@ function readPersistedShellState(): PersistedShellState {
       bestEndlessLayer: 0,
       bestAscensionLevel: DEFAULT_ASCENSION_LEVEL,
       dailyBestLevels: {},
+      dailyStreak: 0,
+      lastDailySeed: null,
       achievements: {},
       lastSettlement: null,
       upgrades: DEFAULT_UPGRADES,
@@ -895,6 +909,8 @@ function readPersistedShellState(): PersistedShellState {
         bestEndlessLayer: 0,
         bestAscensionLevel: DEFAULT_ASCENSION_LEVEL,
         dailyBestLevels: {},
+        dailyStreak: 0,
+        lastDailySeed: null,
         achievements: {},
         lastSettlement: null,
         upgrades: DEFAULT_UPGRADES,
@@ -916,6 +932,12 @@ function readPersistedShellState(): PersistedShellState {
       bestEndlessLayer: Number.isFinite(parsed.bestEndlessLayer) ? Math.max(0, parsed.bestEndlessLayer) : 0,
       bestAscensionLevel: sanitizeAscensionLevel((parsed as PersistedShellState & { bestAscensionLevel?: unknown }).bestAscensionLevel),
       dailyBestLevels: sanitizeDailyBestLevels((parsed as PersistedShellState & { dailyBestScores?: Record<string, unknown> }).dailyBestLevels ?? (parsed as PersistedShellState & { dailyBestScores?: Record<string, unknown> }).dailyBestScores),
+      dailyStreak: Number.isFinite((parsed as PersistedShellState & { dailyStreak?: unknown }).dailyStreak)
+        ? Math.max(0, Number((parsed as PersistedShellState & { dailyStreak?: unknown }).dailyStreak))
+        : 0,
+      lastDailySeed: typeof (parsed as PersistedShellState & { lastDailySeed?: unknown }).lastDailySeed === "string"
+        ? (parsed as PersistedShellState & { lastDailySeed?: string }).lastDailySeed ?? null
+        : null,
       achievements: sanitizeAchievements((parsed as PersistedShellState & { achievements?: Record<string, unknown> }).achievements),
       lastSettlement: persistedSettlement,
       upgrades: sanitizeUpgrades(parsed.upgrades),
@@ -928,6 +950,8 @@ function readPersistedShellState(): PersistedShellState {
       bestEndlessLayer: 0,
       bestAscensionLevel: DEFAULT_ASCENSION_LEVEL,
       dailyBestLevels: {},
+      dailyStreak: 0,
+      lastDailySeed: null,
       achievements: {},
       lastSettlement: null,
       upgrades: DEFAULT_UPGRADES,
@@ -1001,6 +1025,8 @@ export function HulebuGamePage() {
   const [bestEndlessLayer, setBestEndlessLayer] = useState(0);
   const [bestAscensionLevel, setBestAscensionLevel] = useState<AscensionLevel>(DEFAULT_ASCENSION_LEVEL);
   const [dailyBestLevels, setDailyBestLevels] = useState<Record<string, number>>({});
+  const [dailyStreak, setDailyStreak] = useState(0);
+  const [lastDailySeed, setLastDailySeed] = useState<string | null>(null);
   const [achievements, setAchievements] = useState<Record<string, string>>({});
   const [activeRun, setActiveRun] = useState<ActiveRun | null>(null);
   const [lastSettlement, setLastSettlement] = useState<SettlementState | null>(null);
@@ -1084,6 +1110,8 @@ export function HulebuGamePage() {
     setBestEndlessLayer(persisted.bestEndlessLayer);
     setBestAscensionLevel(persisted.bestAscensionLevel);
     setDailyBestLevels(persisted.dailyBestLevels);
+    setDailyStreak(persisted.dailyStreak);
+    setLastDailySeed(persisted.lastDailySeed);
     setAchievements(
       mergeAchievementMap(
         persisted.achievements,
@@ -1188,6 +1216,8 @@ export function HulebuGamePage() {
       bestEndlessLayer,
       bestAscensionLevel,
       dailyBestLevels,
+      dailyStreak,
+      lastDailySeed,
       achievements,
       lastSettlement,
       upgrades,
@@ -1215,6 +1245,8 @@ export function HulebuGamePage() {
     bestAscensionLevel,
     bestEndlessLayer,
     dailyBestLevels,
+    dailyStreak,
+    lastDailySeed,
     hydrated,
     lastSettlement,
     upgrades,
@@ -1419,6 +1451,10 @@ export function HulebuGamePage() {
         runMode === "daily" && dailySeed
           ? Math.max(dailyBestLevels[dailySeed] ?? 0, dailyLevelOrder)
           : 0;
+      const updatedDailyStreak =
+        runMode === "daily" && dailySeed
+          ? data.payload.dailyStreak ?? (dailySeed === lastDailySeed ? Math.max(1, dailyStreak) : Math.max(1, dailyStreak + 1))
+          : dailyStreak;
       const settlement: SettlementState = {
         sessionKey: data.payload.sessionKey ?? activeRun.sessionKey,
         runMode,
@@ -1435,6 +1471,11 @@ export function HulebuGamePage() {
         bestDailyLevelOrder: updatedBestDailyLevelOrder,
         pickedRewards: data.payload.pickedRewards ?? activeRun.pickedRewards,
         summary: data.payload.summary ?? activeRun.latestSummary,
+        endlessChapterLabel: data.payload.endlessChapterLabel ?? null,
+        endlessChapterBoss: data.payload.endlessChapterBoss ?? null,
+        dailyMutatorLabel: data.payload.dailyMutatorLabel ?? null,
+        dailyRewardLabel: data.payload.dailyRewardLabel ?? null,
+        dailyStreak: updatedDailyStreak,
         ascensionReview: data.payload.ascensionReview ?? null,
         bossReview: data.payload.bossReview ?? null,
         specialEventReview:
@@ -1457,6 +1498,8 @@ export function HulebuGamePage() {
           ...current,
           [dailySeed]: updatedBestDailyLevelOrder,
         }));
+        setDailyStreak(updatedDailyStreak);
+        setLastDailySeed(dailySeed);
       }
       setAchievements((current) =>
         mergeAchievementMap(
@@ -1486,7 +1529,7 @@ export function HulebuGamePage() {
 
     window.addEventListener("message", handleShellMessage);
     return () => window.removeEventListener("message", handleShellMessage);
-  }, [activeRun, bankedCoins, bestAscensionLevel, bestEndlessLayer, dailyBestLevels, lastSettlement, nextAscensionUnlock, upgrades]);
+  }, [activeRun, bankedCoins, bestAscensionLevel, bestEndlessLayer, dailyBestLevels, dailyStreak, lastDailySeed, lastSettlement, nextAscensionUnlock, upgrades]);
 
   const panelContent = useMemo<Record<LobbyPanel, PanelContent>>(
     () => ({
@@ -1527,23 +1570,23 @@ export function HulebuGamePage() {
       },
       endless: {
         eyebrow: "无尽模式",
-        title: "第 21 层之后就是无尽牌山",
-        description: "无尽第一版复用当前密集牌山、特殊压力和路线型奖励池，从第 21 层开始向后冲层，本地记录最高层。",
+        title: "第 21 层之后开始按章节往深处推",
+        description: "无尽第二版开始把第 21 层后的冲层拆成章节推进。每 5 层会结一次章节压力，第 5 层位置挂一个章节 Boss，并继续承接路线型奖励池。",
         bullets: [
-          "第 21 层起步，每层都会重新生成牌山",
-          "每 5 层出现 Boss 压力，奖励继续承接路线 build",
-          "本地保存无尽最高层，后续再连接成就和高阶周目",
+          "当前章节会跟着层数切换，并在局外页保留章节进度信号",
+          "章节 Boss 会按章节轮替压力主题，继续承接无尽 build",
+          "本地保存无尽最高层，后续再继续接章节路线和高阶联动",
         ],
         status: bestEndlessLayer > 0 ? `无尽最高第 ${bestEndlessLayer} 层` : "已开放本地冲层",
       },
       daily: {
         eyebrow: "每日牌局",
-        title: "今天这局已经可以真打了",
-        description: "每日第一版使用固定日 seed，把当天牌山锁成同一局。先做本地最佳成绩和每日回访入口，后续再补成就、词缀和排行榜。",
+        title: "今天这局开始像每日模式，而不只是固定 seed",
+        description: "每日第二版会在固定日 seed 之外，再给当天挂一个词缀、一个奖励口味和一个连续参与信号，先把回访节奏做出来。",
         bullets: [
           `固定日 seed：${todayDailySeed}`,
-          "局外页和结算面板都会显示今日最佳关数",
-          "每天换一局，先承接回访，再逐步补长期系统",
+          "局外页和结算面板都会显示今日词缀和今日奖励",
+          "连续参与会先记在本地，后续再接更完整的每日体系",
         ],
         status: todayBestDailyLevel > 0 ? `今日最佳第 ${todayBestDailyLevel} 关` : "今日尚未挑战",
       },
@@ -1569,6 +1612,17 @@ export function HulebuGamePage() {
     : bestEndlessLayer > 0
       ? `最高第 ${bestEndlessLayer} 层`
       : "尚未挑战";
+  const currentEndlessChapter = Math.max(1, Math.floor((Math.max(bestEndlessLayer, ENDLESS_START_LAYER) - ENDLESS_START_LAYER) / 5) + 1);
+  const currentEndlessChapterLabel = `第 ${currentEndlessChapter} 章`;
+  const currentEndlessChapterBoss = lastSettlement?.runMode === "endless" && lastSettlement.endlessChapterBoss
+    ? lastSettlement.endlessChapterBoss
+    : "章节 Boss · 每 5 层结一次压力";
+  const currentDailyMutatorLabel = lastSettlement?.runMode === "daily" && lastSettlement.dailyMutatorLabel
+    ? lastSettlement.dailyMutatorLabel
+    : "今日词缀：等待今日开局";
+  const currentDailyRewardLabel = lastSettlement?.runMode === "daily" && lastSettlement.dailyRewardLabel
+    ? lastSettlement.dailyRewardLabel
+    : "今日奖励：等待今日结算";
 
   const settlementTitle =
     lastSettlement?.runMode === "endless"
@@ -1580,9 +1634,9 @@ export function HulebuGamePage() {
         : "本轮失利";
   const settlementNote =
     lastSettlement?.runMode === "endless"
-      ? "无尽牌山先记下这次层数，回局外整顿后继续冲。"
+      ? "无尽牌山现在会按章节记下这次层数，回局外整顿后继续往下一章冲。"
       : lastSettlement?.runMode === "daily"
-        ? `今日牌局 ${lastSettlement.dailySeed ?? todayDailySeed} 已结算，最好进度已经记下，明天再换一局。`
+        ? `今日牌局 ${lastSettlement.dailySeed ?? todayDailySeed} 已结算，最好进度、今日词缀和连续参与都已经记下，明天再换一局。`
       : lastSettlement?.result === "completed"
       ? "胡了卜王这轮已经被你打穿了。"
       : "这轮先收下已结算铜钱，回局外整顿再来。";
@@ -1670,21 +1724,30 @@ export function HulebuGamePage() {
                 <article className={styles.metric}>
                   <span>
                     {lastSettlement.runMode === "endless"
-                      ? "无尽最高"
+                      ? "当前章节"
                       : lastSettlement.runMode === "daily"
-                        ? "今日最佳"
+                        ? "连续参与"
                         : "已选奖励"}
                   </span>
                   <strong>
                     {lastSettlement.runMode === "endless"
-                      ? `第 ${lastSettlement.bestEndlessLayer} 层`
+                      ? lastSettlement.endlessChapterLabel ?? currentEndlessChapterLabel
                       : lastSettlement.runMode === "daily"
-                        ? `第 ${lastSettlement.bestDailyLevelOrder} 关`
+                        ? `${lastSettlement.dailyStreak} 天`
                         : lastSettlement.pickedRewards}
                   </strong>
                 </article>
               </div>
               <p className={styles.resultSummary}>{lastSettlement.summary}</p>
+              {lastSettlement.runMode === "endless" ? (
+                <p className={styles.resultSummary}>{`章节 Boss：${lastSettlement.endlessChapterBoss ?? currentEndlessChapterBoss}`}</p>
+              ) : null}
+              {lastSettlement.runMode === "daily" ? (
+                <>
+                  <p className={styles.resultSummary}>{lastSettlement.dailyMutatorLabel ?? currentDailyMutatorLabel}</p>
+                  <p className={styles.resultSummary}>{lastSettlement.dailyRewardLabel ?? currentDailyRewardLabel}</p>
+                </>
+              ) : null}
               {settlementAscensionNote ? <p className={styles.resultSummary}>{settlementAscensionNote}</p> : null}
               {settlementSpecialEventReview ? (
                 <section className={styles.settlementReview} aria-label="最近事件">
@@ -2111,6 +2174,14 @@ export function HulebuGamePage() {
                         <strong>第 {ENDLESS_START_LAYER} 层</strong>
                       </div>
                       <div className={styles.previewUpgradeRow}>
+                        <span>当前章节</span>
+                        <strong>{currentEndlessChapterLabel}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>章节 Boss</span>
+                        <strong>{currentEndlessChapterBoss}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
                         <span>无尽最高</span>
                         <strong>{bestEndlessLayer > 0 ? `第 ${bestEndlessLayer} 层` : "尚未挑战"}</strong>
                       </div>
@@ -2120,6 +2191,18 @@ export function HulebuGamePage() {
                       <div className={styles.previewUpgradeRow}>
                         <span>今日 seed</span>
                         <strong>{todayDailySeed}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>今日词缀</span>
+                        <strong>{currentDailyMutatorLabel}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>今日奖励</span>
+                        <strong>{currentDailyRewardLabel}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>连续参与</span>
+                        <strong>{dailyStreak > 0 ? `${dailyStreak} 天` : "今天是第一天"}</strong>
                       </div>
                       <div className={styles.previewUpgradeRow}>
                         <span>今日最佳</span>

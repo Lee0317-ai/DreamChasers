@@ -1,0 +1,70 @@
+# T180：胡了卜无尽和每日深度化
+
+- 任务编号：T180
+- 优先级：P1
+- 任务名称：胡了卜无尽和每日深度化
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T170, T171, T175, T176, T177, T178, T179
+- 背景：T170/T171 已完成无尽和每日第一版，但两者仍主要复用主线后半段骨架。当前无尽已有层数推进和 Boss 循环，每日已有固定日 seed 和最佳成绩，但还缺完整版路线里明确提到的长期曲线、周期 Boss、每日词缀、每日奖励和连续参与目标。
+- 目标：
+  - 为无尽模式补周期 Boss 层和更明确的章节节奏，让长 run 不只是重复后半段主线。
+  - 为每日模式补每日词缀、每日奖励和连续参与目标。
+  - 让 `/games/hulebu` 外层壳层能看见每日 streak / 今日词缀 / 无尽章节摘要。
+  - 保持现有本地与账号进度兼容，不新增 Prisma 字段。
+  - 同步 HTML 原型、静态 Demo、测试和模块文档。
+- 不做：
+  - 不做路线奖励和局外能力深化。
+  - 不做完整数值冻结、排行榜、付费、广告或多端同步。
+  - 不改 Cocos 正式工程。
+  - 不重做 20 关主线配置、局外升级价格或奖励 effect 底座。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T180-hulebu-endless-daily-depth.md`
+  - `docs/tasks/claims/T180-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-endless-daily-depth-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-endless-daily-depth.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-16-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/levels.json`
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/web/prisma/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T180-hulebu-endless-daily-depth.md docs/tasks/claims/T180-lee.md docs/superpowers/specs/2026-06-16-hulebu-endless-daily-depth-design.md docs/superpowers/plans/2026-06-16-hulebu-endless-daily-depth.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-16-lee.md docs/completion/2026-06-16-task-180-hulebu-endless-daily-depth.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写失败测试锁定无尽章节、周期 Boss、每日词缀和连续参与目标。
+  - [x] 改造 HTML 原型与静态 Demo，补无尽 / 每日深度信号和结算 payload。
+  - [x] 改造站内壳层，显示每日 streak、今日词缀和无尽章节摘要。
+  - [x] 更新模块文档、当天进展和完成记录。
+  - [x] 跑自动化验证、脚本检查、构建和桌面/移动端浏览器检查。
