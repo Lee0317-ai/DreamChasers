@@ -349,6 +349,21 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("高压牌山");
   });
 
+  it("试玩 Demo 暴露特殊事件第二版结构", () => {
+    expect(playHtml).toContain("const SPECIAL_EVENT_RARITIES =");
+    expect(playHtml).toContain("const SPECIAL_EVENT_TAGS =");
+    expect(playHtml).toContain("const EVENT_BUILD_LINKS =");
+    expect(playHtml).toContain("function getSpecialEventOffer");
+    expect(playHtml).toContain("function getSpecialEventRarityLabel");
+    expect(playHtml).toContain("function getSpecialEventTagText");
+    expect(playHtml).toContain("稀有事件");
+    expect(playHtml).toContain("构筑联动");
+    expect(playHtml).toContain("高阶事件");
+    expect(playHtml).toContain("险招翻倍");
+    expect(playHtml).toContain("河灯旧约");
+    expect(playHtml).toContain("封盘押后");
+  });
+
   it("试玩 Demo 的奖励展示带路线标签", () => {
     expect(playHtml).toContain("reward-route");
     expect(playHtml).toContain("吃流");

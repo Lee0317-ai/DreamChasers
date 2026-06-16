@@ -227,4 +227,6 @@ T176 已完成高阶周目完整版第一大块。当前 `/games/hulebu` 已具�
 
 T177 已完成 Boss 试炼第二版。当前 HTML 原型已具备 `BOSS_TRIAL_PHASES`、`BOSS_TRIAL_VARIANTS`、阶段目标、`Boss 奖励品质` 和 `bossReview` payload；第 10 关中段试炼、第 20 关胡了卜王、高阶 Boss 和无尽 Boss 有不同变体。`/games/hulebu` 外层结算页已接入 `Boss 复盘` 卡片。高阶 Boss 会显示 `高阶 Boss 变体`，且不套普通教程目标。
 
-后续建议顺序改为：T178 特殊事件池扩容；T179 成就图鉴扩容；T180 无尽和每日深度化；T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。
+T178 已完成特殊事件池第二版第一轮扩容。当前 HTML 原型已具备 `SPECIAL_EVENT_RARITIES`、`SPECIAL_EVENT_TAGS`、`EVENT_BUILD_LINKS` 和更贴构筑线的事件选择逻辑；普通 run 新增 `河灯旧约 / 封盘押后 / 险招翻倍`，高阶 run 会优先出现更贴当前构筑的事件。`/games/hulebu` 外层结算页已接入 `最近事件` 卡片。
+
+后续建议顺序改为：T179 成就图鉴扩容；T180 无尽和每日深度化；T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。

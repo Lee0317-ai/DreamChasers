@@ -1,0 +1,45 @@
+# 2026-06-16 T178 胡了卜特殊事件池扩容完成记录
+
+- 任务编号：T178
+- 负责人：Lee
+- 修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T178-hulebu-special-events-second-pass.md`
+  - `docs/tasks/claims/T178-lee.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-special-events-second-pass-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-special-events-second-pass.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/DECISIONS.md`
+  - `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`
+  - `docs/progress/2026-06-16-lee.md`
+- 实现内容：
+  - 新增 `SPECIAL_EVENT_RARITIES`、`SPECIAL_EVENT_TAGS`、`EVENT_BUILD_LINKS`。
+  - 普通事件池扩到第二版，新增 `河灯旧约 / 封盘押后 / 险招翻倍`。
+  - 高阶构筑线会更优先吃到贴路数的特殊事件。
+  - 事件弹层新增稀有度、类型和构筑联动提示。
+  - 外层 `/games/hulebu` 结算页新增 `最近事件` 摘要卡片。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 自动化测试通过。
+  - `apps/web` 类型检查和生产构建通过。
+  - 源原型与静态 Demo 内联脚本语法检查通过。
+  - 待补桌面端和 390px 移动端结算页浏览器检查结果后即可最终验收。
+- 遗留问题：
+  - 第二版事件目前仍是第一轮扩容，完整事件图鉴和事件成就留到 T179 之后处理。
+  - 事件效果仍复用现有口径，尚未引入更复杂的长期状态。

@@ -1,0 +1,77 @@
+# T178：胡了卜特殊事件池扩容
+
+- 任务编号：T178
+- 优先级：P1
+- 任务名称：胡了卜特殊事件池扩容
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T163, T175, T176, T177
+- 背景：T163 已完成特殊事件第一版，T176 和 T177 已分别补上高阶周目和 Boss 第二版。当前事件仍是固定触发的少量关前选择，缺稀有度、风险层次、构筑联动和高阶专属事件，无法撑起完整版中后期变化。
+- 目标：
+  - 为特殊事件建立 `稀有度 + 类型标签 + 构筑联动` 的第二版池子。
+  - 扩展普通 run 事件，补低风险收益、风险换高奖和 build 联动三类事件。
+  - 为高阶 run 增加专属事件和更高奖励品质提示。
+  - 让局内 HUD / 状态栏能更清楚展示当前事件结果。
+  - 同步静态 Demo、测试和模块文档。
+- 不做：
+  - 不改 Cocos 正式工程。
+  - 不做成就图鉴扩容、无尽/每日深度化、路线奖励和局外能力深化或 Web 数值冻结。
+  - 不重做普通局外升级系统。
+  - 不做排行榜、付费、广告、多端同步或跨游戏能力中心。
+  - 不改 PDF、AI 修图、TimePick、账号中心或 AI Gateway。
+- 允许修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T178-hulebu-special-events-second-pass.md`
+  - `docs/tasks/claims/T178-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-special-events-second-pass-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-special-events-second-pass.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-16-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/levels.json`
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/web/prisma/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写失败测试锁定事件稀有度、构筑联动和高阶事件结构。
+  - [x] 实现 HTML 原型事件池第二版、选择逻辑和 HUD 文案。
+  - [x] 同步 Web 壳层事件摘要与静态 Demo。
+  - [x] 更新模块文档、完成记录和当天进展。
+  - [ ] 跑自动化验证、脚本检查、构建和浏览器检查。
+- 完成内容：
+  - HTML 原型新增 `SPECIAL_EVENT_RARITIES`、`SPECIAL_EVENT_TAGS` 和 `EVENT_BUILD_LINKS`，把特殊事件从第一版固定补给扩成第二版分层池。
+  - 普通 run 新增 `河灯旧约 / 封盘押后 / 险招翻倍`，高阶 run 会按构筑线优先拿到更贴路数的事件。
+  - 事件弹层会显示 `稀有事件 / 构筑联动 / 高阶事件` 等提示，事件结果继续复用现有 effect 口径。
+  - `/games/hulebu` 外层结算页新增 `最近事件` 卡片，站内静态 Demo 和测试已同步。
+- 遗留问题：
+  - T178 不做成就扩容、无尽/每日深度化、路线奖励和局外能力深化或 Web 数值冻结。
+  - Cocos 正式工程、音乐、美术、动效和发布资源仍按 T175 路线后置。

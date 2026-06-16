@@ -1966,9 +1966,31 @@
         economy: "经济",
       };
       const SPECIAL_EVENT_TRIGGER_LEVELS = [5, 7, 9];
+      const SPECIAL_EVENT_RARITIES = {
+        common: "常见",
+        rare: "稀有事件",
+        elite: "高阶事件",
+      };
+      const SPECIAL_EVENT_TAGS = {
+        economy: "经济",
+        risk: "风险",
+        build: "构筑联动",
+        ascension: "高阶事件",
+      };
+      const EVENT_BUILD_LINKS = {
+        "河控流": "河灯旧约",
+        "稳手流": "封盘押后",
+        "稳压流": "险招翻倍",
+        "牌尾流": "牌尾旧约",
+        "封盘流": "封盘押后",
+        "试炼流": "试锋指路",
+        "胡流": "胡流加压",
+      };
       const SPECIAL_EVENT_POOL = [
         {
           id: "old-sparrow",
+          rarity: "common",
+          tag: "economy",
           title: "路遇老雀",
           summary: "老雀递来几句牌桌门道。稳稳拿钱，或者赌下一关更肥。",
           options: [
@@ -1979,6 +2001,8 @@
         },
         {
           id: "old-tile-box",
+          rarity: "common",
+          tag: "economy",
           title: "旧牌匣",
           summary: "牌匣里有旧道具，也可能藏着一局硬仗。",
           options: [
@@ -1989,6 +2013,8 @@
         },
         {
           id: "raise-stakes",
+          rarity: "rare",
+          tag: "risk",
           title: "加注一局",
           summary: "桌面风向变急。可以保守拿补给，也可以主动加压。",
           options: [
@@ -1999,12 +2025,50 @@
         },
         {
           id: "dark-table",
+          rarity: "rare",
+          tag: "risk",
           title: "暗灯牌局",
           summary: "灯暗一半，手感全靠记牌。接受限制，收益更高。",
           options: [
             { id: "avoid", label: "花 40 铜钱避开", effect: { type: "coins", amount: -40 } },
             { id: "disable-shuffle", label: "下一关禁洗牌，通关 +120 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 120, label: "禁洗牌" } } },
             { id: "disable-peek", label: "下一关禁透视，通关 +120 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "vision", rewardCoins: 120, label: "禁透视" } } },
+          ],
+        },
+        {
+          id: "river-old-pledge",
+          rarity: "common",
+          tag: "build",
+          title: "河灯旧约",
+          summary: "你顺着牌河摸到一段老约定。补一口河控，或者把下一关压成牌河路线。",
+          options: [
+            { id: "river", label: "牌河上限 +1", effect: { type: "river", amount: 1 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +150 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 150, label: "河灯旧约" } } },
+          ],
+        },
+        {
+          id: "seal-delayed",
+          rarity: "rare",
+          tag: "build",
+          title: "封盘押后",
+          summary: "封盘不是不打，而是晚一点再打。可以稳住容错，也可以把收益压到收官段。",
+          options: [
+            { id: "shield", label: "补 1 次护符", effect: { type: "shield", amount: 1 } },
+            { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
+            { id: "pressure", label: "下一关禁洗牌，通关 +150 铜钱", effect: { type: "modifier", modifier: { type: "disableTool", tool: "shuffle", rewardCoins: 150, label: "封盘押后" } } },
+          ],
+        },
+        {
+          id: "risk-double-down",
+          rarity: "rare",
+          tag: "risk",
+          title: "险招翻倍",
+          summary: "你愿意把压力翻倍，换一口更肥的回报。适合已经成型的路线。",
+          options: [
+            { id: "coins", label: "先拿 100 铜钱", effect: { type: "coins", amount: 100 } },
+            { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +220 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 220, label: "险招翻倍" } } },
           ],
         },
       ];
@@ -2097,6 +2161,16 @@
             { id: "discard", label: "补 1 次丢弃", effect: { type: "tool", tool: "discard", amount: 1 } },
             { id: "hu-bonus", label: "下一关胡流 +16 分", effect: { type: "comboBonus", combo: "hu", amount: 16, label: "牌尾迟燃" } },
             { id: "pressure", label: "下一关高压，通关 +220 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 220, label: "牌尾迟燃" } } },
+          ],
+        },
+        "封盘流": {
+          id: "ascension-seal-table",
+          title: "封盘试守",
+          summary: "封盘更像是在高阶关里先把桌面锁住，再慢慢找收口机会。",
+          options: [
+            { id: "shield", label: "补 1 次护符", effect: { type: "shield", amount: 1 } },
+            { id: "reserve", label: "备用位 +1", effect: { type: "reserve", amount: 1 } },
+            { id: "pressure", label: "下一关高压，通关 +200 铜钱", effect: { type: "modifier", modifier: { type: "highPressure", rewardCoins: 200, label: "封盘试守" } } },
           ],
         },
       };
@@ -2456,6 +2530,8 @@
           score: model.state?.score ?? 0,
           pickedRewards: model.run.pickedRewards.length,
           summary: extra.summary ?? view.status.textContent ?? "",
+          specialEventSummary: extra.specialEventSummary ?? model.run.lastSpecialEventMessage ?? "",
+          specialEventMessage: extra.specialEventMessage ?? model.run.lastSpecialEventMessage ?? "",
           ...extra,
         };
       }
@@ -2788,7 +2864,36 @@
         }
         const triggerIndex = SPECIAL_EVENT_TRIGGER_LEVELS.indexOf(levelIndex);
         if (triggerIndex < 0) return null;
-        return SPECIAL_EVENT_POOL[triggerIndex % SPECIAL_EVENT_POOL.length] ?? null;
+        const pool = getSpecialEventPoolForLevel(levelIndex);
+        return pool[triggerIndex % pool.length] ?? null;
+      }
+
+      function getSpecialEventPoolForLevel(levelIndex) {
+        const pool = [...SPECIAL_EVENT_POOL];
+        if (isAscensionMode()) {
+          const buildProfile = getAscensionBuildProfile();
+          if (buildProfile?.name === "河控流") pool.unshift(SPECIAL_EVENT_POOL.find((event) => event.id === "river-old-pledge"));
+          if (buildProfile?.name === "稳压流") pool.unshift(SPECIAL_EVENT_POOL.find((event) => event.id === "risk-double-down"));
+          if (buildProfile?.name === "封盘流") pool.unshift(SPECIAL_EVENT_POOL.find((event) => event.id === "seal-delayed"));
+        } else if (levelIndex >= 7) {
+          pool.unshift(SPECIAL_EVENT_POOL.find((event) => event.id === "river-old-pledge"));
+        }
+        return pool.filter(Boolean);
+      }
+
+      function getSpecialEventRarityLabel(event) {
+        return SPECIAL_EVENT_RARITIES[event.rarity] ?? SPECIAL_EVENT_RARITIES.common;
+      }
+
+      function getSpecialEventTagText(event) {
+        return SPECIAL_EVENT_TAGS[event.tag] ?? event.tag ?? SPECIAL_EVENT_TAGS.economy;
+      }
+
+      function getSpecialEventOffer(event, option) {
+        const buildLink = EVENT_BUILD_LINKS[option.effect?.modifier?.label] ?? EVENT_BUILD_LINKS[getAscensionBuildProfile()?.name] ?? "";
+        const rarity = getSpecialEventRarityLabel(event);
+        const tag = getSpecialEventTagText(event);
+        return buildLink ? `${rarity} · ${tag} · ${buildLink}` : `${rarity} · ${tag}`;
       }
 
       function maybeShowSpecialEventBeforeLevel(levelIndex) {
@@ -2817,7 +2922,7 @@
         view.runComplete.classList.add("show");
 
         const summary = document.createElement("p");
-        summary.textContent = event.summary;
+        summary.textContent = `${getSpecialEventRarityLabel(event)} · ${getSpecialEventTagText(event)} · ${event.summary}`;
         view.runComplete.append(summary);
 
         for (const option of event.options) {
@@ -2826,7 +2931,7 @@
           const title = document.createElement("strong");
           title.textContent = option.label;
           const desc = document.createElement("p");
-          desc.textContent = describeSpecialEventEffect(option.effect);
+          desc.textContent = `${describeSpecialEventEffect(option.effect)} · ${getSpecialEventOffer(event, option)}`;
           const button = document.createElement("button");
           button.className = "reward-button";
           button.type = "button";
@@ -2837,6 +2942,11 @@
         }
 
         view.rewardOverlay.classList.add("show");
+        emitShellEvent("hulebu:run-progress", {
+          summary: `特殊事件：${event.title}`,
+          specialEventSummary: `${getSpecialEventRarityLabel(event)} · ${getSpecialEventTagText(event)} · ${event.title}`,
+          specialEventMessage: event.summary,
+        });
         if (view.status) view.status.textContent = `特殊事件：${event.title}`;
       }
 
@@ -2891,7 +3001,7 @@
 
         if (effect.type === "modifier") {
           model.run.pendingLevelModifier = { ...effect.modifier };
-          return `${eventTitle}：${effect.modifier.label}`;
+          return `${eventTitle}：${effect.modifier.label}（${EVENT_BUILD_LINKS[effect.modifier.label] ?? effect.modifier.label}）`;
         }
 
         return `${eventTitle}：${optionLabel}`;
@@ -3650,7 +3760,9 @@
         const modifierText = getActiveLevelModifierText();
         const modifierMessage = modifierText ? ` · 事件 ${modifierText}` : "";
         const eventMessage = model.run.lastSpecialEventMessage ? ` · ${model.run.lastSpecialEventMessage}` : "";
+        const specialEventSummary = model.run.lastSpecialEventMessage ? ` · 特殊事件 ${model.run.lastSpecialEventMessage}` : "";
         renderAll(`${getCurrentRunLabel()}${guideText}${modifierMessage}${eventMessage}`);
+        if (specialEventSummary) emitShellEvent("hulebu:run-progress", { summary: `${getCurrentRunLabel()}${guideText}${modifierMessage}${specialEventSummary}` });
         model.run.lastSpecialEventMessage = "";
       }
 
@@ -6640,6 +6752,8 @@
           summary: summary.textContent,
           ascensionReview: getAscensionReviewPayload({ result: "completed" }),
           bossReview: bossReviewPayload,
+          specialEventSummary: model.run.lastSpecialEventMessage ? `特殊事件：${model.run.lastSpecialEventMessage}` : "",
+          specialEventMessage: model.run.lastSpecialEventMessage ?? "",
         });
       }
 
@@ -6931,6 +7045,8 @@
           summary: failureText,
           ascensionReview: getAscensionReviewPayload({ result: "failed" }),
           bossReview: bossReviewPayload,
+          specialEventSummary: model.run.lastSpecialEventMessage ? `特殊事件：${model.run.lastSpecialEventMessage}` : "",
+          specialEventMessage: model.run.lastSpecialEventMessage ?? "",
         });
       }
 

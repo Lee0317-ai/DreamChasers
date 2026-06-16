@@ -48,6 +48,24 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260616-04：胡了卜特殊事件池扩容
+
+- 提出人：Lee
+- 提出时间：2026-06-16
+- 背景：T163 已完成特殊事件第一版，T176/T177 已分别补高阶周目和 Boss 第二版。当前事件仍停留在少量固定关前事件，缺事件稀有度、正负事件分层、构筑联动和高阶专属事件，支撑不起完整版的中后期变化。
+- 目标：新增 T178，在 Web 版内完成特殊事件池第二版：补事件稀有度；新增低风险、风险换高奖和构筑联动三类事件；为高阶 run 加专属事件；把事件信息同步到 `/games/hulebu` 外层结算和静态 Demo 可见文案。
+- 不做：不改 Cocos 工程；不做成就图鉴扩容、无尽/每日深度化、路线奖励和局外能力深化或 Web 数值冻结；不改 `levels.json`、`rewards.json`、PDF、AI 修图、TimePick、账号中心或 AI Gateway。
+- 用户价值：事件不再只是早期三次固定弹窗，而会成为主线后半段、高阶和构筑路线的持续分叉点；玩家能感觉到这一局是“稳吃奖励”“冒险换稀有”“顺着 build 继续做深”。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 共享测试 / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/**`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜 Web 侧和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：主线和高阶事件池至少区分稀有度与类型；新增构筑联动和高阶专属事件；事件选择结果会反映在 HUD/结算信息里；测试、类型检查、构建、脚本检查、文档同步和桌面/移动端浏览器检查通过。
+- AI 初步方案：先新增 T178 文档和规格；再用 TDD 锁定 `SPECIAL_EVENT_RARITIES`、`SPECIAL_EVENT_TAGS`、`EVENT_BUILD_LINKS`、`ASCENSION_SPECIAL_EVENT_RARITIES` 和事件复盘文案；随后扩展 HTML 原型事件池选择逻辑与事件说明，并在 React 壳层补充结算侧事件摘要；最后同步静态 Demo 和模块文档。
+- 处理结论：已入任务池
+- 对应任务编号：T178
+
 ### IDEA-20260616-03：胡了卜 Boss 试炼第二版
 
 - 提出人：Lee

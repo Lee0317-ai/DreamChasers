@@ -61,6 +61,10 @@ type BossReview = {
   nextAdvice?: string;
   mismatch?: string;
 };
+type SpecialEventReview = {
+  summary?: string;
+  detail?: string;
+};
 type AchievementId =
   | "mainline-first-clear"
   | "boss-hulebu-king"
@@ -105,6 +109,7 @@ type SettlementState = {
   summary: string;
   ascensionReview: AscensionReview | null;
   bossReview: BossReview | null;
+  specialEventReview: SpecialEventReview | null;
 };
 
 type UpgradeId = "reserve" | "shield" | "tools";
@@ -148,6 +153,8 @@ type HulebuShellPayload = {
   summary?: string;
   ascensionReview?: AscensionReview | null;
   bossReview?: BossReview | null;
+  specialEventSummary?: string;
+  specialEventMessage?: string;
 };
 
 type HulebuShellMessage = {
@@ -743,6 +750,7 @@ function readPersistedShellState(): PersistedShellState {
           ...parsed.lastSettlement,
           ascensionReview: parsed.lastSettlement.ascensionReview ?? null,
           bossReview: parsed.lastSettlement.bossReview ?? null,
+          specialEventReview: (parsed.lastSettlement as SettlementState & { specialEventReview?: SpecialEventReview | null }).specialEventReview ?? null,
         }
       : null;
     return {
@@ -1232,6 +1240,13 @@ export function HulebuGamePage() {
         summary: data.payload.summary ?? activeRun.latestSummary,
         ascensionReview: data.payload.ascensionReview ?? null,
         bossReview: data.payload.bossReview ?? null,
+        specialEventReview:
+          data.payload.specialEventSummary || data.payload.specialEventMessage
+            ? {
+                summary: data.payload.specialEventSummary ?? "",
+                detail: data.payload.specialEventMessage ?? "",
+              }
+            : null,
       };
 
       setBankedCoins(updatedBank);
@@ -1383,6 +1398,7 @@ export function HulebuGamePage() {
     : null;
   const settlementAscensionReview = lastSettlement?.ascensionReview ?? null;
   const settlementBossReview = lastSettlement?.bossReview ?? null;
+  const settlementSpecialEventReview = lastSettlement?.specialEventReview ?? null;
   const upgradeCards = UPGRADES.map((upgrade) => {
     const level = upgrades[upgrade.id];
     const nextCost = upgrade.costs[level] ?? null;
@@ -1479,6 +1495,17 @@ export function HulebuGamePage() {
               </div>
               <p className={styles.resultSummary}>{lastSettlement.summary}</p>
               {settlementAscensionNote ? <p className={styles.resultSummary}>{settlementAscensionNote}</p> : null}
+              {settlementSpecialEventReview ? (
+                <section className={styles.settlementReview} aria-label="最近事件">
+                  <div className={styles.settlementReviewGrid}>
+                    <article className={styles.settlementReviewCard}>
+                      <span>最近事件</span>
+                      <strong>{settlementSpecialEventReview.summary ?? "事件已记录"}</strong>
+                      <p>{settlementSpecialEventReview.detail ?? "这一轮事件结果已经跟着结算一起记下来了，后续会继续围绕稀有事件、构筑联动和高阶事件展开。"}</p>
+                    </article>
+                  </div>
+                </section>
+              ) : null}
               {settlementBossReview ? (
                 <section className={styles.settlementReview} aria-label="Boss 复盘">
                   <div className={styles.settlementReviewGrid}>

@@ -74,6 +74,10 @@ describe("hulebu web game publishing", () => {
     expect(component).toContain("阶段目标");
     expect(component).toContain("Boss 奖励品质");
     expect(component).toContain("高阶 Boss 变体");
+    expect(component).toContain("最近事件");
+    expect(component).toContain("稀有事件");
+    expect(component).toContain("构筑联动");
+    expect(component).toContain("高阶事件");
     expect(component).toContain("/api/games/hulebu/progress");
     expect(component).toContain("账号进度同步失败");
     expect(component).toContain("账号进度保存失败");
@@ -149,6 +153,16 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("阶段目标");
     expect(demo).toContain("Boss 奖励品质");
     expect(demo).toContain("高阶 Boss 变体");
+    expect(demo).toContain("SPECIAL_EVENT_RARITIES");
+    expect(demo).toContain("SPECIAL_EVENT_TAGS");
+    expect(demo).toContain("EVENT_BUILD_LINKS");
+    expect(demo).toContain("function getSpecialEventOffer");
+    expect(demo).toContain("稀有事件");
+    expect(demo).toContain("构筑联动");
+    expect(demo).toContain("高阶事件");
+    expect(demo).toContain("险招翻倍");
+    expect(demo).toContain("河灯旧约");
+    expect(demo).toContain("封盘押后");
     expect(demo).toContain("起风试手");
     expect(demo).toContain("南桌偏门");
     expect(demo).toContain("西窗压注");
