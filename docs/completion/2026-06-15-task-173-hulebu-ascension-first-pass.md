@@ -1,0 +1,57 @@
+# 2026-06-15 T173 完成记录
+
+- 任务编号：T173
+- 任务名称：胡了卜高阶周目第一版
+- 负责人：Lee
+- 完成时间：2026-06-15
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T173-hulebu-ascension-first-pass.md`
+  - `docs/tasks/claims/T173-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-15-hulebu-ascension-first-pass-design.md`
+  - `docs/superpowers/plans/2026-06-15-hulebu-ascension-first-pass.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-15-lee.md`
+  - `docs/completion/2026-06-15-task-173-hulebu-ascension-first-pass.md`
+- 实现内容：
+  - `/games/hulebu` 局外壳层新增 `高阶` 面板，开放 `东风场 / 南风场` 两档高阶周目入口、解锁状态、下一档提示和进行中摘要。
+  - 外层本地存档新增 `bestAscensionLevel`，会记住当前已解锁最高周目，并在通关高阶 run 后推进下一档解锁。
+  - HTML 原型新增 `ascensionLevel / ascensionName` 参数解析、周目 HUD、周目标签、重开承接和结算摘要。
+  - 高阶周目第一版复用现有 20 关主线和奖励池，但加入固定周目压力：`东风场` 提高牌山压力并附带周期性高压词缀；`南风场` 进一步降低起始工具并禁用洗牌。
+  - 站内静态 Demo `/games/hulebu-demo/index.html` 已同步高阶周目逻辑，并保留站内绝对配置路径。
+  - `packages/shared` 与 `apps/web` 测试已补高阶周目字符串和发布断言，覆盖局外壳层、原型和静态发布副本。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T173-hulebu-ascension-first-pass.md docs/tasks/claims/T173-lee.md docs/superpowers/specs/2026-06-15-hulebu-ascension-first-pass-design.md docs/superpowers/plans/2026-06-15-hulebu-ascension-first-pass.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-15-lee.md docs/completion/2026-06-15-task-173-hulebu-ascension-first-pass.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 验证结果：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`：通过。
+  - `npm run test -w apps/web -- hulebu`：通过。
+  - `npm run typecheck -w apps/web`：通过。
+  - `npm run build -w apps/web`：通过。
+  - 源原型与站内静态副本内联脚本 `node --check`：通过。
+  - `npm run docs:sync`：通过。
+  - 占位符扫描：通过，目标文档未发现占位残留。
+  - `git diff --check`：通过。
+  - 浏览器验收：通过。桌面端和 390x844 下都可进入 `/games/hulebu` 的 `高阶` 面板，点击后进入高阶 run，摘要和 iframe 参数会显示 `东风场 / 南风场`，移动端 `scrollWidth=390`，无横向溢出。
+- 遗留问题：
+  - 本任务不实现完整高阶事件扩容、完整 Boss 试炼第二版、云同步、排行榜、付费、广告或 Cocos 正式工程追平。

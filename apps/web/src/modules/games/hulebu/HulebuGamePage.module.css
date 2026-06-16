@@ -1,80 +1,527 @@
 .shell {
   min-height: 100dvh;
-  display: grid;
-  grid-template-rows: 44px minmax(0, 1fr);
-  background: #15120e;
-  color: #fff8e7;
+  background:
+    radial-gradient(circle at top, rgb(54 119 83 / 0.22), transparent 32rem),
+    linear-gradient(180deg, #12110d 0%, #17150f 44%, #0f0d09 100%);
+  color: #f7f0dd;
 }
 
-.toolbar {
+.surface {
+  min-height: 100dvh;
+  padding: 24px;
+  display: grid;
+  align-content: start;
+  gap: 20px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.brandBlock {
   min-width: 0;
   display: grid;
-  grid-template-columns: minmax(72px, 1fr) auto minmax(72px, 1fr);
-  align-items: center;
   gap: 8px;
-  border-bottom: 1px solid rgb(255 248 231 / 0.16);
-  background: #241a12;
-  padding: 0 12px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.8);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 16px;
+  font-size: clamp(28px, 4vw, 44px);
   line-height: 1;
+}
+
+.versionTag,
+.heroTag,
+.coinPill,
+.resultBadge {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgb(255 248 231 / 0.14);
+  border-radius: 8px;
+  background: rgb(36 26 18 / 0.88);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f5dfb8;
+}
+
+.subtitle {
+  max-width: 56rem;
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.topbarActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.backLink,
+.tunerLink,
+.primaryButton,
+.secondaryButton,
+.modeButton {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgb(255 248 231 / 0.14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .backLink,
 .tunerLink {
-  min-height: 32px;
+  color: #f5dfb8;
+  background: rgb(36 26 18 / 0.88);
+}
+
+.backLink:hover,
+.tunerLink:hover,
+.primaryButton:hover,
+.secondaryButton:hover,
+.modeButton:hover {
+  border-color: rgb(245 223 184 / 0.42);
+  transform: translateY(-1px);
+}
+
+.lobbyLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 20px;
+}
+
+.mainPanel,
+.sidePanel,
+.settlementPanel {
+  border: 1px solid rgb(255 248 231 / 0.12);
+  border-radius: 8px;
+  background: rgb(20 17 12 / 0.92);
+  padding: 20px;
+}
+
+.mainPanel {
+  display: grid;
+  gap: 18px;
+}
+
+.heroMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.heroTitle,
+.resultTitle {
+  font-size: clamp(24px, 3.2vw, 36px);
+  line-height: 1.1;
+}
+
+.heroDescription,
+.resultDescription,
+.previewDescription,
+.resultSummary {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.statusRow,
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.statusCard,
+.metric,
+.lastRun,
+.previewPanel {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(34 26 18 / 0.76);
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.statusCard span,
+.metric span,
+.lastRun span,
+.previewHeader span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
+}
+
+.statusCard strong,
+.metric strong,
+.lastRun strong,
+.previewHeader strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.statusCard p,
+.lastRun p {
+  margin: 0;
+  color: rgb(247 240 221 / 0.72);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.primaryActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  background: #f0c776;
+  color: #1f170d;
+  border-color: #f0c776;
+}
+
+.secondaryButton,
+.modeButton {
+  background: rgb(36 26 18 / 0.86);
+  color: #f5dfb8;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.44;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.bulletList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  color: rgb(247 240 221 / 0.8);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sidePanel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.modeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.previewHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upgradeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.codexPanel,
+.codexSummary,
+.codexGrid,
+.codexCard,
+.achievementCard,
+.achievementHead,
+.achievementMeta {
+  display: grid;
+  gap: 10px;
+}
+
+.codexPanel {
+  gap: 14px;
+}
+
+.codexSummary,
+.codexGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.codexCard,
+.achievementCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(34 26 18 / 0.76);
+  padding: 14px;
+}
+
+.codexCard span,
+.achievementHead span,
+.achievementMeta span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
+}
+
+.codexCard strong,
+.achievementHead strong,
+.achievementMeta strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.codexCard p,
+.achievementDescription {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.achievementUnlocked {
+  border-color: rgb(240 199 118 / 0.42);
+  background: rgb(44 31 17 / 0.88);
+}
+
+.achievementLocked {
+  opacity: 0.86;
+}
+
+.upgradeCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(34 26 18 / 0.76);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.upgradeHead,
+.upgradeTitleBlock,
+.upgradeMeta,
+.upgradeActions,
+.previewUpgradeRow,
+.previewUpgradeList {
+  display: grid;
+  gap: 6px;
+}
+
+.upgradeLabel,
+.upgradeMeta span,
+.upgradeCost,
+.previewUpgradeRow span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
+}
+
+.upgradeLevel,
+.upgradeMeta strong,
+.previewUpgradeRow strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.upgradeEffect {
+  justify-self: start;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 248 231 / 0.1);
+  background: rgb(25 19 13 / 0.82);
   display: inline-flex;
   align-items: center;
+  font-size: 12px;
+  font-weight: 700;
   color: #f5dfb8;
+}
+
+.upgradeDescription {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.upgradeActions {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.previewUpgradeList {
+  margin-top: 8px;
+}
+
+.previewUpgradeRow {
+  padding-top: 8px;
+  border-top: 1px solid rgb(255 248 231 / 0.08);
+}
+
+.settlementPanel {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  gap: 18px;
+}
+
+.resultHeader {
+  display: grid;
+  gap: 10px;
+}
+
+.playStage {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: 52px minmax(0, 1fr);
+}
+
+.playStageHidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.playStageVisible {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.playShellBar {
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgb(255 248 231 / 0.12);
+  background: rgb(17 15 10 / 0.96);
+}
+
+.playRunSummary {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.playRunSummary strong {
+  font-size: 15px;
+}
+
+.playRunSummary span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgb(247 240 221 / 0.72);
   font-size: 13px;
-  font-weight: 800;
-}
-
-.backLink {
-  justify-self: start;
-}
-
-.tunerLink {
-  justify-self: end;
 }
 
 .frame {
-  display: block;
   width: 100%;
-  min-width: 0;
-  height: calc(100dvh - 44px);
+  height: calc(100dvh - 52px);
   border: 0;
-  background: #f7f1e5;
+  background: #12110d;
 }
 
-@media (max-width: 480px) {
-  .shell {
-    grid-template-rows: 40px minmax(0, 1fr);
+@media (max-width: 960px) {
+  .lobbyLayout {
+    grid-template-columns: 1fr;
   }
 
-  .toolbar {
-    grid-template-columns: minmax(56px, 1fr) auto minmax(56px, 1fr);
-    gap: 4px;
-    padding: 0 10px;
+  .upgradeGrid {
+    grid-template-columns: 1fr;
   }
 
-  .title {
-    font-size: 15px;
+  .codexSummary,
+  .codexGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .surface {
+    padding: 14px;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .topbarActions,
+  .primaryActions {
+    width: 100%;
   }
 
   .backLink,
-  .tunerLink {
-    min-height: 30px;
-    font-size: 12px;
+  .tunerLink,
+  .primaryButton,
+  .secondaryButton {
+    flex: 1 1 0;
+  }
+
+  .statusRow,
+  .metricsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modeGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .playStage {
+    grid-template-rows: 88px minmax(0, 1fr);
+  }
+
+  .playShellBar {
+    padding: 10px;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .playRunSummary {
+    grid-column: 1 / -1;
+    justify-items: start;
   }
 
   .frame {
-    height: calc(100dvh - 40px);
+    height: calc(100dvh - 88px);
   }
 }

@@ -1,0 +1,44 @@
+# 2026-06-15 T172 完成记录
+
+- 任务编号：T172
+- 任务名称：胡了卜成就图鉴第一版
+- 负责人：Lee
+- 完成时间：2026-06-15
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T172-hulebu-achievement-codex.md`
+  - `docs/tasks/claims/T172-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-15-hulebu-achievement-codex-design.md`
+  - `docs/superpowers/plans/2026-06-15-hulebu-achievement-codex.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-15-lee.md`
+  - `docs/completion/2026-06-15-task-172-hulebu-achievement-codex.md`
+- 实现内容：
+  - `/games/hulebu` 局外 `图鉴` 面板已从占位改为成就图鉴第一版。
+  - 外层本地存档新增 `achievements`，会记录首批成就的首次解锁时间。
+  - 图鉴第一版已接入 8 项成就，覆盖主线、无尽、每日和局外升级四类已有长期进度。
+  - 旧存档 hydration 时会按 `bestEndlessLayer`、`dailyBestLevels`、`upgrades` 和历史结算补算首批可解锁成就。
+  - 图鉴面板新增总览、下一目标提示和已解锁/未解锁成就卡展示。
+- 验证命令：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T172-hulebu-achievement-codex.md docs/tasks/claims/T172-lee.md docs/superpowers/specs/2026-06-15-hulebu-achievement-codex-design.md docs/superpowers/plans/2026-06-15-hulebu-achievement-codex.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-15-lee.md docs/completion/2026-06-15-task-172-hulebu-achievement-codex.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 验证结果：
+  - `npm run test -w apps/web -- hulebu`、`npm run typecheck -w apps/web` 和 `npm run build -w apps/web` 通过。
+  - `npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+  - 浏览器桌面端和 390x844 移动端检查通过；`/games/hulebu` 的 `图鉴` 面板已显示成就图鉴第一版，移动端 `scrollWidth=390`，无横向溢出。
+- 遗留问题：
+  - 本任务不实现完整事件词条库、Boss 详情页、奖励路线收藏页、云同步、排行榜、付费、广告或 Cocos 正式工程追平。

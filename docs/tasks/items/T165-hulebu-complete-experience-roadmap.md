@@ -1,0 +1,65 @@
+# T165：胡了卜 Demo 完整体验版推进方案
+
+- 任务编号：T165
+- 优先级：P1
+- 任务名称：胡了卜 Demo 完整体验版推进方案
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T101, T102, T105, T162, T163, T164, D005, D006, D041
+- 背景：当前 `/games/hulebu` 站内 Demo 已完成 10 关朋友试玩、有限牌河、补杠、胡牌震落、残局收官、特殊事件和终局试炼。Lee 希望把 Demo 推进到完整游戏设计方案中的“所有内容”。完整方案包含 20 关主线、局外升级、长期模式、每日、成就、无尽、高阶周目和 Cocos 正式表现层；这些内容需要先拆分阶段，避免把长期模式一次性塞进单个 HTML 补丁。
+- 目标：
+  - 盘点完整设计方案与当前 Demo 的差距。
+  - 明确 Demo 完整体验版的阶段路线。
+  - 第一阶段锁定为 `20 关主线 + 局外升级壳 + 第 20 关 Boss`。
+  - 把后续无尽、每日、成就、高阶周目和 Cocos 正式版拆成后续任务方向。
+  - 产出可执行实施计划，供下一任务开始落地。
+- 不做：
+  - 不直接修改玩法代码或静态 Demo。
+  - 不一次性实现无尽、每日、成就和完整高阶周目。
+  - 不改 Cocos 正式工程。
+  - 不接登录、云存档、排行榜、付费、广告或体力商业化。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T165-hulebu-complete-experience-roadmap.md`
+  - `docs/tasks/claims/T165-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-13-hulebu-complete-experience-roadmap-design.md`
+  - `docs/superpowers/plans/2026-06-13-hulebu-complete-experience-roadmap.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `packages/shared/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T165-hulebu-complete-experience-roadmap.md docs/tasks/claims/T165-lee.md docs/superpowers/specs/2026-06-13-hulebu-complete-experience-roadmap-design.md docs/superpowers/plans/2026-06-13-hulebu-complete-experience-roadmap.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-13-lee.md docs/completion/2026-06-13-task-165-hulebu-complete-experience-roadmap.md`
+  - `git diff --check`
+- 拆分子任务：
+  - [x] 写完整体验版设计规格。
+  - [x] 写完整体验版实施计划。
+  - [x] 更新模块文档和当天进展。
+  - [x] 同步任务摘要并完成文档验证。
+- 完成记录：
+  - 已完成当前 Demo 与完整方案差距盘点。
+  - 已确认完整体验版第一实现阶段应优先做 `20 关主线 + 局外升级壳 + 第 20 关 Boss`。
+  - 已把奖励池扩展、无尽、每日、成就、高阶周目和 Cocos 正式表现层拆为后续阶段，不并入第一实现任务。
+

@@ -1,0 +1,72 @@
+# T170：胡了卜无尽牌山第一版
+
+- 任务编号：T170
+- 优先级：P1
+- 任务名称：胡了卜无尽牌山第一版
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T165, T166, T167, T168, T169
+- 背景：T169 已完成路线型奖励池，当前 `/games/hulebu` 已具备 20 关主线、局外首页、结算、铜钱资产、3 项局外升级和路线型奖励。完整体验版下一步需要给主线通关后的玩家一个可继续挑战的长期入口，但第一版不能同时把每日、成就、高阶周目和云存档都接上。
+- 目标：
+  - 在 `/games/hulebu` 局外页开放 `无尽牌山` 第一版入口。
+  - 无尽模式从第 21 层开始，使用现有密集牌山生成器和路线型奖励池循环推进。
+  - 外层壳记录本地最高无尽层数，并在局外页、进行中摘要和结算面板可见。
+  - iframe 支持 `mode=endless` 和 `startLayer=21` 参数，向父页面同步当前层数。
+  - 同步站内静态 Demo 和相关测试。
+- 不做：
+  - 不做每日牌局。
+  - 不做成就图鉴。
+  - 不做高阶周目、词缀扩展或能力卡槽压缩。
+  - 不接登录、云存档、多端同步、排行榜、付费或广告。
+  - 不改 Cocos 正式工程。
+  - 不重做 20 关主线结构、局外升级价格或奖励 effect 类型。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T170-hulebu-endless-mountain.md`
+  - `docs/tasks/claims/T170-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-14-hulebu-endless-mountain-design.md`
+  - `docs/superpowers/plans/2026-06-14-hulebu-endless-mountain.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/levels.json`
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T170-hulebu-endless-mountain.md docs/tasks/claims/T170-lee.md docs/superpowers/specs/2026-06-14-hulebu-endless-mountain-design.md docs/superpowers/plans/2026-06-14-hulebu-endless-mountain.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-170-hulebu-endless-mountain.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写失败测试锁定无尽入口、iframe 参数、最高层记录和原型 `mode=endless` 支持。
+  - [x] 改造站内壳层，开放无尽入口、启动、结算和本地最高层持久化。
+  - [x] 改造 HTML 原型，支持第 21 层起的无尽循环生成和 shell 消息层数同步。
+  - [x] 同步静态 Demo，更新模块文档、当天进展和完成记录。
+  - [x] 跑自动化验证、脚本检查、构建和桌面/移动端浏览器检查。

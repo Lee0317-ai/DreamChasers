@@ -1,0 +1,75 @@
+# T166：胡了卜 20 关完整主线 Demo
+
+- 任务编号：T166
+- 优先级：P1
+- 任务名称：胡了卜 20 关完整主线 Demo
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T101, T102, T105, T162, T163, T164, T165, D005, D006, D041
+- 背景：T165 已确认完整体验版应先补齐 20 关主线，再做局外首页、局外升级和长期模式。当前 `/games/hulebu` 默认玩家 Demo 仍只开放 10 关，后半段完整设计尚未进入朋友可玩的体验。
+- 目标：
+  - 默认玩家 Demo 开放 20 关。
+  - 第 1-10 关保留当前朋友试玩节奏和第 10 关终局试炼。
+  - 第 11-19 关接入渐进难度 profile，形成后半段主线压力。
+  - 第 20 关启用 `胡了卜王` 终章 Boss，并显示 Boss 目标。
+  - 奖励节点扩展为第 3、6、9、13、16、19 关。
+  - 同步站内静态 Demo 到 `apps/web/public/games/hulebu-demo/index.html`。
+- 不做：
+  - 不做局外首页、局外升级、铜钱持久资产或结算面板。
+  - 不做无尽、每日、成就、高阶周目或路线型奖励池扩展。
+  - 不改 Cocos 正式工程。
+  - 不接登录、云存档、排行榜、付费或广告。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T166-hulebu-20-level-mainline-demo.md`
+  - `docs/tasks/claims/T166-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-13-hulebu-20-level-mainline-demo-design.md`
+  - `docs/superpowers/plans/2026-06-13-hulebu-20-level-mainline-demo.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - `npm run test -w apps/web -- hulebu`
+  - `node --check /tmp/hulebu-config-playable-inline.js`
+  - `node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T166-hulebu-20-level-mainline-demo.md docs/tasks/claims/T166-lee.md docs/superpowers/specs/2026-06-13-hulebu-20-level-mainline-demo-design.md docs/superpowers/plans/2026-06-13-hulebu-20-level-mainline-demo.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-13-lee.md docs/completion/2026-06-14-task-166-hulebu-20-level-mainline-demo.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写测试锁定 20 关开放、奖励节点和终章 Boss。
+  - [x] 扩展 HTML Demo 的 20 关主线 profile 和 Boss helper。
+  - [x] 同步站内静态 Demo。
+  - [x] 跑自动化测试、脚本语法和浏览器验证。
+  - [x] 更新模块文档、当天进展和完成记录。
+- 完成记录：
+  - 默认玩家试玩页已从 10 关扩展到 20 关，并保留第 10 关 `终局试炼`。
+  - 第 11-19 关已补后半段渐进难度 profile，第 20 关启用 `胡了卜王` 终章 Boss。
+  - 奖励节点已扩展为第 3、6、9、13、16、19 关，站内静态 Demo 已同步。
+  - 玩家试玩页 `auto` 模板已新增多次 seed 重试兜底和“起手不能直接露出完整答案组”的重试条件。
+  - 390px 移动端已修正底部固定道具栏贴底和额外底部留白，卡槽最后一格不再被遮挡。

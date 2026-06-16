@@ -1,0 +1,66 @@
+# T172：胡了卜成就图鉴第一版
+
+- 任务编号：T172
+- 优先级：P1
+- 任务名称：胡了卜成就图鉴第一版
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T165, T166, T167, T168, T169, T170, T171
+- 背景：T171 已完成每日牌局第一版，但 `/games/hulebu` 的 `图鉴` 面板仍是占位。完整体验版下一步需要把主线、无尽、每日和局外升级这些已存在的长期目标沉淀成一个可查看的本地图鉴页。
+- 目标：
+  - 在 `/games/hulebu` 局外页开放成就图鉴第一版。
+  - 基于本地存档展示已解锁和未解锁的成就卡。
+  - 至少覆盖主线、无尽、每日和局外升级四类长期进度。
+  - 结算、升级购买和已有存档信号能驱动成就解锁。
+  - 同步相关测试和模块文档。
+- 不做：
+  - 不做完整事件词条库。
+  - 不做 Boss 详情页和奖励路线收藏页。
+  - 不做登录、云同步、多端同步、排行榜、付费或广告。
+  - 不改 Cocos 正式工程。
+  - 不重做 20 关主线、无尽层数、每日 seed、奖励 effect 类型或局外升级价格。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T172-hulebu-achievement-codex.md`
+  - `docs/tasks/claims/T172-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-15-hulebu-achievement-codex-design.md`
+  - `docs/superpowers/plans/2026-06-15-hulebu-achievement-codex.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-15-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/levels.json`
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T172-hulebu-achievement-codex.md docs/tasks/claims/T172-lee.md docs/superpowers/specs/2026-06-15-hulebu-achievement-codex-design.md docs/superpowers/plans/2026-06-15-hulebu-achievement-codex.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-15-lee.md docs/completion/2026-06-15-task-172-hulebu-achievement-codex.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写失败测试锁定图鉴面板、成就字段和解锁文案。
+  - [x] 改造局外壳层与本地存档，加入成就图鉴第一版和解锁逻辑。
+  - [x] 更新模块文档、当天进展和完成记录。
+  - [x] 跑自动化验证、构建、文档同步和桌面/移动端浏览器检查。

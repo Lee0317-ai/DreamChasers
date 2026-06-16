@@ -1,0 +1,38 @@
+# 2026-06-16 Task 175 胡了卜网页版完整版路线重排和缺口拆分
+
+- 任务编号：T175
+- 负责人：Lee
+- 修改文件：
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T175-hulebu-web-full-version-roadmap.md`
+  - `docs/tasks/claims/T175-lee.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-web-full-version-roadmap-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-web-full-version-roadmap.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`
+  - `docs/modules/mahjong-roguelike/DECISIONS.md`
+  - `docs/progress/2026-06-16-lee.md`
+  - `docs/completion/2026-06-16-task-175-hulebu-web-full-version-roadmap.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+- 实现内容：
+  - 将 Lee 的路线调整写入变更入口：先完成 `/games/hulebu` 网页版完整版，再补 Cocos、音乐、美术、动效和发布资源。
+  - 新增 T175 任务分片和领取分片，确认本轮只做文档和路线重排，不修改 Web Demo、Cocos 工程、共享包、Prisma 或资源文件。
+  - 新增网页版完整版优先路线规格，盘点当前 Web 已完成内容和相对完整版缺口。
+  - 更新模块 README、PROGRESS、HANDOFF、IMPLEMENTATION_PLAN 和 DECISIONS，移除“下一步优先 Cocos 追平”的旧建议。
+  - 将 `docs/tasks/NEXT_ID.md` 推进到 `176`。
+- 验证命令：
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T175-hulebu-web-full-version-roadmap.md docs/tasks/claims/T175-lee.md docs/superpowers/specs/2026-06-16-hulebu-web-full-version-roadmap-design.md docs/superpowers/plans/2026-06-16-hulebu-web-full-version-roadmap.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md docs/modules/mahjong-roguelike/DECISIONS.md docs/progress/2026-06-16-lee.md docs/completion/2026-06-16-task-175-hulebu-web-full-version-roadmap.md`
+  - `git diff --check`
+- 验证结果：
+  - `npm run docs:sync` 通过，并同步 150 个任务分片和 142 个领取分片。
+  - 占位符扫描无匹配。
+  - `git diff --check` 无输出，未发现空白错误。
+- 遗留问题：
+  - T175 只完成路线重排和缺口拆分，不实现高阶、Boss、事件、成就、无尽、每日、奖励、平衡、Cocos 或音画资源。
+  - 下一步建议开 T176，优先做胡了卜高阶周目完整版。

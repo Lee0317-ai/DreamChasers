@@ -214,6 +214,7 @@ export type UserWhereInput = {
   creditWallets?: Prisma.CreditWalletListRelationFilter
   productSessions?: Prisma.ProductSessionListRelationFilter
   memberships?: Prisma.ProductMembershipListRelationFilter
+  hulebuProgress?: Prisma.XOR<Prisma.HulebuProgressNullableScalarRelationFilter, Prisma.HulebuProgressWhereInput> | null
   timePickProfile?: Prisma.XOR<Prisma.TimePickProfileNullableScalarRelationFilter, Prisma.TimePickProfileWhereInput> | null
   timePickRoles?: Prisma.TimePickUserRoleListRelationFilter
   timePickFolders?: Prisma.TimePickFolderListRelationFilter
@@ -244,6 +245,7 @@ export type UserOrderByWithRelationInput = {
   creditWallets?: Prisma.CreditWalletOrderByRelationAggregateInput
   productSessions?: Prisma.ProductSessionOrderByRelationAggregateInput
   memberships?: Prisma.ProductMembershipOrderByRelationAggregateInput
+  hulebuProgress?: Prisma.HulebuProgressOrderByWithRelationInput
   timePickProfile?: Prisma.TimePickProfileOrderByWithRelationInput
   timePickRoles?: Prisma.TimePickUserRoleOrderByRelationAggregateInput
   timePickFolders?: Prisma.TimePickFolderOrderByRelationAggregateInput
@@ -277,6 +279,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   creditWallets?: Prisma.CreditWalletListRelationFilter
   productSessions?: Prisma.ProductSessionListRelationFilter
   memberships?: Prisma.ProductMembershipListRelationFilter
+  hulebuProgress?: Prisma.XOR<Prisma.HulebuProgressNullableScalarRelationFilter, Prisma.HulebuProgressWhereInput> | null
   timePickProfile?: Prisma.XOR<Prisma.TimePickProfileNullableScalarRelationFilter, Prisma.TimePickProfileWhereInput> | null
   timePickRoles?: Prisma.TimePickUserRoleListRelationFilter
   timePickFolders?: Prisma.TimePickFolderListRelationFilter
@@ -335,6 +338,7 @@ export type UserCreateInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -365,6 +369,7 @@ export type UserUncheckedCreateInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -395,6 +400,7 @@ export type UserUpdateInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -425,6 +431,7 @@ export type UserUncheckedUpdateInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -628,6 +635,20 @@ export type UserUpdateOneRequiredWithoutProductSessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProductSessionsInput, Prisma.UserUpdateWithoutProductSessionsInput>, Prisma.UserUncheckedUpdateWithoutProductSessionsInput>
 }
 
+export type UserCreateNestedOneWithoutHulebuProgressInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutHulebuProgressInput, Prisma.UserUncheckedCreateWithoutHulebuProgressInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutHulebuProgressInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutHulebuProgressNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutHulebuProgressInput, Prisma.UserUncheckedCreateWithoutHulebuProgressInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutHulebuProgressInput
+  upsert?: Prisma.UserUpsertWithoutHulebuProgressInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutHulebuProgressInput, Prisma.UserUpdateWithoutHulebuProgressInput>, Prisma.UserUncheckedUpdateWithoutHulebuProgressInput>
+}
+
 export type UserCreateNestedOneWithoutAuditLogsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutAuditLogsInput
@@ -801,6 +822,7 @@ export type UserCreateWithoutAiGatewayRequestLogsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -830,6 +852,7 @@ export type UserUncheckedCreateWithoutAiGatewayRequestLogsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -875,6 +898,7 @@ export type UserUpdateWithoutAiGatewayRequestLogsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -904,6 +928,7 @@ export type UserUncheckedUpdateWithoutAiGatewayRequestLogsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -932,6 +957,7 @@ export type UserCreateWithoutAccountsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -961,6 +987,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1006,6 +1033,7 @@ export type UserUpdateWithoutAccountsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1035,6 +1063,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1064,6 +1093,7 @@ export type UserCreateWithoutSessionsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1093,6 +1123,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1138,6 +1169,7 @@ export type UserUpdateWithoutSessionsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1167,6 +1199,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1196,6 +1229,7 @@ export type UserCreateWithoutProfileInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1225,6 +1259,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1270,6 +1305,7 @@ export type UserUpdateWithoutProfileInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1299,6 +1335,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1328,6 +1365,7 @@ export type UserCreateWithoutMembershipsInput = {
   auditLogs?: Prisma.AccountAuditLogCreateNestedManyWithoutUserInput
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1357,6 +1395,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   auditLogs?: Prisma.AccountAuditLogUncheckedCreateNestedManyWithoutUserInput
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1402,6 +1441,7 @@ export type UserUpdateWithoutMembershipsInput = {
   auditLogs?: Prisma.AccountAuditLogUpdateManyWithoutUserNestedInput
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1431,6 +1471,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   auditLogs?: Prisma.AccountAuditLogUncheckedUpdateManyWithoutUserNestedInput
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1460,6 +1501,7 @@ export type UserCreateWithoutCreditWalletsInput = {
   auditLogs?: Prisma.AccountAuditLogCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1489,6 +1531,7 @@ export type UserUncheckedCreateWithoutCreditWalletsInput = {
   auditLogs?: Prisma.AccountAuditLogUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1534,6 +1577,7 @@ export type UserUpdateWithoutCreditWalletsInput = {
   auditLogs?: Prisma.AccountAuditLogUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1563,6 +1607,7 @@ export type UserUncheckedUpdateWithoutCreditWalletsInput = {
   auditLogs?: Prisma.AccountAuditLogUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1592,6 +1637,7 @@ export type UserCreateWithoutApiKeysInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1621,6 +1667,7 @@ export type UserUncheckedCreateWithoutApiKeysInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1666,6 +1713,7 @@ export type UserUpdateWithoutApiKeysInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1695,6 +1743,7 @@ export type UserUncheckedUpdateWithoutApiKeysInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1724,6 +1773,7 @@ export type UserCreateWithoutProductSessionsInput = {
   auditLogs?: Prisma.AccountAuditLogCreateNestedManyWithoutUserInput
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1753,6 +1803,7 @@ export type UserUncheckedCreateWithoutProductSessionsInput = {
   auditLogs?: Prisma.AccountAuditLogUncheckedCreateNestedManyWithoutUserInput
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1798,6 +1849,7 @@ export type UserUpdateWithoutProductSessionsInput = {
   auditLogs?: Prisma.AccountAuditLogUpdateManyWithoutUserNestedInput
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1826,6 +1878,143 @@ export type UserUncheckedUpdateWithoutProductSessionsInput = {
   apiKeys?: Prisma.PlatformApiKeyUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AccountAuditLogUncheckedUpdateManyWithoutUserNestedInput
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
+  timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
+  timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
+  timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
+  timePickResources?: Prisma.TimePickResourceUncheckedUpdateManyWithoutUserNestedInput
+  timePickInspirations?: Prisma.TimePickInspirationUncheckedUpdateManyWithoutUserNestedInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryUncheckedUpdateManyWithoutUserNestedInput
+  timePickTagGroups?: Prisma.TimePickTagGroupUncheckedUpdateManyWithoutUserNestedInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedUpdateManyWithoutUserNestedInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedUpdateManyWithoutUserNestedInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutHulebuProgressInput = {
+  id?: string
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  passwordHash?: string | null
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  apiKeys?: Prisma.PlatformApiKeyCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AccountAuditLogCreateNestedManyWithoutUserInput
+  creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
+  productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
+  memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
+  timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
+  timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
+  timePickResources?: Prisma.TimePickResourceCreateNestedManyWithoutUserInput
+  timePickInspirations?: Prisma.TimePickInspirationCreateNestedManyWithoutUserInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryCreateNestedManyWithoutUserInput
+  timePickTagGroups?: Prisma.TimePickTagGroupCreateNestedManyWithoutUserInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusCreateNestedManyWithoutUserInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkCreateNestedManyWithoutUserInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutHulebuProgressInput = {
+  id?: string
+  name?: string | null
+  email: string
+  emailVerified?: Date | string | null
+  passwordHash?: string | null
+  image?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  apiKeys?: Prisma.PlatformApiKeyUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AccountAuditLogUncheckedCreateNestedManyWithoutUserInput
+  creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
+  productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
+  timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
+  timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
+  timePickResources?: Prisma.TimePickResourceUncheckedCreateNestedManyWithoutUserInput
+  timePickInspirations?: Prisma.TimePickInspirationUncheckedCreateNestedManyWithoutUserInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryUncheckedCreateNestedManyWithoutUserInput
+  timePickTagGroups?: Prisma.TimePickTagGroupUncheckedCreateNestedManyWithoutUserInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusUncheckedCreateNestedManyWithoutUserInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUncheckedCreateNestedManyWithoutUserInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawUncheckedCreateNestedManyWithoutUserInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutHulebuProgressInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutHulebuProgressInput, Prisma.UserUncheckedCreateWithoutHulebuProgressInput>
+}
+
+export type UserUpsertWithoutHulebuProgressInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutHulebuProgressInput, Prisma.UserUncheckedUpdateWithoutHulebuProgressInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutHulebuProgressInput, Prisma.UserUncheckedCreateWithoutHulebuProgressInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutHulebuProgressInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutHulebuProgressInput, Prisma.UserUncheckedUpdateWithoutHulebuProgressInput>
+}
+
+export type UserUpdateWithoutHulebuProgressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  apiKeys?: Prisma.PlatformApiKeyUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AccountAuditLogUpdateManyWithoutUserNestedInput
+  creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
+  productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
+  timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
+  timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
+  timePickResources?: Prisma.TimePickResourceUpdateManyWithoutUserNestedInput
+  timePickInspirations?: Prisma.TimePickInspirationUpdateManyWithoutUserNestedInput
+  timePickSearchHistory?: Prisma.TimePickSearchHistoryUpdateManyWithoutUserNestedInput
+  timePickTagGroups?: Prisma.TimePickTagGroupUpdateManyWithoutUserNestedInput
+  timePickLearningFocus?: Prisma.TimePickLearningFocusUpdateManyWithoutUserNestedInput
+  timePickTryQueueLinks?: Prisma.TimePickTryQueueLinkUpdateManyWithoutUserNestedInput
+  timePickFortuneDraws?: Prisma.TimePickFortuneDrawUpdateManyWithoutUserNestedInput
+  aiGatewayRequestLogs?: Prisma.AiGatewayRequestLogUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutHulebuProgressInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  apiKeys?: Prisma.PlatformApiKeyUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AccountAuditLogUncheckedUpdateManyWithoutUserNestedInput
+  creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
+  productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
@@ -1856,6 +2045,7 @@ export type UserCreateWithoutAuditLogsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -1885,6 +2075,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -1930,6 +2121,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -1959,6 +2151,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -1989,6 +2182,7 @@ export type UserCreateWithoutTimePickProfileInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
   timePickResources?: Prisma.TimePickResourceCreateNestedManyWithoutUserInput
@@ -2018,6 +2212,7 @@ export type UserUncheckedCreateWithoutTimePickProfileInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
   timePickResources?: Prisma.TimePickResourceUncheckedCreateNestedManyWithoutUserInput
@@ -2063,6 +2258,7 @@ export type UserUpdateWithoutTimePickProfileInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
   timePickResources?: Prisma.TimePickResourceUpdateManyWithoutUserNestedInput
@@ -2092,6 +2288,7 @@ export type UserUncheckedUpdateWithoutTimePickProfileInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
   timePickResources?: Prisma.TimePickResourceUncheckedUpdateManyWithoutUserNestedInput
@@ -2121,6 +2318,7 @@ export type UserCreateWithoutTimePickRolesInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
   timePickResources?: Prisma.TimePickResourceCreateNestedManyWithoutUserInput
@@ -2150,6 +2348,7 @@ export type UserUncheckedCreateWithoutTimePickRolesInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
   timePickResources?: Prisma.TimePickResourceUncheckedCreateNestedManyWithoutUserInput
@@ -2195,6 +2394,7 @@ export type UserUpdateWithoutTimePickRolesInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
   timePickResources?: Prisma.TimePickResourceUpdateManyWithoutUserNestedInput
@@ -2224,6 +2424,7 @@ export type UserUncheckedUpdateWithoutTimePickRolesInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
   timePickResources?: Prisma.TimePickResourceUncheckedUpdateManyWithoutUserNestedInput
@@ -2253,6 +2454,7 @@ export type UserCreateWithoutTimePickFoldersInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickResources?: Prisma.TimePickResourceCreateNestedManyWithoutUserInput
@@ -2282,6 +2484,7 @@ export type UserUncheckedCreateWithoutTimePickFoldersInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickResources?: Prisma.TimePickResourceUncheckedCreateNestedManyWithoutUserInput
@@ -2327,6 +2530,7 @@ export type UserUpdateWithoutTimePickFoldersInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickResources?: Prisma.TimePickResourceUpdateManyWithoutUserNestedInput
@@ -2356,6 +2560,7 @@ export type UserUncheckedUpdateWithoutTimePickFoldersInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickResources?: Prisma.TimePickResourceUncheckedUpdateManyWithoutUserNestedInput
@@ -2385,6 +2590,7 @@ export type UserCreateWithoutTimePickResourcesInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -2414,6 +2620,7 @@ export type UserUncheckedCreateWithoutTimePickResourcesInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -2459,6 +2666,7 @@ export type UserUpdateWithoutTimePickResourcesInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -2488,6 +2696,7 @@ export type UserUncheckedUpdateWithoutTimePickResourcesInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -2517,6 +2726,7 @@ export type UserCreateWithoutTimePickInspirationsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -2546,6 +2756,7 @@ export type UserUncheckedCreateWithoutTimePickInspirationsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -2591,6 +2802,7 @@ export type UserUpdateWithoutTimePickInspirationsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -2620,6 +2832,7 @@ export type UserUncheckedUpdateWithoutTimePickInspirationsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -2649,6 +2862,7 @@ export type UserCreateWithoutTimePickSearchHistoryInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -2678,6 +2892,7 @@ export type UserUncheckedCreateWithoutTimePickSearchHistoryInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -2723,6 +2938,7 @@ export type UserUpdateWithoutTimePickSearchHistoryInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -2752,6 +2968,7 @@ export type UserUncheckedUpdateWithoutTimePickSearchHistoryInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -2781,6 +2998,7 @@ export type UserCreateWithoutTimePickTagGroupsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -2810,6 +3028,7 @@ export type UserUncheckedCreateWithoutTimePickTagGroupsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -2855,6 +3074,7 @@ export type UserUpdateWithoutTimePickTagGroupsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -2884,6 +3104,7 @@ export type UserUncheckedUpdateWithoutTimePickTagGroupsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -2913,6 +3134,7 @@ export type UserCreateWithoutTimePickLearningFocusInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -2942,6 +3164,7 @@ export type UserUncheckedCreateWithoutTimePickLearningFocusInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -2987,6 +3210,7 @@ export type UserUpdateWithoutTimePickLearningFocusInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -3016,6 +3240,7 @@ export type UserUncheckedUpdateWithoutTimePickLearningFocusInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -3045,6 +3270,7 @@ export type UserCreateWithoutTimePickTryQueueLinksInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -3074,6 +3300,7 @@ export type UserUncheckedCreateWithoutTimePickTryQueueLinksInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -3119,6 +3346,7 @@ export type UserUpdateWithoutTimePickTryQueueLinksInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -3148,6 +3376,7 @@ export type UserUncheckedUpdateWithoutTimePickTryQueueLinksInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -3177,6 +3406,7 @@ export type UserCreateWithoutTimePickFortuneDrawsInput = {
   creditWallets?: Prisma.CreditWalletCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderCreateNestedManyWithoutUserInput
@@ -3206,6 +3436,7 @@ export type UserUncheckedCreateWithoutTimePickFortuneDrawsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedCreateNestedManyWithoutUserInput
   productSessions?: Prisma.ProductSessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.ProductMembershipUncheckedCreateNestedManyWithoutUserInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedCreateNestedOneWithoutUserInput
   timePickProfile?: Prisma.TimePickProfileUncheckedCreateNestedOneWithoutUserInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedCreateNestedManyWithoutUserInput
   timePickFolders?: Prisma.TimePickFolderUncheckedCreateNestedManyWithoutUserInput
@@ -3251,6 +3482,7 @@ export type UserUpdateWithoutTimePickFortuneDrawsInput = {
   creditWallets?: Prisma.CreditWalletUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUpdateManyWithoutUserNestedInput
@@ -3280,6 +3512,7 @@ export type UserUncheckedUpdateWithoutTimePickFortuneDrawsInput = {
   creditWallets?: Prisma.CreditWalletUncheckedUpdateManyWithoutUserNestedInput
   productSessions?: Prisma.ProductSessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.ProductMembershipUncheckedUpdateManyWithoutUserNestedInput
+  hulebuProgress?: Prisma.HulebuProgressUncheckedUpdateOneWithoutUserNestedInput
   timePickProfile?: Prisma.TimePickProfileUncheckedUpdateOneWithoutUserNestedInput
   timePickRoles?: Prisma.TimePickUserRoleUncheckedUpdateManyWithoutUserNestedInput
   timePickFolders?: Prisma.TimePickFolderUncheckedUpdateManyWithoutUserNestedInput
@@ -3484,6 +3717,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   creditWallets?: boolean | Prisma.User$creditWalletsArgs<ExtArgs>
   productSessions?: boolean | Prisma.User$productSessionsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
+  hulebuProgress?: boolean | Prisma.User$hulebuProgressArgs<ExtArgs>
   timePickProfile?: boolean | Prisma.User$timePickProfileArgs<ExtArgs>
   timePickRoles?: boolean | Prisma.User$timePickRolesArgs<ExtArgs>
   timePickFolders?: boolean | Prisma.User$timePickFoldersArgs<ExtArgs>
@@ -3541,6 +3775,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   creditWallets?: boolean | Prisma.User$creditWalletsArgs<ExtArgs>
   productSessions?: boolean | Prisma.User$productSessionsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
+  hulebuProgress?: boolean | Prisma.User$hulebuProgressArgs<ExtArgs>
   timePickProfile?: boolean | Prisma.User$timePickProfileArgs<ExtArgs>
   timePickRoles?: boolean | Prisma.User$timePickRolesArgs<ExtArgs>
   timePickFolders?: boolean | Prisma.User$timePickFoldersArgs<ExtArgs>
@@ -3568,6 +3803,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     creditWallets: Prisma.$CreditWalletPayload<ExtArgs>[]
     productSessions: Prisma.$ProductSessionPayload<ExtArgs>[]
     memberships: Prisma.$ProductMembershipPayload<ExtArgs>[]
+    hulebuProgress: Prisma.$HulebuProgressPayload<ExtArgs> | null
     timePickProfile: Prisma.$TimePickProfilePayload<ExtArgs> | null
     timePickRoles: Prisma.$TimePickUserRolePayload<ExtArgs>[]
     timePickFolders: Prisma.$TimePickFolderPayload<ExtArgs>[]
@@ -3991,6 +4227,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   creditWallets<T extends Prisma.User$creditWalletsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$creditWalletsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CreditWalletPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   productSessions<T extends Prisma.User$productSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$productSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   memberships<T extends Prisma.User$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  hulebuProgress<T extends Prisma.User$hulebuProgressArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$hulebuProgressArgs<ExtArgs>>): Prisma.Prisma__HulebuProgressClient<runtime.Types.Result.GetResult<Prisma.$HulebuProgressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   timePickProfile<T extends Prisma.User$timePickProfileArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timePickProfileArgs<ExtArgs>>): Prisma.Prisma__TimePickProfileClient<runtime.Types.Result.GetResult<Prisma.$TimePickProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   timePickRoles<T extends Prisma.User$timePickRolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timePickRolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimePickUserRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   timePickFolders<T extends Prisma.User$timePickFoldersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$timePickFoldersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TimePickFolderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4616,6 +4853,25 @@ export type User$membershipsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.ProductMembershipScalarFieldEnum | Prisma.ProductMembershipScalarFieldEnum[]
+}
+
+/**
+ * User.hulebuProgress
+ */
+export type User$hulebuProgressArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HulebuProgress
+   */
+  select?: Prisma.HulebuProgressSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HulebuProgress
+   */
+  omit?: Prisma.HulebuProgressOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HulebuProgressInclude<ExtArgs> | null
+  where?: Prisma.HulebuProgressWhereInput
 }
 
 /**

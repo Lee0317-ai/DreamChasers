@@ -145,36 +145,52 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain('<div class="action-strip">');
     expect(playHtml).toContain("grid-template-columns: repeat(5, minmax(48px, 64px));");
     expect(playHtml).toContain("body.play-view .slot-area {");
-    expect(playHtml).toContain("margin-bottom: 112px;");
+    expect(playHtml).toContain("margin-bottom: 168px;");
+    expect(playHtml).toContain("scroll-margin-bottom: 184px;");
     expect(playHtml).toContain("function renderPlayHud()");
     expect(playHtml).toContain("function getHudGoalText()");
     expect(playHtml).toContain("view.hudRemaining.textContent");
   });
 
-  it("朋友试玩 Demo 编排为 10 关小 run 和右侧三道具", () => {
-    expect(playHtml).toContain("const FRIEND_DEMO_LEVEL_COUNT = 10;");
+  it("朋友试玩 Demo 编排为 20 关主线和右侧三道具", () => {
+    expect(playHtml).toContain("const FRIEND_DEMO_LEVEL_COUNT = 20;");
+    expect(playHtml).toContain("const ENDLESS_START_LAYER = 21;");
     expect(playHtml).toContain("const FRIEND_DEMO_TUTORIAL_SLOT_LIMIT = 6;");
     expect(playHtml).toContain("const FRIEND_DEMO_FULL_SLOT_LIMIT = 8;");
     expect(playHtml).toContain("const FRIEND_DEMO_BOSS_TRIAL_LEVEL_INDEX = 9;");
+    expect(playHtml).toContain("const FRIEND_DEMO_FINAL_BOSS_LEVEL_INDEX = 19;");
+    expect(playHtml).toContain("const FRIEND_DEMO_REWARD_LEVEL_INDEXES = [2, 5, 8, 12, 15, 18];");
     expect(playHtml).toContain("const FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS = 180;");
     expect(playHtml).toContain('const FRIEND_DEMO_BOSS_TRIAL_TITLE = "终局试炼";');
+    expect(playHtml).toContain('const FRIEND_DEMO_FINAL_BOSS_TITLE = "胡了卜王";');
     expect(playHtml).toContain('const FRIEND_DEMO_FIRST_REWARD_ID = "demo_slot_plus_2";');
     expect(playHtml).toContain("const FRIEND_DEMO_TUTORIAL_COMBOS = [\"peng\", \"chi\", \"gang\", \"hu\"];");
     expect(playHtml).toContain("const FRIEND_DEMO_DIFFICULTY_PROFILES = [");
     expect(playHtml).toContain('label: "正式入门"');
+    expect(playHtml).toContain('label: "终章门前"');
+    expect(playHtml).toContain('label: "胡了卜王"');
     expect(playHtml).toContain("tileCount: 72");
-    expect(playHtml).toContain("tileCount: 240");
+    expect(playHtml).toContain("tileCount: 360");
     expect(playHtml).toContain("function createFriendDemoTutorialTiles");
     expect(playHtml).toContain("function getFriendDemoSlotLimit");
     expect(playHtml).toContain("function getFriendDemoLevelMode");
     expect(playHtml).toContain("function getFriendDemoDifficultyProfile");
     expect(playHtml).toContain("function getFriendDemoBossTrialGoals");
+    expect(playHtml).toContain("function isFriendDemoFinalBossLevel");
     expect(playHtml).toContain("function claimBossTrialReward");
     expect(playHtml).toContain("function getEffectiveMountainTuningForLevel");
     expect(playHtml).toContain("function getFriendDemoTutorialRequiredCombo");
     expect(playHtml).toContain("function hasCompletedFriendDemoTutorialCombo");
     expect(playHtml).toContain("function canClearCurrentLevel");
     expect(playHtml).toContain("function getFriendDemoRewardPool");
+    expect(playHtml).toContain('runMode: "mainline"');
+    expect(playHtml).toContain("function isEndlessMode()");
+    expect(playHtml).toContain("function getEndlessLayerOrder");
+    expect(playHtml).toContain("function getEndlessLevelIndex");
+    expect(playHtml).toContain("function getEndlessDifficultyProfile");
+    expect(playHtml).toContain("function advanceAfterEndlessClear");
+    expect(playHtml).toContain("endlessLayer");
+    expect(playHtml).toContain('requestedMode === "endless"');
     expect(playHtml).toContain("function createFriendDemoFixedReward");
     expect(playHtml).toContain("function useDiscardTool");
     expect(playHtml).toContain('id="discardButton"');
@@ -185,6 +201,18 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("view.discardButton");
     expect(playHtml).toContain("model.state.river");
     expect(playHtml).toContain("model.state.riverLimit");
+  });
+
+  it("支持高阶周目首版入口，并把周目参数透传到壳层", () => {
+    expect(playHtml).toContain('requestedMode === "ascension"');
+    expect(playHtml).toContain("ascensionLevel");
+    expect(playHtml).toContain("ascensionName");
+    expect(playHtml).toContain("ASCENSION_CONFIGS");
+    expect(playHtml).toContain('"东风场"');
+    expect(playHtml).toContain('"南风场"');
+    expect(playHtml).toContain("高阶周目");
+    expect(playHtml).toContain('requestedMode === "ascension"');
+    expect(playHtml).toContain('source: "hulebu-demo-shell"');
   });
 
   it("玩家页显示记牌器，供玩家查看剩余花色和数量", () => {
@@ -275,6 +303,16 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("高压牌山");
   });
 
+  it("试玩 Demo 的奖励展示带路线标签", () => {
+    expect(playHtml).toContain("reward-route");
+    expect(playHtml).toContain("吃流");
+    expect(playHtml).toContain("碰流");
+    expect(playHtml).toContain("杠流");
+    expect(playHtml).toContain("胡流");
+    expect(playHtml).toContain("道具流");
+    expect(playHtml).toContain("信息流");
+  });
+
   it("默认玩家页压缩 HUD，保证操作区优先留在一屏", () => {
     expect(playHtml).toContain("body.play-view .topbar {");
     expect(playHtml).toContain("display: none;");
@@ -289,7 +327,8 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("body.play-view .tool-button {");
     expect(playHtml).toContain("min-height: 36px;");
     expect(playHtml).toContain("body.play-view .slot-area {");
-    expect(playHtml).toContain("margin-bottom: 112px;");
+    expect(playHtml).toContain("margin-bottom: 168px;");
+    expect(playHtml).toContain("scroll-margin-bottom: 184px;");
   });
 
   it("失败状态使用显眼弹层并提供重开本关入口", () => {

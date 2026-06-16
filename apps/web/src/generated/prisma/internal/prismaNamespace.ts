@@ -407,6 +407,7 @@ export const ModelName = {
   CreditLedger: 'CreditLedger',
   PlatformApiKey: 'PlatformApiKey',
   ProductSession: 'ProductSession',
+  HulebuProgress: 'HulebuProgress',
   CredentialReference: 'CredentialReference',
   AccountAuditLog: 'AccountAuditLog',
   TimePickProfile: 'TimePickProfile',
@@ -435,7 +436,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "contentItem" | "category" | "tag" | "contentTag" | "clickEvent" | "updateLog" | "aiRequestLog" | "usageQuota" | "apiCredential" | "user" | "aiGatewayRequestLog" | "account" | "session" | "verificationToken" | "emailLoginRequest" | "userProfile" | "product" | "productMembership" | "entitlement" | "creditWallet" | "creditLedger" | "platformApiKey" | "productSession" | "credentialReference" | "accountAuditLog" | "timePickProfile" | "timePickUserRole" | "timePickSection" | "timePickFolder" | "timePickResource" | "timePickInspiration" | "timePickSearchHistory" | "timePickTagGroup" | "timePickLearningFocus" | "timePickTryQueueLink" | "timePickFortuneDraw"
+    modelProps: "contentItem" | "category" | "tag" | "contentTag" | "clickEvent" | "updateLog" | "aiRequestLog" | "usageQuota" | "apiCredential" | "user" | "aiGatewayRequestLog" | "account" | "session" | "verificationToken" | "emailLoginRequest" | "userProfile" | "product" | "productMembership" | "entitlement" | "creditWallet" | "creditLedger" | "platformApiKey" | "productSession" | "hulebuProgress" | "credentialReference" | "accountAuditLog" | "timePickProfile" | "timePickUserRole" | "timePickSection" | "timePickFolder" | "timePickResource" | "timePickInspiration" | "timePickSearchHistory" | "timePickTagGroup" | "timePickLearningFocus" | "timePickTryQueueLink" | "timePickFortuneDraw"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2141,6 +2142,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HulebuProgress: {
+      payload: Prisma.$HulebuProgressPayload<ExtArgs>
+      fields: Prisma.HulebuProgressFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HulebuProgressFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HulebuProgressFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>
+        }
+        findFirst: {
+          args: Prisma.HulebuProgressFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HulebuProgressFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>
+        }
+        findMany: {
+          args: Prisma.HulebuProgressFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>[]
+        }
+        create: {
+          args: Prisma.HulebuProgressCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>
+        }
+        createMany: {
+          args: Prisma.HulebuProgressCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HulebuProgressCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>[]
+        }
+        delete: {
+          args: Prisma.HulebuProgressDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>
+        }
+        update: {
+          args: Prisma.HulebuProgressUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>
+        }
+        deleteMany: {
+          args: Prisma.HulebuProgressDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HulebuProgressUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HulebuProgressUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>[]
+        }
+        upsert: {
+          args: Prisma.HulebuProgressUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HulebuProgressPayload>
+        }
+        aggregate: {
+          args: Prisma.HulebuProgressAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHulebuProgress>
+        }
+        groupBy: {
+          args: Prisma.HulebuProgressGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HulebuProgressGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HulebuProgressCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HulebuProgressCountAggregateOutputType> | number
+        }
+      }
+    }
     CredentialReference: {
       payload: Prisma.$CredentialReferencePayload<ExtArgs>
       fields: Prisma.CredentialReferenceFieldRefs
@@ -3428,6 +3503,21 @@ export const ProductSessionScalarFieldEnum = {
 export type ProductSessionScalarFieldEnum = (typeof ProductSessionScalarFieldEnum)[keyof typeof ProductSessionScalarFieldEnum]
 
 
+export const HulebuProgressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  bankedCoins: 'bankedCoins',
+  bestEndlessLayer: 'bestEndlessLayer',
+  bestAscensionLevel: 'bestAscensionLevel',
+  dailyBestLevels: 'dailyBestLevels',
+  achievements: 'achievements',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HulebuProgressScalarFieldEnum = (typeof HulebuProgressScalarFieldEnum)[keyof typeof HulebuProgressScalarFieldEnum]
+
+
 export const CredentialReferenceScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -3625,6 +3715,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const NullableJsonNullValueInput = {
   DbNull: DbNull,
   JsonNull: JsonNull
@@ -3784,6 +3881,20 @@ export type ListEnumCreditLedgerTypeFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
  * Reference to a field of type 'CredentialSource'
  */
 export type EnumCredentialSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CredentialSource'>
@@ -3808,20 +3919,6 @@ export type EnumAccountAuditActionFieldRefInput<$PrismaModel> = FieldRefInputTyp
  * Reference to a field of type 'AccountAuditAction[]'
  */
 export type ListEnumAccountAuditActionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountAuditAction[]'>
-    
-
-
-/**
- * Reference to a field of type 'Json'
- */
-export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-/**
- * Reference to a field of type 'QueryMode'
- */
-export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -3985,6 +4082,7 @@ export type GlobalOmitConfig = {
   creditLedger?: Prisma.CreditLedgerOmit
   platformApiKey?: Prisma.PlatformApiKeyOmit
   productSession?: Prisma.ProductSessionOmit
+  hulebuProgress?: Prisma.HulebuProgressOmit
   credentialReference?: Prisma.CredentialReferenceOmit
   accountAuditLog?: Prisma.AccountAuditLogOmit
   timePickProfile?: Prisma.TimePickProfileOmit

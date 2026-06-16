@@ -1,0 +1,48 @@
+# 2026-06-14 T169 完成记录
+
+- 任务编号：T169
+- 任务名称：胡了卜路线型奖励池扩展
+- 负责人：Lee
+- 完成时间：2026-06-14
+- 修改文件：
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/config/rewards.json`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T169-hulebu-route-reward-pool.md`
+  - `docs/tasks/claims/T169-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/2026-06-14-task-169-hulebu-route-reward-pool.md`
+- 实现内容：
+  - 把胡了卜奖励配置从 10 个基础奖励扩展到 16 个奖励。
+  - 默认 20 关主线奖励节点已覆盖 `吃流 / 碰流 / 杠流 / 胡流 / 道具流 / 信息流`。
+  - 奖励弹层新增路线标签，已选奖励区展示 `奖励名 · 路线`。
+  - 本轮只复用既有 effect 类型，不新增复杂被动状态机，不修改 `levels.json`。
+  - 站内静态 Demo 已同步路线奖励配置和展示逻辑。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - `npm run test -w apps/web -- hulebu`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T169-hulebu-route-reward-pool.md docs/tasks/claims/T169-lee.md docs/superpowers/specs/2026-06-14-hulebu-route-reward-pool-design.md docs/superpowers/plans/2026-06-14-hulebu-route-reward-pool.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-169-hulebu-route-reward-pool.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 验证结果：
+  - 共享配置测试和站内 hulebu 发布测试通过。
+  - 源原型与站内静态副本内联脚本语法检查通过。
+  - 文档同步、占位符扫描和 diff 空白检查通过。
+  - 桌面端和 390px 移动端 `/games/hulebu` 检查通过，局外页、开始主线和奖励路线展示均可访问。
+- 遗留问题：
+  - 本任务不实现无尽、每日、成就或高阶周目。
+  - 路线奖励目前只复用既有效果类型；真正的长期被动、稀有度和路线协同应在后续单独任务中扩展。
+  - 下一步建议优先开 T170，补无尽牌山入口和通关后长期挑战承接。

@@ -1,0 +1,54 @@
+# 2026-06-15 T171 完成记录
+
+- 任务编号：T171
+- 任务名称：胡了卜每日牌局第一版
+- 负责人：Lee
+- 完成时间：2026-06-15
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T171-hulebu-daily-match.md`
+  - `docs/tasks/claims/T171-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-15-hulebu-daily-match-design.md`
+  - `docs/superpowers/plans/2026-06-15-hulebu-daily-match.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-15-lee.md`
+  - `docs/completion/2026-06-15-task-171-hulebu-daily-match.md`
+- 实现内容：
+  - `/games/hulebu` 局外 `每日` 面板开放 `开始每日`。
+  - 每日 run 使用 `mode=daily&dailySeed=YYYY-MM-DD` 进入 iframe。
+  - 外层壳继续把 `reserveBonus / shieldBonus / toolBonus` 带入每日 iframe。
+  - 外层本地存档新增 `dailyBestLevels`，按日期保存当日最好关数。
+  - 局外页、进行中摘要、最近一轮和结算面板都会显示当日 seed 与今日最佳关数。
+  - HTML 原型新增 `runMode: "daily"`、`isDailyMode()`、`getDailyLevelIndex()`、`getDailyDifficultyProfile()` 和基于 `dailySeed` 的固定生成 seed。
+  - 站内静态 Demo 已同步，并保留 `/games/hulebu-demo/config/*.json` 的绝对配置路径。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T171-hulebu-daily-match.md docs/tasks/claims/T171-lee.md docs/superpowers/specs/2026-06-15-hulebu-daily-match-design.md docs/superpowers/plans/2026-06-15-hulebu-daily-match.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-15-lee.md docs/completion/2026-06-15-task-171-hulebu-daily-match.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 验证结果：
+  - 共享原型测试和站内 hulebu 发布测试通过。
+  - Web typecheck 和 production build 通过。
+  - 源原型与站内静态副本内联脚本语法检查通过。
+  - `npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+  - 浏览器桌面端和 390x844 移动端检查通过；`/games/hulebu` 可进入每日牌局，iframe URL 含 `mode=daily&dailySeed=2026-06-15`，移动端无横向溢出。
+- 遗留问题：
+  - 本任务不实现成就图鉴、高阶周目、云存档、排行榜、付费、广告或 Cocos 正式工程追平。
+  - 每日第一版继续复用现有 20 关和路线型奖励池；专属每日奖励、排行榜和成就联动应后续单独拆任务。

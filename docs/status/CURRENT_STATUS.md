@@ -70,16 +70,16 @@
 
 ### 当前任务
 
-- 任务编号：无
-- 任务名称：等待下一任务领取
+- 任务编号：T171
+- 任务名称：胡了卜每日牌局第一版
 - 负责人：Lee
-- 状态：已完成
-- 开始时间：2026-06-08
-- 允许修改文件：无
-- 禁止修改文件：无
-- 验证命令：无
+- 状态：待验收
+- 开始时间：2026-06-15
+- 允许修改文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-15-lee.md`, `docs/completion/**`
+- 禁止修改文件：`apps/game/mahjong-roguelike/cocos/**`, `apps/game/mahjong-roguelike/config/levels.json`, `apps/game/mahjong-roguelike/config/rewards.json`, `apps/web/src/app/account/**`, `apps/web/src/lib/ai/**`, `apps/web/src/modules/tools/**`, `apps/web/prisma/**`, `/Users/lee/Desktop/Lee/TimePick/**`, `deploy/**`, `docker-compose.yml`, `docker-compose.prod.yml`
+- 验证命令：`npm run test -w packages/shared -- mahjong-config-playable-prototype`; `npm run test -w apps/web -- hulebu`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 源原型与站内静态副本内联脚本 `node --check`; `npm run docs:sync`; `git diff --check`; 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
 - 当前阻塞：无
-- 下一步：T146-T155 已完成；后续如需继续扩展图片 AI，优先为 AI 修图拆智能擦除或换背景任务，并先确认异步资产链路范围。
+- 下一步：等待验收 T171；通过后优先开 T172 成就图鉴或长期承接。
 
 领取任务后填写：
 
@@ -208,8 +208,8 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 
 ### 任务分片
 
-- 已扫描任务分片：139 个。
-- 已扫描领取分片：131 个。
+- 已扫描任务分片：150 个。
+- 已扫描领取分片：142 个。
 
 ### 当前未完成领取
 
@@ -301,6 +301,17 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 - T144：PDF 工具箱升级规划和待办落档，Lee，状态：待验收
 - T145：弹珠机福利玩法规划落档，Lee，状态：待验收
 - T149：平台级 AI 治理与产品接线路线规划，Lee，状态：待验收
+- T165：胡了卜 Demo 完整体验版推进方案，Lee，状态：待验收
+- T166：胡了卜 20 关完整主线 Demo，Lee，状态：待验收
+- T167：胡了卜局外首页和结算面板，Lee，状态：待验收
+- T168：胡了卜铜钱资产和 3 项局外升级，Lee，状态：待验收
+- T169：胡了卜路线型奖励池扩展，Lee，状态：待验收
+- T170：胡了卜无尽牌山第一版，Lee，状态：待验收
+- T171：胡了卜每日牌局第一版，Lee，状态：待验收
+- T172：胡了卜成就图鉴第一版，Lee，状态：待验收
+- T173：胡了卜高阶周目第一版，Lee，状态：待验收
+- T174：胡了卜账号进度续层，Lee，状态：待验收
+- T175：胡了卜网页版完整版路线重排和缺口拆分，Lee，状态：待验收
 
 ### 最近完成任务分片
 

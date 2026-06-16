@@ -1,0 +1,60 @@
+# T175：胡了卜网页版完整版路线重排和缺口拆分
+
+- 任务编号：T175
+- 优先级：P1
+- 任务名称：胡了卜网页版完整版路线重排和缺口拆分
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T165, T166, T167, T168, T169, T170, T171, T172, T173, T174, D041
+- 背景：T174 后 Web Demo 已有完整体验壳，但仍只是完整版骨架。原模块交接建议下一步做 Cocos 正式表现层追平；Lee 已确认当前不急着补 Cocos、音乐和美术资源，先把网页版完整开发到内容、系统和数值稳定。
+- 目标：
+  - 正式把后续路线改为“网页版完整版优先，Cocos 和音画资源后置”。
+  - 对比当前 Web Demo 与完整版内容，列出仍缺的系统深度和内容缺口。
+  - 拆出后续 Web 优先任务顺序，避免直接进入 Cocos 追平。
+  - 更新胡了卜模块文档、交接和决策记录。
+- 不做：
+  - 不修改 `apps/**` 或 `packages/**` 代码。
+  - 不改 Cocos 正式工程。
+  - 不生成音乐、美术、图集、prefab 或动画资源。
+  - 不实现高阶、Boss、事件、成就、无尽、每日或奖励的新功能。
+  - 不做排行榜、多人、付费、广告或发布包。
+- 允许修改文件：
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T175-hulebu-web-full-version-roadmap.md`
+  - `docs/tasks/claims/T175-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-web-full-version-roadmap-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-web-full-version-roadmap.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`
+  - `docs/modules/mahjong-roguelike/DECISIONS.md`
+  - `docs/progress/2026-06-16-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/**`
+  - `packages/**`
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `apps/web/src/modules/games/hulebu/**`
+  - `apps/web/prisma/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T175-hulebu-web-full-version-roadmap.md docs/tasks/claims/T175-lee.md docs/superpowers/specs/2026-06-16-hulebu-web-full-version-roadmap-design.md docs/superpowers/plans/2026-06-16-hulebu-web-full-version-roadmap.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md docs/modules/mahjong-roguelike/DECISIONS.md docs/progress/2026-06-16-lee.md docs/completion/2026-06-16-task-175-hulebu-web-full-version-roadmap.md`
+  - `git diff --check`
+- 拆分子任务：
+  - [x] 把 Lee 的路线调整写入 `CHANGE_INTAKE.md` 并分配 T175。
+  - [x] 新增 T175 任务分片和领取分片。
+  - [x] 新增网页版完整版路线规格和文档实施计划。
+  - [x] 更新胡了卜 README、PROGRESS、HANDOFF、IMPLEMENTATION_PLAN 和 DECISIONS。
+  - [x] 推进 `NEXT_ID.md` 到 176。
+  - [x] 运行文档同步、占位符扫描和 diff 检查。

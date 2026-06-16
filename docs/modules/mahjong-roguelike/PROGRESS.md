@@ -1,7 +1,79 @@
 # 胡了卜进展
 
+## 2026-06-16
+
+- 创建并完成 T175 胡了卜网页版完整版路线重排和缺口拆分。
+- 路线正式调整为：先把 `/games/hulebu` 网页版开发到内容、系统、数值和长期目标稳定，再补 Cocos 正式表现层、音乐、美术、动效和发布资源。
+- 当前 Web Demo 已具备主线、局外、升级、路线奖励、无尽、每日、成就、高阶和账号进度续层，但相对完整版仍缺高阶周目完整版、Boss 试炼第二版、特殊事件池、成就图鉴扩容、无尽/每日深度、路线奖励和局外能力深化、统一数值平衡与内容冻结。
+- 后续建议从 T176 高阶周目完整版开始，之后再拆 Boss、事件、成就、无尽/每日、奖励/能力和平衡冻结；Cocos 和音画资源后置。
+- 本任务只更新文档和任务体系，不修改 Web Demo、Cocos 工程、共享包、Prisma 或资源文件。
+
+## 2026-06-15
+
+- 创建并完成 T174 胡了卜账号进度续层。
+- `apps/web/prisma/schema.prisma` 已新增 `HulebuProgress` 模型，登录账号现在可以保存局外铜钱、无尽最高层、高阶解锁、每日最佳和成就。
+- `/api/games/hulebu/progress` 已新增登录态进度读取与合并写回接口，优先把账号记录和本地旧存档做首登合并。
+- `/games/hulebu` 局外壳层已在 hydration 后读取账号进度，并在升级、结算和长期进度变化时同步回写，避免重新打开页面后又从 0 开始。
+- 验证通过：`npm run test -w apps/web -- hulebu`；`npm run typecheck -w apps/web`；`npm run build -w apps/web`；`npm run docs:sync`；`git diff --check`；右侧内置浏览器刷新 `/games/hulebu` 检查。
+- 创建并完成 T173 胡了卜高阶周目第一版。
+- `/games/hulebu` 局外 `高阶` 面板已开放 `东风场 / 南风场` 两档周目入口，并显示当前解锁、下一档提示和进行中摘要。
+- 外层本地存档新增 `bestAscensionLevel`，会保存已解锁最高周目，并在高阶通关后推进下一档。
+- HTML 原型与站内静态 Demo 已新增 `ascensionLevel / ascensionName` 解析、周目 HUD、重开承接和结算摘要。
+- `东风场` 会提高牌山压力并带周期性高压词缀；`南风场` 进一步减少起始工具并禁用洗牌。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w apps/web -- hulebu`；`npm run typecheck -w apps/web`；`npm run build -w apps/web`；源原型与站内静态副本内联脚本 `node --check`；`npm run docs:sync`；占位符扫描；`git diff --check`；桌面端和 390px 移动端 `/games/hulebu` 检查。
+- 创建并完成 T172 胡了卜成就图鉴第一版。
+- `/games/hulebu` 局外 `图鉴` 面板已从占位改为成就图鉴第一版。
+- 外层本地存档新增 `achievements`，会记录首批成就的首次解锁时间。
+- 图鉴第一版已接入 8 项成就，覆盖主线、无尽、每日和局外升级四类长期进度。
+- 旧存档 hydration 时会按 `bestEndlessLayer`、`dailyBestLevels`、`upgrades` 和历史结算补算首批可解锁成就。
+- 创建并完成 T171 胡了卜每日牌局第一版。
+- `/games/hulebu` 局外 `每日` 面板已开放 `开始每日`，外层 iframe 使用 `mode=daily&dailySeed=YYYY-MM-DD`。
+- 外层本地存档新增 `dailyBestLevels`，会按日期保存当日本地最好关数；局外摘要、进行中摘要和结算面板都能显示。
+- HTML 原型与站内静态 Demo 已新增 `runMode: "daily"`、`isDailyMode()`、`getDailyLevelIndex()`、`getDailyDifficultyProfile()` 和固定日 seed 的牌山生成口径。
+- 每日第一版继续复用现有 20 关和路线型奖励池，不新增独立配置文件，也不改无尽层数和主线结构。
+
+## 2026-06-14
+
+- 创建并完成 T170 胡了卜无尽牌山第一版。
+- `/games/hulebu` 局外 `无尽` 面板已开放 `开始无尽`，无尽 run 从第 21 层起步。
+- 外层 iframe URL 已支持 `mode=endless&startLayer=21`，并继续携带 `reserveBonus / shieldBonus / toolBonus` 三项局外升级参数。
+- 外层本地存档新增 `bestEndlessLayer`，局外页、进行中摘要、结算面板和最近一轮记录都会显示无尽层数与历史最高层。
+- HTML 原型新增 `runMode`、`ENDLESS_START_LAYER`、`isEndlessMode`、`getEndlessLayerOrder`、`getEndlessDifficultyProfile` 和 `advanceAfterEndlessClear` 等无尽 helper。
+- 无尽第一版复用后半段难度 profile 和路线型奖励池：每 3 层给奖励，每 5 层进入 Boss 压力，小 Boss 要求杠和积分，大 Boss 额外要求胡。
+- 站内静态 Demo 已同步，保留 `/games/hulebu-demo/config/*.json` 绝对配置路径。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w apps/web -- hulebu`；`npm run typecheck -w apps/web`；`npm run build -w apps/web`；源原型与站内静态副本内联脚本 `node --check`；`npm run docs:sync`；占位符扫描；`git diff --check`；右侧内置浏览器桌面端和 390px 移动端 `/games/hulebu` 检查。
+- 创建并完成 T169 胡了卜路线型奖励池扩展。
+- `apps/game/mahjong-roguelike/config/rewards.json` 已从 10 个基础奖励扩展到 16 个奖励，覆盖 `吃 / 碰 / 杠 / 胡 / 道具 / 信息` 等路线类别。
+- 默认 20 关主线的奖励节点已在试玩页侧映射为路线型池：第 6、9、13、16、19 关会出现更明确的吃流、碰流、杠流、胡流、道具流和信息流选择。
+- 奖励弹层已新增路线标签；已选奖励区会展示 `奖励名 · 路线`，玩家能直接看出本轮 build 倾向。
+- 本轮只复用既有 effect 类型：`reserve_limit_delta`、`shield_delta`、`coin_delta`、`tool_delta`、`combo_score_bonus`，不新增复杂被动系统，不改 `levels.json`。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config mahjong-config-playable-prototype`；`npm run test -w apps/web -- hulebu`；源原型与站内静态副本内联脚本 `node --check`；`git diff --check`。
+- 创建并完成 T168 胡了卜铜钱资产和 3 项局外升级。
+- `/games/hulebu` 局外页的 `备用槽 / 满槽护符 / 初始道具` 已从占位说明升级为真实可购买升级卡。
+- 浏览器本地存档已从“局外铜钱 + 最近结算”扩展为“局外铜钱 + 最近结算 + 三项升级等级”。
+- 开始新一轮主线时，iframe URL 已附带 `reserveBonus / shieldBonus / toolBonus` 参数；原型源文件和站内静态副本都会读取这些 bonus，并把它们接入 `reserveLimit / shields / tools`。
+- 页面行为验证通过：预置 `999` 铜钱后，购买首档 `备用槽` 会扣到 `839`，新开 run 的 iframe URL 已变为 `...reserveBonus=1&shieldBonus=0&toolBonus=0`；390px 移动端升级页仍能显示 3 张升级卡和局外铜钱读数。
+- 创建并完成 T167 胡了卜局外首页和结算面板。
+- `/games/hulebu` 已从“直接打开 iframe”改为先显示局外首页；局外页会展示 `开始挑战 / 继续本轮 / 升级 / 图鉴 / 无尽 / 每日` 入口。
+- 主线 run 继续复用现有 20 关 iframe Demo，但现在可以从外层壳返回局外、继续本轮，并在通关或失败后回到站内结算面板。
+- 局外页已显示浏览器本地累计的铜钱；`备用槽 / 满槽护符 / 初始道具` 三项外置升级现已开放真实购买。
+- 静态 Demo 与原型源文件已补 `embed=shell` 模式和父页面消息桥接，能向外层壳同步进行中、通关和失败事件。
+- 验证通过：`npm run test -w apps/web -- hulebu`；`npm run typecheck -w apps/web`；`npm run build -w apps/web`；源原型与站内静态副本内联脚本 `node --check`；右侧内置浏览器桌面端和 390px 移动端 `/games/hulebu` 检查。
+
 ## 2026-06-13
 
+- 创建并完成 T166 胡了卜 20 关完整主线 Demo。
+- 默认玩家试玩页已从 10 关扩展到 20 关，并保留第 10 关 `终局试炼`。
+- 第 11-19 关已补后半段渐进难度 profile，牌量依次提升到 `252 / 258 / 276 / 288 / 300 / 312 / 324 / 336 / 348`；第 20 关启用 `胡了卜王` 终章 Boss，牌量为 `360`。
+- 奖励节点已扩展为第 `3 / 6 / 9 / 13 / 16 / 19` 关；第 20 关 Boss 目标会在默认玩家页和站内静态 Demo 中显示为 6 项复合目标。
+- 默认玩家页 `auto` 模板已补多次 seed 重试和“起手不能直接露出完整答案组”的兜底条件，避免后半段大牌量关卡首轮直接给出完整答案。
+- 390px 移动端已修正底部固定道具栏遮挡：工具栏贴底，页面底部留白增大，卡槽最后一格不再被遮住。
+- 验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`；`npm run test -w packages/shared -- mahjong-config`；`npm run test -w apps/web -- hulebu`；HTML 内联脚本语法检查；右侧内置浏览器桌面端与 390px 移动端 `/games/hulebu-demo/index.html` 验证；`npm run docs:sync`；`git diff --check`。
+- 创建并完成 T165 胡了卜 Demo 完整体验版推进方案。
+- 经对照完整游戏设计方案和当前站内 Demo，确认当前 Demo 已覆盖核心局内玩法，但仍缺 20 关主线开放、局外首页、铜钱资产、升级消费、路线型奖励、无尽、每日、成就、高阶周目和 Cocos 正式表现层追平。
+- 完整体验版路线已收束为“先完整主线，再长期模式”：下一步建议优先开 T166，把默认 `/games/hulebu` Demo 扩为 20 关主线，并让第 20 关成为 `胡了卜王` 终章 Boss。
+- 后续任务建议顺序为 T167 局外首页和结算、T168 铜钱资产和 3 项局外升级、T169 路线型奖励池、T170 无尽牌山、T171 每日牌局、T172 成就图鉴、T173 高阶周目、T174 Cocos 正式表现层追平完整体验版。
+- T165 只做路线规划和任务拆分，不修改玩法代码或站内静态 Demo。
 - 创建并完成 T164 胡了卜 Boss 试炼 Demo 第一版。
 - 默认朋友试玩 Demo 第 10 关启用 `终局试炼`，目标为 `杠 1 / 胡 1 / 积分 180`；HUD 显示 `试炼 x/3`，玩家页新增紧凑试炼目标条。
 - 清空牌山但试炼目标未完成时会进入失败弹层，并明确提示 `目标未完成` 和具体缺口；击破试炼后一次性发放 `试炼奖励 +180 铜钱`。

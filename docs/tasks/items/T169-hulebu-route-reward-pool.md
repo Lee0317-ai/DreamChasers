@@ -1,0 +1,67 @@
+# T169：胡了卜路线型奖励池扩展
+
+- 任务编号：T169
+- 优先级：P1
+- 任务名称：胡了卜路线型奖励池扩展
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T165, T166, T167, T168
+- 背景：T168 已完成局外铜钱和 3 项外置升级，但 run 内奖励池仍主要是基础分数、单次道具和救场，缺少明确的 build 分叉。完整体验版下一步要先把奖励做成路线型，再接无尽、每日和长期模式。
+- 目标：
+  - 扩展胡了卜默认奖励池，让 `吃 / 碰 / 杠 / 胡 / 道具 / 信息` 至少 6 条路线都能形成感知。
+  - 让默认主线奖励弹层和已选奖励区能读出路线类别。
+  - 保持 20 关主线、局外升级和 8 格主槽口径不被破坏。
+  - 同步站内静态 Demo 和相关测试。
+- 不做：
+  - 不做无尽、每日、成就、高阶周目。
+  - 不改局外升级数量、价格和本地存档结构。
+  - 不接登录、云存档、多端同步。
+  - 不改 Cocos 正式工程。
+  - 不重做 20 关主线结构、Boss 节点和事件系统。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T169-hulebu-route-reward-pool.md`
+  - `docs/tasks/claims/T169-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-14-hulebu-route-reward-pool-design.md`
+  - `docs/superpowers/plans/2026-06-14-hulebu-route-reward-pool.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/levels.json`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - `npm run test -w apps/web -- hulebu`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T169-hulebu-route-reward-pool.md docs/tasks/claims/T169-lee.md docs/superpowers/specs/2026-06-14-hulebu-route-reward-pool-design.md docs/superpowers/plans/2026-06-14-hulebu-route-reward-pool.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-169-hulebu-route-reward-pool.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写测试锁定奖励池扩展、路线类别和展示口径。
+  - [x] 扩展奖励配置，形成至少 6 条明确路线。
+  - [x] 改造奖励弹层和已选奖励展示，让路线类别可见。
+  - [x] 跑验证并更新模块文档、当天进展和完成记录。

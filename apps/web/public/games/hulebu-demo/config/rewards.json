@@ -149,10 +149,109 @@
           "value": 1
         }
       ]
+    },
+    {
+      "id": "hu_score_plus_18",
+      "name": "收胡开花",
+      "rarity": "uncommon",
+      "category": "hu",
+      "scope": "run",
+      "description": "后续每次胡额外 +18 分。",
+      "effects": [
+        {
+          "type": "combo_score_bonus",
+          "combo": "hu",
+          "value": 18
+        }
+      ]
+    },
+    {
+      "id": "hu_coin_plus_15",
+      "name": "胡后红利",
+      "rarity": "common",
+      "category": "hu",
+      "scope": "instant",
+      "description": "立即获得 15 铜钱，偏向收束路线。",
+      "effects": [
+        {
+          "type": "coin_delta",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "info_vision_plus_1",
+      "name": "见山路",
+      "rarity": "common",
+      "category": "info",
+      "scope": "run",
+      "description": "获得 1 次透视，偏向读牌路线。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "vision",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "info_shuffle_plus_1",
+      "name": "翻山记",
+      "rarity": "common",
+      "category": "info",
+      "scope": "run",
+      "description": "获得 1 次洗牌，偏向信息整理路线。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "shuffle",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "tool_mix_supply",
+      "name": "随身牌匣",
+      "rarity": "uncommon",
+      "category": "tool",
+      "scope": "run",
+      "description": "获得 1 次洗牌和 1 次撤回，偏向道具路线。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "shuffle",
+          "value": 1
+        },
+        {
+          "type": "tool_delta",
+          "tool": "undo",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "chi_tool_supply",
+      "name": "顺手摸山",
+      "rarity": "uncommon",
+      "category": "chi",
+      "scope": "run",
+      "description": "吃流补给：获得 1 次撤回，并让吃牌路线更稳。",
+      "effects": [
+        {
+          "type": "tool_delta",
+          "tool": "undo",
+          "value": 1
+        },
+        {
+          "type": "combo_score_bonus",
+          "combo": "chi",
+          "value": 6
+        }
+      ]
     }
   ],
   "contentSummary": {
-    "totalRewards": 10,
+    "totalRewards": 16,
     "categories": [
       "slot",
       "rescue",
@@ -160,6 +259,8 @@
       "gang",
       "chi",
       "peng",
+      "hu",
+      "info",
       "economy"
     ]
   }

@@ -113,6 +113,10 @@
         display: none;
       }
 
+      body.play-view.embed-shell .app {
+        padding-top: 12px;
+      }
+
       .brand {
         display: grid;
         gap: 2px;
@@ -1189,6 +1193,20 @@
         font-size: 19px;
       }
 
+      .reward-route {
+        width: fit-content;
+        min-height: 24px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid rgba(31, 138, 112, 0.28);
+        background: rgba(237, 249, 242, 0.86);
+        color: #12624f;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
       .reward-card p {
         margin: 0;
         color: var(--muted);
@@ -1264,7 +1282,7 @@
           width: 100vw;
           max-width: 100vw;
           margin: 0;
-          padding: 10px 10px 128px;
+          padding: 10px 10px 184px;
         }
 
         .play,
@@ -1278,7 +1296,7 @@
           position: fixed;
           left: 10px;
           right: 10px;
-          bottom: 10px;
+          bottom: 0;
           top: auto;
           z-index: 40;
           width: auto;
@@ -1412,7 +1430,8 @@
         }
 
         body.play-view .slot-area {
-          margin-bottom: 112px;
+          margin-bottom: 168px;
+          scroll-margin-bottom: 184px;
         }
 
         .metrics {
@@ -1693,12 +1712,23 @@
       const BLOCKED_COVER_RATIO = 0.08;
       const TILE_Z_INDEX_BASE = 10;
       const OVERLAY_Z_INDEX = 1000000;
-      const FRIEND_DEMO_LEVEL_COUNT = 10;
+      const FRIEND_DEMO_LEVEL_COUNT = 20;
+      const ENDLESS_START_LAYER = 21;
       const FRIEND_DEMO_TUTORIAL_SLOT_LIMIT = 6;
       const FRIEND_DEMO_FULL_SLOT_LIMIT = 8;
       const FRIEND_DEMO_BOSS_TRIAL_LEVEL_INDEX = 9;
+      const FRIEND_DEMO_FINAL_BOSS_LEVEL_INDEX = 19;
+      const FRIEND_DEMO_REWARD_LEVEL_INDEXES = [2, 5, 8, 12, 15, 18];
+      const FRIEND_DEMO_ROUTE_REWARD_POOLS = {
+        5: ["chi_score_plus_8", "peng_score_plus_10", "info_vision_plus_1"],
+        8: ["gang_score_plus_25", "hu_score_plus_18", "tool_mix_supply"],
+        12: ["chi_tool_supply", "info_shuffle_plus_1", "shield_plus_1"],
+        15: ["hu_coin_plus_15", "shuffle_plus_1", "reserve_plus_1"],
+        18: ["gang_score_plus_25", "peng_score_plus_10", "info_vision_plus_1"],
+      };
       const FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS = 180;
       const FRIEND_DEMO_BOSS_TRIAL_TITLE = "终局试炼";
+      const FRIEND_DEMO_FINAL_BOSS_TITLE = "胡了卜王";
       const FRIEND_DEMO_BOSS_TRIAL_GOALS = [
         { type: "combo_count", combo: "gang", target: 1 },
         { type: "combo_count", combo: "hu", target: 1 },
@@ -1706,6 +1736,30 @@
       ];
       const FRIEND_DEMO_FIRST_REWARD_ID = "demo_slot_plus_2";
       const FRIEND_DEMO_DISCARD_REWARD_ID = "discard_plus_1";
+      const ASCENSION_CONFIGS = {
+        1: {
+          level: 1,
+          name: "东风场",
+          extraTileCount: 20,
+          extraHonorWeight: 8,
+          rewardCoinPenalty: 20,
+          startToolPenalty: 0,
+          disableShuffle: false,
+          forcedModifierInterval: 6,
+          forcedModifier: { type: "highPressure", rewardCoins: 80, label: "东风压场" },
+        },
+        2: {
+          level: 2,
+          name: "南风场",
+          extraTileCount: 36,
+          extraHonorWeight: 14,
+          rewardCoinPenalty: 40,
+          startToolPenalty: 1,
+          disableShuffle: true,
+          forcedModifierInterval: 4,
+          forcedModifier: { type: "highPressure", rewardCoins: 120, label: "南风急场" },
+        },
+      };
       const FRIEND_DEMO_TUTORIAL_COMBOS = ["peng", "chi", "gang", "hu"];
       const FRIEND_DEMO_TOOLS = [
         { key: "shuffle", label: "洗牌" },
@@ -1713,6 +1767,17 @@
         { key: "discard", label: "丢弃" },
       ];
       const FRIEND_DEMO_DEFAULT_TOOLS = { shuffle: 1, undo: 1, discard: 1 };
+      const REWARD_ROUTE_LABELS = {
+        chi: "吃流",
+        peng: "碰流",
+        gang: "杠流",
+        hu: "胡流",
+        tool: "道具流",
+        info: "信息流",
+        rescue: "救场",
+        slot: "救场",
+        economy: "经济",
+      };
       const SPECIAL_EVENT_TRIGGER_LEVELS = [5, 7, 9];
       const SPECIAL_EVENT_POOL = [
         {
@@ -1763,6 +1828,16 @@
         { levelIndex: 7, label: "多堆判断", tileCount: 168, stackDepth: 5, huPacks: 1, gangPacks: 2, orphanBudget: 3, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 5], honorWeight: 12 },
         { levelIndex: 8, label: "高压预备", tileCount: 210, stackDepth: 6, huPacks: 1, gangPacks: 2, orphanBudget: 4, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 3, 5, 7], honorWeight: 24 },
         { levelIndex: 9, label: "综合高压", tileCount: 240, stackDepth: 6, huPacks: 0, gangPacks: 2, orphanBudget: 4, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 40 },
+        { levelIndex: 10, label: "后半入局", tileCount: 252, stackDepth: 6, huPacks: 1, gangPacks: 2, orphanBudget: 6, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 42 },
+        { levelIndex: 11, label: "双线压迫", tileCount: 258, stackDepth: 6, huPacks: 1, gangPacks: 2, orphanBudget: 6, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 44 },
+        { levelIndex: 12, label: "奖励岔口", tileCount: 276, stackDepth: 6, huPacks: 1, gangPacks: 2, orphanBudget: 7, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 46 },
+        { levelIndex: 13, label: "窄腰再临", tileCount: 288, stackDepth: 6, huPacks: 1, gangPacks: 2, orphanBudget: 7, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 50 },
+        { levelIndex: 14, label: "字牌暗涌", tileCount: 300, stackDepth: 6, huPacks: 2, gangPacks: 2, orphanBudget: 8, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 54 },
+        { levelIndex: 15, label: "三门缠斗", tileCount: 312, stackDepth: 6, huPacks: 2, gangPacks: 2, orphanBudget: 8, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 58 },
+        { levelIndex: 16, label: "高压长局", tileCount: 324, stackDepth: 6, huPacks: 2, gangPacks: 2, orphanBudget: 9, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 62 },
+        { levelIndex: 17, label: "终章门前", tileCount: 336, stackDepth: 6, huPacks: 2, gangPacks: 2, orphanBudget: 9, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 68 },
+        { levelIndex: 18, label: "决战预备", tileCount: 348, stackDepth: 6, huPacks: 2, gangPacks: 2, orphanBudget: 10, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 74 },
+        { levelIndex: 19, label: "胡了卜王", tileCount: 360, stackDepth: 6, huPacks: 3, gangPacks: 2, orphanBudget: 12, numberSuits: ["wan", "tiao", "tong"], honorRanks: [1, 2, 3, 4, 5, 6, 7], honorWeight: 82 },
       ];
       const MOUNTAIN_DEFAULT_TILE_COUNT = 240;
       const MOUNTAIN_TILE_COUNT_RANGE = { min: 120, max: 420 };
@@ -1773,6 +1848,7 @@
       const MOUNTAIN_STACK_PREVIEW_DEPTH = 4;
       const MOUNTAIN_MERGED_STACK_COUNT = 2;
       const MOUNTAIN_INITIAL_SOLUTION_GROUP_LIMIT = 2;
+      const MOUNTAIN_PLAY_AUTO_SEED_RETRY_COUNT = 6;
       const MOUNTAIN_ACTIVE_STACK_COUNT = 10;
       const MOUNTAIN_PRIMARY_STACK_COUNT = 4;
       const MOUNTAIN_PRIMARY_STACK_WEIGHT_MULTIPLIER = 2.45;
@@ -1880,7 +1956,13 @@
         rewardsConfig: null,
         levelIndex: 0,
         mode: "mountain",
+        runMode: "mainline",
         prototypeView: "play",
+        embedShell: false,
+        ascensionLevel: 0,
+        ascensionName: "",
+        shellSessionKey: "",
+        shellBonuses: { reserve: 0, shield: 0, tool: 0 },
         mountainTuning: { ...DEFAULT_MOUNTAIN_TUNING },
         activeMountainTemplate: getMountainTemplateDefinition("center-tower"),
         autoMountainTemplateSeed: "",
@@ -1900,6 +1982,8 @@
           pendingSpecialEvent: null,
           pendingLevelModifier: null,
           lastSpecialEventMessage: "",
+          endlessLayer: ENDLESS_START_LAYER,
+          dailySeed: "",
         },
         visionTimer: null,
         bossProgressTimer: null,
@@ -1948,15 +2032,48 @@
         const params = new URLSearchParams(window.location.search);
         const requestedView = params.get("view");
         const requestedMode = params.get("mode");
+        const requestedEmbed = params.get("embed");
+        const requestedSession = params.get("session");
         const requestedLevel = Number.parseInt(params.get("level") ?? "", 10);
+        const requestedStartLayer = Number.parseInt(params.get("startLayer") ?? "", 10);
+        const requestedDailySeed = String(params.get("dailySeed") ?? "").trim();
+        const requestedAscensionLevel = Number.parseInt(params.get("ascensionLevel") ?? "", 10);
+        const requestedAscensionName = String(params.get("ascensionName") ?? "").trim();
+        const requestedReserveBonus = Number.parseInt(params.get("reserveBonus") ?? "", 10);
+        const requestedShieldBonus = Number.parseInt(params.get("shieldBonus") ?? "", 10);
+        const requestedToolBonus = Number.parseInt(params.get("toolBonus") ?? "", 10);
+
+        model.ascensionLevel = 0;
+        model.ascensionName = "";
 
         if (PROTOTYPE_VIEW_MODES.has(requestedView)) {
           model.prototypeView = requestedView;
         }
 
-        if (requestedMode === "mountain" || requestedMode === "config") {
+        if (requestedMode === "endless") {
+          model.runMode = "endless";
+          model.mode = "mountain";
+          model.run.endlessLayer = Number.isNaN(requestedStartLayer)
+            ? ENDLESS_START_LAYER
+            : Math.max(ENDLESS_START_LAYER, requestedStartLayer);
+        } else if (requestedMode === "daily") {
+          model.runMode = "daily";
+          model.mode = "mountain";
+          model.run.dailySeed = requestedDailySeed || new Date().toISOString().slice(0, 10);
+        } else if (requestedMode === "ascension") {
+          model.runMode = "mainline";
+          model.mode = "mountain";
+          model.ascensionLevel = Number.isNaN(requestedAscensionLevel) ? 1 : Math.max(1, Math.min(2, requestedAscensionLevel));
+          model.ascensionName = requestedAscensionName || (model.ascensionLevel >= 2 ? "南风场" : "东风场");
+        } else if (requestedMode === "mountain" || requestedMode === "config") {
           model.mode = requestedMode;
         }
+
+        model.embedShell = requestedEmbed === "shell";
+        model.shellSessionKey = requestedSession ?? "";
+        model.shellBonuses.reserve = Number.isNaN(requestedReserveBonus) ? 0 : Math.max(0, requestedReserveBonus);
+        model.shellBonuses.shield = Number.isNaN(requestedShieldBonus) ? 0 : Math.max(0, requestedShieldBonus);
+        model.shellBonuses.tool = Number.isNaN(requestedToolBonus) ? 0 : Math.max(0, requestedToolBonus);
 
         model.mountainTuning = readMountainTuningFromParams(params, model.mountainTuning);
 
@@ -1971,6 +2088,7 @@
         document.body.dataset.prototypeView = model.prototypeView;
         document.body.classList.toggle("play-view", !isTunerView);
         document.body.classList.toggle("tuner-view", isTunerView);
+        document.body.classList.toggle("embed-shell", model.embedShell && !isTunerView);
         document.title = isTunerView ? "胡了卜调牌器" : "胡了卜玩家试玩";
         view.topControls.hidden = !isTunerView;
         view.tunerLink.hidden = isTunerView;
@@ -1982,6 +2100,38 @@
           tunerParams.set("template", model.mountainTuning.templateId);
           view.tunerLink.href = `./tuner.html?${tunerParams.toString()}`;
         }
+      }
+
+      function canEmitShellEvent() {
+        return model.embedShell && window.parent && window.parent !== window;
+      }
+
+      function buildShellPayload(extra = {}) {
+        const level = model.levelsConfig && model.state ? currentLevel() : null;
+        return {
+          sessionKey: model.shellSessionKey,
+          levelOrder: level?.order ?? null,
+          levelName: level?.name ?? "",
+          runMode: model.runMode,
+          ascensionLevel: model.ascensionLevel || null,
+          ascensionName: model.ascensionName || null,
+          dailySeed: isDailyMode() ? model.run.dailySeed : null,
+          endlessLayer: isEndlessMode() ? getEndlessLayerOrder() : null,
+          coins: model.run.coins,
+          score: model.state?.score ?? 0,
+          pickedRewards: model.run.pickedRewards.length,
+          summary: extra.summary ?? view.status.textContent ?? "",
+          ...extra,
+        };
+      }
+
+      function emitShellEvent(type, extra = {}) {
+        if (!canEmitShellEvent()) return;
+        window.parent.postMessage({
+          source: "hulebu-demo-shell",
+          type,
+          payload: buildShellPayload(extra),
+        }, window.location.origin);
       }
 
       function readMountainTuningFromParams(params, fallback) {
@@ -2060,6 +2210,7 @@
           && model.prototypeView === "play"
           && model.mountainTuning.templateId === "auto"
           && !model.mountainTuning.seed
+          && !isDailyMode()
         );
       }
 
@@ -2068,16 +2219,34 @@
       }
 
       function isFriendDemoMode() {
-        return model.prototypeView === "play";
+        return model.prototypeView === "play" && !isEndlessMode() && !isDailyMode();
+      }
+
+      function isEndlessMode() {
+        return model.runMode === "endless";
+      }
+
+      function isDailyMode() {
+        return model.runMode === "daily";
+      }
+
+      function isAscensionMode() {
+        return model.ascensionLevel > 0;
+      }
+
+      function getAscensionConfig(level = model.ascensionLevel) {
+        return ASCENSION_CONFIGS[level] ?? null;
       }
 
       function getPlayableLevelCount() {
+        if (isEndlessMode() || isDailyMode()) return model.levelsConfig.levels.length;
         return isFriendDemoMode()
           ? Math.min(FRIEND_DEMO_LEVEL_COUNT, model.levelsConfig.levels.length)
           : model.levelsConfig.levels.length;
       }
 
       function getPlayableLevels() {
+        if (isEndlessMode() || isDailyMode()) return [currentLevel()].filter(Boolean);
         return model.levelsConfig.levels.slice(0, getPlayableLevelCount());
       }
 
@@ -2184,7 +2353,9 @@
 
       function isToolDisabledByModifier(tool) {
         const modifier = getCurrentLevelModifier();
-        return modifier?.type === "disableTool" && modifier.tool === tool;
+        if (modifier?.type === "disableTool" && modifier.tool === tool) return true;
+        const ascension = getAscensionConfig();
+        return Boolean(isAscensionMode() && tool === "shuffle" && ascension?.disableShuffle);
       }
 
       function getActiveLevelModifierText() {
@@ -2221,8 +2392,99 @@
         return FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === levelIndex) ?? null;
       }
 
+      function getAscensionDifficultyProfile(levelIndex = model.levelIndex) {
+        if (!isAscensionMode()) return null;
+        const ascension = getAscensionConfig();
+        const baseProfile =
+          FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === levelIndex)
+          ?? FRIEND_DEMO_DIFFICULTY_PROFILES[FRIEND_DEMO_DIFFICULTY_PROFILES.length - 1];
+        if (!ascension || !baseProfile) return null;
+        return {
+          ...baseProfile,
+          label: `${ascension.name} · 高阶周目`,
+          tileCount: Math.min(MOUNTAIN_TILE_COUNT_RANGE.max, (baseProfile.tileCount ?? 240) + ascension.extraTileCount),
+          stackDepth: Math.min(6, (baseProfile.stackDepth ?? 5) + (ascension.level >= 2 ? 1 : 0)),
+          huPacks: Math.min(3, (baseProfile.huPacks ?? 0) + (ascension.level >= 2 ? 1 : 0)),
+          gangPacks: Math.min(3, baseProfile.gangPacks ?? 2),
+          orphanBudget: Math.max(baseProfile.orphanBudget ?? 4, (baseProfile.orphanBudget ?? 4) + ascension.level - 1),
+          honorWeight: Math.min(100, (baseProfile.honorWeight ?? 60) + ascension.extraHonorWeight),
+        };
+      }
+
+      function getAscensionLevelModifier(levelIndex = model.levelIndex) {
+        if (!isAscensionMode()) return null;
+        const ascension = getAscensionConfig();
+        if (!ascension?.forcedModifierInterval || !ascension.forcedModifier) return null;
+        const levelOrder = model.levelsConfig.levels[levelIndex]?.order ?? levelIndex + 1;
+        return levelOrder % ascension.forcedModifierInterval === 0 ? { ...ascension.forcedModifier } : null;
+      }
+
+      function getEndlessLayerOrder() {
+        return Math.max(ENDLESS_START_LAYER, model.run.endlessLayer ?? ENDLESS_START_LAYER);
+      }
+
+      function getEndlessLevelIndex(layer = getEndlessLayerOrder()) {
+        const backHalfStart = Math.max(0, FRIEND_DEMO_LEVEL_COUNT - 10);
+        const backHalfCount = Math.max(1, Math.min(10, model.levelsConfig.levels.length - backHalfStart));
+        return backHalfStart + ((layer - ENDLESS_START_LAYER) % backHalfCount);
+      }
+
+      function getEndlessDifficultyProfile(layer = getEndlessLayerOrder()) {
+        if (!isEndlessMode()) return null;
+        const baseIndex = getEndlessLevelIndex(layer);
+        const baseProfile =
+          FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === baseIndex)
+          ?? FRIEND_DEMO_DIFFICULTY_PROFILES[FRIEND_DEMO_DIFFICULTY_PROFILES.length - 1];
+        const cycle = Math.max(0, Math.floor((layer - ENDLESS_START_LAYER) / 10));
+        return {
+          ...baseProfile,
+          levelIndex: baseIndex,
+          label: `无尽第 ${layer} 层`,
+          tileCount: Math.min(MOUNTAIN_TILE_COUNT_RANGE.max, (baseProfile.tileCount ?? 300) + cycle * 18),
+          stackDepth: Math.min(6, (baseProfile.stackDepth ?? 6) + (cycle > 0 ? 1 : 0)),
+          huPacks: Math.min(3, (baseProfile.huPacks ?? 1) + Math.floor(cycle / 2)),
+          gangPacks: Math.min(3, (baseProfile.gangPacks ?? 2) + Math.floor(cycle / 3)),
+          orphanBudget: Math.max(baseProfile.orphanBudget ?? 8, 8 + cycle),
+          honorWeight: Math.min(100, (baseProfile.honorWeight ?? 60) + cycle * 6),
+        };
+      }
+
+      function getDailyLevelIndex(levelIndex = model.levelIndex) {
+        if (!isDailyMode()) return levelIndex;
+        return Math.max(0, Math.min(model.levelsConfig.levels.length - 1, levelIndex));
+      }
+
+      function getDailyDifficultyProfile(levelIndex = model.levelIndex) {
+        if (!isDailyMode()) return null;
+        const baseIndex = getDailyLevelIndex(levelIndex);
+        const baseProfile = FRIEND_DEMO_DIFFICULTY_PROFILES.find((profile) => profile.levelIndex === baseIndex);
+        if (baseProfile) {
+          return {
+            ...baseProfile,
+            label: `今日牌局 ${model.run.dailySeed || "today"}`,
+          };
+        }
+
+        return {
+          levelIndex: baseIndex,
+          label: `今日牌局 ${model.run.dailySeed || "today"}`,
+          tileCount: Math.min(MOUNTAIN_TILE_COUNT_RANGE.max, 180 + baseIndex * 10),
+          stackDepth: Math.min(6, 4 + Math.floor(baseIndex / 4)),
+          huPacks: baseIndex >= 6 ? 1 : 0,
+          gangPacks: baseIndex >= 4 ? 2 : 1,
+          orphanBudget: Math.min(10, 2 + Math.floor(baseIndex / 2)),
+          numberSuits: ["wan", "tiao", "tong"],
+          honorRanks: baseIndex >= 5 ? [1, 3, 5, 7] : [],
+          honorWeight: Math.min(72, baseIndex * 4),
+        };
+      }
+
       function isFriendDemoBossTrialLevel(levelIndex = model.levelIndex) {
         return isFriendDemoMode() && levelIndex === FRIEND_DEMO_BOSS_TRIAL_LEVEL_INDEX;
+      }
+
+      function isFriendDemoFinalBossLevel(levelIndex = model.levelIndex) {
+        return isFriendDemoMode() && levelIndex === FRIEND_DEMO_FINAL_BOSS_LEVEL_INDEX;
       }
 
       function getFriendDemoBossTrialGoals(levelIndex = model.levelIndex) {
@@ -2231,15 +2493,22 @@
       }
 
       function getBossGoalTitleText() {
-        return isFriendDemoBossTrialLevel() ? FRIEND_DEMO_BOSS_TRIAL_TITLE : "Boss 目标";
+        if (isEndlessMode()) return getEndlessLayerOrder() % 10 === 0 ? "无尽大 Boss" : "无尽小 Boss";
+        if (isFriendDemoBossTrialLevel()) return FRIEND_DEMO_BOSS_TRIAL_TITLE;
+        if (isFriendDemoFinalBossLevel()) return FRIEND_DEMO_FINAL_BOSS_TITLE;
+        return "Boss 目标";
       }
 
       function getBossHudLabelText() {
+        if (isEndlessMode()) return "无尽";
         return isFriendDemoBossTrialLevel() ? "试炼" : "Boss";
       }
 
       function getEffectiveMountainTuningForLevel(level, levelIndex = model.levelIndex) {
-        const profile = getFriendDemoDifficultyProfile(levelIndex);
+        const profile = getDailyDifficultyProfile()
+          ?? getEndlessDifficultyProfile()
+          ?? getAscensionDifficultyProfile(levelIndex)
+          ?? getFriendDemoDifficultyProfile(levelIndex);
         if (!profile) return model.mountainTuning;
         const activeModifier = model.state?.activeLevelModifier ?? model.loadingLevelModifier;
         const highPressureBonus = activeModifier?.type === "highPressure" ? 24 : 0;
@@ -2268,13 +2537,36 @@
       }
 
       function getFriendDemoFeaturedCombos(levelIndex) {
+        if (isEndlessMode()) {
+          const layer = getEndlessLayerOrder();
+          if (layer % 6 === 0) return ["hu"];
+          if (layer % 4 === 0) return ["gang"];
+        }
+        if (isDailyMode()) {
+          const dayNumber = hashText(model.run.dailySeed || "daily") % 6;
+          if (dayNumber === 0) return ["hu"];
+          if (dayNumber <= 2) return ["gang"];
+          if (dayNumber <= 4) return ["peng"];
+          return ["chi"];
+        }
         const tutorialCombo = FRIEND_DEMO_TUTORIAL_COMBOS[levelIndex];
         if (tutorialCombo) return [tutorialCombo];
         return model.levelsConfig.levels[levelIndex]?.featuredCombos ?? [];
       }
 
       function getFriendDemoRewardPool(levelIndex) {
+        if (isEndlessMode()) {
+          return FRIEND_DEMO_ROUTE_REWARD_POOLS[levelIndex]
+            ?? FRIEND_DEMO_ROUTE_REWARD_POOLS[18]
+            ?? (model.levelsConfig.levels[levelIndex]?.rewardPool ?? []);
+        }
+        if (isDailyMode()) {
+          return FRIEND_DEMO_ROUTE_REWARD_POOLS[levelIndex]
+            ?? FRIEND_DEMO_ROUTE_REWARD_POOLS[(hashText(model.run.dailySeed || "daily") + levelIndex) % FRIEND_DEMO_ROUTE_REWARD_POOLS.length]
+            ?? (model.levelsConfig.levels[levelIndex]?.rewardPool ?? []);
+        }
         if (levelIndex === 2) return [FRIEND_DEMO_FIRST_REWARD_ID];
+        if (FRIEND_DEMO_ROUTE_REWARD_POOLS[levelIndex]) return FRIEND_DEMO_ROUTE_REWARD_POOLS[levelIndex];
         const rewardPool = model.levelsConfig.levels[levelIndex]?.rewardPool ?? [];
         return rewardPool.map((rewardId) => rewardId === "vision_plus_1" ? FRIEND_DEMO_DISCARD_REWARD_ID : rewardId);
       }
@@ -2283,6 +2575,7 @@
         return {
           id: FRIEND_DEMO_FIRST_REWARD_ID,
           name: "卡槽 +2",
+          category: "slot",
           description: "主卡槽从 6 格扩到 8 格，后续关卡进入完整容量。",
           effects: [{ type: "slot_limit_delta", value: 2 }],
         };
@@ -2292,6 +2585,7 @@
         return {
           id: FRIEND_DEMO_DISCARD_REWARD_ID,
           name: "丢弃 +1",
+          category: "tool",
           description: "获得 1 次丢弃卡槽末尾牌的机会。",
           effects: [{ type: "tool_delta", tool: "discard", value: 1 }],
         };
@@ -2363,22 +2657,29 @@
 
       function getToolsForLevel(defaults) {
         const baseTools = isFriendDemoMode() ? FRIEND_DEMO_DEFAULT_TOOLS : defaults.tools;
+        const ascension = getAscensionConfig();
+        const startToolPenalty = isAscensionMode() ? (ascension?.startToolPenalty ?? 0) : 0;
         return {
-          shuffle: (baseTools.shuffle ?? 0) + (model.run.tools.shuffle ?? 0),
-          undo: (baseTools.undo ?? 0) + (model.run.tools.undo ?? 0),
-          discard: (baseTools.discard ?? 0) + (model.run.tools.discard ?? 0),
+          shuffle: Math.max(0, (baseTools.shuffle ?? 0) + (model.run.tools.shuffle ?? 0) + model.shellBonuses.tool - startToolPenalty),
+          undo: Math.max(0, (baseTools.undo ?? 0) + (model.run.tools.undo ?? 0) + model.shellBonuses.tool - startToolPenalty),
+          discard: Math.max(0, (baseTools.discard ?? 0) + (model.run.tools.discard ?? 0) + model.shellBonuses.tool - startToolPenalty),
           vision: (baseTools.vision ?? 0) + (model.run.tools.vision ?? 0),
         };
       }
 
       function loadLevel(index, options = {}) {
-        resetMountainTemplateForLevelTransition(index, options);
-        model.levelIndex = Math.min(index, getPlayableLevelCount() - 1);
-        if (maybeShowSpecialEventBeforeLevel(model.levelIndex)) return;
+        const targetIndex = isEndlessMode()
+          ? getEndlessLevelIndex()
+          : isDailyMode()
+            ? getDailyLevelIndex(index)
+          : Math.min(index, getPlayableLevelCount() - 1);
+        resetMountainTemplateForLevelTransition(targetIndex, options);
+        model.levelIndex = targetIndex;
+        if (!isEndlessMode() && maybeShowSpecialEventBeforeLevel(model.levelIndex)) return;
         refreshAutoMountainTemplateSeedForLoad(options);
         const level = currentLevel();
         const defaults = model.levelsConfig.defaults;
-        const activeLevelModifier = applyPendingLevelModifier();
+        const activeLevelModifier = applyPendingLevelModifier() ?? getAscensionLevelModifier(targetIndex);
         if (model.state) model.state.activeLevelModifier = activeLevelModifier;
         model.loadingLevelModifier = activeLevelModifier;
         const playableTiles = getPlayableTilesForLevel(level, model.levelIndex);
@@ -2400,8 +2701,9 @@
           bossTrialRewardClaimed: false,
           openMelds: [],
           slotLimit: isFriendDemoMode() ? getFriendDemoSlotLimit(model.levelIndex) : clampSlotLimit(defaults.slotLimit + model.run.slotDelta),
-          reserveLimit: isFriendDemoMode() ? 0 : defaults.reserveLimit + model.run.reserveDelta,
-          shields: defaults.shields + model.run.shieldsDelta,
+          reserveLimit:
+            (isFriendDemoMode() ? 0 : defaults.reserveLimit + model.run.reserveDelta) + model.shellBonuses.reserve,
+          shields: defaults.shields + model.run.shieldsDelta + model.shellBonuses.shield,
           firstProtect: defaults.firstProtect,
           score: 0,
           coins: model.run.coins,
@@ -2423,8 +2725,15 @@
         const modifierText = getActiveLevelModifierText();
         const modifierMessage = modifierText ? ` · 事件 ${modifierText}` : "";
         const eventMessage = model.run.lastSpecialEventMessage ? ` · ${model.run.lastSpecialEventMessage}` : "";
-        renderAll(`第 ${level.order} 关${guideText}${modifierMessage}${eventMessage}`);
+        renderAll(`${getCurrentRunLabel()}${guideText}${modifierMessage}${eventMessage}`);
         model.run.lastSpecialEventMessage = "";
+      }
+
+      function getCurrentRunLabel() {
+        if (isEndlessMode()) return `无尽第 ${getEndlessLayerOrder()} 层`;
+        if (isDailyMode()) return `每日第 ${currentLevel().order} 关`;
+        if (isAscensionMode()) return `${model.ascensionName || "高阶周目"} 第 ${currentLevel().order} 关`;
+        return `第 ${currentLevel().order} 关`;
       }
 
       function renderAll(message) {
@@ -2444,6 +2753,9 @@
         renderStats();
         renderPickedRewards();
         view.status.textContent = message ?? "";
+        emitShellEvent("hulebu:run-progress", {
+          summary: message ?? "",
+        });
       }
 
       function renderModeSwitch() {
@@ -2456,6 +2768,36 @@
 
       function renderLevelTabs() {
         view.levelTabs.innerHTML = "";
+        if (isEndlessMode()) {
+          const button = document.createElement("button");
+          button.className = "level-tab active";
+          button.type = "button";
+          button.textContent = String(getEndlessLayerOrder());
+          button.setAttribute("aria-label", `无尽第 ${getEndlessLayerOrder()} 层`);
+          button.addEventListener("click", () => loadLevel(model.levelIndex, { resetFixedMountainTemplate: true }));
+          view.levelTabs.append(button);
+          return;
+        }
+        if (isDailyMode()) {
+          const button = document.createElement("button");
+          button.className = "level-tab active";
+          button.type = "button";
+          button.textContent = String(currentLevel().order).padStart(2, "0");
+          button.setAttribute("aria-label", `每日 ${model.run.dailySeed || "today"} 第 ${currentLevel().order} 关`);
+          button.addEventListener("click", () => loadLevel(model.levelIndex, { resetFixedMountainTemplate: true }));
+          view.levelTabs.append(button);
+          return;
+        }
+        if (isAscensionMode()) {
+          const button = document.createElement("button");
+          button.className = "level-tab active";
+          button.type = "button";
+          button.textContent = `A${model.ascensionLevel}`;
+          button.setAttribute("aria-label", `${model.ascensionName || "高阶周目"} 第 ${currentLevel().order} 关`);
+          button.addEventListener("click", () => loadLevel(model.levelIndex, { resetFixedMountainTemplate: true }));
+          view.levelTabs.append(button);
+          return;
+        }
         getPlayableLevels().forEach((level, index) => {
           const button = document.createElement("button");
           button.className = `level-tab${index === model.levelIndex ? " active" : ""}`;
@@ -2470,14 +2812,26 @@
       function renderHeader() {
         const level = currentLevel();
         const modeLabel = model.mode === "mountain" ? "密集牌山" : "配置关卡";
-        const viewLabel = model.prototypeView === "tuner" ? "调牌器" : "玩家试玩";
+        const viewLabel = isEndlessMode() ? "无尽牌山" : isDailyMode() ? "每日牌局" : isAscensionMode() ? "高阶周目" : model.prototypeView === "tuner" ? "调牌器" : "玩家试玩";
         const bossGoals = getActiveBossGoals(model.levelIndex);
         const bossLabel = bossGoals.length > 0 ? " / Boss" : "";
         const templateLabel = model.mode === "mountain" ? ` · ${model.activeMountainTemplate.label}` : "";
-        const difficultyLabel = getFriendDemoDifficultyProfile(model.levelIndex)?.label;
+        const difficultyLabel = (getDailyDifficultyProfile() ?? getEndlessDifficultyProfile() ?? getFriendDemoDifficultyProfile(model.levelIndex))?.label;
         const difficultyText = difficultyLabel ? `${difficultyLabel} · ` : "";
-        view.levelMeta.textContent = `${model.levelsConfig.displayName} / ${viewLabel} / ${modeLabel}${bossLabel} / ${getPlayableLevelCount()} 关`;
-        view.levelName.textContent = difficultyLabel ?? (bossGoals.length > 0 ? `${level.name} · Boss` : level.name);
+        view.levelMeta.textContent = isEndlessMode()
+          ? `${model.levelsConfig.displayName} / ${viewLabel} / ${modeLabel}${bossLabel} / 第 ${getEndlessLayerOrder()} 层`
+          : isDailyMode()
+            ? `${model.levelsConfig.displayName} / ${viewLabel} / ${modeLabel}${bossLabel} / ${model.run.dailySeed || "today"}`
+            : isAscensionMode()
+              ? `${model.levelsConfig.displayName} / ${viewLabel} / ${modeLabel}${bossLabel} / ${model.ascensionName || "高阶周目"}`
+          : `${model.levelsConfig.displayName} / ${viewLabel} / ${modeLabel}${bossLabel} / ${getPlayableLevelCount()} 关`;
+        view.levelName.textContent = isEndlessMode()
+          ? `无尽第 ${getEndlessLayerOrder()} 层${bossGoals.length > 0 ? " · Boss" : ""}`
+          : isDailyMode()
+            ? `每日牌局 ${model.run.dailySeed || "today"}${bossGoals.length > 0 ? " · Boss" : ""}`
+            : isAscensionMode()
+              ? `${model.ascensionName || "高阶周目"}${bossGoals.length > 0 ? " · Boss" : ""}`
+          : difficultyLabel ?? (bossGoals.length > 0 ? `${level.name} · Boss` : level.name);
         view.levelSubtitle.textContent = model.mode === "mountain" ? `${difficultyText}${level.subtitle}${templateLabel} · 生成 ${model.state.tiles.length} 张牌` : level.subtitle;
         renderFeaturedCombos();
         renderBossGoal();
@@ -2485,7 +2839,11 @@
 
       function renderPlayHud() {
         const level = currentLevel();
-        view.hudLevel.textContent = `第 ${level.order} 关`;
+        view.hudLevel.textContent = isEndlessMode()
+          ? `第 ${getEndlessLayerOrder()} 层`
+          : isAscensionMode()
+            ? `${model.ascensionName || "高阶周目"} · 第 ${level.order} 关`
+            : `第 ${level.order} 关`;
         view.hudGoal.textContent = getHudGoalText();
         view.hudRemaining.textContent = String(getBoardTiles().length);
         view.hudScore.textContent = model.state.score;
@@ -2503,9 +2861,15 @@
           return `${getBossHudLabelText()} ${completed}/${bossGoals.length}`;
         }
 
-        const featuredCombos = isFriendDemoMode()
+        const featuredCombos = (isFriendDemoMode() || isEndlessMode())
           ? getFriendDemoFeaturedCombos(model.levelIndex)
           : currentLevel().featuredCombos ?? [];
+        if (isDailyMode()) {
+          return `日签 ${model.run.dailySeed || "today"}`;
+        }
+        if (isAscensionMode()) {
+          return `周目 ${model.ascensionName || "高阶周目"}`;
+        }
         if (featuredCombos.length > 0) {
           return `重点 ${featuredCombos.map((combo) => TYPE_LABELS[combo]).join("/")}`;
         }
@@ -2546,7 +2910,7 @@
       }
 
       function renderFeaturedCombos() {
-        const combos = isFriendDemoMode()
+        const combos = (isFriendDemoMode() || isEndlessMode())
           ? getFriendDemoFeaturedCombos(model.levelIndex)
           : currentLevel().featuredCombos ?? [];
         if (combos.length === 0) {
@@ -2740,25 +3104,43 @@
 
       function generateMountainTiles(level) {
         const tuning = getEffectiveMountainTuningForLevel(level, model.levelIndex);
-        const seedText = getMountainGenerationSeedText(level, tuning);
+        const seedTexts = getMountainGenerationSeedAttempts(level, tuning);
+        const templateCandidates = getMountainTemplateGenerationCandidates(level, tuning);
         let lastError = null;
 
-        for (const mountainTemplate of getMountainTemplateGenerationCandidates(level, tuning)) {
-          const random = createSeededRandom(hashText(`${seedText}:${mountainTemplate.id}`));
-          try {
-            const generatedTiles = generateMountainTilesForTemplate(level, tuning, mountainTemplate, random);
-            if (shouldRetryAutoMountainTemplate(level, tuning, generatedTiles)) {
-              lastError = new Error(`密集牌山生成重试：${mountainTemplate.label} 起手开放过多。`);
-              continue;
+        for (const seedText of seedTexts) {
+          for (const mountainTemplate of templateCandidates) {
+            const random = createSeededRandom(hashText(`${seedText}:${mountainTemplate.id}`));
+            try {
+              const generatedTiles = generateMountainTilesForTemplate(level, tuning, mountainTemplate, random);
+              if (shouldRetryAutoMountainTemplate(level, tuning, generatedTiles)) {
+                lastError = new Error(`密集牌山生成重试：${mountainTemplate.label} 起手开放过多。`);
+                continue;
+              }
+              model.activeMountainTemplate = mountainTemplate;
+              return generatedTiles;
+            } catch (error) {
+              lastError = error;
             }
-            model.activeMountainTemplate = mountainTemplate;
-            return generatedTiles;
-          } catch (error) {
-            lastError = error;
           }
         }
 
         throw lastError ?? new Error("密集牌山生成失败：没有可用模板。");
+      }
+
+      function getMountainGenerationSeedAttempts(level, tuning) {
+        const seedText = getMountainGenerationSeedText(level, tuning);
+        if (
+          tuning.seed
+          || model.prototypeView !== "play"
+          || normalizeMountainTemplateId(tuning.templateId) !== "auto"
+        ) {
+          return [seedText];
+        }
+
+        return Array.from({ length: MOUNTAIN_PLAY_AUTO_SEED_RETRY_COUNT }, (_, index) => (
+          index === 0 ? seedText : `${seedText}:retry-${index}`
+        ));
       }
 
       function generateMountainTilesForTemplate(level, tuning, mountainTemplate, random) {
@@ -2847,6 +3229,7 @@
       }
 
       function shouldUseHighPressureMountainAutoPool(levelIndex = model.levelIndex) {
+        if (isEndlessMode()) return true;
         if (!isFriendDemoMode()) return false;
         return levelIndex >= 7 && levelIndex < FRIEND_DEMO_LEVEL_COUNT;
       }
@@ -2866,7 +3249,10 @@
       function shouldRetryAutoMountainTemplate(level, tuning, generatedTiles) {
         if (normalizeMountainTemplateId(tuning.templateId) !== "auto") return false;
         if (model.prototypeView !== "play") return false;
-        return getGeneratedInitialAvailableCount(generatedTiles) > MOUNTAIN_INITIAL_AVAILABLE_TARGET;
+        return (
+          getGeneratedInitialAvailableCount(generatedTiles) > MOUNTAIN_INITIAL_AVAILABLE_TARGET
+          || getGeneratedInitialCompleteSolutionGroups(generatedTiles).length > 0
+        );
       }
 
       function getGeneratedInitialAvailableCount(tiles) {
@@ -2896,7 +3282,44 @@
         return availableCount;
       }
 
+      function getGeneratedInitialCompleteSolutionGroups(tiles) {
+        const originalState = model.state;
+        model.state = {
+          tiles,
+          slot: [],
+          reserve: [],
+          slotLimit: MAX_SLOT_LIMIT,
+          reserveLimit: 0,
+          shields: 0,
+          firstProtect: false,
+          score: 0,
+          coins: 0,
+          comboCounts: { chi: 0, peng: 0, gang: 0, hu: 0 },
+          suitComboCounts: createEmptySuitTotals(),
+          bossGoals: [],
+          tools: { shuffle: 0, undo: 0, discard: 0, vision: 0 },
+          bonuses: {},
+          history: [],
+          visionActive: false,
+          phase: "playing",
+          recentBossProgress: [],
+        };
+        const initialSolutionGroupCounts = tiles
+          .filter((tile) => !isTileBlocked(tile.id))
+          .reduce((counts, tile) => {
+            const key = tile.solutionGroup ?? tile.sourcePackage ?? tile.id;
+            counts.set(key, (counts.get(key) ?? 0) + 1);
+            return counts;
+          }, new Map());
+        model.state = originalState;
+        return [...initialSolutionGroupCounts.entries()]
+          .filter(([, count]) => count >= 3)
+          .map(([group]) => group);
+      }
+
       function getAutoMountainTemplateSeedText(level, tuning) {
+        if (isEndlessMode()) return `${level.id}:endless:${getEndlessLayerOrder()}:${tuning.seed || model.autoMountainTemplateSeed || "auto"}`;
+        if (isDailyMode()) return `${level.id}:daily:${model.run.dailySeed || "today"}:${tuning.seed || "daily"}`;
         if (tuning.seed) return `${level.id}:${level.order}:${tuning.seed}`;
         if (model.prototypeView === "play") {
           return `${level.id}:${level.order}:${model.autoMountainTemplateSeed || "auto"}`;
@@ -2905,6 +3328,8 @@
       }
 
       function getMountainGenerationSeedText(level, tuning) {
+        if (isEndlessMode()) return `${level.id}:endless:${getEndlessLayerOrder()}:${tuning.seed || model.autoMountainTemplateSeed || "auto"}`;
+        if (isDailyMode()) return `${level.id}:daily:${model.run.dailySeed || "today"}:${tuning.seed || "daily"}`;
         if (tuning.seed) return tuning.seed;
         if (model.prototypeView === "play" && model.autoMountainTemplateSeed) {
           return `${level.id}:${level.order}:${model.autoMountainTemplateSeed}`;
@@ -4671,6 +5096,7 @@
 
       function renderStats() {
         const shuffleDisabledByModifier = isToolDisabledByModifier("shuffle");
+        const ascension = getAscensionConfig();
         view.score.textContent = model.state.score;
         view.coins.textContent = model.state.coins;
         view.shields.textContent = model.state.shields;
@@ -4682,7 +5108,9 @@
         view.discardCount.textContent = `${riverUsed}/${riverLimit}`;
         view.slotLimit.textContent = model.state.slotLimit;
         view.shuffleButton.disabled = model.state.phase !== "playing" || shuffleDisabledByModifier || model.state.tools.shuffle <= 0 || getBoardTiles().length < 2;
-        view.shuffleButton.title = shuffleDisabledByModifier ? "特殊事件：禁洗牌" : "";
+        view.shuffleButton.title = shuffleDisabledByModifier
+          ? (isAscensionMode() && ascension?.disableShuffle ? `${ascension.name}：禁洗牌` : "特殊事件：禁洗牌")
+          : "";
         view.undoButton.disabled = model.state.phase !== "playing" || model.state.tools.undo <= 0 || model.state.history.length === 0;
         view.discardButton.disabled = model.state.phase !== "playing" || model.state.slot.length === 0 || !canUseRiverDiscard();
       }
@@ -4701,7 +5129,7 @@
           const reward = findReward(rewardId);
           const item = document.createElement("div");
           item.className = "reward-pill";
-          item.textContent = reward ? reward.name : rewardId;
+          item.textContent = reward ? `${reward.name} · ${getRewardRouteLabel(reward)}` : rewardId;
           view.pickedRewards.append(item);
         }
       }
@@ -4821,7 +5249,7 @@
         renderAll(message);
       }
 
-      function resolveLevelClear(message = `第 ${currentLevel().order} 关通关`) {
+      function resolveLevelClear(message = `${getCurrentRunLabel()}通关`) {
         if (!canClearCurrentLevel()) {
           renderAll(getCurrentClearRequirementText());
           return false;
@@ -4838,8 +5266,9 @@
         return true;
       }
 
-      function completeCurrentLevel(message = `第 ${currentLevel().order} 关通关`) {
+      function completeCurrentLevel(message = `${getCurrentRunLabel()}通关`) {
         const rewardMessages = [
+          claimAscensionRewardAdjustment(),
           claimActiveLevelModifierReward(),
           claimBossTrialReward(),
         ].filter(Boolean);
@@ -4850,6 +5279,16 @@
         model.state.endgameSettlement = null;
         renderAll(rewardMessages.length ? `${message} · ${rewardMessages.join(" · ")}` : message);
         showLevelClear();
+      }
+
+      function claimAscensionRewardAdjustment() {
+        if (!isAscensionMode()) return "";
+        const ascension = getAscensionConfig();
+        const penalty = Math.min(model.state.coins, ascension?.rewardCoinPenalty ?? 0);
+        if (!penalty) return "";
+        model.state.coins -= penalty;
+        model.run.coins = model.state.coins;
+        return `${ascension.name} 维持费 -${penalty} 铜钱`;
       }
 
       function claimActiveLevelModifierReward() {
@@ -5084,6 +5523,33 @@
       }
 
       function showLevelClear() {
+        if (isEndlessMode()) {
+          view.rewardTitle.textContent = `无尽第 ${getEndlessLayerOrder()} 层通关`;
+          view.rewardGrid.innerHTML = "";
+          view.rewardGrid.style.display = "none";
+          view.runComplete.innerHTML = "";
+          view.runComplete.classList.add("show");
+
+          const summary = document.createElement("p");
+          summary.textContent = shouldOfferRewardAfterLevel(model.levelIndex) ? "下一层前可选择一次奖励。" : "牌山已清空，可以进入下一层。";
+          const next = document.createElement("button");
+          next.className = "reward-button";
+          next.type = "button";
+          next.textContent = shouldOfferRewardAfterLevel(model.levelIndex) ? "选择奖励" : "进入下一层";
+          next.addEventListener("click", () => {
+            view.rewardOverlay.classList.remove("show");
+            advanceAfterClear();
+          });
+          view.runComplete.append(summary, next);
+          view.rewardOverlay.classList.add("show");
+          return;
+        }
+
+        if (isDailyMode() && isLastLevel()) {
+          showRunComplete();
+          return;
+        }
+
         if (isLastLevel()) {
           showRunComplete();
           return;
@@ -5110,7 +5576,10 @@
       }
 
       function getClearSummaryText() {
+        if (isEndlessMode()) return `无尽第 ${getEndlessLayerOrder()} 层已清空。`;
+        if (isDailyMode()) return `每日牌局 ${model.run.dailySeed || "today"} 已清空第 ${currentLevel().order} 关。`;
         if (isFriendDemoBossTrialLevel()) return "终局试炼已击破，本轮完成。";
+        if (isFriendDemoFinalBossLevel()) return "胡了卜王已击破，本轮完成。";
         if (getActiveBossGoals(model.levelIndex).length > 0) return "Boss 关已清空，本章完成。";
         if (shouldOfferRewardAfterLevel(model.levelIndex)) return "下一关前可选择一次奖励。";
         return "牌山已清空，可以进入下一关。";
@@ -5130,6 +5599,9 @@
           card.className = "reward-card";
           const title = document.createElement("strong");
           title.textContent = reward.name;
+          const route = document.createElement("div");
+          route.className = "reward-route";
+          route.textContent = getRewardRouteLabel(reward);
           const desc = document.createElement("p");
           desc.textContent = reward.description;
           const button = document.createElement("button");
@@ -5137,10 +5609,14 @@
           button.type = "button";
           button.textContent = "选择并进入下一关";
           button.addEventListener("click", () => pickReward(reward));
-          card.append(title, desc, button);
+          card.append(title, route, desc, button);
           view.rewardGrid.append(card);
         }
         view.rewardOverlay.classList.add("show");
+      }
+
+      function getRewardRouteLabel(reward) {
+        return REWARD_ROUTE_LABELS[reward?.category] ?? "路线";
       }
 
       function showRunComplete() {
@@ -5154,7 +5630,11 @@
         const bossText = getActiveBossGoals(model.levelIndex).length > 0
           ? `${getBossGoalTitleText()}已击破。`
           : "";
-        summary.textContent = `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
+        summary.textContent = isDailyMode()
+          ? `${bossText}今日牌局 ${model.run.dailySeed || "today"} 已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`
+          : isAscensionMode()
+            ? `${bossText}${model.ascensionName || "高阶周目"} 已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`
+          : `${bossText}已清完 ${getPlayableLevelCount()} 关。铜钱 ${model.run.coins}，已选奖励 ${model.run.pickedRewards.length} 个。`;
         const restart = document.createElement("button");
         restart.className = "reward-button";
         restart.type = "button";
@@ -5162,6 +5642,9 @@
         restart.addEventListener("click", () => restartRun());
         view.runComplete.append(summary, restart);
         view.rewardOverlay.classList.add("show");
+        emitShellEvent("hulebu:run-complete", {
+          summary: summary.textContent,
+        });
       }
 
       function shouldEnterEndgameSettlement() {
@@ -5214,7 +5697,7 @@
 
       function completeEndgameByDiscard() {
         clearEndgameResidualTiles(null);
-        completeCurrentLevel(`弃牌通关：第 ${currentLevel().order} 关通关`);
+        completeCurrentLevel(`弃牌通关：${getCurrentRunLabel()}通关`);
       }
 
       function startEndgamePrimerSelection() {
@@ -5300,6 +5783,9 @@
         });
         view.runComplete.append(summary, restart);
         view.rewardOverlay.classList.add("show");
+        emitShellEvent("hulebu:run-failed", {
+          summary: failureText,
+        });
       }
 
       function pickReward(reward) {
@@ -5316,10 +5802,28 @@
         }
         model.run.pickedRewards.push(reward.id);
         view.rewardOverlay.classList.remove("show");
+        if (isEndlessMode()) {
+          advanceAfterEndlessClear();
+          return;
+        }
         loadLevel(getNextLevelIndex(), { resetFixedMountainTemplate: true });
       }
 
       function advanceAfterClear() {
+        if (isEndlessMode()) {
+          if (model.state?.phase === "won" && shouldOfferRewardAfterLevel(model.levelIndex)) {
+            showRewards();
+            return;
+          }
+          advanceAfterEndlessClear();
+          return;
+        }
+
+        if (isDailyMode() && model.state?.phase === "won" && shouldOfferRewardAfterLevel(model.levelIndex)) {
+          showRewards();
+          return;
+        }
+
         if (model.state?.phase === "playing") {
           loadLevel(getNextLevelIndex(), { resetFixedMountainTemplate: true });
           return;
@@ -5331,6 +5835,11 @@
         }
 
         loadLevel(getNextLevelIndex(), { resetFixedMountainTemplate: true });
+      }
+
+      function advanceAfterEndlessClear() {
+        model.run.endlessLayer = getEndlessLayerOrder() + 1;
+        loadLevel(getEndlessLevelIndex(), { resetFixedMountainTemplate: true, forceResetMountainTemplate: true });
       }
 
       function restartRun() {
@@ -5348,10 +5857,12 @@
           pendingSpecialEvent: null,
           pendingLevelModifier: null,
           lastSpecialEventMessage: "",
+          endlessLayer: isEndlessMode() ? getEndlessLayerOrder() : ENDLESS_START_LAYER,
+          dailySeed: model.run.dailySeed,
         };
         model.loadingLevelModifier = null;
         view.rewardOverlay.classList.remove("show");
-        loadLevel(0, { resetFixedMountainTemplate: true, forceResetMountainTemplate: true });
+        loadLevel(isEndlessMode() ? getEndlessLevelIndex() : 0, { resetFixedMountainTemplate: true, forceResetMountainTemplate: true });
       }
 
       function checkDanger() {
@@ -5753,20 +6264,25 @@
       }
 
       function isLastLevel() {
+        if (isEndlessMode()) return false;
         return model.levelIndex >= getPlayableLevelCount() - 1;
       }
 
       function getNextLevelIndex() {
+        if (isEndlessMode()) return getEndlessLevelIndex(getEndlessLayerOrder() + 1);
         return Math.min(model.levelIndex + 1, getPlayableLevelCount() - 1);
       }
 
       function getRewardPoolForCurrentLevel() {
-        return isFriendDemoMode() ? getFriendDemoRewardPool(model.levelIndex) : currentLevel().rewardPool;
+        return (isFriendDemoMode() || isEndlessMode()) ? getFriendDemoRewardPool(model.levelIndex) : currentLevel().rewardPool;
       }
 
       function shouldOfferRewardAfterLevel(levelIndex) {
+        if (isEndlessMode()) {
+          return getEndlessLayerOrder() % 3 === 0;
+        }
         if (isFriendDemoMode()) {
-          return [2, 5, 8].includes(levelIndex);
+          return FRIEND_DEMO_REWARD_LEVEL_INDEXES.includes(levelIndex);
         }
         const order = model.levelsConfig.levels[levelIndex].order;
         const chapterStep = order % 10;
@@ -5774,12 +6290,15 @@
       }
 
       function isBossLevel(levelIndex = model.levelIndex) {
+        if (isEndlessMode()) return getEndlessLayerOrder() % 5 === 0;
         return model.levelsConfig.levels[levelIndex].order % 10 === 0;
       }
 
       function getActiveBossGoals(levelIndex = model.levelIndex) {
+        if (isEndlessMode()) return getEndlessBossGoals();
         const friendDemoTrialGoals = getFriendDemoBossTrialGoals(levelIndex);
         if (friendDemoTrialGoals) return friendDemoTrialGoals;
+        if (isFriendDemoFinalBossLevel(levelIndex)) return getBossGoals(levelIndex) ?? [];
         if (getFriendDemoDifficultyProfile(levelIndex)) return [];
         return getBossGoals(levelIndex) ?? [];
       }
@@ -5797,6 +6316,18 @@
           { type: "combo_count", combo: "peng", target: chapter + 1 },
           { type: "score_target", target: 100 + chapter * 20 },
         ];
+      }
+
+      function getEndlessBossGoals() {
+        if (!isBossLevel()) return [];
+        const layer = getEndlessLayerOrder();
+        const chapter = Math.max(1, Math.floor((layer - ENDLESS_START_LAYER) / 5) + 1);
+        const goals = [
+          { type: "combo_count", combo: "gang", target: layer % 10 === 0 ? 2 : 1 },
+          { type: "score_target", target: 180 + chapter * 20 },
+        ];
+        if (layer % 10 === 0) goals.splice(1, 0, { type: "combo_count", combo: "hu", target: 1 });
+        return goals;
       }
 
       function findTile(tileId) {

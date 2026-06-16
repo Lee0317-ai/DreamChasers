@@ -1,0 +1,55 @@
+# 2026-06-14 T170 完成记录
+
+- 任务编号：T170
+- 任务名称：胡了卜无尽牌山第一版
+- 负责人：Lee
+- 完成时间：2026-06-14
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T170-hulebu-endless-mountain.md`
+  - `docs/tasks/claims/T170-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-14-hulebu-endless-mountain-design.md`
+  - `docs/superpowers/plans/2026-06-14-hulebu-endless-mountain.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/2026-06-14-task-170-hulebu-endless-mountain.md`
+- 实现内容：
+  - `/games/hulebu` 局外 `无尽` 面板开放 `开始无尽`。
+  - 无尽 run 从第 21 层起步，iframe 使用 `mode=endless&startLayer=21`。
+  - 外层壳继续把 `reserveBonus / shieldBonus / toolBonus` 带入无尽 iframe。
+  - 外层本地存档新增 `bestEndlessLayer`，并在局外页、进行中摘要、结算面板和最近一轮记录中展示。
+  - HTML 原型新增 `runMode` 和无尽层 helper，支持第 21 层起的层数循环、奖励节点、Boss 压力和 shell 层数同步。
+  - 站内静态 Demo 已同步，并保留静态副本的 `/games/hulebu-demo/config/*.json` 绝对配置路径。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T170-hulebu-endless-mountain.md docs/tasks/claims/T170-lee.md docs/superpowers/specs/2026-06-14-hulebu-endless-mountain-design.md docs/superpowers/plans/2026-06-14-hulebu-endless-mountain.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-170-hulebu-endless-mountain.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 验证结果：
+  - 共享原型测试和站内 hulebu 发布测试通过。
+  - Web typecheck 和 production build 通过。
+  - 源原型与站内静态副本内联脚本语法检查通过。
+  - 文档同步、占位符扫描和 diff 空白检查通过。
+  - 桌面端和 390px 移动端 `/games/hulebu` 检查通过，均可看到无尽入口并进入 `mode=endless&startLayer=21` 牌桌。
+- 遗留问题：
+  - 本任务不实现每日牌局、成就图鉴、高阶周目、云存档、排行榜、付费、广告或 Cocos 正式工程追平。
+  - 无尽第一版复用现有密集牌山、Boss goal 和路线型奖励池；专属无尽奖励、层数经济、高阶词缀和成就联动应后续单独拆任务。
+  - 下一步建议优先开 T171，补每日牌局入口和固定日 seed。

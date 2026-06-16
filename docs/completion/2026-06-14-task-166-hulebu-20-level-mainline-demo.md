@@ -1,0 +1,41 @@
+# T166 完成记录：胡了卜 20 关完整主线 Demo
+
+- 任务编号：T166
+- 负责人：Lee
+- 完成时间：2026-06-14
+- 修改文件：
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `packages/shared/src/mahjong-config.test.ts`
+  - `docs/tasks/items/T166-hulebu-20-level-mainline-demo.md`
+  - `docs/tasks/claims/T166-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-13-lee.md`
+- 实现内容：
+  - 默认玩家试玩页已从 10 关扩展到 20 关，并保留第 10 关 `终局试炼`。
+  - 第 11-19 关已补后半段渐进难度 profile，形成完整后半段主线压力曲线。
+  - 第 20 关已启用 `胡了卜王` 终章 Boss，HUD 和 Boss 目标条会显示 6 项复合目标。
+  - 奖励节点已扩展为第 `3 / 6 / 9 / 13 / 16 / 19` 关。
+  - 默认玩家页 `auto` 模板已补多次 seed 重试和“起手不能直接露出完整答案组”的兜底条件。
+  - 已同步站内静态 Demo `/games/hulebu-demo/index.html`。
+  - 390px 移动端已修正底部固定道具栏遮挡，卡槽最后一格不再被覆盖。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w packages/shared -- mahjong-config`
+  - `npm run test -w apps/web -- hulebu`
+  - `node --check /tmp/hulebu-config-playable-inline.js`
+  - `node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T166-hulebu-20-level-mainline-demo.md docs/tasks/claims/T166-lee.md docs/superpowers/specs/2026-06-13-hulebu-20-level-mainline-demo-design.md docs/superpowers/plans/2026-06-13-hulebu-20-level-mainline-demo.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-13-lee.md docs/completion/2026-06-14-task-166-hulebu-20-level-mainline-demo.md`
+  - `git diff --check`
+- 验证结果：
+  - 自动化测试通过。
+  - HTML 内联脚本语法检查通过。
+  - 右侧内置浏览器桌面端验证通过，默认玩家页显示 20 个关卡标签，第 20 关 `胡了卜王` Boss 目标展示正常。
+  - 右侧内置浏览器 390px 移动端验证通过，底部固定工具栏不再遮挡卡槽最后一格。
+- 遗留问题：
+  - 本任务不包含局外首页、Run 开始页、结算页、铜钱持久资产、局外升级、路线型奖励、无尽、每日、成就或高阶周目。
+  - 下一步建议优先开 T167，补 20 关主线的局外壳层。

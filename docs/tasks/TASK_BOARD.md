@@ -270,4 +270,15 @@
 | T162 | P1 | 胡了卜残局收官和悬台窄腰高压池 | Lee | 已完成 | T094, T101, T102, T104, T105 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T163 | P1 | 胡了卜特殊事件 Demo 第一版 | Lee | 已完成 | T101, T102, T105, T162, D006 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T164 | P1 | 胡了卜 Boss 试炼 Demo 第一版 | Lee | 已完成 | T101, T102, T105, T162, T163, D006, D030 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T165 | P1 | 胡了卜 Demo 完整体验版推进方案 | Lee | 待验收 | T101, T102, T105, T162, T163, T164, D005, D006, D041 | - `docs/tasks/CHANGE_INTAKE.md` | - `npm run docs:sync` |
+| T166 | P1 | 胡了卜 20 关完整主线 Demo | Lee | 待验收 | T101, T102, T105, T162, T163, T164, T165, D005, D006, D041 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T167 | P1 | 胡了卜局外首页和结算面板 | Lee | 待验收 | T102, T162, T163, T164, T165, T166 | - `apps/web/src/app/games/hulebu/page.tsx` | - `npm run test -w apps/web -- hulebu` |
+| T168 | P1 | 胡了卜铜钱资产和 3 项局外升级 | Lee | 待验收 | T165, T166, T167 | - `apps/web/src/app/games/hulebu/page.tsx` | - `npm run test -w apps/web -- hulebu` |
+| T169 | P1 | 胡了卜路线型奖励池扩展 | Lee | 待验收 | T165, T166, T167, T168 | - `apps/game/mahjong-roguelike/config/rewards.json` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T170 | P1 | 胡了卜无尽牌山第一版 | Lee | 待验收 | T165, T166, T167, T168, T169 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T171 | P1 | 胡了卜每日牌局第一版 | Lee | 待验收 | T165, T166, T167, T168, T169, T170 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T172 | P1 | 胡了卜成就图鉴第一版 | Lee | 待验收 | T165, T166, T167, T168, T169, T170, T171 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w apps/web -- hulebu` |
+| T173 | P1 | 胡了卜高阶周目第一版 | Lee | 待验收 | T165, T166, T167, T168, T169, T170, T171, T172 | - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T174 | P1 | 胡了卜账号进度续层 | Lee | 待验收 | T167, T170, T171, T172, T173 | - `apps/web/prisma/schema.prisma` | - `npm run test -w apps/web -- hulebu` |
+| T175 | P1 | 胡了卜网页版完整版路线重排和缺口拆分 | Lee | 待验收 | T165, T166, T167, T168, T169, T170, T171, T172, T173, T174, D041 | - `docs/tasks/CHANGE_INTAKE.md` | - `npm run docs:sync` |
 <!-- DOCS_SYNC_TASKS_END -->

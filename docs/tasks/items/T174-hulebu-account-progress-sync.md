@@ -1,0 +1,59 @@
+# T174：胡了卜账号进度续层
+
+- 任务编号：T174
+- 优先级：P1
+- 任务名称：胡了卜账号进度续层
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T167, T170, T171, T172, T173
+- 背景：当前 `/games/hulebu` 的无尽最高层、高阶解锁、每日最佳和成就都保存在浏览器本地。用户换设备、清缓存或重新登录后，长期进度会回到 0，不能按账号续上。
+- 目标：
+  - 登录用户打开 `/games/hulebu` 时优先读取账号侧长期进度。
+  - 结算后把无尽最高层、高阶解锁、每日最佳和成就回写账号。
+  - 未登录用户继续保留本地存档兜底。
+  - 首次登录时尽量把本地旧进度并入账号侧。
+- 不做：
+  - 不做排行榜、多人同步、复杂冲突解决或跨游戏成就中心。
+  - 不改 Cocos 正式工程。
+  - 不重做主线、无尽、每日或高阶规则。
+  - 不改 PDF、AI 修图、TimePick 或 AI Gateway。
+- 允许修改文件：
+  - `apps/web/prisma/schema.prisma`
+  - `apps/web/src/lib/account/**`
+  - `apps/web/src/lib/auth/**`
+  - `apps/web/src/app/api/games/hulebu/**`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T174-hulebu-account-progress-sync.md`
+  - `docs/tasks/claims/T174-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-15-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/src/lib/ai/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 补账号侧胡了卜长期进度读写模型和 API。
+  - [x] 改造局外壳层，登录态优先读取账号进度并保留本地兜底。
+  - [x] 在结算和升级后回写账号进度，并处理首次本地迁移。
+  - [x] 更新测试和模块文档。
+  - [x] 跑自动化验证和浏览器检查。

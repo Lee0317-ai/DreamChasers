@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-06-08
+**最后更新**：2026-06-16
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,204 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260616-01：胡了卜先完成网页版完整版再追平 Cocos
+
+- 提出人：Lee
+- 提出时间：2026-06-16
+- 背景：T174 后 `/games/hulebu` 已具备 20 关主线、局外壳、铜钱升级、路线奖励、无尽、每日、成就、高阶周目和账号进度续层，但这些仍是 Web 完整体验的一轮骨架。原文档建议下一步让 Cocos 追平，但 Lee 明确希望先把网页版完整开发到内容和数值稳定，再补 Cocos、音乐和美术资源。
+- 目标：新增 T175，正式调整路线为“网页版完整版优先，Cocos 和音画资源后置”；盘点完整版相对当前 Web Demo 的缺口；拆出后续 Web 内容、系统、平衡和冻结任务顺序。
+- 不做：本任务不改玩法代码、不改站内 Demo、不改 Cocos 工程、不生成音乐或美术资源、不做排行榜、付费、广告、多人或完整发布包。
+- 用户价值：先在 Web 中把玩法、内容、系统深度和数值跑顺，减少 Cocos 与美术音频反复追改的返工成本。
+- 涉及模块：胡了卜任务体系 / 模块文档 / 完整版路线规格。
+- 可能影响文件：`docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-16-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜规划和文档，不占用 Cocos、Web 代码或其他模块文件。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：T175 任务分片、领取分片、路线规格、实施计划、模块 README/PROGRESS/HANDOFF/IMPLEMENTATION_PLAN/DECISIONS 已更新；NEXT_ID 推进到 176；主文档经 `npm run docs:sync` 同步；占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：把后续路线拆为四段：先补 Web 版内容深度（高阶周目完整版、Boss 试炼第二版、特殊事件池、成就图鉴、无尽/每日、路线奖励与局外能力），再做 Web 数值和内容冻结；之后 Cocos 按冻结规格追平；最后接音乐、美术、动效和发布资源。
+- 处理结论：已入任务池
+- 对应任务编号：T175
+
+### IDEA-20260615-04：胡了卜账号进度续层
+
+- 提出人：Lee
+- 提出时间：2026-06-15
+- 背景：当前 `/games/hulebu` 的无尽最高层、高阶解锁、每日最佳和成就都保存在浏览器本地。用户换设备、清缓存或重新登录后，页面会从 0 开始，看不到自己账号对应的长期进度。
+- 目标：新增 T174，把胡了卜长期进度接到账号体系；登录用户打开页面时优先读取账号侧进度，不再总是从 0 开始；结算后能把新进度写回账号；未登录用户继续保留本地存档兜底。
+- 不做：不做排行榜、多人同步、跨游戏成就中心、云存档冲突解决器、付费或广告；不改 Cocos 正式工程；不重做 20 关配置、无尽规则、每日规则或高阶规则。
+- 用户价值：登录用户在不同浏览器和设备上能续上自己的无尽层数和长期进度，不会每次重新打开都像新号。
+- 涉及模块：胡了卜站内壳层 / 账号 API / Prisma 持久化 / 模块文档。
+- 可能影响文件：`apps/web/prisma/schema.prisma`, `apps/web/src/lib/account/**`, `apps/web/src/lib/auth/**`, `apps/web/src/app/api/games/hulebu/**`, `apps/web/src/modules/games/hulebu/**`, `apps/web/src/modules/games/hulebu/__tests__/**`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜网页壳层、账号 API 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：登录用户打开 `/games/hulebu` 时会读取账号侧长期进度；无尽最高层、高阶解锁、每日最佳和成就不会每次回到 0；结算后会回写账号进度；未登录用户仍能继续使用本地存档；测试、构建和浏览器检查通过。
+- AI 初步方案：新增 T174；先补服务端进度存储模型和读写 API，再让 `HulebuGamePage` 在登录态拉取/合并账号进度并在结算后回写；保留本地存档作为未登录兜底和首次迁移来源。
+- 处理结论：已入任务池
+- 对应任务编号：T174
+
+### IDEA-20260614-04：胡了卜无尽牌山第一版
+
+- 提出人：Lee
+- 提出时间：2026-06-14
+- 背景：T169 已完成路线型奖励池，当前 `/games/hulebu` 已具备 20 关主线、局外首页、结算面板、铜钱资产、3 项局外升级和路线型奖励池。完整体验版下一步需要让主线之后有一个长期挑战承接入口。
+- 目标：新增 T170，把局外 `无尽` 入口升级为可开始的无尽牌山第一版；无尽从第 21 层开始；iframe 支持 `mode=endless` 和 `startLayer=21`；外层本地记录最高无尽层，并在局外和结算可见。
+- 不做：不做每日牌局、成就图鉴、高阶周目、云存档、排行榜、付费、广告或 Cocos 正式工程追平；不改 20 关主线配置、奖励配置或局外升级价格。
+- 用户价值：玩家打通或熟悉 20 关主线后，有一个能继续冲层数的轻量长期目标，局外成长和路线型奖励开始有回访承接。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜网页 Demo 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外页可开始无尽；iframe URL 带 `mode=endless&startLayer=21`；无尽内层显示第 21 层起的层数并能进入下一层；失败或结算后本地最高无尽层可见且刷新保留；测试、构建、脚本语法、桌面端和 390px 移动端浏览器检查通过。
+- AI 初步方案：新增 T170；先写失败测试锁定 web 壳层无尽入口和原型 `mode=endless` 参数；再给外层壳加 runMode、bestEndlessLayer 和 startEndlessRun；内层原型复用密集牌山生成器，用层数映射难度和 boss/reward 节奏；最后同步静态 Demo 并更新文档。
+- 处理结论：已入任务池
+- 对应任务编号：T170
+
+### IDEA-20260615-01：胡了卜每日牌局第一版
+
+- 提出人：Lee
+- 提出时间：2026-06-15
+- 背景：T170 已完成无尽牌山第一版，`/games/hulebu` 现在具备主线、局外首页、结算、铜钱、升级、路线型奖励和无尽入口，但每日牌局仍只是壳层占位。完整体验版下一步需要补一个每日回访入口。
+- 目标：新增 T171，把局外 `每日` 面板升级为可开始的每日牌局第一版；支持固定日 seed 和本地当日最佳记录；每日入口和结算可见。
+- 不做：不做成就图鉴、高阶周目、云存档、排行榜、付费、广告或 Cocos 正式工程追平；不改 20 关主线配置、无尽层数规则或局外升级价格。
+- 用户价值：玩家除了 20 关主线和无尽外，还有一个每天会变化的轻量回访目标，便于形成固定打开习惯。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜网页 Demo 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外页可开始每日牌局；iframe URL 带固定日 seed；每日牌局内层有可见的日签或今日提示；本地可见当日最佳记录；测试、构建、脚本语法、桌面端和 390px 移动端浏览器检查通过。
+- AI 初步方案：新增 T171；先写失败测试锁定 `每日` 入口和固定日 seed；再给外层壳加 daily run state 和 local best 记录；内层原型复用现有牌山和奖励结构，把 seed 固定到当天；最后同步静态 Demo 并更新文档。
+- 处理结论：待入任务池
+- 对应任务编号：T171
+
+### IDEA-20260615-02：胡了卜成就图鉴第一版
+
+- 提出人：Lee
+- 提出时间：2026-06-15
+- 背景：T171 已完成每日牌局第一版，`/games/hulebu` 现在已经具备主线、局外首页、结算、铜钱、升级、路线型奖励、无尽和每日入口，但 `图鉴` 面板仍是占位。完整体验版下一步需要给长期目标一个清晰承接点。
+- 目标：新增 T172，把局外 `图鉴` 面板升级为可查看的成就图鉴第一版；基于本地存档展示已解锁/未解锁状态，并承接主线、无尽、每日和局外升级的长期进度。
+- 不做：不做完整事件词条库、Boss 详情页、奖励路线收藏页、云同步、排行榜、付费、广告或 Cocos 正式工程追平；不改 20 关主线配置、无尽层数规则、每日 seed 规则或局外升级价格。
+- 用户价值：玩家除了“打一轮”之外，有一个能回看长期进度的本地目标页；主线、无尽、每日和升级不再只是离散功能，而是会沉淀成可见成就。
+- 涉及模块：胡了卜站内壳层 / 本地存档 / 站内静态测试 / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜网页壳层、本地存档和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`/games/hulebu` 的 `图鉴` 面板不再是占位；至少展示一组成就卡及其已解锁/未解锁状态；主线、无尽、每日和升级四类已有进度能映射到图鉴；测试、构建、桌面端和 390px 移动端浏览器检查通过。
+- AI 初步方案：新增 T172；先用 web 测试锁定图鉴面板文案和成就字段；再给壳层本地存档加 achievements/解锁逻辑，把现有 run 结算和升级购买信号映射到成就；最后更新模块文档和当天进展。
+- 处理结论：已入任务池
+- 对应任务编号：T172
+
+### IDEA-20260615-03：胡了卜高阶周目第一版
+
+- 提出人：Lee
+- 提出时间：2026-06-15
+- 背景：T172 已完成成就图鉴第一版，`/games/hulebu` 现在已经具备主线、局外结算、铜钱、升级、路线型奖励、无尽、每日和图鉴入口，但高阶周目仍未接入局外壳层。完整体验版下一步需要把“通关后的更高难度轮回”先做成可进入、可理解的第一版。
+- 目标：新增 T173，把局外高阶周目第一版接入 `/games/hulebu`；至少支持解锁提示、局外入口、1-2 档周目和少量稳定词缀/限制展示；进入后仍复用现有 20 关主线骨架。
+- 不做：不做完整高阶事件扩容、完整 Boss 试炼第二版、云同步、排行榜、付费、广告或 Cocos 正式工程追平；不改 `levels.json`、`rewards.json`、无尽规则、每日规则和局外升级价格。
+- 用户价值：玩家打穿主线后不只是继续打无尽，还能看到一个明确的“更高难度轮回”入口；长期挑战结构会更完整。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 本地存档 / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜网页 Demo、对应静态副本和文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外页可看到高阶周目入口和解锁状态；至少可进入 1-2 档高阶周目；页面与 HUD 会显示当前周目和词缀/限制；测试、构建、脚本语法、桌面端和 390px 移动端浏览器检查通过。
+- AI 初步方案：新增 T173；先写失败测试锁定周目入口、周目字段和词缀文案；再给外层壳和内层原型加 `ascension`/高阶周目模式、少量稳定词缀和本地解锁逻辑；最后同步静态 Demo、更新模块文档并做浏览器验收。
+- 处理结论：已入任务池
+- 对应任务编号：T173
+
+### IDEA-20260614-03：胡了卜路线型奖励池扩展
+
+- 提出人：Lee
+- 提出时间：2026-06-14
+- 背景：T168 已完成局外铜钱和 3 项外置升级，当前 `/games/hulebu` 已具备主线、局外页和升级消费闭环。但 run 内奖励池仍主要是单档分数、单次道具和基础救场，吃流、碰流、杠流、胡流、道具流和信息流的 build 分叉不够明显。
+- 目标：新增 T169，把默认玩家 Demo 的奖励池扩成更明确的路线型奖励池；至少让玩家在 `吃 / 碰 / 杠 / 胡 / 道具 / 信息` 六类方向里感受到不同构筑倾向；奖励展示层需要体现奖励类别和路线感。
+- 不做：不做无尽、每日、成就、高阶周目；不改局外升级系统；不接登录、云存档、多端同步；不改 Cocos 正式工程；不重做 20 关主线关卡结构；不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 用户价值：run 内构筑不再只是“拿点分数和工具次数”，而是开始出现更清晰的打法分叉，朋友试玩时能更明显感到 Roguelike 选择带来的差异。
+- 涉及模块：胡了卜 HTML 试玩原型 / 站内静态 Demo / 共享奖励配置测试 / 模块文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/config/rewards.json`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config.test.ts`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜奖励池和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：奖励配置不再只有 10 个基础奖励；默认主线奖励池能体现 `吃 / 碰 / 杠 / 胡 / 道具 / 信息` 路线；奖励弹层和已选奖励区能读出路线类别；测试、脚本语法、桌面端和 390px 移动端浏览器检查通过。
+- AI 初步方案：新增 T169；先写失败测试锁定奖励数量、路线类别和奖励展示口径；再扩 `rewards.json`、朋友试玩奖励池映射和奖励卡展示；最后同步静态 Demo、更新文档并做浏览器验收。
+- 处理结论：已入任务池
+- 对应任务编号：T169
+
+### IDEA-20260614-02：胡了卜铜钱资产和 3 项局外升级
+
+- 提出人：Lee
+- 提出时间：2026-06-14
+- 背景：T167 已完成局外首页、主线开始壳和结算面板，但当前“局外铜钱”还只是浏览器本地预览数字，`备用槽 / 满槽护符 / 初始道具` 也只是说明文字，没有真实购买和生效逻辑。完整体验版下一步必须让铜钱有用途，否则局外页只是展示层。
+- 目标：新增 T168，把局外铜钱升级为真实可消费资产；新增 3 项局外升级的购买和持久化；开始新 run 时把升级效果真实带入 iframe 主线。
+- 不做：不接登录、云存档、多端同步；不做无尽、每日、图鉴真实内容；不扩路线型奖励池；不重做 20 关主线规则；不改 Cocos 正式工程；不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 用户价值：玩家通关后拿到的铜钱终于能花出去，局外页不再只是壳。升级买完后，下一轮主线能直接感受到更高容错和更强开局资源。
+- 涉及模块：胡了卜站内入口页 / HTML 试玩原型参数桥接 / 模块文档。
+- 可能影响文件：`apps/web/src/app/games/hulebu/page.tsx`, `apps/web/src/modules/games/hulebu/**`, `apps/web/public/games/hulebu-demo/index.html`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜站内入口、静态 Demo 参数桥接和对应文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外铜钱可累计、可消费；`备用槽 / 满槽护符 / 初始道具` 至少各有 2 档可购买升级；购买后刷新页面仍保留；开始主线 run 时升级效果真实带入并影响 reserve、shield、tools 初始状态；测试、构建、脚本语法、桌面和移动端浏览器检查通过。
+- AI 初步方案：新增 T168；先用 web 测试锁定升级文案、购买入口和 iframe 参数；再给静态 Demo 增加 URL 参数桥接，把 reserve/shield/tool bonus 注入 run 初始状态；最后更新文档并做浏览器验收。
+- 处理结论：已入任务池
+- 对应任务编号：T168
+
+### IDEA-20260614-01：胡了卜局外首页和结算面板
+
+- 提出人：Lee
+- 提出时间：2026-06-14
+- 背景：T166 已完成 20 关完整主线 Demo，但 `/games/hulebu` 仍是直接打开 iframe 牌桌，朋友试玩会直接掉进局内过程。T165 路线图已明确下一步要先补局外首页、Run 开始页和结算面板，让 Demo 先拥有完整游戏壳层，再去做铜钱资产和 3 项局外升级。
+- 目标：新增 T167，在站内 `/games/hulebu` 页面补局外首页、主线开始页和结算面板；保留当前 20 关主线 iframe 试玩；新增局外模式入口壳（升级 / 图鉴 / 无尽 / 每日）和锁定说明；本轮结算后回到局外页，并显示铜钱累计预览。
+- 不做：不实现 3 项局外升级消费；不做无尽、每日、成就、图鉴真实内容；不接登录和云存档；不改 Cocos 正式工程；不重做 20 关局内规则、奖励池、AI、PDF 或账号中心。
+- 用户价值：玩家进入 `/games/hulebu` 时会先看到这是一个完整游戏，而不是一个裸 iframe。通关或失败后也有明确结算和“再来一轮 / 返回局外”的闭环，为后续外置升级和长期模式留出自然入口。
+- 涉及模块：胡了卜站内入口页 / HTML 试玩原型 iframe 通信 / 模块文档。
+- 可能影响文件：`apps/web/src/app/games/hulebu/page.tsx`, `apps/web/src/modules/games/hulebu/**`, `apps/web/public/games/hulebu-demo/index.html`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/src/components/portal-data.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜站内入口和对应 Demo 通信层。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`/games/hulebu` 默认先显示局外首页；可开始主线并进入现有 20 关 iframe 试玩；支持离开当前 run 回局外并继续本轮；通关或失败后进入站内结算面板；局外页可显示升级 / 图鉴 / 无尽 / 每日壳层与锁定说明；测试、脚本语法、桌面和移动端浏览器检查通过。
+- AI 初步方案：新增 T167；先补 web 侧测试锁定局外首页、结算面板和 `embed=shell` iframe 入口；再给静态 demo 增加最小 postMessage 桥接和 embed 模式，隐藏内层顶部条并向父页面同步进度/通关/失败事件；最后更新文档和浏览器验证。
+- 处理结论：已入任务池
+- 对应任务编号：T167
+
+### IDEA-20260613-04：胡了卜 20 关完整主线 Demo
+
+- 提出人：Lee
+- 提出时间：2026-06-13
+- 背景：T165 已确认完整体验版第一实现阶段应优先补齐 `20 关主线 + 局外升级壳 + 第 20 关 Boss`。为了避免一次性把局外升级、无尽、每日和成就都塞入当前 HTML Demo，本轮先把默认站内 Demo 从 10 关开放到 20 关，并让第 20 关成为明确终章。
+- 目标：新增 T166，把 `/games/hulebu` 默认玩家 Demo 开放到 20 关；保留第 1-10 关当前试玩节奏；为第 11-19 关接入渐进难度 profile；第 20 关启用 `胡了卜王` 终章 Boss；奖励节点扩展为第 3、6、9、13、16、19 关；同步站内静态 HTML。
+- 不做：不做局外首页、局外升级、铜钱持久资产、无尽、每日、成就、高阶周目、Cocos 正式工程、登录云存档、排行榜、付费或广告；不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 用户价值：朋友试玩版不再只停在 10 关小 run，而是能完整体验一条 20 关主线和终章 Boss，为后续局外升级和长期模式提供稳定基础。
+- 涉及模块：胡了卜站内 Demo / HTML 试玩原型 / 共享测试 / 模块文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config.test.ts`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-13-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜试玩 Demo 和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：默认玩家 Demo 显示并可推进到 20 关；第 11-19 关使用可试玩渐进难度；第 20 关显示 `胡了卜王` 终章 Boss 和 Boss 目标；奖励节点为第 3、6、9、13、16、19 关；静态站内 Demo 同步；测试、脚本语法、桌面和移动端浏览器检查通过。
+- AI 初步方案：先用测试锁定 20 关开放、奖励节点和终章 Boss 行为；再把 HTML demo 的 playable count、难度 profile、奖励 checkpoint 和 Boss helper 扩到 20 关；最后同步 `apps/web/public/games/hulebu-demo/index.html`，跑共享测试、web 测试、脚本语法和浏览器检查。
+- 处理结论：已入任务池
+- 对应任务编号：T166
+
+### IDEA-20260613-03：胡了卜 Demo 推进到完整体验版
+
+- 提出人：Lee
+- 提出时间：2026-06-13
+- 背景：T102 已把胡了卜站内网页 Demo 接入 `/games/hulebu`，T162-T164 已补齐残局收官、高压窄腰池、特殊事件和第 10 关终局试炼。Lee 进一步希望对照完整游戏设计方案，把当前 Demo 推进到“所有内容”的方向。经盘点，当前 Demo 已覆盖核心局内玩法，但完整方案还包含 20 关主线、局外升级、长期模式、成就、每日、无尽、高阶周目和正式 Cocos 表现层。
+- 目标：新增 T165，先产出“胡了卜完整体验版推进方案”和实施拆分：把当前 10 关朋友试玩 Demo 升级为可逐步落地的完整体验路线，明确第一阶段先做 `20 关主线 + 局外升级壳 + 第 20 关 Boss`，后续再接无尽、每日、成就和高阶周目。
+- 不做：本任务不直接改玩法代码；不一次性实现无尽、每日、成就、完整高阶周目、完整 Cocos 正式版、付费、广告、排行榜或登录云存档；不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 用户价值：避免当前 Demo 继续靠零散补丁扩张，先把“完整游戏”拆成可试玩、可验证、可发布的阶段路线，让后续每一步都能看到朋友试玩体验变完整。
+- 涉及模块：胡了卜站内 Demo / HTML 试玩原型 / 关卡配置 / 局外成长 / 长期模式规划 / 模块文档。
+- 可能影响文件：`docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-13-lee.md`, `docs/completion/**`；后续实现任务才可能影响 `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config*.test.ts`, `apps/web/src/modules/games/hulebu/**`。
+- 是否影响另一方任务：否。本任务只做胡了卜路线规划和任务拆分，不改共享前端、AI、PDF 或外部项目。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：完成完整体验版设计规格、实施计划、任务分片和领取分片；明确当前 Demo 已有内容、完整方案缺口、阶段目标、第一实现任务边界、验证命令和后续任务建议；`npm run docs:sync`、占位符扫描和 `git diff --check` 通过。
+- AI 初步方案：采用“先完整主线，再长期模式”的路线。第一阶段把默认 Demo 从 10 关扩展为 20 关体验版，做局外首页/升级壳、第 20 关 Boss、铜钱结算和 3 项基础升级；第二阶段扩奖励池和高阶事件；第三阶段再做无尽、每日、成就和高阶周目入口；Cocos 正式表现层作为单独路线并行承接，不阻塞 HTML 完整体验验证。
+- 处理结论：已入任务池
+- 对应任务编号：T165
 
 ### IDEA-20260613-02：胡了卜 Boss 试炼 Demo 第一版
 

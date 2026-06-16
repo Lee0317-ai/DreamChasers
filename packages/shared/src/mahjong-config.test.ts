@@ -143,10 +143,24 @@ describe("胡了卜配置加载验证", () => {
     expect(rewardsConfig.moduleSlug).toBe("mahjong-roguelike");
     expect(rewardsConfig.displayName).toBe("胡了卜");
     expect(rewardsConfig.rewardSet).toBe("mvp_v1");
-    expect(rewardsConfig.rewards).toHaveLength(10);
+    expect(rewardsConfig.rewards.length).toBeGreaterThanOrEqual(16);
     expect(uniqueIds(levelsConfig.levels)).toHaveLength(levelsConfig.levels.length);
     expect(uniqueIds(tilesConfig.tileSet)).toHaveLength(tilesConfig.tileSet.length);
     expect(uniqueIds(rewardsConfig.rewards)).toHaveLength(rewardsConfig.rewards.length);
+  });
+
+  it("奖励池已扩展为路线型奖励，覆盖吃碰杠胡道具和信息流", () => {
+    const categories = new Set(rewardsConfig.rewards.map((reward) => reward.category));
+
+    expect(categories.has("chi")).toBe(true);
+    expect(categories.has("peng")).toBe(true);
+    expect(categories.has("gang")).toBe(true);
+    expect(categories.has("hu")).toBe(true);
+    expect(categories.has("tool")).toBe(true);
+    expect(categories.has("info")).toBe(true);
+    expect(rewardsConfig.rewards.length).toBeGreaterThanOrEqual(16);
+    expect(rewardsConfig.rewards.some((reward) => reward.category === "hu")).toBe(true);
+    expect(rewardsConfig.rewards.some((reward) => reward.category === "info")).toBe(true);
   });
 
   it("基础牌库包含东南西北中发白字牌", () => {
@@ -413,14 +427,33 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.exhaustedHint.highlightedDots).toEqual([]);
   });
 
-  it("朋友试玩 Demo 编排为前 4 关教学和第 5 关后渐进小 run", () => {
+  it("朋友试玩 Demo 编排为前 4 关教学和 20 关完整主线", { timeout: 60_000 }, () => {
     const summary = readPrototypeFriendDemoSummary();
 
-    expect(summary.demoLevels).toBe(10);
+    expect(summary.demoLevels).toBe(20);
     expect(summary.slotLimits.slice(0, 4)).toEqual([6, 6, 6, 8]);
+    expect(summary.slotLimits.slice(3)).toEqual(Array.from({ length: 17 }, () => 8));
     expect(summary.featuredCombos.slice(0, 4)).toEqual([["peng"], ["chi"], ["gang"], ["hu"]]);
+    expect(summary.featuredCombos[19]).toContain("hu");
     expect(summary.levelModes.slice(0, 4)).toEqual(["tutorial", "tutorial", "tutorial", "tutorial"]);
-    expect(summary.levelModes.slice(4, 10)).toEqual(["mountain", "mountain", "mountain", "mountain", "mountain", "mountain"]);
+    expect(summary.levelModes.slice(4, 20)).toEqual(Array.from({ length: 16 }, () => "mountain"));
+    expect(summary.rewardCheckpointOrders).toEqual([3, 6, 9, 13, 16, 19]);
+    expect(summary.bossLevelOrders).toEqual([10, 20]);
+    expect(summary.finalBoss.levelOrder).toBe(20);
+    expect(summary.finalBoss.levelNameText).toContain("胡了卜王");
+    expect(summary.finalBoss.levelMetaText).toContain("20 关");
+    expect(summary.finalBoss.hudGoalText).toBe("Boss 0/6");
+    expect(summary.finalBoss.goalTitleText).toBe("胡了卜王");
+    expect(summary.finalBoss.goalTexts.join(" ")).toContain("胡 0/1");
+    expect(summary.finalBoss.goalTexts.join(" ")).toContain("积分 0/180");
+    expect(summary.finalBoss.bossGoals).toEqual([
+      { type: "combo_count", combo: "chi", target: 1 },
+      { type: "combo_count", combo: "peng", target: 2 },
+      { type: "combo_count", combo: "gang", target: 1 },
+      { type: "combo_count", combo: "hu", target: 1 },
+      { type: "suit_set", suits: ["wan", "tong", "tiao", "honor"], eachTarget: 1 },
+      { type: "score_target", target: 180 },
+    ]);
     expect(summary.tutorialRequiredCombos).toEqual(["peng", "chi", "gang", "hu"]);
     expect(summary.tutorialCandidateTypes).toEqual([["peng"], ["chi"], ["gang"], ["hu"]]);
     for (const result of summary.tutorialClearResults) {
@@ -436,7 +469,9 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.tileCounts[2]).toBeLessThanOrEqual(12);
     expect(summary.tileCounts[3]).toBe(8);
     expect(summary.tileCounts.slice(4, 10)).toEqual([72, 96, 132, 168, 210, 240]);
-    expect(summary.mountainLevels.map((level) => level.label)).toEqual([
+    expect(summary.tileCounts.slice(10, 20)).toEqual([252, 258, 276, 288, 300, 312, 324, 336, 348, 360]);
+    expect(summary.mountainLevels).toHaveLength(16);
+    expect(summary.mountainLevels.map((level) => level.label).slice(0, 6)).toEqual([
       "正式入门",
       "轻压练习",
       "混合窗口",
@@ -444,11 +479,26 @@ describe("胡了卜配置加载验证", () => {
       "高压预备",
       "综合高压",
     ]);
-    expect(summary.mountainLevels.map((level) => level.stackDepth)).toEqual([3, 3, 4, 5, 6, 6]);
-    expect(summary.mountainLevels.map((level) => level.huPacks)).toEqual([0, 0, 1, 1, 1, 0]);
-    expect(summary.mountainLevels.map((level) => level.honorWeight)).toEqual([0, 0, 0, 12, 24, 40]);
-    expect(summary.mountainLevels.map((level) => level.naturalGangGroups)).toEqual([2, 2, 2, 2, 2, 3]);
-    expect(summary.mountainLevels.map((level) => level.orphanBudget)).toEqual([1, 2, 3, 3, 4, 4]);
+    expect(summary.mountainLevels.map((level) => level.label).slice(6)).toEqual([
+      "后半入局",
+      "双线压迫",
+      "奖励岔口",
+      "窄腰再临",
+      "字牌暗涌",
+      "三门缠斗",
+      "高压长局",
+      "终章门前",
+      "决战预备",
+      "胡了卜王",
+    ]);
+    expect(summary.mountainLevels.map((level) => level.stackDepth).slice(0, 6)).toEqual([3, 3, 4, 5, 6, 6]);
+    expect(summary.mountainLevels.slice(6).every((level) => level.stackDepth === 6)).toBe(true);
+    expect(summary.mountainLevels.map((level) => level.huPacks).slice(0, 6)).toEqual([0, 0, 1, 1, 1, 0]);
+    expect(summary.mountainLevels.map((level) => level.huPacks).slice(6)).toEqual([1, 1, 1, 1, 2, 2, 2, 2, 2, 3]);
+    expect(summary.mountainLevels.map((level) => level.honorWeight).slice(0, 6)).toEqual([0, 0, 0, 12, 24, 40]);
+    expect(summary.mountainLevels.map((level) => level.honorWeight).slice(6)).toEqual([42, 44, 46, 50, 54, 58, 62, 68, 74, 82]);
+    expect(summary.mountainLevels.map((level) => level.naturalGangGroups).slice(0, 6)).toEqual([2, 2, 2, 2, 2, 3]);
+    expect(summary.mountainLevels.map((level) => level.orphanBudget).slice(0, 6)).toEqual([1, 2, 3, 3, 4, 4]);
     for (const level of summary.mountainLevels) {
       expect(level.orphanRisk, `level ${level.levelOrder} orphan risk should stay within budget`).toBeLessThanOrEqual(level.orphanBudget);
       expect(level.unresolvedSolutionGroups.length, `level ${level.levelOrder} risk groups should match the reported risk`).toBe(level.orphanRisk);
@@ -460,6 +510,7 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.mountainLevels[3].suitRanks).toEqual({ wan: fullNumberRanks, tiao: fullNumberRanks, tong: fullNumberRanks, honor: [1, 5] });
     expect(summary.mountainLevels[4].suitRanks).toEqual({ wan: fullNumberRanks, tiao: fullNumberRanks, tong: fullNumberRanks, honor: [1, 3, 5, 7] });
     expect(summary.mountainLevels[5].suitRanks).toEqual({ wan: fullNumberRanks, tiao: fullNumberRanks, tong: fullNumberRanks, honor: [1, 2, 3, 4, 5, 6, 7] });
+    expect(summary.mountainLevels[15].suitRanks).toEqual({ wan: fullNumberRanks, tiao: fullNumberRanks, tong: fullNumberRanks, honor: [1, 2, 3, 4, 5, 6, 7] });
     for (const level of summary.mountainLevels) {
       expect(new Set(level.naturalGangTileIdentities).size, `level ${level.levelOrder} should offer distinct kong targets`).toBe(level.naturalGangTileIdentities.length);
     }
@@ -504,7 +555,7 @@ describe("胡了卜配置加载验证", () => {
     expect(summary.counterResult.afterSuitLabels).toContain("万 0");
     expect(summary.counterResult.afterWanDots).toContain("1:0");
     expect(summary.counterResult.afterWanDots).not.toContain("1:1");
-  });
+  }, 15000);
 
   it("默认玩家页 auto 密集牌山在高压终局会按种子随机选择模板", () => {
     const summaries = ["alpha", "beta", "gamma", "delta", "epsilon", "zeta"].map((seed) => (
@@ -1068,6 +1119,23 @@ interface PrototypeFriendDemoSummary {
   featuredCombos: string[][];
   levelModes: string[];
   tileCounts: number[];
+  rewardCheckpointOrders: number[];
+  bossLevelOrders: number[];
+  finalBoss: {
+    levelOrder: number;
+    levelNameText: string;
+    levelMetaText: string;
+    hudGoalText: string;
+    goalTitleText: string;
+    goalTexts: string[];
+    bossGoals: Array<{
+      type: string;
+      combo?: string;
+      target?: number;
+      suits?: string[];
+      eachTarget?: number;
+    }>;
+  };
   tutorialRequiredCombos: string[];
   tutorialCandidateTypes: string[][];
   tutorialClearResults: Array<{
@@ -2438,6 +2506,12 @@ function readPrototypeFriendDemoSummary(): PrototypeFriendDemoSummary {
     const slotLimits = demoLevelIndexes.map((index) => getFriendDemoSlotLimit(index));
     const featuredCombos = demoLevelIndexes.map((index) => getFriendDemoFeaturedCombos(index));
     const levelModes = demoLevelIndexes.map((index) => getFriendDemoLevelMode(index));
+    const rewardCheckpointOrders = demoLevelIndexes
+      .filter((index) => shouldOfferRewardAfterLevel(index))
+      .map((index) => model.levelsConfig.levels[index].order);
+    const bossLevelOrders = demoLevelIndexes
+      .filter((index) => getActiveBossGoals(index).length > 0)
+      .map((index) => model.levelsConfig.levels[index].order);
     const tutorialTileCounts = [0, 1, 2, 3].map((index) => (
       createFriendDemoTutorialTiles(model.levelsConfig.levels[index]).length
     ));
@@ -2516,7 +2590,8 @@ function readPrototypeFriendDemoSummary(): PrototypeFriendDemoSummary {
       id: fixedReward.id,
       slotDelta: fixedReward.effects.find((effect) => effect.type === "slot_limit_delta").value,
     };
-    const mountainLevels = [4, 5, 6, 7, 8, 9].map((index) => {
+    const mountainLevelIndexes = demoLevelIndexes.filter((index) => getFriendDemoLevelMode(index) === "mountain");
+    const mountainLevels = mountainLevelIndexes.map((index) => {
       model.levelIndex = index;
       const level = model.levelsConfig.levels[index];
       const profile = getFriendDemoDifficultyProfile(index);
@@ -2638,12 +2713,35 @@ function readPrototypeFriendDemoSummary(): PrototypeFriendDemoSummary {
     useDiscardTool();
     const selectingAfterTool = model.state.discardSelecting;
     discardSlotTile(0);
+    const discardResult = {
+      beforeSlot,
+      selectingAfterTool,
+      afterSlot: model.state.slot.length,
+      discardedLocation: findTile("slot-a").location,
+      riverIds: [...model.state.river],
+      discardCount: model.state.tools.discard,
+      statusText: view.status.textContent,
+    };
+    model.run.specialEventsSeen.push(19);
+    loadLevel(19, { resetFixedMountainTemplate: true });
+    const finalBoss = {
+      levelOrder: model.levelIndex + 1,
+      levelNameText: view.levelName.textContent,
+      levelMetaText: view.levelMeta.textContent,
+      hudGoalText: view.hudGoal.textContent,
+      goalTitleText: view.bossGoal.children[0]?.textContent ?? "",
+      goalTexts: (view.bossGoal.children[1]?.children ?? []).map((child) => child.textContent),
+      bossGoals: model.state.bossGoals.map((goal) => ({ ...goal })),
+    };
     ({
       demoLevels: FRIEND_DEMO_LEVEL_COUNT,
       slotLimits,
       featuredCombos,
       levelModes,
       tileCounts: [...tutorialTileCounts, ...mountainLevels.map((level) => level.tileCount)],
+      rewardCheckpointOrders,
+      bossLevelOrders,
+      finalBoss,
       tutorialRequiredCombos,
       tutorialCandidateTypes,
       tutorialClearResults,
@@ -2656,15 +2754,7 @@ function readPrototypeFriendDemoSummary(): PrototypeFriendDemoSummary {
         ...mountainLevels[0],
       },
       fullSlotResult,
-      discardResult: {
-        beforeSlot,
-        selectingAfterTool,
-        afterSlot: model.state.slot.length,
-        discardedLocation: findTile("slot-a").location,
-        riverIds: [...model.state.river],
-        discardCount: model.state.tools.discard,
-        statusText: view.status.textContent,
-      },
+      discardResult,
       counterResult: {
         beforeSuitLabels: beforeCounter.suitLabels,
         beforeWanDots: beforeCounter.wanDots,

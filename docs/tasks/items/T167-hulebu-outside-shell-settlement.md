@@ -1,0 +1,70 @@
+# T167：胡了卜局外首页和结算面板
+
+- 任务编号：T167
+- 优先级：P1
+- 任务名称：胡了卜局外首页和结算面板
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T102, T162, T163, T164, T165, T166
+- 背景：T166 已完成 20 关完整主线 Demo，但 `/games/hulebu` 仍直接进入牌桌 iframe。完整体验版路线已确认下一步先补局外首页、Run 开始页和结算页，再进入铜钱资产和 3 项局外升级。
+- 目标：
+  - `/games/hulebu` 默认先显示局外首页，而不是直接掉进牌桌。
+  - 支持 `开始挑战 / 继续本轮 / 升级 / 图鉴 / 无尽 / 每日` 的外层壳入口。
+  - 主线继续复用现有 20 关 iframe Demo。
+  - 通关或失败后进入站内结算面板，再回到局外页。
+  - 局外页显示铜钱累计预览，为 T168 做外置升级资产入口。
+- 不做：
+  - 不开放升级消费，不实现 3 项局外升级真实数值。
+  - 不做无尽、每日、图鉴真实内容。
+  - 不接登录、云存档、排行榜、付费或广告。
+  - 不改 Cocos 正式工程，不重做 20 关局内规则。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/web/src/app/games/hulebu/page.tsx`
+  - `apps/web/src/modules/games/hulebu/**`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/src/components/portal-data.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T167-hulebu-outside-shell-settlement.md`
+  - `docs/tasks/claims/T167-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-14-hulebu-outside-shell-settlement-design.md`
+  - `docs/superpowers/plans/2026-06-14-hulebu-outside-shell-settlement.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w apps/web -- hulebu`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T167-hulebu-outside-shell-settlement.md docs/tasks/claims/T167-lee.md docs/superpowers/specs/2026-06-14-hulebu-outside-shell-settlement-design.md docs/superpowers/plans/2026-06-14-hulebu-outside-shell-settlement.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-167-hulebu-outside-shell-settlement.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写测试锁定局外首页、结算面板和 iframe shell 入口。
+  - [x] 实现 `/games/hulebu` 局外首页、开始 run、继续本轮和结算面板。
+  - [x] 给静态 Demo 增加 `embed=shell` 模式和父页面消息桥接。
+  - [x] 跑验证并更新模块文档、当天进展和完成记录。
+- 完成记录：
+  - `/games/hulebu` 已从“直接打开 iframe”改为先显示局外首页，再进入主线 run。
+  - 局外页已提供 `开始挑战 / 继续本轮 / 升级 / 图鉴 / 无尽 / 每日` 壳层入口，并预留 3 项局外升级说明。
+  - 站内壳层已支持主线进行中返回局外、继续本轮，以及通关或失败后展示结算面板。
+  - 局外铜钱已提升为浏览器本地累计预览资产，为 T168 的升级消费做承接。
+  - 静态 Demo 与原型源文件已增加 `embed=shell` 模式和父页面消息桥接。

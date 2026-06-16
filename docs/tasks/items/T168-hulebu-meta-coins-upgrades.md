@@ -1,0 +1,86 @@
+# T168：胡了卜铜钱资产和 3 项局外升级
+
+- 任务编号：T168
+- 优先级：P1
+- 任务名称：胡了卜铜钱资产和 3 项局外升级
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T165, T166, T167
+- 背景：T167 已完成局外首页和结算壳，但局外铜钱仍只是预览数字，`备用槽 / 满槽护符 / 初始道具` 也只是说明文字。完整体验版下一步必须让铜钱能消费、升级能生效。
+- 目标：
+  - 把局外铜钱升级为真实可消费资产。
+  - 提供 `备用槽 / 满槽护符 / 初始道具` 3 项局外升级。
+  - 升级结果持久化到浏览器本地存储。
+  - 开始主线 run 时，把升级效果真实带入 iframe Demo。
+- 不做：
+  - 不接登录、云存档、多端同步。
+  - 不做无尽、每日、图鉴真实内容。
+  - 不扩路线型奖励池，不改 Cocos 正式工程。
+  - 不重做 20 关主线规则。
+  - 不改 PDF、AI 修图、账号中心、AI Gateway 或 TimePick。
+- 允许修改文件：
+  - `apps/web/src/app/games/hulebu/page.tsx`
+  - `apps/web/src/modules/games/hulebu/**`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T168-hulebu-meta-coins-upgrades.md`
+  - `docs/tasks/claims/T168-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-14-hulebu-meta-coins-upgrades-design.md`
+  - `docs/superpowers/plans/2026-06-14-hulebu-meta-coins-upgrades.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `apps/web/prisma/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T168-hulebu-meta-coins-upgrades.md docs/tasks/claims/T168-lee.md docs/superpowers/specs/2026-06-14-hulebu-meta-coins-upgrades-design.md docs/superpowers/plans/2026-06-14-hulebu-meta-coins-upgrades.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-168-hulebu-meta-coins-upgrades.md`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写测试锁定局外资产、升级购买入口和 iframe 参数桥接。
+  - [x] 实现铜钱可消费与 3 项升级的本地持久化。
+  - [x] 让 reserve/shield/tool bonus 真实带入 iframe 主线 run。
+  - [x] 跑验证并更新模块文档、当天进展和完成记录。
+
+## 完成说明
+
+- `/games/hulebu` 局外页的 `备用槽 / 满槽护符 / 初始道具` 已从占位说明升级为真实可购买升级卡。
+- 浏览器本地存档从“仅记录累计铜钱和最近结算”扩展为“累计铜钱 + 最近结算 + 三项升级等级”。
+- 开始新一轮主线时，iframe URL 已附带 `reserveBonus / shieldBonus / toolBonus` 参数，让外层成长真实作用到牌山 run。
+- `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` 与站内静态副本都已支持读取三项 bonus，并把它们接入 `reserveLimit / shields / tools` 开局状态。
+- 当前局外升级等级上限均为 2 级，价格采用：
+  - 备用槽：`80 / 240`
+  - 满槽护符：`160 / 480`
+  - 初始道具：`120 / 360`
+
+## 验证结果
+
+- `npm run test -w apps/web -- hulebu`：通过。
+- `npm run typecheck -w apps/web`：通过。
+- `npm run build -w apps/web`：通过。
+- HTML 内联脚本语法检查：源原型与站内静态副本均通过。
+- 页面行为检查：通过。
+  - 预置 `999` 铜钱后，购买首档 `备用槽` 会把局外铜钱扣到 `839`。
+  - 新开 run 的 iframe URL 已变为 `...reserveBonus=1&shieldBonus=0&toolBonus=0`。
+  - 390px 移动端升级页仍能显示 3 张升级卡，局外铜钱读数可见。

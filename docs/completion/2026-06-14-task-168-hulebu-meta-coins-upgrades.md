@@ -1,0 +1,40 @@
+# 2026-06-14 T168 完成记录
+
+- 任务编号：T168
+- 任务名称：胡了卜铜钱资产和 3 项局外升级
+- 负责人：Lee
+- 完成时间：2026-06-14
+- 修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T168-hulebu-meta-coins-upgrades.md`
+  - `docs/tasks/claims/T168-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-14-lee.md`
+  - `docs/completion/2026-06-14-task-168-hulebu-meta-coins-upgrades.md`
+- 实现内容：
+  - 把 `/games/hulebu` 局外页的铜钱从只读预览升级为真实可消费资产。
+  - 开放 `备用槽 / 满槽护符 / 初始道具` 三项局外升级，并把等级持久化到浏览器本地存档。
+  - 开始新一轮主线时，通过 `reserveBonus / shieldBonus / toolBonus` 把局外成长桥接到 iframe Demo。
+  - 原型源文件和站内静态副本已读取三项 bonus，并把它们接入 `reserveLimit / shields / tools` 开局状态。
+- 验证命令：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+- 验证结果：
+  - `apps/web` 测试、类型检查、构建均通过。
+  - 源原型与站内静态副本内联脚本语法检查通过。
+  - 页面行为检查通过：预置 `999` 铜钱后，购买首档 `备用槽` 会扣到 `839`，新开 run 的 iframe URL 已带 `reserveBonus=1&shieldBonus=0&toolBonus=0`。
+  - 390px 页面检查通过，升级页仍可显示 3 张升级卡和局外铜钱。
+- 遗留问题：
+  - 局外成长目前仅落浏览器本地，不含登录、云存档、多端同步。
+  - 下一步应优先开 T169，补路线型奖励池和 build 分叉。

@@ -1,0 +1,42 @@
+# T167 完成记录：胡了卜局外首页和结算面板
+
+- 任务编号：T167
+- 负责人：Lee
+- 完成时间：2026-06-14
+- 修改文件：
+  - `apps/web/src/app/games/hulebu/page.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `docs/tasks/items/T167-hulebu-outside-shell-settlement.md`
+  - `docs/tasks/claims/T167-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-14-lee.md`
+- 实现内容：
+  - `/games/hulebu` 已从“直接打开 iframe”改为先显示局外首页，再进入主线 run。
+  - 局外页提供 `开始挑战 / 继续本轮 / 升级 / 图鉴 / 无尽 / 每日` 壳层入口。
+  - 站内壳层已支持主线进行中返回局外、继续本轮，以及通关或失败后的结算面板。
+  - 局外铜钱已提升为浏览器本地累计预览资产，为 T168 的升级消费做承接。
+  - 静态 Demo 与原型源文件已增加 `embed=shell` 模式和父页面消息桥接。
+- 验证命令：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T167-hulebu-outside-shell-settlement.md docs/tasks/claims/T167-lee.md docs/superpowers/specs/2026-06-14-hulebu-outside-shell-settlement-design.md docs/superpowers/plans/2026-06-14-hulebu-outside-shell-settlement.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-14-lee.md docs/completion/2026-06-14-task-167-hulebu-outside-shell-settlement.md`
+  - `git diff --check`
+- 验证结果：
+  - 自动化测试通过。
+  - 类型检查和生产构建通过。
+  - HTML 内联脚本语法检查通过。
+  - 右侧内置浏览器桌面端验证通过：局外首页、开始挑战、返回局外和继续本轮入口正常。
+  - 右侧内置浏览器 390px 移动端验证通过：局外页和进入牌桌外层壳无横向溢出。
+- 遗留问题：
+  - 本任务不开放升级消费，不实现 3 项外置升级真实数值。
+  - 下一步建议优先开 T168，把铜钱预览升级为真实可消费资产，并补 `备用槽 / 满槽护符 / 初始道具` 3 项外置升级。

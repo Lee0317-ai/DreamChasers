@@ -74,6 +74,7 @@ export const ModelName = {
   CreditLedger: 'CreditLedger',
   PlatformApiKey: 'PlatformApiKey',
   ProductSession: 'ProductSession',
+  HulebuProgress: 'HulebuProgress',
   CredentialReference: 'CredentialReference',
   AccountAuditLog: 'AccountAuditLog',
   TimePickProfile: 'TimePickProfile',
@@ -391,6 +392,21 @@ export const ProductSessionScalarFieldEnum = {
 export type ProductSessionScalarFieldEnum = (typeof ProductSessionScalarFieldEnum)[keyof typeof ProductSessionScalarFieldEnum]
 
 
+export const HulebuProgressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  bankedCoins: 'bankedCoins',
+  bestEndlessLayer: 'bestEndlessLayer',
+  bestAscensionLevel: 'bestAscensionLevel',
+  dailyBestLevels: 'dailyBestLevels',
+  achievements: 'achievements',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type HulebuProgressScalarFieldEnum = (typeof HulebuProgressScalarFieldEnum)[keyof typeof HulebuProgressScalarFieldEnum]
+
+
 export const CredentialReferenceScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -586,6 +602,13 @@ export const SortOrder = {
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const NullableJsonNullValueInput = {

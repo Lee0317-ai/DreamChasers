@@ -1,0 +1,34 @@
+# 2026-06-15 Task 174 胡了卜账号进度续层
+
+- 任务编号：T174
+- 负责人：Lee
+- 修改文件：
+  - `apps/web/prisma/schema.prisma`
+  - `apps/web/prisma/migrations/20260615123000_add_hulebu_progress/migration.sql`
+  - `apps/web/src/lib/account/hulebu-progress.ts`
+  - `apps/web/src/app/api/games/hulebu/progress/route.ts`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `docs/tasks/items/T174-hulebu-account-progress-sync.md`
+  - `docs/tasks/claims/T174-lee.md`
+  - `docs/progress/2026-06-15-lee.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+- 实现内容：
+  - 为登录账号新增 `HulebuProgress` 数据模型，保存局外铜钱、无尽最高层、高阶解锁、每日最佳和成就。
+  - 新增 `/api/games/hulebu/progress`，支持登录态读取账号进度与按“取较高值/补齐缺口”的策略回写合并。
+  - 改造 `/games/hulebu` 局外壳层：页面 hydration 后会优先拉取账号侧长期进度，并把本地旧存档与账号记录做首登合并。
+  - 升级、结算和长期进度变动会在本地持久化的同时同步回写账号，未登录时继续只走本地存档。
+  - 补充发布保护测试，覆盖账号进度接口入口和同步失败文案。
+- 验证命令：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 上述命令均通过。
+  - 右侧内置浏览器刷新 `/games/hulebu` 验收通过：页面刷新后能正常回到局外壳层，账号进度同步代码未引入页面报错。
+- 遗留问题：
+  - 本轮只做单账号长期进度续层，不处理跨账号冲突解决、排行榜、多人同步或跨游戏成就中心。
