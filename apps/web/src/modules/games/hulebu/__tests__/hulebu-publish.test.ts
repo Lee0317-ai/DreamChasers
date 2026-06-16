@@ -69,6 +69,11 @@ describe("hulebu web game publishing", () => {
     expect(component).toContain("关键失误");
     expect(component).toContain("Boss 目标不匹配");
     expect(component).toContain("构筑失配");
+    expect(component).toContain("bossReview");
+    expect(component).toContain("Boss 复盘");
+    expect(component).toContain("阶段目标");
+    expect(component).toContain("Boss 奖励品质");
+    expect(component).toContain("高阶 Boss 变体");
     expect(component).toContain("/api/games/hulebu/progress");
     expect(component).toContain("账号进度同步失败");
     expect(component).toContain("账号进度保存失败");
@@ -136,6 +141,14 @@ describe("hulebu web game publishing", () => {
     expect(demo).toContain("ascensionReview");
     expect(demo).toContain("failureType");
     expect(demo).toContain("Boss 目标不匹配");
+    expect(demo).toContain("BOSS_TRIAL_PHASES");
+    expect(demo).toContain("BOSS_TRIAL_VARIANTS");
+    expect(demo).toContain("function getBossTrialDeck");
+    expect(demo).toContain("function getBossReviewPayload");
+    expect(demo).toContain("bossReview");
+    expect(demo).toContain("阶段目标");
+    expect(demo).toContain("Boss 奖励品质");
+    expect(demo).toContain("高阶 Boss 变体");
     expect(demo).toContain("起风试手");
     expect(demo).toContain("南桌偏门");
     expect(demo).toContain("西窗压注");

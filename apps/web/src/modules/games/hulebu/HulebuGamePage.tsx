@@ -46,6 +46,21 @@ type AscensionReview = {
   detail?: string;
   mismatch?: string;
 };
+type BossReview = {
+  result?: SettlementResult;
+  bossVariant?: string;
+  bossTitle?: string;
+  phase?: string;
+  phaseTarget?: string;
+  rewardQuality?: string;
+  keyGoal?: string;
+  keyMiss?: string;
+  build?: string;
+  summary?: string;
+  detail?: string;
+  nextAdvice?: string;
+  mismatch?: string;
+};
 type AchievementId =
   | "mainline-first-clear"
   | "boss-hulebu-king"
@@ -89,6 +104,7 @@ type SettlementState = {
   pickedRewards: number;
   summary: string;
   ascensionReview: AscensionReview | null;
+  bossReview: BossReview | null;
 };
 
 type UpgradeId = "reserve" | "shield" | "tools";
@@ -131,6 +147,7 @@ type HulebuShellPayload = {
   pickedRewards?: number;
   summary?: string;
   ascensionReview?: AscensionReview | null;
+  bossReview?: BossReview | null;
 };
 
 type HulebuShellMessage = {
@@ -725,6 +742,7 @@ function readPersistedShellState(): PersistedShellState {
       ? {
           ...parsed.lastSettlement,
           ascensionReview: parsed.lastSettlement.ascensionReview ?? null,
+          bossReview: parsed.lastSettlement.bossReview ?? null,
         }
       : null;
     return {
@@ -1213,6 +1231,7 @@ export function HulebuGamePage() {
         pickedRewards: data.payload.pickedRewards ?? activeRun.pickedRewards,
         summary: data.payload.summary ?? activeRun.latestSummary,
         ascensionReview: data.payload.ascensionReview ?? null,
+        bossReview: data.payload.bossReview ?? null,
       };
 
       setBankedCoins(updatedBank);
@@ -1363,6 +1382,7 @@ export function HulebuGamePage() {
     ? describeAscensionBuildFocus(lastSettlement.ascensionPerks)
     : null;
   const settlementAscensionReview = lastSettlement?.ascensionReview ?? null;
+  const settlementBossReview = lastSettlement?.bossReview ?? null;
   const upgradeCards = UPGRADES.map((upgrade) => {
     const level = upgrades[upgrade.id];
     const nextCost = upgrade.costs[level] ?? null;
@@ -1459,6 +1479,32 @@ export function HulebuGamePage() {
               </div>
               <p className={styles.resultSummary}>{lastSettlement.summary}</p>
               {settlementAscensionNote ? <p className={styles.resultSummary}>{settlementAscensionNote}</p> : null}
+              {settlementBossReview ? (
+                <section className={styles.settlementReview} aria-label="Boss 复盘">
+                  <div className={styles.settlementReviewGrid}>
+                    <article className={styles.settlementReviewCard}>
+                      <span>Boss 复盘</span>
+                      <strong>{settlementBossReview.bossTitle ?? "Boss"}</strong>
+                      <p>{settlementBossReview.summary ?? "Boss 节点已经结算。"}</p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>阶段目标</span>
+                      <strong>{settlementBossReview.phase ?? "起势"}</strong>
+                      <p>{settlementBossReview.phaseTarget ?? settlementBossReview.keyGoal ?? "阶段目标已记录。"}</p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>Boss 奖励品质</span>
+                      <strong>{settlementBossReview.rewardQuality ?? "普通"}</strong>
+                      <p>{settlementBossReview.bossVariant === "ascension-warden" ? "高阶 Boss 变体会按当前周目提高压力。" : settlementBossReview.detail ?? "奖励品质会跟随 Boss 变体变化。"}</p>
+                    </article>
+                    <article className={styles.settlementReviewCard}>
+                      <span>关键缺口</span>
+                      <strong>{settlementBossReview.keyMiss || "已打满"}</strong>
+                      <p>{settlementBossReview.nextAdvice ?? "下一轮继续围绕 Boss 目标调整构筑。"}</p>
+                    </article>
+                  </div>
+                </section>
+              ) : null}
               {settlementAscensionFocus ? (
                 <section className={styles.settlementReview} aria-label="高阶复盘">
                   <div className={styles.settlementReviewGrid}>

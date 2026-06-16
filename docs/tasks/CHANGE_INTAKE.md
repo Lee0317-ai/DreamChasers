@@ -48,6 +48,24 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260616-03：胡了卜 Boss 试炼第二版
+
+- 提出人：Lee
+- 提出时间：2026-06-16
+- 背景：T176 已把高阶周目补到四档和高阶能力配置，但 Boss 仍主要沿用 T164 第一版目标检查。当前 Boss 有第 10 / 20 关目标和基础奖励提示，却还缺阶段变化、目标池差异、奖励品质、复盘信息和高阶 Boss 变体，无法承接完整版后期挑战。
+- 目标：新增 T177，在 Web 版内完成 Boss 试炼第二版：建立 Boss 阶段目标池；让普通第 10 关、第 20 关和高阶 Boss 使用不同变体；显示阶段目标、Boss 奖励品质和失败/通关复盘；把复盘信息同步给 `/games/hulebu` 外层结算面板。
+- 不做：不改 Cocos 工程；不做特殊事件池第二版、成就图鉴扩容、无尽/每日深度化、路线奖励重构、排行榜、付费、广告或多端同步；不改 `levels.json`、`rewards.json`、PDF、AI 修图、TimePick、账号中心或 AI Gateway。
+- 用户价值：Boss 不再只是普通关卡上的额外数字目标，而是成为中段和终局的明确试炼节点；玩家能在失败或通关后知道卡在哪个阶段、奖励品质是什么、下一局应调整什么构筑。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 共享测试 / 模块文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/**`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`。
+- 是否影响另一方任务：否。本次只改胡了卜 Web 侧和对应文档测试。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：第 10 / 20 关和高阶 Boss 有可区分的 Boss 变体；Boss 局内可见阶段目标与奖励品质；失败和通关会生成 Boss 复盘；外层结算面板能展示 Boss 复盘；普通前几关教程不影响高阶 Boss；测试、类型检查、构建、脚本检查、文档同步和桌面/移动端浏览器检查通过。
+- AI 初步方案：先新增 T177 文档和规格；再用 TDD 锁定 `BOSS_TRIAL_PHASES`、`BOSS_TRIAL_VARIANTS`、`bossReview`、`Boss 复盘` 等结构；随后扩展 HTML 原型的 Boss 阶段/变体/复盘 payload，并在 React 壳层结算页显示；最后同步静态 Demo 和模块文档。
+- 处理结论：已入任务池
+- 对应任务编号：T177
+
 ### IDEA-20260616-02：胡了卜高阶周目完整版
 
 - 提出人：Lee

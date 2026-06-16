@@ -1,0 +1,79 @@
+# T177：胡了卜 Boss 试炼第二版
+
+- 任务编号：T177
+- 优先级：P1
+- 任务名称：胡了卜 Boss 试炼第二版
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T164, T175, T176
+- 背景：T164 已完成 Boss 试炼 Demo 第一版，T176 已补齐四档高阶周目和高阶能力配置。当前 Boss 仍偏“额外目标检查”，缺少阶段变化、目标池差异、奖励品质、高阶 Boss 变体和结算复盘，无法支撑完整版后期挑战。
+- 目标：
+  - 为第 10 关、第 20 关和高阶 Boss 增加可区分的 Boss 变体。
+  - 建立 Boss 阶段目标池，让 Boss 局内显示当前阶段目标。
+  - 在 Boss 面板和结算中显示 `Boss 奖励品质`。
+  - 在失败和通关时生成 `Boss 复盘`，同步给 `/games/hulebu` 外层结算页。
+  - 同步静态 Demo、测试和模块文档。
+- 不做：
+  - 不改 Cocos 正式工程。
+  - 不做特殊事件池第二版、成就图鉴扩容、无尽/每日深度化、路线奖励和局外能力深化或 Web 数值冻结。
+  - 不重做普通局外升级系统。
+  - 不做排行榜、付费、广告、多端同步或跨游戏能力中心。
+  - 不改 PDF、AI 修图、TimePick、账号中心或 AI Gateway。
+- 允许修改文件：
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T177-hulebu-boss-trial-second-pass.md`
+  - `docs/tasks/claims/T177-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-16-hulebu-boss-trial-second-pass-design.md`
+  - `docs/superpowers/plans/2026-06-16-hulebu-boss-trial-second-pass.md`
+  - `docs/modules/mahjong-roguelike/**`
+  - `docs/progress/2026-06-16-lee.md`
+  - `docs/completion/**`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/levels.json`
+  - `apps/game/mahjong-roguelike/config/rewards.json`
+  - `apps/web/prisma/**`
+  - `apps/web/src/app/account/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `/Users/lee/Desktop/Lee/TimePick/**`
+  - `deploy/**`
+  - `docker-compose.yml`
+  - `docker-compose.prod.yml`
+- 验证方式：
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/game/mahjong-roguelike/prototypes/config-playable/index.html > /tmp/hulebu-config-playable-inline.js && node --check /tmp/hulebu-config-playable-inline.js`
+  - `perl -0ne 'print $1 if /<script>([\\s\\S]*?)<\\/script>/' apps/web/public/games/hulebu-demo/index.html > /tmp/hulebu-static-inline.js && node --check /tmp/hulebu-static-inline.js`
+  - `npm run docs:sync`
+  - `git diff --check`
+  - 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
+- 拆分子任务：
+  - [x] 写失败测试锁定 Boss 阶段、目标池、奖励品质和外层复盘结构。
+  - [x] 实现 HTML 原型 Boss 阶段目标池、变体和复盘 payload。
+  - [x] 实现 Web 壳层 Boss 复盘结算展示。
+  - [x] 同步站内静态 Demo 和模块文档。
+  - [x] 跑自动化验证、脚本检查、构建和浏览器检查。
+- 完成内容：
+  - HTML 原型新增 `BOSS_TRIAL_PHASES` 和 `BOSS_TRIAL_VARIANTS`，覆盖中段试炼、终局 Boss、高阶 Boss 变体和无尽 Boss 变体。
+  - Boss 面板新增阶段目标和 `Boss 奖励品质`，高阶 Boss 会显示 `高阶 Boss 变体`，且不套普通教程目标。
+  - 通关和失败事件新增 `bossReview` payload，包含 Boss 变体、阶段、奖励品质、关键目标、缺口和下一轮建议。
+  - `/games/hulebu` 外层结算页新增 `Boss 复盘` 卡片，并兼容旧本地存档。
+  - 站内静态 Demo 已同步，测试覆盖 Boss 第二版结构。
+- 遗留问题：
+  - 高阶前几关继续不放普通教程，T177 只增强 Boss 节点。
+  - Cocos 正式工程、音乐、美术、动效和发布资源仍按 T175 路线后置。
+  - T177 不做特殊事件池第二版、成就扩容、无尽/每日深度化、路线奖励和局外能力深化或 Web 数值冻结。

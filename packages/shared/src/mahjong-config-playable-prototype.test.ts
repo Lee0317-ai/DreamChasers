@@ -178,6 +178,14 @@ describe("胡了卜配置试玩原型页面边界", () => {
     expect(playHtml).toContain("function getFriendDemoBossTrialGoals");
     expect(playHtml).toContain("function isFriendDemoFinalBossLevel");
     expect(playHtml).toContain("function claimBossTrialReward");
+    expect(playHtml).toContain("BOSS_TRIAL_PHASES");
+    expect(playHtml).toContain("BOSS_TRIAL_VARIANTS");
+    expect(playHtml).toContain("function getBossTrialDeck");
+    expect(playHtml).toContain("function getBossReviewPayload");
+    expect(playHtml).toContain("bossReview");
+    expect(playHtml).toContain("阶段目标");
+    expect(playHtml).toContain("Boss 奖励品质");
+    expect(playHtml).toContain("高阶 Boss 变体");
     expect(playHtml).toContain("function getEffectiveMountainTuningForLevel");
     expect(playHtml).toContain("function getFriendDemoTutorialRequiredCombo");
     expect(playHtml).toContain("function hasCompletedFriendDemoTutorialCombo");

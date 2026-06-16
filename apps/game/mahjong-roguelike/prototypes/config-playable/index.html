@@ -726,6 +726,13 @@
         gap: 6px;
       }
 
+      .boss-goal-meta {
+        margin: -2px 0 8px;
+        color: #5f291f;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
       .boss-goal-chip {
         min-height: 30px;
         display: inline-flex;
@@ -783,6 +790,12 @@
 
       body.play-view .play-boss-goal .boss-goal-list {
         gap: 3px;
+      }
+
+      body.play-view .play-boss-goal .boss-goal-meta {
+        margin: -1px 0 4px;
+        font-size: 9px;
+        line-height: 1.2;
       }
 
       body.play-view .play-boss-goal .boss-goal-chip {
@@ -1734,6 +1747,60 @@
         { type: "combo_count", combo: "hu", target: 1 },
         { type: "score_target", target: 180 },
       ];
+      const BOSS_TRIAL_PHASES = [
+        {
+          id: "opening",
+          label: "起势",
+          target: "阶段目标：先做出关键组合，别让主槽太早顶满。",
+          advice: "开局先找碰/吃的安全组合，把工具留到压桌段。",
+        },
+        {
+          id: "pressure",
+          label: "压桌",
+          target: "阶段目标：把 Boss 专属目标推进到可收官状态。",
+          advice: "优先对齐 Boss 缺口，再决定是否贪奖励和事件压力。",
+        },
+        {
+          id: "finish",
+          label: "收官",
+          target: "阶段目标：用胡、杠或高分目标完成最后一口。",
+          advice: "保留一次救场或弃牌空间，终局不要只靠硬塞主槽。",
+        },
+      ];
+      const BOSS_TRIAL_VARIANTS = {
+        "trial-gate": {
+          id: "trial-gate",
+          title: FRIEND_DEMO_BOSS_TRIAL_TITLE,
+          label: "中段试炼",
+          rewardQuality: "精良",
+          rewardCoins: FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS,
+          focus: "检查杠、胡和基础得分是否能接成完整节奏。",
+        },
+        "hulebu-king": {
+          id: "hulebu-king",
+          title: FRIEND_DEMO_FINAL_BOSS_TITLE,
+          label: "终局 Boss",
+          rewardQuality: "史诗",
+          rewardCoins: 260,
+          focus: "要求把胡牌、杠牌、得分和工具管理都压到终局。",
+        },
+        "ascension-warden": {
+          id: "ascension-warden",
+          title: "高阶 Boss 变体",
+          label: "高阶守门",
+          rewardQuality: "高阶",
+          rewardCoins: 320,
+          focus: "按当前高阶档位提高 Boss 压力，逼你把高阶能力接进目标。",
+        },
+        "endless-keeper": {
+          id: "endless-keeper",
+          title: "无尽 Boss 变体",
+          label: "无尽守层",
+          rewardQuality: "稀有",
+          rewardCoins: 160,
+          focus: "无尽每 5 层检查一次节奏，越往后越看重得分和胡杠收束。",
+        },
+      };
       const FRIEND_DEMO_FIRST_REWARD_ID = "demo_slot_plus_2";
       const FRIEND_DEMO_DISCARD_REWARD_ID = "discard_plus_1";
       const ASCENSION_CONFIGS = {
@@ -3008,16 +3075,82 @@
         return FRIEND_DEMO_BOSS_TRIAL_GOALS.map((goal) => ({ ...goal }));
       }
 
+      function getBossTrialVariant(levelIndex = model.levelIndex) {
+        if (isEndlessMode()) return BOSS_TRIAL_VARIANTS["endless-keeper"];
+        if (isAscensionMode() && isBossLevel(levelIndex)) return BOSS_TRIAL_VARIANTS["ascension-warden"];
+        if (isFriendDemoBossTrialLevel(levelIndex)) return BOSS_TRIAL_VARIANTS["trial-gate"];
+        if (isFriendDemoFinalBossLevel(levelIndex)) return BOSS_TRIAL_VARIANTS["hulebu-king"];
+        return BOSS_TRIAL_VARIANTS["trial-gate"];
+      }
+
+      function getBossTrialDeck(levelIndex = model.levelIndex) {
+        const variant = getBossTrialVariant(levelIndex);
+        const phaseCount = isFriendDemoBossTrialLevel(levelIndex)
+          || isFriendDemoFinalBossLevel(levelIndex)
+          || isAscensionMode()
+          || isEndlessMode()
+          ? BOSS_TRIAL_PHASES.length
+          : 0;
+        const phases = phaseCount > 0
+          ? BOSS_TRIAL_PHASES.map((phase, index) => ({
+            ...phase,
+            label: `${index + 1}. ${phase.label}`,
+          }))
+          : [];
+        return {
+          variant,
+          phases,
+          rewardQuality: variant.rewardQuality,
+          title: variant.title,
+          label: variant.label,
+          focus: variant.focus,
+        };
+      }
+
       function getBossGoalTitleText() {
-        if (isEndlessMode()) return getEndlessLayerOrder() % 10 === 0 ? "无尽大 Boss" : "无尽小 Boss";
-        if (isFriendDemoBossTrialLevel()) return FRIEND_DEMO_BOSS_TRIAL_TITLE;
-        if (isFriendDemoFinalBossLevel()) return FRIEND_DEMO_FINAL_BOSS_TITLE;
+        if (isEndlessMode()) return getBossTrialDeck().title;
+        if (isFriendDemoBossTrialLevel()) return getBossTrialDeck().title;
+        if (isFriendDemoFinalBossLevel()) return getBossTrialDeck().title;
+        if (isAscensionMode() && getActiveBossGoals(model.levelIndex).length > 0) return getBossTrialDeck().title;
         return "Boss 目标";
       }
 
       function getBossHudLabelText() {
         if (isEndlessMode()) return "无尽";
-        return isFriendDemoBossTrialLevel() ? "试炼" : "Boss";
+        if (isFriendDemoBossTrialLevel()) return "试炼";
+        if (isFriendDemoFinalBossLevel()) return "终局";
+        if (isAscensionMode() && getActiveBossGoals(model.levelIndex).length > 0) return "高阶";
+        return "Boss";
+      }
+
+      function getBossReviewPayload(result, reason = "") {
+        const deck = getBossTrialDeck(model.levelIndex);
+        const goals = getActiveBossGoals(model.levelIndex);
+        if (goals.length === 0) return null;
+        const phase = deck.phases[0] ?? BOSS_TRIAL_PHASES[0];
+        const missing = goals.filter((goal) => !isBossGoalItemComplete(goal)).map(formatBossGoalProgress);
+        const build = isAscensionMode()
+          ? `${model.ascensionName || "高阶周目"} · ${getAscensionPerkSummaryText()}`
+          : deck.label;
+        return {
+          result,
+          bossVariant: deck.variant.id,
+          bossTitle: deck.title,
+          phase: phase.label,
+          phaseTarget: phase.target,
+          rewardQuality: deck.rewardQuality,
+          keyGoal: goals.length > 0 ? formatBossGoalProgress(goals[0]) : "",
+          keyMiss: missing.length > 0 ? missing.join("，") : "",
+          build,
+          summary: result === "completed"
+            ? `${deck.title} 已击破，${deck.rewardQuality} 奖励已记下。`
+            : `${deck.title} 未击破，当前卡在 ${missing.join("，") || reason || "目标未完成"}。`,
+          detail: phase.advice,
+          nextAdvice: result === "completed"
+            ? `下一轮继续围绕 ${deck.focus} 追构筑。`
+            : `下一轮先补 ${missing.join("，") || "Boss 目标"}，再接 ${deck.focus}。`,
+          mismatch: isAscensionMode() ? "高阶 Boss 变体" : "",
+        };
       }
 
       function getEffectiveMountainTuningForLevel(level, levelIndex = model.levelIndex) {
@@ -3746,13 +3879,25 @@
       }
 
       function renderBossGoalPanel(container, goals) {
+        const bossDeck = getBossTrialDeck(model.levelIndex);
         container.classList.add("show");
         container.innerHTML = "";
         const title = document.createElement("strong");
         title.className = "boss-goal-title";
         title.textContent = getBossGoalTitleText();
+        const meta = document.createElement("div");
+        meta.className = "boss-goal-meta";
+        meta.innerHTML = `Boss 奖励品质：${escapeHtml(bossDeck.rewardQuality)} · ${escapeHtml(bossDeck.focus)}`;
         const list = document.createElement("div");
         list.className = "boss-goal-list";
+
+        for (const phase of bossDeck.phases) {
+          const phaseChip = document.createElement("span");
+          phaseChip.className = "boss-goal-chip";
+          phaseChip.textContent = `${phase.label} · ${phase.target}`;
+          phaseChip.title = phase.advice;
+          list.append(phaseChip);
+        }
 
         goals.forEach((goal, index) => {
           const chip = document.createElement("span");
@@ -3765,7 +3910,7 @@
           list.append(chip);
         });
 
-        container.append(title, list);
+        container.append(title, meta, list);
       }
 
       function renderBoard() {
@@ -6102,13 +6247,16 @@
       }
 
       function claimBossTrialReward() {
-        if (!isFriendDemoBossTrialLevel()) return "";
+        if ((model.state.bossGoals ?? []).length === 0) return "";
         if (!isBossGoalComplete()) return "";
         if (model.state.bossTrialRewardClaimed) return "";
+        const bossDeck = getBossTrialDeck(model.levelIndex);
+        const rewardCoins = Math.max(0, bossDeck.variant.rewardCoins ?? FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS);
+        if (!rewardCoins) return "";
         model.state.bossTrialRewardClaimed = true;
-        model.state.coins += FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS;
+        model.state.coins += rewardCoins;
         model.run.coins = model.state.coins;
-        return `试炼奖励 +${FRIEND_DEMO_BOSS_TRIAL_REWARD_COINS} 铜钱`;
+        return `Boss 奖励品质：${bossDeck.rewardQuality} · +${rewardCoins} 铜钱`;
       }
 
       function addOpenMeld(type, candidate, source) {
@@ -6476,6 +6624,7 @@
           reviewTips.textContent = `下一轮建议：${getAscensionRunSuggestions().join(" ")}`;
           ascensionReview.append(reviewTitle, reviewBuild, reviewGain, reviewMiss, reviewTips);
         }
+        const bossReviewPayload = getBossReviewPayload("completed");
         const restart = document.createElement("button");
         restart.className = "reward-button";
         restart.type = "button";
@@ -6484,11 +6633,13 @@
         view.runComplete.append(summary);
         if (isAscensionMode()) view.runComplete.append(ascensionSummary);
         if (isAscensionMode()) view.runComplete.append(ascensionReview);
+        if (bossReviewPayload) view.runComplete.append(createBossReviewCard(bossReviewPayload));
         view.runComplete.append(restart);
         view.rewardOverlay.classList.add("show");
         emitShellEvent("hulebu:run-complete", {
           summary: summary.textContent,
           ascensionReview: getAscensionReviewPayload({ result: "completed" }),
+          bossReview: bossReviewPayload,
         });
       }
 
@@ -6710,8 +6861,30 @@
         };
       }
 
+      function createBossReviewCard(review) {
+        const card = document.createElement("article");
+        card.className = "reward-card";
+        const title = document.createElement("strong");
+        title.textContent = "Boss 复盘";
+        const variant = document.createElement("p");
+        variant.textContent = `${review.bossTitle} · ${review.bossVariant === "ascension-warden" ? "高阶 Boss 变体" : review.bossVariant}`;
+        const phase = document.createElement("p");
+        phase.textContent = `${review.phase} · ${review.phaseTarget}`;
+        const reward = document.createElement("p");
+        reward.textContent = `Boss 奖励品质：${review.rewardQuality}`;
+        const goal = document.createElement("p");
+        goal.textContent = `阶段目标：${review.keyGoal || "已完成"}`;
+        const miss = document.createElement("p");
+        miss.textContent = review.keyMiss ? `关键缺口：${review.keyMiss}` : "关键缺口：本轮已经打满。";
+        const advice = document.createElement("p");
+        advice.textContent = `下一轮建议：${review.nextAdvice}`;
+        card.append(title, variant, phase, reward, goal, miss, advice);
+        return card;
+      }
+
       function showLevelFailed(reason, statusMessage = "本关失败") {
         const failureText = reason || "主槽已满，且当前没有可发动的组合或可用救场。";
+        const bossReviewPayload = getBossReviewPayload("failed", failureText);
         renderAll(statusMessage);
         view.rewardTitle.textContent = "本关失败";
         view.rewardGrid.innerHTML = "";
@@ -6751,11 +6924,13 @@
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionFailureDetail);
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionFailureMiss);
         if (ascensionFailureAnalysis) view.runComplete.append(ascensionAdvice);
+        if (bossReviewPayload) view.runComplete.append(createBossReviewCard(bossReviewPayload));
         view.runComplete.append(restart);
         view.rewardOverlay.classList.add("show");
         emitShellEvent("hulebu:run-failed", {
           summary: failureText,
           ascensionReview: getAscensionReviewPayload({ result: "failed" }),
+          bossReview: bossReviewPayload,
         });
       }
 
