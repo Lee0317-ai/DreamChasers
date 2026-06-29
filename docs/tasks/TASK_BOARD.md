@@ -270,4 +270,5 @@
 | T162 | P1 | 胡了卜残局收官和悬台窄腰高压池 | Lee | 已完成 | T094, T101, T102, T104, T105 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T163 | P1 | 胡了卜特殊事件 Demo 第一版 | Lee | 已完成 | T101, T102, T105, T162, D006 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
 | T164 | P1 | 胡了卜 Boss 试炼 Demo 第一版 | Lee | 已完成 | T101, T102, T105, T162, T163, D006, D030 | - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` | - `npm run test -w packages/shared -- mahjong-config-playable-prototype` |
+| T165 | P1 | AI 修图批量品牌填充和 AI 溶图实现 | Lee | 已完成 | T154, T155, T156 | - `apps/web/src/components/tools/photo/**` | - `npm run test -w apps/web -- photo ai-gateway` |
 <!-- DOCS_SYNC_TASKS_END -->

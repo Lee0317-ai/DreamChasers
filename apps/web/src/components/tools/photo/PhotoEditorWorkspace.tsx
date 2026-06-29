@@ -68,6 +68,30 @@ type UploadedPhoto = {
   objectUrl: string;
 };
 
+type BatchBrandPhoto = UploadedPhoto & {
+  id: string;
+  watermarkError?: string;
+  watermarkObjectUrl?: string;
+  watermarkStatus?: "idle" | "processing" | "succeeded" | "failed";
+};
+
+type BrandFillState = {
+  logo: {
+    file: File;
+    objectUrl: string;
+    aspectRatio: number;
+    name: string;
+  } | null;
+  logoSize: number;
+  selectedPhotoId: string | null;
+};
+
+type SceneBlendAsset = {
+  file: File;
+  objectUrl: string;
+  name: string;
+} | null;
+
 type TextElement = {
   color: string;
   content: string;
@@ -147,18 +171,29 @@ type ExportState = {
 
 type ToolParameterProps = {
   activeTool: PhotoTool;
+  brandBatchPhotos: BatchBrandPhoto[];
+  brandFill: BrandFillState;
   borderColor: string;
   cropRatio: CropRatio;
+  isBrandExporting: boolean;
   onAddSticker: (preset: PhotoStickerPreset) => void;
   onAddText: () => void;
   onApplyCrop: () => void;
   onBorderColorChange: (color: string) => void;
   onCropRatioChange: (ratio: CropRatio) => void;
   onDeleteSelectedText: () => void;
+  onExportBrandBatch: () => void;
+  onOpenBrandBatchPicker: () => void;
+  onOpenBrandLogoPicker: () => void;
+  onOpenSceneBackgroundPicker: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
+  onRunSceneBlend: () => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
+  onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
+  onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+  onSetScenePrompt: (prompt: string) => void;
   onTextBoldChange: (isBold: boolean) => void;
   onTextColorChange: (color: string) => void;
   onTextContentChange: (content: string) => void;
@@ -172,7 +207,12 @@ type ToolParameterProps = {
   beautyError: string | null;
   beautyStatusMessage: string | null;
   isBeautyRunning: boolean;
+  isSceneBlendRunning: boolean;
   sliders: SliderState;
+  sceneBackground: SceneBlendAsset;
+  sceneBlendError: string | null;
+  sceneBlendStatusMessage: string | null;
+  scenePrompt: string;
   stickerCategories: StickerCategoryList;
   stickerPresets: PhotoStickerPreset[];
   textBold: boolean;
@@ -191,7 +231,9 @@ const maxStickerSize = 180;
 const customStickerAccept = "image/png,image/jpeg,image/webp,image/svg+xml";
 const photoFileInputId = "photo-editor-file-input";
 const customStickerInputId = "photo-editor-custom-sticker-input";
-
+const brandBatchInputId = "photo-editor-brand-batch-input";
+const brandLogoInputId = "photo-editor-brand-logo-input";
+const sceneBackgroundInputId = "photo-editor-scene-background-input";
 const textColors: TextOption[] = [
   { label: "黑", value: "#111111" },
   { label: "白", value: "#ffffff" },
@@ -230,6 +272,14 @@ type BeautyTaskResponse = {
   taskId?: string;
 };
 
+type AiImageTaskResponse = BeautyTaskResponse;
+
+const initialBrandFillState: BrandFillState = {
+  logo: null,
+  logoSize: 18,
+  selectedPhotoId: null
+};
+
 export function PhotoEditorWorkspace() {
   const [activeToolId, setActiveToolId] = useState<PhotoToolId | null>("adjust");
   const [sliders, setSliders] = useState<SliderState>(initialSliders);
@@ -243,6 +293,14 @@ export function PhotoEditorWorkspace() {
   const [isBeautyRunning, setIsBeautyRunning] = useState(false);
   const [beautyError, setBeautyError] = useState<string | null>(null);
   const [beautyStatusMessage, setBeautyStatusMessage] = useState<string | null>(null);
+  const [brandFill, setBrandFill] = useState<BrandFillState>(initialBrandFillState);
+  const [brandBatchPhotos, setBrandBatchPhotos] = useState<BatchBrandPhoto[]>([]);
+  const [isBrandExporting, setIsBrandExporting] = useState(false);
+  const [sceneBackground, setSceneBackground] = useState<SceneBlendAsset>(null);
+  const [scenePrompt, setScenePrompt] = useState("户外雪山场景，自然摆放，边缘柔和，接触阴影真实，环境光一致");
+  const [sceneBlendError, setSceneBlendError] = useState<string | null>(null);
+  const [sceneBlendStatusMessage, setSceneBlendStatusMessage] = useState<string | null>(null);
+  const [isSceneBlendRunning, setIsSceneBlendRunning] = useState(false);
   const [textDraft, setTextDraft] = useState(defaultTextContent);
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
@@ -256,6 +314,10 @@ export function PhotoEditorWorkspace() {
   const [redoStack, setRedoStack] = useState<EditorSnapshot[]>([]);
   const customStickerUrlsRef = useRef<string[]>([]);
   const photoObjectUrlsRef = useRef<string[]>([]);
+  const brandBatchObjectUrlsRef = useRef<string[]>([]);
+  const brandWatermarkObjectUrlsRef = useRef<string[]>([]);
+  const brandLogoObjectUrlsRef = useRef<string[]>([]);
+  const sceneBackgroundObjectUrlsRef = useRef<string[]>([]);
   const photoCanvasRef = useRef<HTMLDivElement>(null);
   const { isDragging, pan, panHandlers, resetPan, setCanvasPan } = useCanvasPan();
   const cropBox = useCropBox();
@@ -266,6 +328,14 @@ export function PhotoEditorWorkspace() {
       customStickerUrlsRef.current = [];
       photoObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
       photoObjectUrlsRef.current = [];
+      brandBatchObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      brandBatchObjectUrlsRef.current = [];
+      brandWatermarkObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      brandWatermarkObjectUrlsRef.current = [];
+      brandLogoObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      brandLogoObjectUrlsRef.current = [];
+      sceneBackgroundObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      sceneBackgroundObjectUrlsRef.current = [];
     };
   }, []);
 
@@ -518,13 +588,25 @@ export function PhotoEditorWorkspace() {
   };
 
   const handleSelectTool = (tool: PhotoToolId) => {
-    if (photoTools.find((item) => item.id === tool)?.group === "ai" && tool !== "beauty") {
+    if (photoTools.find((item) => item.id === tool)?.group === "ai" && tool !== "beauty" && tool !== "background") {
       notifyAiUnavailable();
       return;
     }
 
     setActiveToolId((current) => (current === tool ? null : tool));
   };
+
+  const openBrandBatchPicker = useCallback(() => {
+    document.getElementById(brandBatchInputId)?.click();
+  }, []);
+
+  const openBrandLogoPicker = useCallback(() => {
+    document.getElementById(brandLogoInputId)?.click();
+  }, []);
+
+  const openSceneBackgroundPicker = useCallback(() => {
+    document.getElementById(sceneBackgroundInputId)?.click();
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -563,6 +645,234 @@ export function PhotoEditorWorkspace() {
         window.alert("图片加载失败，请重新选择。");
       });
     event.target.value = "";
+  };
+
+  const handleBrandBatchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []).filter((file) => file.type.startsWith("image/")).slice(0, 12);
+    event.target.value = "";
+
+    if (files.length === 0) {
+      return;
+    }
+
+    void Promise.all(
+      files.map(async (file) => {
+        const uploadedPhoto = await createUploadedPhoto(file);
+        brandBatchObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+        return {
+          ...uploadedPhoto,
+          id: `brand-photo-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        };
+      })
+    )
+      .then((items) => {
+        setBrandBatchPhotos((current) => {
+          const next = [...current, ...items].slice(0, 12);
+          setBrandFill((state) => ({
+            ...state,
+            selectedPhotoId: state.selectedPhotoId ?? next[0]?.id ?? null
+          }));
+          return next;
+        });
+      })
+      .catch(() => {
+        window.alert("批量图片加载失败，请重新选择。");
+      });
+  };
+
+  const handleBrandLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      setBrandLogo(file, objectUrl, image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      window.alert("Logo 图片加载失败，请重新选择。");
+    };
+    image.src = objectUrl;
+  };
+
+  const setBrandLogo = (file: File, objectUrl: string, aspectRatio: number) => {
+    brandLogoObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    brandLogoObjectUrlsRef.current = [objectUrl];
+    setBrandFill((current) => ({
+      ...current,
+      logo: {
+        aspectRatio,
+        file,
+        name: file.name.replace(/\.[^.]+$/, "") || "Logo",
+        objectUrl
+      }
+    }));
+  };
+
+  const handleSelectBrandPhoto = async (item: BatchBrandPhoto) => {
+    try {
+      if (!item.watermarkObjectUrl) {
+        window.alert("请先生成 AI Logo 图，再载入画布单独修改。");
+        return;
+      }
+
+      commitHistory();
+      const watermarkBlob = await (await fetch(item.watermarkObjectUrl)).blob();
+      const watermarkFile = new File([watermarkBlob], `${item.name.replace(/\.[^.]+$/, "") || "dreamchasers-photo"}-ai-logo.png`, {
+        type: watermarkBlob.type || "image/png"
+      });
+      const uploadedPhoto = await createUploadedPhoto(watermarkFile);
+      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+      setPhoto(uploadedPhoto);
+      setBrandFill((current) => ({ ...current, selectedPhotoId: item.id }));
+      resetPan();
+      setAppliedCrop(null);
+      setIsOriginalCompare(false);
+      cropBox.reset();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "品牌图载入失败，请稍后再试。");
+    }
+  };
+
+  const handleGenerateBrandWatermarkBatch = async () => {
+    if (brandBatchPhotos.length === 0 || !brandFill.logo || isBrandExporting) {
+      return;
+    }
+
+    setIsBrandExporting(true);
+    setBrandBatchPhotos((current) =>
+      current.map((item) => ({
+        ...item,
+        watermarkError: undefined,
+        watermarkStatus: "idle"
+      }))
+    );
+
+    try {
+      const queue = [...brandBatchPhotos];
+      const runWatermarkItem = async (item: BatchBrandPhoto) => {
+        setBrandBatchPhotos((current) =>
+          current.map((currentItem) =>
+            currentItem.id === item.id
+              ? {
+                  ...currentItem,
+                  watermarkError: undefined,
+                  watermarkStatus: "processing"
+                }
+              : currentItem
+          )
+        );
+
+        try {
+          const formData = new FormData();
+          formData.set("image", item.file, item.file.name || item.name);
+          formData.set("logo", brandFill.logo.file, brandFill.logo.file.name || "logo.png");
+          formData.set("logoSize", String(brandFill.logoSize));
+
+          const response = await fetch("/api/tools/photo/brand-watermark", {
+            body: formData,
+            method: "POST"
+          });
+          const task = (await response.json()) as AiImageTaskResponse;
+
+          if (!response.ok || !task.taskId) {
+            throw new Error(task.error || "AI Logo 水印任务创建失败，请稍后再试。");
+          }
+
+          const completedTask = await waitForImageTask(`/api/tools/photo/brand-watermark/tasks/${task.taskId}`, (message) => {
+            setBrandBatchPhotos((current) =>
+              current.map((currentItem) =>
+                currentItem.id === item.id
+                  ? {
+                      ...currentItem,
+                      watermarkError: message,
+                      watermarkStatus: "processing"
+                    }
+                  : currentItem
+              )
+            );
+          });
+
+          if (completedTask.status === "failed") {
+            throw new Error(completedTask.error || "AI Logo 水印生成失败，请稍后再试。");
+          }
+
+          const resultResponse = await fetch(`/api/tools/photo/brand-watermark/tasks/${task.taskId}/result`, {
+            method: "GET"
+          });
+
+          if (!resultResponse.ok) {
+            throw new Error(await readBeautyError(resultResponse));
+          }
+
+          const resultBlob = await resultResponse.blob();
+          const resultObjectUrl = URL.createObjectURL(resultBlob);
+          brandWatermarkObjectUrlsRef.current.push(resultObjectUrl);
+          setBrandBatchPhotos((current) =>
+            current.map((currentItem) =>
+              currentItem.id === item.id
+                ? {
+                    ...currentItem,
+                    watermarkError: undefined,
+                    watermarkObjectUrl: resultObjectUrl,
+                    watermarkStatus: "succeeded"
+                  }
+                : currentItem
+            )
+          );
+        } catch (error) {
+          setBrandBatchPhotos((current) =>
+            current.map((currentItem) =>
+              currentItem.id === item.id
+                ? {
+                    ...currentItem,
+                    watermarkError: error instanceof Error ? error.message : "AI Logo 水印生成失败，请稍后再试。",
+                    watermarkStatus: "failed"
+                  }
+                : currentItem
+            )
+          );
+        }
+      };
+
+      const workers = Array.from({ length: Math.min(3, queue.length) }, async () => {
+        while (queue.length > 0) {
+          const item = queue.shift();
+
+          if (item) {
+            await runWatermarkItem(item);
+          }
+        }
+      });
+
+      await Promise.all(workers);
+    } finally {
+      setIsBrandExporting(false);
+    }
+  };
+
+  const handleSceneBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    sceneBackgroundObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    sceneBackgroundObjectUrlsRef.current = [objectUrl];
+    setSceneBackground({
+      file,
+      name: file.name,
+      objectUrl
+    });
+    setSceneBlendError(null);
   };
 
   const handleRunBeauty = async () => {
@@ -635,6 +945,80 @@ export function PhotoEditorWorkspace() {
     }
   };
 
+  const handleRunSceneBlend = async () => {
+    if (!photo || !sceneBackground || isSceneBlendRunning) {
+      return;
+    }
+
+    setIsSceneBlendRunning(true);
+    setSceneBlendError(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("productImage", photo.file, photo.file.name || photo.name);
+      formData.set("backgroundImage", sceneBackground.file, sceneBackground.file.name || sceneBackground.name);
+      formData.set("prompt", scenePrompt.trim());
+
+      const response = await fetch("/api/tools/photo/scene-blend", {
+        body: formData,
+        method: "POST"
+      });
+
+      const task = (await response.json()) as AiImageTaskResponse;
+
+      if (!response.ok || !task.taskId) {
+        throw new Error(task.error || "AI 溶图任务创建失败，请稍后再试。");
+      }
+
+      setSceneBlendStatusMessage(task.message || "AI 溶图任务已提交。");
+      const completedTask = await waitForImageTask(
+        `/api/tools/photo/scene-blend/tasks/${task.taskId}`,
+        setSceneBlendStatusMessage
+      );
+
+      if (completedTask.status === "failed") {
+        throw new Error(completedTask.error || "AI 溶图生成失败，请稍后再试。");
+      }
+
+      const resultResponse = await fetch(`/api/tools/photo/scene-blend/tasks/${task.taskId}/result`, {
+        method: "GET"
+      });
+
+      if (!resultResponse.ok) {
+        throw new Error(await readBeautyError(resultResponse));
+      }
+
+      const resultBlob = await resultResponse.blob();
+      const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || "product"}-scene-blend.png`, {
+        type: resultBlob.type || "image/png"
+      });
+      const uploadedPhoto = await createUploadedPhoto(resultFile);
+      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+      commitHistory();
+      setPhoto(uploadedPhoto);
+      resetPan();
+      setAppliedCrop(null);
+      setIsOriginalCompare(false);
+      setSelectedFilterId("natural");
+      setSliders((current) => ({
+        ...current,
+        brightness: 0,
+        contrast: 0,
+        filterStrength: 0,
+        rotate: 0,
+        saturation: 0,
+        temperature: 0,
+        zoom: 100
+      }));
+      cropBox.reset();
+    } catch (error) {
+      setSceneBlendError(error instanceof Error ? error.message : "AI 溶图生成失败，请稍后再试。");
+    } finally {
+      setIsSceneBlendRunning(false);
+      setSceneBlendStatusMessage(null);
+    }
+  };
+
   const handleCustomStickerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
@@ -696,6 +1080,28 @@ export function PhotoEditorWorkspace() {
         onChange={handleCustomStickerChange}
         type="file"
       />
+      <input
+        accept="image/*"
+        className={styles.fileInput}
+        id={brandBatchInputId}
+        multiple
+        onChange={handleBrandBatchChange}
+        type="file"
+      />
+      <input
+        accept="image/*"
+        className={styles.fileInput}
+        id={brandLogoInputId}
+        onChange={handleBrandLogoChange}
+        type="file"
+      />
+      <input
+        accept="image/*"
+        className={styles.fileInput}
+        id={sceneBackgroundInputId}
+        onChange={handleSceneBackgroundChange}
+        type="file"
+      />
       <div className={styles.workspace} onClick={() => setSelectedTextId(null)}>
         <TopBar
           canRedo={redoStack.length > 0}
@@ -709,22 +1115,36 @@ export function PhotoEditorWorkspace() {
         />
         <ToolRail
           activeToolId={activeToolId}
+          brandBatchPhotos={brandBatchPhotos}
+          brandFill={brandFill}
+          isBrandExporting={isBrandExporting}
           beautyError={beautyError}
-          beautyStatusMessage={beautyStatusMessage}
+          beautyStatusMessage={sceneBlendStatusMessage ?? beautyStatusMessage}
           borderColor={borderColor}
           cropRatio={cropBox.ratio}
           isBeautyRunning={isBeautyRunning}
+          isSceneBlendRunning={isSceneBlendRunning}
           onAddSticker={addSticker}
           onAddText={addText}
           onApplyCrop={applyCrop}
           onBorderColorChange={setBorderColor}
           onCropRatioChange={changeCropRatio}
           onDeleteSelectedText={deleteSelectedText}
+          onExportBrandBatch={handleGenerateBrandWatermarkBatch}
+          onOpenBrandBatchPicker={openBrandBatchPicker}
+          onOpenBrandLogoPicker={openBrandLogoPicker}
+          onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
           onResetCrop={resetCrop}
           onRunBeauty={handleRunBeauty}
+          onRunSceneBlend={handleRunSceneBlend}
           onSelectBorder={handleSelectBorder}
+          onSelectBrandPhoto={(item) => {
+            void handleSelectBrandPhoto(item);
+          }}
           onSelectFilter={selectFilter}
           onSelectTool={handleSelectTool}
+          onSetBrandFill={setBrandFill}
+          onSetScenePrompt={setScenePrompt}
           onTextBoldChange={changeTextBold}
           onTextColorChange={changeTextColor}
           onTextContentChange={changeTextContent}
@@ -737,6 +1157,10 @@ export function PhotoEditorWorkspace() {
           selectedFilterId={selectedFilterId}
           selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
           selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
+          sceneBackground={sceneBackground}
+          sceneBlendError={sceneBlendError}
+          sceneBlendStatusMessage={sceneBlendStatusMessage}
+          scenePrompt={scenePrompt}
           sliders={sliders}
           textBold={textBold}
           textColor={textColor}
@@ -748,21 +1172,35 @@ export function PhotoEditorWorkspace() {
         {activeTool ? (
           <ParameterPanel
             activeTool={activeTool}
+            brandBatchPhotos={brandBatchPhotos}
+            brandFill={brandFill}
+            isBrandExporting={isBrandExporting}
             beautyError={beautyError}
             beautyStatusMessage={beautyStatusMessage}
             borderColor={borderColor}
             cropRatio={cropBox.ratio}
             isBeautyRunning={isBeautyRunning}
+            isSceneBlendRunning={isSceneBlendRunning}
             onAddSticker={addSticker}
             onAddText={addText}
             onApplyCrop={applyCrop}
             onBorderColorChange={setBorderColor}
             onCropRatioChange={changeCropRatio}
             onDeleteSelectedText={deleteSelectedText}
+            onExportBrandBatch={handleGenerateBrandWatermarkBatch}
+            onOpenBrandBatchPicker={openBrandBatchPicker}
+            onOpenBrandLogoPicker={openBrandLogoPicker}
+            onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
             onResetCrop={resetCrop}
             onRunBeauty={handleRunBeauty}
+            onRunSceneBlend={handleRunSceneBlend}
             onSelectBorder={handleSelectBorder}
+            onSelectBrandPhoto={(item) => {
+              void handleSelectBrandPhoto(item);
+            }}
             onSelectFilter={selectFilter}
+            onSetBrandFill={setBrandFill}
+            onSetScenePrompt={setScenePrompt}
             onTextBoldChange={changeTextBold}
             onTextColorChange={changeTextColor}
             onTextContentChange={changeTextContent}
@@ -773,6 +1211,10 @@ export function PhotoEditorWorkspace() {
             selectedFilterId={selectedFilterId}
             selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
             selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
+            sceneBackground={sceneBackground}
+            sceneBlendError={sceneBlendError}
+            sceneBlendStatusMessage={sceneBlendStatusMessage}
+            scenePrompt={scenePrompt}
             sliders={sliders}
             stickerCategories={photoStickerCategories}
             stickerPresets={photoStickerPresets}
@@ -800,7 +1242,7 @@ export function PhotoEditorWorkspace() {
           beautyStatusMessage={beautyStatusMessage}
           cropBox={cropBox}
           cropRatio={cropBox.ratio}
-          isBeautyRunning={isBeautyRunning}
+          isBeautyRunning={isBeautyRunning || isSceneBlendRunning}
           isOriginalCompare={isOriginalCompare}
           isDragging={isDragging}
           onToggleOriginalCompare={() => setIsOriginalCompare((current) => !current)}
@@ -955,6 +1397,29 @@ async function waitForBeautyTask(taskId: string, onStatus: (message: string) => 
 
     if (!response.ok) {
       throw new Error(task.error || "AI 美颜任务查询失败，请稍后再试。");
+    }
+
+    if (task.message) {
+      onStatus(task.message);
+    }
+
+    if (task.status === "succeeded" || task.status === "failed") {
+      return task;
+    }
+  }
+}
+
+async function waitForImageTask(statusUrl: string, onStatus: (message: string) => void) {
+  while (true) {
+    await delay(beautyPollingIntervalMs);
+
+    const response = await fetch(statusUrl, {
+      method: "GET"
+    });
+    const task = (await response.json()) as AiImageTaskResponse;
+
+    if (!response.ok) {
+      throw new Error(task.error || "AI 图片任务查询失败，请稍后再试。");
     }
 
     if (task.message) {
@@ -1243,6 +1708,15 @@ async function exportPreviewElement(element: HTMLElement, fileName: string, stat
   URL.revokeObjectURL(objectUrl);
 }
 
+function downloadBlob(blob: Blob, fileName: string) {
+  const link = document.createElement("a");
+  const objectUrl = URL.createObjectURL(blob);
+  link.href = objectUrl;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(objectUrl);
+}
+
 function TopBar({
   canRedo,
   canUndo,
@@ -1295,22 +1769,34 @@ function TopBar({
 
 function ToolRail({
   activeToolId,
+  brandBatchPhotos,
+  brandFill,
+  isBrandExporting,
   beautyError,
   beautyStatusMessage,
   borderColor,
   cropRatio,
   isBeautyRunning,
+  isSceneBlendRunning,
   onAddSticker,
   onAddText,
   onApplyCrop,
   onBorderColorChange,
   onCropRatioChange,
   onDeleteSelectedText,
+  onExportBrandBatch,
+  onOpenBrandBatchPicker,
+  onOpenBrandLogoPicker,
+  onOpenSceneBackgroundPicker,
   onResetCrop,
   onRunBeauty,
+  onRunSceneBlend,
   onSelectBorder,
+  onSelectBrandPhoto,
   onSelectFilter,
   onSelectTool,
+  onSetBrandFill,
+  onSetScenePrompt,
   onTextBoldChange,
   onTextColorChange,
   onTextContentChange,
@@ -1323,6 +1809,10 @@ function ToolRail({
   selectedFilterId,
   selectedSticker,
   selectedText,
+  sceneBackground,
+  sceneBlendError,
+  sceneBlendStatusMessage,
+  scenePrompt,
   sliders,
   textBold,
   textColor,
@@ -1332,22 +1822,34 @@ function ToolRail({
   updateSlider
 }: {
   activeToolId: PhotoToolId | null;
+  brandBatchPhotos: BatchBrandPhoto[];
+  brandFill: BrandFillState;
+  isBrandExporting: boolean;
   beautyError: string | null;
   beautyStatusMessage: string | null;
   borderColor: string;
   cropRatio: CropRatio;
   isBeautyRunning: boolean;
+  isSceneBlendRunning: boolean;
   onAddSticker: (preset: PhotoStickerPreset) => void;
   onAddText: () => void;
   onApplyCrop: () => void;
   onBorderColorChange: (color: string) => void;
   onCropRatioChange: (ratio: CropRatio) => void;
   onDeleteSelectedText: () => void;
+  onExportBrandBatch: () => void;
+  onOpenBrandBatchPicker: () => void;
+  onOpenBrandLogoPicker: () => void;
+  onOpenSceneBackgroundPicker: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
+  onRunSceneBlend: () => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
+  onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
   onSelectTool: (tool: PhotoToolId) => void;
+  onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+  onSetScenePrompt: (prompt: string) => void;
   onTextBoldChange: (isBold: boolean) => void;
   onTextColorChange: (color: string) => void;
   onTextContentChange: (content: string) => void;
@@ -1360,6 +1862,10 @@ function ToolRail({
   selectedFilterId: PhotoFilterId;
   selectedSticker: StickerElement | null;
   selectedText: TextElement | null;
+  sceneBackground: SceneBlendAsset;
+  sceneBlendError: string | null;
+  sceneBlendStatusMessage: string | null;
+  scenePrompt: string;
   sliders: SliderState;
   textBold: boolean;
   textColor: string;
@@ -1399,7 +1905,7 @@ function ToolRail({
                 .filter((tool) => tool.group === group.id)
                 .map((tool) => {
                   const isActive = activeToolId === tool.id;
-                  const isUnavailableAiTool = tool.group === "ai" && tool.id !== "beauty";
+                  const isUnavailableAiTool = tool.group === "ai" && tool.id !== "beauty" && tool.id !== "background";
                   return (
                     <div className={styles.toolItem} key={tool.id}>
                       <button
@@ -1414,26 +1920,38 @@ function ToolRail({
                           <strong>{tool.name}</strong>
                           <small>{tool.description}</small>
                         </span>
-                        {tool.cost ? <span className={styles.aiCost}>{tool.id === "beauty" ? "1 次" : "未开放"}</span> : <span className={styles.chev}>›</span>}
+                        {tool.cost ? <span className={styles.aiCost}>{tool.id === "beauty" || tool.id === "background" ? "1 次" : "未开放"}</span> : <span className={styles.chev}>›</span>}
                       </button>
                       {isActive ? (
                         <ParameterInlinePanel
                           activeTool={tool}
+                          brandBatchPhotos={brandBatchPhotos}
+                          brandFill={brandFill}
+                          isBrandExporting={isBrandExporting}
                           beautyError={beautyError}
                           beautyStatusMessage={beautyStatusMessage}
                           borderColor={borderColor}
                           cropRatio={cropRatio}
                           isBeautyRunning={isBeautyRunning}
+                          isSceneBlendRunning={isSceneBlendRunning}
                           onAddSticker={onAddSticker}
                           onAddText={onAddText}
                           onApplyCrop={onApplyCrop}
                           onBorderColorChange={onBorderColorChange}
                           onCropRatioChange={onCropRatioChange}
                           onDeleteSelectedText={onDeleteSelectedText}
+                          onExportBrandBatch={onExportBrandBatch}
+                          onOpenBrandBatchPicker={onOpenBrandBatchPicker}
+                          onOpenBrandLogoPicker={onOpenBrandLogoPicker}
+                          onOpenSceneBackgroundPicker={onOpenSceneBackgroundPicker}
                           onResetCrop={onResetCrop}
                           onRunBeauty={onRunBeauty}
+                          onRunSceneBlend={onRunSceneBlend}
                           onSelectBorder={onSelectBorder}
+                          onSelectBrandPhoto={onSelectBrandPhoto}
                           onSelectFilter={onSelectFilter}
+                          onSetBrandFill={onSetBrandFill}
+                          onSetScenePrompt={onSetScenePrompt}
                           onTextBoldChange={onTextBoldChange}
                           onTextColorChange={onTextColorChange}
                           onTextContentChange={onTextContentChange}
@@ -1444,6 +1962,10 @@ function ToolRail({
                           selectedFilterId={selectedFilterId}
                           selectedSticker={selectedSticker}
                           selectedText={selectedText}
+                          sceneBackground={sceneBackground}
+                          sceneBlendError={sceneBlendError}
+                          sceneBlendStatusMessage={sceneBlendStatusMessage}
+                          scenePrompt={scenePrompt}
                           sliders={sliders}
                           stickerCategories={photoStickerCategories}
                           stickerPresets={photoStickerPresets}
@@ -1482,78 +2004,10 @@ function ParameterInlinePanel(props: ToolParameterProps) {
 
 function ParameterPanel({
   activeTool,
-  cropRatio,
-  onAddSticker,
-  onAddText,
-  onApplyCrop,
-  onCropRatioChange,
-  onDeleteSelectedText,
-  onResetCrop,
-  onRunBeauty,
-  onBorderColorChange,
-  onSelectBorder,
-  onSelectFilter,
-  onTextColorChange,
-  onTextBoldChange,
-  onTextContentChange,
-  onTextItalicChange,
-  onTextFontChange,
-  onUploadCustomSticker,
-  selectedFilterId,
-  selectedBorderId,
-  selectedSticker,
-  selectedText,
-  beautyError,
-  beautyStatusMessage,
-  isBeautyRunning,
-  stickerCategories,
-  stickerPresets,
-  textColor,
-  textBold,
-  textFont,
-  textItalic,
-  textValue,
-  borderColor,
-  sliders,
-  updateSlider,
   onClick,
-  onPointerDown
-}: {
-  activeTool: PhotoTool;
-  cropRatio: CropRatio;
-  onAddSticker: (preset: PhotoStickerPreset) => void;
-  onAddText: () => void;
-  onApplyCrop: () => void;
-  onCropRatioChange: (ratio: CropRatio) => void;
-  onDeleteSelectedText: () => void;
-  onResetCrop: () => void;
-  onRunBeauty: () => void;
-  onBorderColorChange: (color: string) => void;
-  onSelectBorder: (preset: PhotoBorderPreset) => void;
-  onSelectFilter: (filterId: PhotoFilterId) => void;
-  onTextColorChange: (color: string) => void;
-  onTextBoldChange: (isBold: boolean) => void;
-  onTextContentChange: (content: string) => void;
-  onTextItalicChange: (isItalic: boolean) => void;
-  onTextFontChange: (fontFamily: string) => void;
-  onUploadCustomSticker: () => void;
-  selectedFilterId: PhotoFilterId;
-  selectedBorderId: PhotoBorderId;
-  selectedSticker: StickerElement | null;
-  selectedText: TextElement | null;
-  beautyError: string | null;
-  beautyStatusMessage: string | null;
-  isBeautyRunning: boolean;
-  stickerCategories: StickerCategoryList;
-  stickerPresets: PhotoStickerPreset[];
-  textColor: string;
-  textBold: boolean;
-  textFont: string;
-  textItalic: boolean;
-  textValue: string;
-  borderColor: string;
-  sliders: SliderState;
-  updateSlider: (key: keyof SliderState, value: number) => void;
+  onPointerDown,
+  ...contentProps
+}: ToolParameterProps & {
   onClick?: React.MouseEventHandler<HTMLElement>;
   onPointerDown?: React.PointerEventHandler<HTMLElement>;
 }) {
@@ -1566,43 +2020,7 @@ function ParameterPanel({
       </div>
 
       <div className={styles.paramBody}>
-        <ToolParameterContent
-          activeTool={activeTool}
-          borderColor={borderColor}
-          cropRatio={cropRatio}
-          onAddSticker={onAddSticker}
-          onAddText={onAddText}
-          onApplyCrop={onApplyCrop}
-          onBorderColorChange={onBorderColorChange}
-          onCropRatioChange={onCropRatioChange}
-          onDeleteSelectedText={onDeleteSelectedText}
-          onResetCrop={onResetCrop}
-          onRunBeauty={onRunBeauty}
-          onSelectBorder={onSelectBorder}
-          onSelectFilter={onSelectFilter}
-          onTextBoldChange={onTextBoldChange}
-          onTextColorChange={onTextColorChange}
-          onTextContentChange={onTextContentChange}
-          onTextFontChange={onTextFontChange}
-          onTextItalicChange={onTextItalicChange}
-          onUploadCustomSticker={onUploadCustomSticker}
-          selectedBorderId={selectedBorderId}
-          selectedFilterId={selectedFilterId}
-          selectedSticker={selectedSticker}
-          selectedText={selectedText}
-          beautyError={beautyError}
-          beautyStatusMessage={beautyStatusMessage}
-          isBeautyRunning={isBeautyRunning}
-          sliders={sliders}
-          stickerCategories={stickerCategories}
-          stickerPresets={stickerPresets}
-          textBold={textBold}
-          textColor={textColor}
-          textFont={textFont}
-          textItalic={textItalic}
-          textValue={textValue}
-          updateSlider={updateSlider}
-        />
+        <ToolParameterContent activeTool={activeTool} {...contentProps} />
       </div>
     </aside>
   );
@@ -1610,18 +2028,29 @@ function ParameterPanel({
 
 function ToolParameterContent({
   activeTool,
+  brandBatchPhotos,
+  brandFill,
   borderColor,
   cropRatio,
+  isBrandExporting,
   onAddSticker,
   onAddText,
   onApplyCrop,
   onBorderColorChange,
   onCropRatioChange,
   onDeleteSelectedText,
+  onExportBrandBatch,
+  onOpenBrandBatchPicker,
+  onOpenBrandLogoPicker,
+  onOpenSceneBackgroundPicker,
   onResetCrop,
   onRunBeauty,
+  onRunSceneBlend,
   onSelectBorder,
+  onSelectBrandPhoto,
   onSelectFilter,
+  onSetBrandFill,
+  onSetScenePrompt,
   onTextBoldChange,
   onTextColorChange,
   onTextContentChange,
@@ -1635,7 +2064,12 @@ function ToolParameterContent({
   beautyError,
   beautyStatusMessage,
   isBeautyRunning,
+  isSceneBlendRunning,
   sliders,
+  sceneBackground,
+  sceneBlendError,
+  sceneBlendStatusMessage,
+  scenePrompt,
   stickerCategories,
   stickerPresets,
   textBold,
@@ -1715,7 +2149,30 @@ function ToolParameterContent({
           onRunBeauty={onRunBeauty}
         />
       ) : null}
-      {activeTool.id === "background" ? <BackgroundPanel /> : null}
+      {activeTool.id === "branding" ? (
+        <BrandingPanel
+          brandBatchPhotos={brandBatchPhotos}
+          brandFill={brandFill}
+          isBrandExporting={isBrandExporting}
+          onExportBrandBatch={onExportBrandBatch}
+          onOpenBrandBatchPicker={onOpenBrandBatchPicker}
+          onOpenBrandLogoPicker={onOpenBrandLogoPicker}
+          onSelectBrandPhoto={onSelectBrandPhoto}
+          onSetBrandFill={onSetBrandFill}
+        />
+      ) : null}
+      {activeTool.id === "background" ? (
+        <BackgroundPanel
+          isSceneBlendRunning={isSceneBlendRunning}
+          onOpenSceneBackgroundPicker={onOpenSceneBackgroundPicker}
+          onRunSceneBlend={onRunSceneBlend}
+          onSetScenePrompt={onSetScenePrompt}
+          sceneBackground={sceneBackground}
+          sceneBlendError={sceneBlendError}
+          sceneBlendStatusMessage={sceneBlendStatusMessage}
+          scenePrompt={scenePrompt}
+        />
+      ) : null}
       {activeTool.id === "repair" ? <RepairPanel /> : null}
       {activeTool.id === "enhance" ? <EnhancePanel /> : null}
     </>
@@ -2114,14 +2571,167 @@ function BeautyPanel({
   );
 }
 
-function BackgroundPanel() {
+function BrandingPanel({
+  brandBatchPhotos,
+  brandFill,
+  isBrandExporting,
+  onExportBrandBatch,
+  onOpenBrandBatchPicker,
+  onOpenBrandLogoPicker,
+  onSelectBrandPhoto,
+  onSetBrandFill
+}: {
+  brandBatchPhotos: BatchBrandPhoto[];
+  brandFill: BrandFillState;
+  isBrandExporting: boolean;
+  onExportBrandBatch: () => void;
+  onOpenBrandBatchPicker: () => void;
+  onOpenBrandLogoPicker: () => void;
+  onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
+  onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+}) {
+  const hasBrandContent = Boolean(brandFill.logo);
+  const exportDisabledReason = !brandBatchPhotos.length
+    ? "请先上传批量图片。"
+    : !hasBrandContent
+      ? "请先上传 Logo。"
+      : "";
+
   return (
     <>
-      <AiPanelCard detail="描述你想替换成什么背景。系统会尽量保留主体边缘、光影和原始构图。" title="AI 换背景 · 消耗 1 次" />
-      <textarea className={styles.textareaInput} defaultValue="换成干净的浅灰色背景，保持自然光影" />
-      <button className={styles.runButton} type="button">
-        生成新背景
+      <p className={styles.sectionLabel}>素材</p>
+      <div className={styles.actionRow}>
+        <button className={styles.runButton} onClick={onOpenBrandBatchPicker} type="button">
+          上传批量图片
+        </button>
+        <button className={styles.secondaryButton} onClick={onOpenBrandLogoPicker} type="button">
+          上传 Logo
+        </button>
+      </div>
+      {brandFill.logo ? (
+        <div className={styles.logoPreviewCard}>
+          <span className={styles.logoPreviewFrame}>
+            <img alt={brandFill.logo.name} src={brandFill.logo.objectUrl} />
+          </span>
+          <span className={styles.logoPreviewMeta}>
+            <strong>{brandFill.logo.name}</strong>
+            <small>已上传 Logo，将用于右下角 AI 水印</small>
+          </span>
+        </div>
+      ) : null}
+
+      <p className={styles.sectionLabel}>AI 水印参数</p>
+      <div className={styles.controlCard}>
+        <Slider
+          label="Logo 大小"
+          max={30}
+          min={5}
+          suffix="%"
+          value={brandFill.logoSize}
+          onChange={(value) => onSetBrandFill((current) => ({ ...current, logoSize: value }))}
+        />
+      </div>
+
+      <div className={styles.fileSummary}>
+        <span>{brandBatchPhotos.length ? `已上传 ${brandBatchPhotos.length} 张` : "还未上传批量图片"}</span>
+        <span>{brandFill.logo ? `Logo: ${brandFill.logo.name}` : "未上传 Logo"}</span>
+      </div>
+
+      {brandBatchPhotos.length ? (
+        <>
+          <p className={styles.sectionLabel}>批量预览</p>
+          <div className={styles.brandPreviewGrid}>
+            {brandBatchPhotos.map((item) => (
+              <button
+                className={`${styles.brandPreviewCard} ${brandFill.selectedPhotoId === item.id ? styles.active : ""}`}
+                key={item.id}
+                onClick={() => onSelectBrandPhoto(item)}
+                type="button"
+              >
+                <span className={styles.brandPreviewFrame}>
+                  <img alt={item.name} className={styles.brandPreviewImage} src={item.watermarkObjectUrl ?? item.objectUrl} />
+                  {item.watermarkStatus ? (
+                    <span className={styles.brandStatusBadge} data-status={item.watermarkStatus}>
+                      {item.watermarkStatus === "processing"
+                        ? "生成中"
+                        : item.watermarkStatus === "succeeded"
+                          ? "已生成"
+                          : item.watermarkStatus === "failed"
+                            ? "失败"
+                            : "待生成"}
+                    </span>
+                  ) : null}
+                </span>
+                <span className={styles.brandPreviewMeta}>
+                  <strong>{item.name}</strong>
+                  <small>{item.watermarkError ?? (item.watermarkObjectUrl ? "AI 结果，可载入画布单独修改" : "等待 AI 生成 Logo 图")}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {exportDisabledReason ? <p className={styles.statusText}>{exportDisabledReason}</p> : null}
+      <button
+        className={styles.runButton}
+        data-loading={isBrandExporting ? "true" : undefined}
+        disabled={!brandBatchPhotos.length || !hasBrandContent || isBrandExporting}
+        onClick={onExportBrandBatch}
+        type="button"
+      >
+        {isBrandExporting ? "AI 批量生成中..." : "AI 批量生成 Logo 图"}
       </button>
+    </>
+  );
+}
+
+function BackgroundPanel({
+  isSceneBlendRunning,
+  onOpenSceneBackgroundPicker,
+  onRunSceneBlend,
+  onSetScenePrompt,
+  sceneBackground,
+  sceneBlendError,
+  sceneBlendStatusMessage,
+  scenePrompt
+}: {
+  isSceneBlendRunning: boolean;
+  onOpenSceneBackgroundPicker: () => void;
+  onRunSceneBlend: () => void;
+  onSetScenePrompt: (prompt: string) => void;
+  sceneBackground: SceneBlendAsset;
+  sceneBlendError: string | null;
+  sceneBlendStatusMessage: string | null;
+  scenePrompt: string;
+}) {
+  return (
+    <>
+      <AiPanelCard detail="上传产品图后，再上传一张环境背景图。AI 会按场景描述融合边缘、接触阴影和环境光。" title="AI 溶图 · 消耗 1 次" />
+      <button className={styles.customStickerButton} onClick={onOpenSceneBackgroundPicker} type="button">
+        <span className={styles.customStickerIcon}>BG</span>
+        <span>
+          <strong>{sceneBackground ? sceneBackground.name : "上传背景图"}</strong>
+          <small>雪山、户外、室内等环境参考图</small>
+        </span>
+      </button>
+      {sceneBackground ? (
+        <div className={styles.sceneAssetPreview}>
+          <img alt={sceneBackground.name} src={sceneBackground.objectUrl} />
+        </div>
+      ) : null}
+      <p className={styles.sectionLabel}>场景描述</p>
+      <textarea
+        className={styles.textareaInput}
+        maxLength={220}
+        onChange={(event) => onSetScenePrompt(event.target.value)}
+        value={scenePrompt}
+      />
+      <button className={styles.runButton} disabled={!sceneBackground || !scenePrompt.trim() || isSceneBlendRunning} onClick={onRunSceneBlend} type="button">
+        {isSceneBlendRunning ? "生成中..." : "生成溶图"}
+      </button>
+      {sceneBlendStatusMessage ? <p className={styles.statusText}>{sceneBlendStatusMessage}</p> : null}
+      {sceneBlendError ? <p className={styles.errorText}>{sceneBlendError}</p> : null}
     </>
   );
 }

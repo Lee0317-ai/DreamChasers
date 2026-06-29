@@ -4,6 +4,7 @@ export type PhotoToolId =
   | "filter"
   | "text"
   | "sticker"
+  | "branding"
   | "border"
   | "beauty"
   | "background"
@@ -80,6 +81,15 @@ export const photoTools: PhotoTool[] = [
     panelDescription: "添加标注、箭头和装饰贴纸，让图片表达更清楚。"
   },
   {
+    id: "branding",
+    name: "批量品牌",
+    description: "短字、Logo、批量预览",
+    group: "creative",
+    icon: "LG",
+    modeLabel: "批量品牌填充",
+    panelDescription: "给多张图片统一添加左上角品牌短字和右下角 Logo，并支持单张微调。"
+  },
+  {
     id: "border",
     name: "边框",
     description: "白边、相框、胶片边",
@@ -100,13 +110,13 @@ export const photoTools: PhotoTool[] = [
   },
   {
     id: "background",
-    name: "AI 换背景",
-    description: "浅色、自然、纯色背景",
+    name: "AI 溶图",
+    description: "产品图自然融入背景",
     group: "ai",
     icon: "BG",
     cost: 1,
     modeLabel: "AI 结果对比",
-    panelDescription: "通过描述生成新背景，消耗 1 次 AI 免费额度。"
+    panelDescription: "上传产品图和背景图，让 AI 生成自然融合的场景图，消耗 1 次 AI 免费额度。"
   },
   {
     id: "repair",

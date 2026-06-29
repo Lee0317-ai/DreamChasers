@@ -508,8 +508,12 @@
 }
 
 .runButton:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.64;
+}
+
+.runButton[data-loading="true"]:disabled {
+  cursor: wait;
 }
 
 .statusText {
@@ -546,6 +550,196 @@
   color: var(--photo-fg);
   font-size: 0.81rem;
   font-weight: 800;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--photo-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-top: 12px;
+}
+
+.checkboxRow input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--photo-accent);
+}
+
+.logoPreviewCard {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--photo-border);
+  border-radius: 12px;
+  background: var(--photo-bg);
+  margin: 12px 0;
+  padding: 8px;
+}
+
+.logoPreviewFrame {
+  display: grid;
+  overflow: hidden;
+  width: 58px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--photo-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(45deg, oklch(92% 0.01 250) 25%, transparent 25%),
+    linear-gradient(-45deg, oklch(92% 0.01 250) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, oklch(92% 0.01 250) 75%),
+    linear-gradient(-45deg, transparent 75%, oklch(92% 0.01 250) 75%);
+  background-color: #fff;
+  background-position:
+    0 0,
+    0 5px,
+    5px -5px,
+    -5px 0;
+  background-size: 10px 10px;
+}
+
+.logoPreviewFrame img {
+  max-width: 88%;
+  max-height: 82%;
+  object-fit: contain;
+}
+
+.logoPreviewMeta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.logoPreviewMeta strong,
+.logoPreviewMeta small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logoPreviewMeta strong {
+  color: var(--photo-fg);
+  font-size: 0.78rem;
+}
+
+.logoPreviewMeta small {
+  color: var(--photo-muted);
+  font-size: 0.68rem;
+}
+
+.fileSummary {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--photo-border);
+  border-radius: 12px;
+  background: var(--photo-bg);
+  color: var(--photo-muted);
+  font-size: 0.75rem;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+}
+
+.brandPreviewGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.brandPreviewCard {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--photo-border);
+  border-radius: 12px;
+  background: var(--photo-surface);
+  color: var(--photo-fg);
+  padding: 8px;
+  text-align: left;
+}
+
+.brandPreviewCard.active {
+  border-color: color-mix(in oklch, var(--photo-accent) 56%, var(--photo-border));
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--photo-accent) 14%, transparent);
+}
+
+.brandPreviewFrame {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  background: var(--photo-bg);
+}
+
+.brandPreviewImage,
+.sceneAssetPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.brandStatusBadge {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  border: 1px solid oklch(100% 0 0 / 0.42);
+  border-radius: 999px;
+  background: oklch(18% 0.012 250 / 0.76);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 2px 8px;
+}
+
+.brandStatusBadge[data-status="succeeded"] {
+  background: oklch(48% 0.13 152 / 0.82);
+}
+
+.brandStatusBadge[data-status="failed"] {
+  background: oklch(52% 0.19 28 / 0.84);
+}
+
+.brandStatusBadge[data-status="processing"] {
+  background: oklch(52% 0.14 255 / 0.84);
+}
+
+.brandPreviewMeta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.brandPreviewMeta strong,
+.brandPreviewMeta small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.brandPreviewMeta strong {
+  font-size: 0.75rem;
+}
+
+.brandPreviewMeta small {
+  color: var(--photo-muted);
+  font-size: 0.68rem;
+}
+
+.sceneAssetPreview {
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--photo-border);
+  border-radius: 12px;
+  background: var(--photo-bg);
+  margin: 10px 0 14px;
 }
 
 .colorControl {
@@ -1907,18 +2101,14 @@
 @media (max-width: 1280px) {
   .workspace {
     grid-template:
-      "top top top" 58px
-      "tools stage ai" minmax(0, 1fr) / 224px minmax(500px, 1fr) 340px;
+      "top top top top" 58px
+      "tools params stage ai" minmax(0, 1fr) / 224px 286px minmax(420px, 1fr) 320px;
   }
 
   .aiCollapsed .workspace {
     grid-template:
-      "top top" 58px
-      "tools stage" minmax(0, 1fr) / 224px minmax(500px, 1fr);
-  }
-
-  .paramsPanel {
-    display: none;
+      "top top top" 58px
+      "tools params stage" minmax(0, 1fr) / 224px 286px minmax(420px, 1fr);
   }
 
   .upgrade {
