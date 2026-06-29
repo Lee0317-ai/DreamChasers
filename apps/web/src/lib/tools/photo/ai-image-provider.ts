@@ -31,6 +31,14 @@ type BrandWatermarkInput = {
   logoSize: number;
 };
 
+export type PhotoEditMode = "enhance" | "prompt_edit" | "repair";
+
+type PhotoEditInput = {
+  image: File;
+  mode: PhotoEditMode;
+  prompt?: string;
+};
+
 export function assertSupportedBeautyInput({ beautyType, image }: BeautyImageInput) {
   if (beautyType !== naturalPortraitBeautyType) {
     throw new Error("暂不支持该美颜类型。");
@@ -137,6 +145,41 @@ export async function buildBrandWatermarkGatewayInput({ image, logo, logoSize }:
   };
 }
 
+export function assertSupportedPhotoEditInput({ image, mode, prompt }: PhotoEditInput) {
+  assertSupportedImageFile(image, "原图");
+
+  if (mode === "repair" || mode === "prompt_edit") {
+    if (!prompt?.trim()) {
+      throw new Error(mode === "repair" ? "请填写需要修复的内容。" : "请填写 AI 修图指令。");
+    }
+
+    if (prompt.length > 220) {
+      throw new Error(mode === "repair" ? "修复描述不能超过 220 个字。" : "AI 修图指令不能超过 220 个字。");
+    }
+  }
+}
+
+export async function buildPhotoEditGatewayInput({ image, mode, prompt }: PhotoEditInput, userId: string) {
+  const imageBase64 = Buffer.from(await image.arrayBuffer()).toString("base64");
+
+  return {
+    capability: "image_edit" as const,
+    credentialSource: "platform_pool" as const,
+    input: {
+      contentType: image.type || "image/png",
+      editMode: mode,
+      fileName: image.name || "image.png",
+      fileSize: image.size,
+      imageBase64,
+      prompt: buildPhotoEditPrompt(mode, prompt)
+    },
+    modelId: getPreferredImageEditModelId(),
+    productSlug: "dreamchasers",
+    toolSlug: `ai-photo-editor-${mode.replace("_", "-")}`,
+    userId
+  };
+}
+
 export function readImageEditGatewayResult(result: Record<string, unknown>): ImageEditResult {
   const imageBase64 = typeof result.imageBase64 === "string" ? result.imageBase64 : "";
   const contentType = typeof result.contentType === "string" ? result.contentType : "image/png";
@@ -206,5 +249,38 @@ function buildBrandWatermarkPrompt(logoSize: number) {
     "Only apply minimal opacity, contrast, or shadow adjustment if needed to make the watermark readable; do not change the logo design.",
     "Do not add any other text, icons, stickers, borders, frames, mockups, or decorative elements.",
     "Return only the final watermarked image."
+  ].join(" ");
+}
+
+function buildPhotoEditPrompt(mode: PhotoEditMode, prompt?: string) {
+  if (mode === "enhance") {
+    return [
+      "Enhance this image for high-definition output.",
+      "Improve clarity, fine detail, texture definition, mild compression artifacts, noise, and local contrast.",
+      "Preserve the original composition, identity, faces, products, background, colors, text, logos, and overall style.",
+      "Do not add new objects, remove objects, change the scene, change facial identity, redraw logos, or alter readable text.",
+      "Keep the result natural and realistic, avoiding oversharpening, halos, waxy skin, cartoon effects, or artificial HDR.",
+      "Return only the enhanced image."
+    ].join(" ");
+  }
+
+  if (mode === "repair") {
+    return [
+      "Repair the uploaded image according to the user's instruction.",
+      "The edit should remove or fix only the described blemish, obstruction, unwanted mark, small damaged area, or local artifact.",
+      "Reconstruct the affected area with natural texture, lighting, shadows, perspective, and surrounding detail.",
+      "Preserve all unrelated areas unchanged, including faces, products, background, composition, colors, text, and logos.",
+      `User repair instruction: ${prompt?.trim() ?? ""}`,
+      "Return only the repaired image."
+    ].join(" ");
+  }
+
+  return [
+    "Edit the uploaded image according to the user's instruction.",
+    "Follow the instruction precisely while preserving unrelated areas, composition, identity, faces, products, text, and logos.",
+    "Make the result natural and coherent with the original lighting, color, perspective, texture, and image style.",
+    "Do not add unrelated objects or decorative elements.",
+    `User edit instruction: ${prompt?.trim() ?? ""}`,
+    "Return only the edited image."
   ].join(" ");
 }

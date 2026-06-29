@@ -55,7 +55,7 @@ const initialSliders: SliderState = {
   detail: 90
 };
 
-const AI_UNAVAILABLE_MESSAGE = "AI 功能暂未开放，敬请期待！";
+const defaultRepairPrompt = "修复画面中的局部瑕疵、遮挡或不需要的元素，保持周围纹理和光影自然";
 const cropRatios: CropRatio[] = ["自由", "1:1", "4:3", "16:9", "3:4", "9:16"];
 const cropHandles: CropResizeHandle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
@@ -91,6 +91,12 @@ type SceneBlendAsset = {
   objectUrl: string;
   name: string;
 } | null;
+
+type ChatMessage = {
+  content: string;
+  id: string;
+  role: "ai" | "user";
+};
 
 type TextElement = {
   color: string;
@@ -188,11 +194,14 @@ type ToolParameterProps = {
   onOpenSceneBackgroundPicker: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
+  onRunEnhance: () => void;
+  onRunRepair: () => void;
   onRunSceneBlend: () => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
   onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
   onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+  onSetRepairPrompt: (prompt: string) => void;
   onSetScenePrompt: (prompt: string) => void;
   onTextBoldChange: (isBold: boolean) => void;
   onTextColorChange: (color: string) => void;
@@ -206,8 +215,15 @@ type ToolParameterProps = {
   selectedText: TextElement | null;
   beautyError: string | null;
   beautyStatusMessage: string | null;
+  enhanceError: string | null;
+  enhanceStatusMessage: string | null;
   isBeautyRunning: boolean;
+  isEnhanceRunning: boolean;
+  isRepairRunning: boolean;
   isSceneBlendRunning: boolean;
+  repairError: string | null;
+  repairPrompt: string;
+  repairStatusMessage: string | null;
   sliders: SliderState;
   sceneBackground: SceneBlendAsset;
   sceneBlendError: string | null;
@@ -283,7 +299,7 @@ const initialBrandFillState: BrandFillState = {
 export function PhotoEditorWorkspace() {
   const [activeToolId, setActiveToolId] = useState<PhotoToolId | null>("adjust");
   const [sliders, setSliders] = useState<SliderState>(initialSliders);
-  const [aiCollapsed] = useState(true);
+  const [aiCollapsed, setAiCollapsed] = useState(true);
   const [appliedCrop, setAppliedCrop] = useState<ReturnType<typeof useCropBox>["rect"] | null>(null);
   const [isOriginalCompare, setIsOriginalCompare] = useState(false);
   const [selectedFilterId, setSelectedFilterId] = useState<PhotoFilterId>("natural");
@@ -301,6 +317,24 @@ export function PhotoEditorWorkspace() {
   const [sceneBlendError, setSceneBlendError] = useState<string | null>(null);
   const [sceneBlendStatusMessage, setSceneBlendStatusMessage] = useState<string | null>(null);
   const [isSceneBlendRunning, setIsSceneBlendRunning] = useState(false);
+  const [repairPrompt, setRepairPrompt] = useState(defaultRepairPrompt);
+  const [repairError, setRepairError] = useState<string | null>(null);
+  const [repairStatusMessage, setRepairStatusMessage] = useState<string | null>(null);
+  const [isRepairRunning, setIsRepairRunning] = useState(false);
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
+  const [enhanceStatusMessage, setEnhanceStatusMessage] = useState<string | null>(null);
+  const [isEnhanceRunning, setIsEnhanceRunning] = useState(false);
+  const [chatPrompt, setChatPrompt] = useState("");
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
+  const [isChatRunning, setIsChatRunning] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      content: "输入一句修图指令，我会基于当前画布生成新图。",
+      id: "ai-welcome",
+      role: "ai"
+    }
+  ]);
   const [textDraft, setTextDraft] = useState(defaultTextContent);
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
@@ -588,11 +622,6 @@ export function PhotoEditorWorkspace() {
   };
 
   const handleSelectTool = (tool: PhotoToolId) => {
-    if (photoTools.find((item) => item.id === tool)?.group === "ai" && tool !== "beauty" && tool !== "background") {
-      notifyAiUnavailable();
-      return;
-    }
-
     setActiveToolId((current) => (current === tool ? null : tool));
   };
 
@@ -624,6 +653,12 @@ export function PhotoEditorWorkspace() {
       setPhoto(uploadedPhoto);
       setBeautyError(null);
       setBeautyStatusMessage(null);
+      setRepairError(null);
+      setRepairStatusMessage(null);
+      setEnhanceError(null);
+      setEnhanceStatusMessage(null);
+      setChatError(null);
+      setChatStatusMessage(null);
       resetPan();
       setAppliedCrop(null);
       setIsOriginalCompare(false);
@@ -744,6 +779,7 @@ export function PhotoEditorWorkspace() {
       return;
     }
 
+    const logo = brandFill.logo;
     setIsBrandExporting(true);
     setBrandBatchPhotos((current) =>
       current.map((item) => ({
@@ -771,7 +807,7 @@ export function PhotoEditorWorkspace() {
         try {
           const formData = new FormData();
           formData.set("image", item.file, item.file.name || item.name);
-          formData.set("logo", brandFill.logo.file, brandFill.logo.file.name || "logo.png");
+          formData.set("logo", logo.file, logo.file.name || "logo.png");
           formData.set("logoSize", String(brandFill.logoSize));
 
           const response = await fetch("/api/tools/photo/brand-watermark", {
@@ -914,29 +950,7 @@ export function PhotoEditorWorkspace() {
         throw new Error(await readBeautyError(resultResponse));
       }
 
-      const resultBlob = await resultResponse.blob();
-      const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || "portrait"}-beauty.png`, {
-        type: resultBlob.type || "image/png"
-      });
-      const uploadedPhoto = await createUploadedPhoto(resultFile);
-      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
-      commitHistory();
-      setPhoto(uploadedPhoto);
-      resetPan();
-      setAppliedCrop(null);
-      setIsOriginalCompare(false);
-      setSelectedFilterId("natural");
-      setSliders((current) => ({
-        ...current,
-        brightness: 0,
-        contrast: 0,
-        filterStrength: 0,
-        rotate: 0,
-        saturation: 0,
-        temperature: 0,
-        zoom: 100
-      }));
-      cropBox.reset();
+      await applyAiResultToPhoto(await resultResponse.blob(), "beauty", "portrait");
     } catch (error) {
       setBeautyError(error instanceof Error ? error.message : "AI 美颜生成失败，请稍后再试。");
     } finally {
@@ -988,35 +1002,198 @@ export function PhotoEditorWorkspace() {
         throw new Error(await readBeautyError(resultResponse));
       }
 
-      const resultBlob = await resultResponse.blob();
-      const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || "product"}-scene-blend.png`, {
-        type: resultBlob.type || "image/png"
-      });
-      const uploadedPhoto = await createUploadedPhoto(resultFile);
-      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
-      commitHistory();
-      setPhoto(uploadedPhoto);
-      resetPan();
-      setAppliedCrop(null);
-      setIsOriginalCompare(false);
-      setSelectedFilterId("natural");
-      setSliders((current) => ({
-        ...current,
-        brightness: 0,
-        contrast: 0,
-        filterStrength: 0,
-        rotate: 0,
-        saturation: 0,
-        temperature: 0,
-        zoom: 100
-      }));
-      cropBox.reset();
+      await applyAiResultToPhoto(await resultResponse.blob(), "scene-blend", "product");
     } catch (error) {
       setSceneBlendError(error instanceof Error ? error.message : "AI 溶图生成失败，请稍后再试。");
     } finally {
       setIsSceneBlendRunning(false);
       setSceneBlendStatusMessage(null);
     }
+  };
+
+  const applyAiResultToPhoto = async (resultBlob: Blob, suffix: string, fallbackName: string) => {
+    if (!photo) {
+      return;
+    }
+
+    const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || fallbackName}-${suffix}.png`, {
+      type: resultBlob.type || "image/png"
+    });
+    const uploadedPhoto = await createUploadedPhoto(resultFile);
+    photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+    commitHistory();
+    setPhoto(uploadedPhoto);
+    resetPan();
+    setAppliedCrop(null);
+    setIsOriginalCompare(false);
+    setSelectedFilterId("natural");
+    setSliders((current) => ({
+      ...current,
+      brightness: 0,
+      contrast: 0,
+      filterStrength: 0,
+      rotate: 0,
+      saturation: 0,
+      temperature: 0,
+      zoom: 100
+    }));
+    cropBox.reset();
+  };
+
+  const runSingleImageAiEdit = async ({
+    endpoint,
+    fallbackError,
+    fallbackName,
+    prompt,
+    setError,
+    setIsRunning,
+    setStatusMessage,
+    suffix
+  }: {
+    endpoint: string;
+    fallbackError: string;
+    fallbackName: string;
+    prompt?: string;
+    setError: (value: string | null) => void;
+    setIsRunning: (value: boolean) => void;
+    setStatusMessage: (value: string | null) => void;
+    suffix: string;
+  }) => {
+    if (!photo) {
+      return;
+    }
+
+    setIsRunning(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("image", photo.file, photo.file.name || photo.name);
+
+      if (prompt !== undefined) {
+        formData.set("prompt", prompt.trim());
+      }
+
+      const response = await fetch(endpoint, {
+        body: formData,
+        method: "POST"
+      });
+      const task = (await response.json()) as AiImageTaskResponse;
+
+      if (!response.ok || !task.taskId) {
+        throw new Error(task.error || fallbackError);
+      }
+
+      setStatusMessage(task.message || "AI 图片任务已提交。");
+      const completedTask = await waitForImageTask(`${endpoint}/tasks/${task.taskId}`, setStatusMessage);
+
+      if (completedTask.status === "failed") {
+        throw new Error(completedTask.error || fallbackError);
+      }
+
+      const resultResponse = await fetch(`${endpoint}/tasks/${task.taskId}/result`, {
+        method: "GET"
+      });
+
+      if (!resultResponse.ok) {
+        throw new Error(await readBeautyError(resultResponse, fallbackError));
+      }
+
+      await applyAiResultToPhoto(await resultResponse.blob(), suffix, fallbackName);
+      return true;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : fallbackError);
+      return false;
+    } finally {
+      setIsRunning(false);
+      setStatusMessage(null);
+    }
+  };
+
+  const handleRunRepair = () => {
+    if (!photo || isRepairRunning || !repairPrompt.trim()) {
+      return;
+    }
+
+    void runSingleImageAiEdit({
+      endpoint: "/api/tools/photo/repair",
+      fallbackError: "AI 细节修复生成失败，请稍后再试。",
+      fallbackName: "image",
+      prompt: repairPrompt,
+      setError: setRepairError,
+      setIsRunning: setIsRepairRunning,
+      setStatusMessage: setRepairStatusMessage,
+      suffix: "repair"
+    });
+  };
+
+  const handleRunEnhance = () => {
+    if (!photo || isEnhanceRunning) {
+      return;
+    }
+
+    void runSingleImageAiEdit({
+      endpoint: "/api/tools/photo/enhance",
+      fallbackError: "高清增强生成失败，请稍后再试。",
+      fallbackName: "image",
+      setError: setEnhanceError,
+      setIsRunning: setIsEnhanceRunning,
+      setStatusMessage: setEnhanceStatusMessage,
+      suffix: "enhance"
+    });
+  };
+
+  const handleRunPromptEdit = () => {
+    const prompt = chatPrompt.trim();
+
+    if (!photo || isChatRunning || !prompt) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      content: prompt,
+      id: `user-${Date.now()}`,
+      role: "user"
+    };
+    setChatMessages((current) => [...current, userMessage]);
+    setChatPrompt("");
+
+    void runSingleImageAiEdit({
+      endpoint: "/api/tools/photo/prompt-edit",
+      fallbackError: "AI 对话修图生成失败，请稍后再试。",
+      fallbackName: "image",
+      prompt,
+      setError: setChatError,
+      setIsRunning: setIsChatRunning,
+      setStatusMessage: (message) => {
+        setChatStatusMessage(message);
+
+        if (message) {
+          setChatMessages((current) => [
+            ...current.filter((item) => item.id !== "ai-status"),
+            {
+              content: message,
+              id: "ai-status",
+              role: "ai"
+            }
+          ]);
+        }
+      },
+      suffix: "ai-edit"
+    }).then((succeeded) => {
+      if (succeeded) {
+        setChatMessages((current) => [
+          ...current.filter((item) => item.id !== "ai-status"),
+          {
+            content: "已根据指令生成新图，并替换到当前画布。",
+            id: `ai-done-${Date.now()}`,
+            role: "ai"
+          }
+        ]);
+      } else {
+        setChatMessages((current) => current.filter((item) => item.id !== "ai-status"));
+      }
+    });
   };
 
   const handleCustomStickerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1119,10 +1296,14 @@ export function PhotoEditorWorkspace() {
           brandFill={brandFill}
           isBrandExporting={isBrandExporting}
           beautyError={beautyError}
-          beautyStatusMessage={sceneBlendStatusMessage ?? beautyStatusMessage}
+          beautyStatusMessage={sceneBlendStatusMessage ?? repairStatusMessage ?? enhanceStatusMessage ?? chatStatusMessage ?? beautyStatusMessage}
           borderColor={borderColor}
           cropRatio={cropBox.ratio}
+          enhanceError={enhanceError}
+          enhanceStatusMessage={enhanceStatusMessage}
           isBeautyRunning={isBeautyRunning}
+          isEnhanceRunning={isEnhanceRunning}
+          isRepairRunning={isRepairRunning}
           isSceneBlendRunning={isSceneBlendRunning}
           onAddSticker={addSticker}
           onAddText={addText}
@@ -1136,6 +1317,8 @@ export function PhotoEditorWorkspace() {
           onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
           onResetCrop={resetCrop}
           onRunBeauty={handleRunBeauty}
+          onRunEnhance={handleRunEnhance}
+          onRunRepair={handleRunRepair}
           onRunSceneBlend={handleRunSceneBlend}
           onSelectBorder={handleSelectBorder}
           onSelectBrandPhoto={(item) => {
@@ -1144,6 +1327,7 @@ export function PhotoEditorWorkspace() {
           onSelectFilter={selectFilter}
           onSelectTool={handleSelectTool}
           onSetBrandFill={setBrandFill}
+          onSetRepairPrompt={setRepairPrompt}
           onSetScenePrompt={setScenePrompt}
           onTextBoldChange={changeTextBold}
           onTextColorChange={changeTextColor}
@@ -1161,6 +1345,9 @@ export function PhotoEditorWorkspace() {
           sceneBlendError={sceneBlendError}
           sceneBlendStatusMessage={sceneBlendStatusMessage}
           scenePrompt={scenePrompt}
+          repairError={repairError}
+          repairPrompt={repairPrompt}
+          repairStatusMessage={repairStatusMessage}
           sliders={sliders}
           textBold={textBold}
           textColor={textColor}
@@ -1179,7 +1366,11 @@ export function PhotoEditorWorkspace() {
             beautyStatusMessage={beautyStatusMessage}
             borderColor={borderColor}
             cropRatio={cropBox.ratio}
+            enhanceError={enhanceError}
+            enhanceStatusMessage={enhanceStatusMessage}
             isBeautyRunning={isBeautyRunning}
+            isEnhanceRunning={isEnhanceRunning}
+            isRepairRunning={isRepairRunning}
             isSceneBlendRunning={isSceneBlendRunning}
             onAddSticker={addSticker}
             onAddText={addText}
@@ -1193,6 +1384,8 @@ export function PhotoEditorWorkspace() {
             onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
             onResetCrop={resetCrop}
             onRunBeauty={handleRunBeauty}
+            onRunEnhance={handleRunEnhance}
+            onRunRepair={handleRunRepair}
             onRunSceneBlend={handleRunSceneBlend}
             onSelectBorder={handleSelectBorder}
             onSelectBrandPhoto={(item) => {
@@ -1200,6 +1393,7 @@ export function PhotoEditorWorkspace() {
             }}
             onSelectFilter={selectFilter}
             onSetBrandFill={setBrandFill}
+            onSetRepairPrompt={setRepairPrompt}
             onSetScenePrompt={setScenePrompt}
             onTextBoldChange={changeTextBold}
             onTextColorChange={changeTextColor}
@@ -1215,6 +1409,9 @@ export function PhotoEditorWorkspace() {
             sceneBlendError={sceneBlendError}
             sceneBlendStatusMessage={sceneBlendStatusMessage}
             scenePrompt={scenePrompt}
+            repairError={repairError}
+            repairPrompt={repairPrompt}
+            repairStatusMessage={repairStatusMessage}
             sliders={sliders}
             stickerCategories={photoStickerCategories}
             stickerPresets={photoStickerPresets}
@@ -1239,10 +1436,10 @@ export function PhotoEditorWorkspace() {
         <Stage
           activeTool={activeTool}
           appliedCrop={appliedCrop}
-          beautyStatusMessage={beautyStatusMessage}
+          beautyStatusMessage={sceneBlendStatusMessage ?? repairStatusMessage ?? enhanceStatusMessage ?? chatStatusMessage ?? beautyStatusMessage}
           cropBox={cropBox}
           cropRatio={cropBox.ratio}
-          isBeautyRunning={isBeautyRunning || isSceneBlendRunning}
+          isBeautyRunning={isBeautyRunning || isSceneBlendRunning || isRepairRunning || isEnhanceRunning || isChatRunning}
           isOriginalCompare={isOriginalCompare}
           isDragging={isDragging}
           onToggleOriginalCompare={() => setIsOriginalCompare((current) => !current)}
@@ -1311,25 +1508,30 @@ export function PhotoEditorWorkspace() {
             }));
           }}
         />
+        {!aiCollapsed ? (
+          <AiChatPanel
+            chatError={chatError}
+            chatMessages={chatMessages}
+            chatPrompt={chatPrompt}
+            chatStatusMessage={chatStatusMessage}
+            isChatRunning={isChatRunning}
+            onPromptChange={setChatPrompt}
+            onRunPromptEdit={handleRunPromptEdit}
+            onSuggestion={(prompt) => setChatPrompt(prompt)}
+            onToggleCollapsed={() => setAiCollapsed(true)}
+            photo={photo}
+          />
+        ) : null}
       </div>
 
       {aiCollapsed ? (
-        <button
-          className={`${styles.floatingAiButton} ${styles.aiUnavailable}`}
-          onClick={notifyAiUnavailable}
-          title={AI_UNAVAILABLE_MESSAGE}
-          type="button"
-        >
+        <button className={styles.floatingAiButton} onClick={() => setAiCollapsed(false)} type="button">
           <span className={styles.floatingAiMark}>AI</span>
-          <span className={styles.floatingAiQuota}>0</span>
+          <span className={styles.floatingAiQuota}>1</span>
         </button>
       ) : null}
     </div>
   );
-}
-
-function notifyAiUnavailable() {
-  window.alert(AI_UNAVAILABLE_MESSAGE);
 }
 
 function formatFileSize(size: number) {
@@ -1372,7 +1574,7 @@ function createUploadedPhoto(file: File) {
   });
 }
 
-async function readBeautyError(response: Response) {
+async function readBeautyError(response: Response, fallback = "AI 美颜生成失败，请稍后再试。") {
   try {
     const payload = (await response.json()) as unknown;
 
@@ -1380,10 +1582,10 @@ async function readBeautyError(response: Response) {
       return payload.error;
     }
   } catch {
-    return "AI 美颜生成失败，请稍后再试。";
+    return fallback;
   }
 
-  return "AI 美颜生成失败，请稍后再试。";
+  return fallback;
 }
 
 async function waitForBeautyTask(taskId: string, onStatus: (message: string) => void) {
@@ -1776,7 +1978,11 @@ function ToolRail({
   beautyStatusMessage,
   borderColor,
   cropRatio,
+  enhanceError,
+  enhanceStatusMessage,
   isBeautyRunning,
+  isEnhanceRunning,
+  isRepairRunning,
   isSceneBlendRunning,
   onAddSticker,
   onAddText,
@@ -1790,12 +1996,15 @@ function ToolRail({
   onOpenSceneBackgroundPicker,
   onResetCrop,
   onRunBeauty,
+  onRunEnhance,
+  onRunRepair,
   onRunSceneBlend,
   onSelectBorder,
   onSelectBrandPhoto,
   onSelectFilter,
   onSelectTool,
   onSetBrandFill,
+  onSetRepairPrompt,
   onSetScenePrompt,
   onTextBoldChange,
   onTextColorChange,
@@ -1813,6 +2022,9 @@ function ToolRail({
   sceneBlendError,
   sceneBlendStatusMessage,
   scenePrompt,
+  repairError,
+  repairPrompt,
+  repairStatusMessage,
   sliders,
   textBold,
   textColor,
@@ -1843,12 +2055,15 @@ function ToolRail({
   onOpenSceneBackgroundPicker: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
+  onRunEnhance: () => void;
+  onRunRepair: () => void;
   onRunSceneBlend: () => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
   onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
   onSelectTool: (tool: PhotoToolId) => void;
   onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+  onSetRepairPrompt: (prompt: string) => void;
   onSetScenePrompt: (prompt: string) => void;
   onTextBoldChange: (isBold: boolean) => void;
   onTextColorChange: (color: string) => void;
@@ -1866,6 +2081,13 @@ function ToolRail({
   sceneBlendError: string | null;
   sceneBlendStatusMessage: string | null;
   scenePrompt: string;
+  enhanceError: string | null;
+  enhanceStatusMessage: string | null;
+  isEnhanceRunning: boolean;
+  isRepairRunning: boolean;
+  repairError: string | null;
+  repairPrompt: string;
+  repairStatusMessage: string | null;
   sliders: SliderState;
   textBold: boolean;
   textColor: string;
@@ -1905,13 +2127,11 @@ function ToolRail({
                 .filter((tool) => tool.group === group.id)
                 .map((tool) => {
                   const isActive = activeToolId === tool.id;
-                  const isUnavailableAiTool = tool.group === "ai" && tool.id !== "beauty" && tool.id !== "background";
                   return (
                     <div className={styles.toolItem} key={tool.id}>
                       <button
-                        className={`${styles.navTool} ${isActive ? styles.active : ""} ${isUnavailableAiTool ? styles.disabledTool : ""}`}
-                        aria-disabled={isUnavailableAiTool}
-                        aria-expanded={isUnavailableAiTool ? undefined : isActive}
+                        className={`${styles.navTool} ${isActive ? styles.active : ""}`}
+                        aria-expanded={isActive}
                         onClick={() => onSelectTool(tool.id)}
                         type="button"
                       >
@@ -1920,7 +2140,7 @@ function ToolRail({
                           <strong>{tool.name}</strong>
                           <small>{tool.description}</small>
                         </span>
-                        {tool.cost ? <span className={styles.aiCost}>{tool.id === "beauty" || tool.id === "background" ? "1 次" : "未开放"}</span> : <span className={styles.chev}>›</span>}
+                        {tool.cost ? <span className={styles.aiCost}>{tool.cost} 次</span> : <span className={styles.chev}>›</span>}
                       </button>
                       {isActive ? (
                         <ParameterInlinePanel
@@ -1932,7 +2152,11 @@ function ToolRail({
                           beautyStatusMessage={beautyStatusMessage}
                           borderColor={borderColor}
                           cropRatio={cropRatio}
+                          enhanceError={enhanceError}
+                          enhanceStatusMessage={enhanceStatusMessage}
                           isBeautyRunning={isBeautyRunning}
+                          isEnhanceRunning={isEnhanceRunning}
+                          isRepairRunning={isRepairRunning}
                           isSceneBlendRunning={isSceneBlendRunning}
                           onAddSticker={onAddSticker}
                           onAddText={onAddText}
@@ -1946,11 +2170,14 @@ function ToolRail({
                           onOpenSceneBackgroundPicker={onOpenSceneBackgroundPicker}
                           onResetCrop={onResetCrop}
                           onRunBeauty={onRunBeauty}
+                          onRunEnhance={onRunEnhance}
+                          onRunRepair={onRunRepair}
                           onRunSceneBlend={onRunSceneBlend}
                           onSelectBorder={onSelectBorder}
                           onSelectBrandPhoto={onSelectBrandPhoto}
                           onSelectFilter={onSelectFilter}
                           onSetBrandFill={onSetBrandFill}
+                          onSetRepairPrompt={onSetRepairPrompt}
                           onSetScenePrompt={onSetScenePrompt}
                           onTextBoldChange={onTextBoldChange}
                           onTextColorChange={onTextColorChange}
@@ -1966,6 +2193,9 @@ function ToolRail({
                           sceneBlendError={sceneBlendError}
                           sceneBlendStatusMessage={sceneBlendStatusMessage}
                           scenePrompt={scenePrompt}
+                          repairError={repairError}
+                          repairPrompt={repairPrompt}
+                          repairStatusMessage={repairStatusMessage}
                           sliders={sliders}
                           stickerCategories={photoStickerCategories}
                           stickerPresets={photoStickerPresets}
@@ -2045,11 +2275,14 @@ function ToolParameterContent({
   onOpenSceneBackgroundPicker,
   onResetCrop,
   onRunBeauty,
+  onRunEnhance,
+  onRunRepair,
   onRunSceneBlend,
   onSelectBorder,
   onSelectBrandPhoto,
   onSelectFilter,
   onSetBrandFill,
+  onSetRepairPrompt,
   onSetScenePrompt,
   onTextBoldChange,
   onTextColorChange,
@@ -2063,13 +2296,20 @@ function ToolParameterContent({
   selectedText,
   beautyError,
   beautyStatusMessage,
+  enhanceError,
+  enhanceStatusMessage,
   isBeautyRunning,
+  isEnhanceRunning,
+  isRepairRunning,
   isSceneBlendRunning,
   sliders,
   sceneBackground,
   sceneBlendError,
   sceneBlendStatusMessage,
   scenePrompt,
+  repairError,
+  repairPrompt,
+  repairStatusMessage,
   stickerCategories,
   stickerPresets,
   textBold,
@@ -2173,8 +2413,24 @@ function ToolParameterContent({
           scenePrompt={scenePrompt}
         />
       ) : null}
-      {activeTool.id === "repair" ? <RepairPanel /> : null}
-      {activeTool.id === "enhance" ? <EnhancePanel /> : null}
+      {activeTool.id === "repair" ? (
+        <RepairPanel
+          isRepairRunning={isRepairRunning}
+          onRunRepair={onRunRepair}
+          onSetRepairPrompt={onSetRepairPrompt}
+          repairError={repairError}
+          repairPrompt={repairPrompt}
+          repairStatusMessage={repairStatusMessage}
+        />
+      ) : null}
+      {activeTool.id === "enhance" ? (
+        <EnhancePanel
+          enhanceError={enhanceError}
+          enhanceStatusMessage={enhanceStatusMessage}
+          isEnhanceRunning={isEnhanceRunning}
+          onRunEnhance={onRunEnhance}
+        />
+      ) : null}
     </>
   );
 }
@@ -2736,24 +2992,63 @@ function BackgroundPanel({
   );
 }
 
-function RepairPanel() {
+function RepairPanel({
+  isRepairRunning,
+  onRunRepair,
+  onSetRepairPrompt,
+  repairError,
+  repairPrompt,
+  repairStatusMessage
+}: {
+  isRepairRunning: boolean;
+  onRunRepair: () => void;
+  onSetRepairPrompt: (prompt: string) => void;
+  repairError: string | null;
+  repairPrompt: string;
+  repairStatusMessage: string | null;
+}) {
   return (
-    <AiPanelCard
-      action="选择区域并修复"
-      detail="适合处理自己图片中的遮挡、瑕疵、水印或不需要的局部元素。先在画布中框选区域，再生成。"
-      title="AI 细节修复 · 消耗 1 次"
-    />
+    <>
+      <AiPanelCard
+        detail="适合处理自己图片中的遮挡、瑕疵或不需要的局部元素。当前版本按文字描述整体修复，尽量只改描述区域。"
+        title="AI 细节修复 · 消耗 1 次"
+      />
+      <p className={styles.sectionLabel}>修复描述</p>
+      <textarea
+        className={styles.textareaInput}
+        maxLength={220}
+        onChange={(event) => onSetRepairPrompt(event.target.value)}
+        value={repairPrompt}
+      />
+      <button className={styles.runButton} disabled={!repairPrompt.trim() || isRepairRunning} onClick={onRunRepair} type="button">
+        {isRepairRunning ? "修复中..." : "生成修复图"}
+      </button>
+      {repairStatusMessage ? <p className={styles.statusText}>{repairStatusMessage}</p> : null}
+      {repairError ? <p className={styles.errorText}>{repairError}</p> : null}
+    </>
   );
 }
 
-function EnhancePanel() {
+function EnhancePanel({
+  enhanceError,
+  enhanceStatusMessage,
+  isEnhanceRunning,
+  onRunEnhance
+}: {
+  enhanceError: string | null;
+  enhanceStatusMessage: string | null;
+  isEnhanceRunning: boolean;
+  onRunEnhance: () => void;
+}) {
   return (
     <>
       <AiPanelCard detail="提升图片清晰度与细节，适合模糊、压缩或需要高清导出的单张图片。" title="高清增强 · 消耗 1 次" />
-      <OptionGrid options={["2x 增强", "4x 增强"]} />
-      <button className={styles.runButton} type="button">
-        开始高清增强
+      <OptionGrid activeOption="自然高清增强" options={["自然高清增强"]} />
+      <button className={styles.runButton} disabled={isEnhanceRunning} onClick={onRunEnhance} type="button">
+        {isEnhanceRunning ? "增强中..." : "开始高清增强"}
       </button>
+      {enhanceStatusMessage ? <p className={styles.statusText}>{enhanceStatusMessage}</p> : null}
+      {enhanceError ? <p className={styles.errorText}>{enhanceError}</p> : null}
     </>
   );
 }
@@ -3454,20 +3749,42 @@ function normalizeAngle(angle: number) {
   return ((angle + 540) % 360) - 180;
 }
 
-function AiChatPanel({ onToggleCollapsed }: { onToggleCollapsed: () => void }) {
+function AiChatPanel({
+  chatError,
+  chatMessages,
+  chatPrompt,
+  chatStatusMessage,
+  isChatRunning,
+  onPromptChange,
+  onRunPromptEdit,
+  onSuggestion,
+  onToggleCollapsed,
+  photo
+}: {
+  chatError: string | null;
+  chatMessages: ChatMessage[];
+  chatPrompt: string;
+  chatStatusMessage: string | null;
+  isChatRunning: boolean;
+  onPromptChange: (prompt: string) => void;
+  onRunPromptEdit: () => void;
+  onSuggestion: (prompt: string) => void;
+  onToggleCollapsed: () => void;
+  photo: UploadedPhoto | null;
+}) {
   return (
     <aside className={styles.aiChatPanel} aria-label="AI 对话修图">
       <div className={styles.aiHead}>
         <div className={styles.aiTitleRow}>
           <h2 className={styles.aiTitle}>AI 对话修图</h2>
           <div className={styles.aiHeadActions}>
-            <span className={styles.aiBadge}>剩余 0 次</span>
+            <span className={styles.aiBadge}>单次消耗 1 次</span>
             <button className={styles.panelToggleButton} onClick={onToggleCollapsed} type="button">
               收起
             </button>
           </div>
         </div>
-        <p className={styles.aiDesc}>AI 对话修图暂未开放。基础编辑、裁剪、滤镜、文字、贴纸和边框功能可以先使用。</p>
+        <p className={styles.aiDesc}>基于当前画布图片执行一句话修图指令，生成结果会直接替换当前画布。</p>
         <div className={styles.aiCapabilities}>
           {["AI 美颜", "换背景", "细节修复", "局部重绘", "高清增强"].map((capability) => (
             <span className={styles.capability} key={capability}>
@@ -3478,20 +3795,32 @@ function AiChatPanel({ onToggleCollapsed }: { onToggleCollapsed: () => void }) {
       </div>
 
       <div className={styles.chat}>
-        <div className={`${styles.message} ${styles.aiMessage}`}>AI 对话修图暂未开放，基础编辑工具可以先使用。</div>
+        {chatMessages.map((message) => (
+          <div className={`${styles.message} ${message.role === "ai" ? styles.aiMessage : styles.userMessage}`} key={message.id}>
+            {message.content}
+          </div>
+        ))}
         <div className={styles.suggestions}>
           {aiSuggestions.map((suggestion) => (
-            <button className={styles.suggestion} disabled key={suggestion.title} type="button">
+            <button className={styles.suggestion} disabled={isChatRunning} key={suggestion.title} onClick={() => onSuggestion(suggestion.title)} type="button">
               {suggestion.title}
               <small>{suggestion.detail}</small>
             </button>
           ))}
         </div>
+        {chatStatusMessage ? <p className={styles.statusText}>{chatStatusMessage}</p> : null}
+        {chatError ? <p className={styles.errorText}>{chatError}</p> : null}
       </div>
 
       <div className={styles.composer}>
         <div className={styles.composerBox}>
-          <textarea disabled placeholder="AI 功能暂未开放，敬请期待！" />
+          <textarea
+            disabled={!photo || isChatRunning}
+            maxLength={220}
+            onChange={(event) => onPromptChange(event.target.value)}
+            placeholder={photo ? "例如：修复右下角遮挡，让背景纹理自然延续" : "先上传一张图片"}
+            value={chatPrompt}
+          />
           <div className={styles.composerActions}>
             <button className={styles.miniButton} disabled type="button">
               选择区域
@@ -3499,8 +3828,8 @@ function AiChatPanel({ onToggleCollapsed }: { onToggleCollapsed: () => void }) {
             <button className={styles.miniButton} disabled type="button">
               上传参考
             </button>
-            <button className={styles.sendButton} disabled type="button">
-              生成
+            <button className={styles.sendButton} disabled={!photo || !chatPrompt.trim() || isChatRunning} onClick={onRunPromptEdit} type="button">
+              {isChatRunning ? "生成中" : "生成"}
             </button>
           </div>
         </div>
