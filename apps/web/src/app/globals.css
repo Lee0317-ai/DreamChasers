@@ -59,6 +59,10 @@ input {
   min-height: 100vh;
 }
 
+body.photo-editor-route .page-shell {
+  min-height: calc(100svh - 60px);
+}
+
 .portal {
   position: relative;
   display: flex;

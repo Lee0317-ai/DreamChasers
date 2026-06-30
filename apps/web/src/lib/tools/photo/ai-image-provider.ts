@@ -1,6 +1,6 @@
 import { getProviderReadiness } from "../../ai/provider-readiness";
 
-const maxBeautyImageBytes = 15 * 1024 * 1024;
+const maxInputImageBytes = 20 * 1024 * 1024;
 const supportedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const openAiCompatibleImageEditModelId = "openai-compatible-image-edit";
 const mockImageEditModelId = "mock-image-edit";
@@ -48,8 +48,8 @@ export function assertSupportedBeautyInput({ beautyType, image }: BeautyImageInp
     throw new Error("请上传 JPG、PNG 或 WebP 图片。");
   }
 
-  if (image.size > maxBeautyImageBytes) {
-    throw new Error("图片不能超过 15MB。");
+  if (image.size > maxInputImageBytes) {
+    throw new Error("图片不能超过 20MB。");
   }
 }
 
@@ -199,8 +199,8 @@ function assertSupportedImageFile(image: File, label: string) {
     throw new Error(`${label}请上传 JPG、PNG 或 WebP 图片。`);
   }
 
-  if (image.size > maxBeautyImageBytes) {
-    throw new Error(`${label}不能超过 15MB。`);
+  if (image.size > maxInputImageBytes) {
+    throw new Error(`${label}不能超过 20MB。`);
   }
 }
 

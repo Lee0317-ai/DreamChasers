@@ -13,10 +13,6 @@ export function AppHeader() {
     return null;
   }
 
-  if (pathname === "/tools/ai-photo-editor") {
-    return null;
-  }
-
   if (pathname.startsWith("/games/hulebu")) {
     return null;
   }

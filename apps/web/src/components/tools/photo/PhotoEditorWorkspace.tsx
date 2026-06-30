@@ -146,8 +146,11 @@ type PhotoFrameStyle = React.CSSProperties & {
 };
 
 type EditorSnapshot = {
+  aiComparePhoto: UploadedPhoto | null;
   appliedCrop: ReturnType<typeof useCropBox>["rect"] | null;
   borderColor: string;
+  isAiResultCompare: boolean;
+  isOriginalCompare: boolean;
   pan: { x: number; y: number };
   photo: UploadedPhoto | null;
   selectedBorderId: PhotoBorderId;
@@ -299,8 +302,10 @@ const initialBrandFillState: BrandFillState = {
 export function PhotoEditorWorkspace() {
   const [activeToolId, setActiveToolId] = useState<PhotoToolId | null>("adjust");
   const [sliders, setSliders] = useState<SliderState>(initialSliders);
-  const [aiCollapsed, setAiCollapsed] = useState(true);
+  const [aiCollapsed, setAiCollapsed] = useState(false);
   const [appliedCrop, setAppliedCrop] = useState<ReturnType<typeof useCropBox>["rect"] | null>(null);
+  const [aiComparePhoto, setAiComparePhoto] = useState<UploadedPhoto | null>(null);
+  const [isAiResultCompare, setIsAiResultCompare] = useState(false);
   const [isOriginalCompare, setIsOriginalCompare] = useState(false);
   const [selectedFilterId, setSelectedFilterId] = useState<PhotoFilterId>("natural");
   const [selectedBorderId, setSelectedBorderId] = useState<PhotoBorderId>("none");
@@ -357,6 +362,14 @@ export function PhotoEditorWorkspace() {
   const cropBox = useCropBox();
 
   useEffect(() => {
+    document.body.classList.add("photo-editor-route");
+
+    return () => {
+      document.body.classList.remove("photo-editor-route");
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       customStickerUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
       customStickerUrlsRef.current = [];
@@ -379,6 +392,7 @@ export function PhotoEditorWorkspace() {
   );
 
   const applyCrop = () => {
+    commitHistory();
     setAppliedCrop(cropBox.rect);
   };
 
@@ -387,12 +401,14 @@ export function PhotoEditorWorkspace() {
   };
 
   const resetCrop = () => {
+    commitHistory();
     setAppliedCrop(null);
     cropBox.reset();
     setSliders((current) => ({ ...current, rotate: 0 }));
   };
 
   const addSticker = (preset: PhotoStickerPreset) => {
+    commitHistory();
     const id = `sticker-${Date.now()}`;
     setStickerElements((current) => [
       ...current,
@@ -411,6 +427,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const selectFilter = (filterId: PhotoFilterId) => {
+    commitHistory();
     setSelectedFilterId(filterId);
   };
 
@@ -420,6 +437,7 @@ export function PhotoEditorWorkspace() {
     if (!content) {
       return;
     }
+    commitHistory();
     const id = `text-${Date.now()}`;
     setTextElements((current) => [
       ...current,
@@ -444,11 +462,13 @@ export function PhotoEditorWorkspace() {
     if (!selectedTextId) {
       return;
     }
+    commitHistory();
     setTextElements((current) => current.filter((element) => element.id !== selectedTextId));
     setSelectedTextId(null);
   };
 
   const changeTextColor = (color: string) => {
+    commitHistory();
     setTextColor(color);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -458,6 +478,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextBold = (isBold: boolean) => {
+    commitHistory();
     setTextBold(isBold);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -467,6 +488,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextFont = (fontFamily: string) => {
+    commitHistory();
     setTextFont(fontFamily);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -476,6 +498,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextItalic = (isItalic: boolean) => {
+    commitHistory();
     setTextItalic(isItalic);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -485,6 +508,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextContent = (content: string) => {
+    commitHistory();
     setTextDraft(content);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -494,8 +518,11 @@ export function PhotoEditorWorkspace() {
   };
 
   const createSnapshot = (): EditorSnapshot => ({
+    aiComparePhoto,
     appliedCrop,
     borderColor,
+    isAiResultCompare,
+    isOriginalCompare,
     pan,
     photo,
     selectedBorderId,
@@ -513,8 +540,11 @@ export function PhotoEditorWorkspace() {
   });
 
   const restoreSnapshot = (snapshot: EditorSnapshot) => {
+    setAiComparePhoto(snapshot.aiComparePhoto);
     setAppliedCrop(snapshot.appliedCrop);
     setBorderColor(snapshot.borderColor);
+    setIsAiResultCompare(snapshot.isAiResultCompare);
+    setIsOriginalCompare(snapshot.isOriginalCompare);
     setCanvasPan(snapshot.pan);
     setPhoto(snapshot.photo);
     setSelectedBorderId(snapshot.selectedBorderId);
@@ -603,6 +633,11 @@ export function PhotoEditorWorkspace() {
     }));
   };
 
+  const changeBorderColor = (color: string) => {
+    commitHistory();
+    setBorderColor(color);
+  };
+
   const openFilePicker = useCallback(() => {
     document.getElementById(photoFileInputId)?.click();
   }, []);
@@ -659,6 +694,8 @@ export function PhotoEditorWorkspace() {
       setEnhanceStatusMessage(null);
       setChatError(null);
       setChatStatusMessage(null);
+      setAiComparePhoto(null);
+      setIsAiResultCompare(false);
       resetPan();
       setAppliedCrop(null);
       setIsOriginalCompare(false);
@@ -1022,9 +1059,11 @@ export function PhotoEditorWorkspace() {
     const uploadedPhoto = await createUploadedPhoto(resultFile);
     photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
     commitHistory();
+    setAiComparePhoto(photo);
     setPhoto(uploadedPhoto);
     resetPan();
     setAppliedCrop(null);
+    setIsAiResultCompare(false);
     setIsOriginalCompare(false);
     setSelectedFilterId("natural");
     setSliders((current) => ({
@@ -1280,20 +1319,12 @@ export function PhotoEditorWorkspace() {
         type="file"
       />
       <div className={styles.workspace} onClick={() => setSelectedTextId(null)}>
-        <TopBar
-          canRedo={redoStack.length > 0}
-          canUndo={undoStack.length > 0}
-          onRedo={handleRedo}
-          onExport={() => {
-            void handleExportImage();
-          }}
-          onUndo={handleUndo}
-          photo={photo}
-        />
         <ToolRail
           activeToolId={activeToolId}
           brandBatchPhotos={brandBatchPhotos}
           brandFill={brandFill}
+          canRedo={redoStack.length > 0}
+          canUndo={undoStack.length > 0}
           isBrandExporting={isBrandExporting}
           beautyError={beautyError}
           beautyStatusMessage={sceneBlendStatusMessage ?? repairStatusMessage ?? enhanceStatusMessage ?? chatStatusMessage ?? beautyStatusMessage}
@@ -1308,13 +1339,17 @@ export function PhotoEditorWorkspace() {
           onAddSticker={addSticker}
           onAddText={addText}
           onApplyCrop={applyCrop}
-          onBorderColorChange={setBorderColor}
+          onBorderColorChange={changeBorderColor}
           onCropRatioChange={changeCropRatio}
           onDeleteSelectedText={deleteSelectedText}
+          onExportImage={() => {
+            void handleExportImage();
+          }}
           onExportBrandBatch={handleGenerateBrandWatermarkBatch}
           onOpenBrandBatchPicker={openBrandBatchPicker}
           onOpenBrandLogoPicker={openBrandLogoPicker}
           onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
+          onRedo={handleRedo}
           onResetCrop={resetCrop}
           onRunBeauty={handleRunBeauty}
           onRunEnhance={handleRunEnhance}
@@ -1334,6 +1369,7 @@ export function PhotoEditorWorkspace() {
           onTextContentChange={changeTextContent}
           onTextFontChange={changeTextFont}
           onTextItalicChange={changeTextItalic}
+          onUndo={handleUndo}
           onUploadClick={openFilePicker}
           onUploadCustomSticker={openCustomStickerPicker}
           photo={photo}
@@ -1375,7 +1411,7 @@ export function PhotoEditorWorkspace() {
             onAddSticker={addSticker}
             onAddText={addText}
             onApplyCrop={applyCrop}
-            onBorderColorChange={setBorderColor}
+            onBorderColorChange={changeBorderColor}
             onCropRatioChange={changeCropRatio}
             onDeleteSelectedText={deleteSelectedText}
             onExportBrandBatch={handleGenerateBrandWatermarkBatch}
@@ -1440,10 +1476,19 @@ export function PhotoEditorWorkspace() {
           cropBox={cropBox}
           cropRatio={cropBox.ratio}
           isBeautyRunning={isBeautyRunning || isSceneBlendRunning || isRepairRunning || isEnhanceRunning || isChatRunning}
+          aiComparePhoto={aiComparePhoto}
+          isAiResultCompare={isAiResultCompare}
           isOriginalCompare={isOriginalCompare}
           isDragging={isDragging}
+          onToggleAiResultCompare={() => {
+            if (aiComparePhoto) {
+              setIsAiResultCompare((current) => !current);
+              setIsOriginalCompare(false);
+            }
+          }}
           onToggleOriginalCompare={() => setIsOriginalCompare((current) => !current)}
           onUploadClick={openFilePicker}
+          onCommitHistory={commitHistory}
           pan={pan}
           panHandlers={panHandlers}
           photo={photo}
@@ -1457,10 +1502,12 @@ export function PhotoEditorWorkspace() {
           stickerElements={stickerElements}
           textElements={textElements}
           onDeleteStickerElement={(id) => {
+            commitHistory();
             setStickerElements((current) => current.filter((element) => element.id !== id));
             setSelectedStickerId((current) => (current === id ? null : current));
           }}
           onDeleteTextElement={(id) => {
+            commitHistory();
             setTextElements((current) => current.filter((element) => element.id !== id));
             setSelectedTextId((current) => (current === id ? null : current));
           }}
@@ -1919,60 +1966,12 @@ function downloadBlob(blob: Blob, fileName: string) {
   URL.revokeObjectURL(objectUrl);
 }
 
-function TopBar({
-  canRedo,
-  canUndo,
-  onRedo,
-  onExport,
-  onUndo,
-  photo
-}: {
-  canRedo: boolean;
-  canUndo: boolean;
-  onRedo: () => void;
-  onExport: () => void;
-  onUndo: () => void;
-  photo: UploadedPhoto | null;
-}) {
-  return (
-    <header className={styles.topbar}>
-      <div className={styles.brand}>
-        <div className={styles.mark} aria-hidden="true" />
-        <div>
-          <div className={styles.brandTitle}>DreamChasers</div>
-          <div className={styles.brandSub}>单图 AI 修图</div>
-        </div>
-      </div>
-
-      <div className={styles.filePill}>
-        <span>当前图片</span>
-        <strong>{photo?.name ?? "portrait-042.jpg"}</strong>
-        <span>{photo ? `${photo.dimensions} · ${photo.sizeLabel}` : "单张上传"}</span>
-      </div>
-
-      <div className={styles.topActions}>
-        <div className={styles.usageChip}>
-          <span className={styles.usageDot} />
-          AI 免费额度 0 / 0
-        </div>
-        <button className={styles.ghostButton} disabled={!canUndo} onClick={onUndo} type="button">
-          撤销
-        </button>
-        <button className={styles.ghostButton} disabled={!canRedo} onClick={onRedo} type="button">
-          重做
-        </button>
-        <button className={styles.primaryButton} disabled={!photo} onClick={onExport} type="button">
-          导出图片
-        </button>
-      </div>
-    </header>
-  );
-}
-
 function ToolRail({
   activeToolId,
   brandBatchPhotos,
   brandFill,
+  canRedo,
+  canUndo,
   isBrandExporting,
   beautyError,
   beautyStatusMessage,
@@ -1990,10 +1989,12 @@ function ToolRail({
   onBorderColorChange,
   onCropRatioChange,
   onDeleteSelectedText,
+  onExportImage,
   onExportBrandBatch,
   onOpenBrandBatchPicker,
   onOpenBrandLogoPicker,
   onOpenSceneBackgroundPicker,
+  onRedo,
   onResetCrop,
   onRunBeauty,
   onRunEnhance,
@@ -2011,6 +2012,7 @@ function ToolRail({
   onTextContentChange,
   onTextFontChange,
   onTextItalicChange,
+  onUndo,
   onUploadClick,
   onUploadCustomSticker,
   photo,
@@ -2036,6 +2038,8 @@ function ToolRail({
   activeToolId: PhotoToolId | null;
   brandBatchPhotos: BatchBrandPhoto[];
   brandFill: BrandFillState;
+  canRedo: boolean;
+  canUndo: boolean;
   isBrandExporting: boolean;
   beautyError: string | null;
   beautyStatusMessage: string | null;
@@ -2049,10 +2053,12 @@ function ToolRail({
   onBorderColorChange: (color: string) => void;
   onCropRatioChange: (ratio: CropRatio) => void;
   onDeleteSelectedText: () => void;
+  onExportImage: () => void;
   onExportBrandBatch: () => void;
   onOpenBrandBatchPicker: () => void;
   onOpenBrandLogoPicker: () => void;
   onOpenSceneBackgroundPicker: () => void;
+  onRedo: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
   onRunEnhance: () => void;
@@ -2070,6 +2076,7 @@ function ToolRail({
   onTextContentChange: (content: string) => void;
   onTextFontChange: (fontFamily: string) => void;
   onTextItalicChange: (isItalic: boolean) => void;
+  onUndo: () => void;
   onUploadClick: () => void;
   onUploadCustomSticker: () => void;
   photo: UploadedPhoto | null;
@@ -2098,22 +2105,44 @@ function ToolRail({
 }) {
   return (
     <aside className={styles.toolsPanel} aria-label="修图工具">
-      {photo ? (
-        <div className={styles.uploadCard}>
-          <div className={styles.uploadTop}>
+      <div className={styles.uploadCard}>
+        <div className={styles.uploadTop}>
+          {photo ? (
             <img alt="" className={styles.fileAvatarImage} src={photo.objectUrl} />
-            <div className={styles.uploadCopy}>
-              <strong>{photo.name}</strong>
-              <small>{`${photo.dimensions} · ${photo.sizeLabel}`}</small>
-            </div>
+          ) : (
+            <span className={styles.fileAvatar}>IMG</span>
+          )}
+          <div className={styles.uploadCopy}>
+            {photo ? (
+              <>
+                <strong>{photo.name}</strong>
+                <small>{`${photo.dimensions} · ${photo.sizeLabel}`}</small>
+              </>
+            ) : (
+              <>
+                <strong>还未上传图片</strong>
+                <small>支持 JPG、PNG、WebP</small>
+              </>
+            )}
           </div>
-          <div className={styles.uploadActions}>
-            <button onClick={onUploadClick} type="button">
-              替换
+        </div>
+        <div className={styles.uploadActions}>
+          <button className={styles.uploadPrimary} disabled={!photo} onClick={onExportImage} type="button">
+            导出图片
+          </button>
+          <button onClick={onUploadClick} type="button">
+            {photo ? "替换图片" : "上传图片"}
+          </button>
+          <div className={styles.historyActions}>
+            <button disabled={!canUndo} onClick={onUndo} type="button">
+              撤销
+            </button>
+            <button disabled={!canRedo} onClick={onRedo} type="button">
+              重做
             </button>
           </div>
         </div>
-      ) : null}
+      </div>
 
       <div className={styles.toolScroll}>
         {toolGroups.map((group) => (
@@ -3101,15 +3130,19 @@ function AiPanelCard({ action, detail, title }: { action?: string; detail: strin
 
 function Stage({
   activeTool,
+  aiComparePhoto,
   appliedCrop,
   beautyStatusMessage,
   cropBox,
   cropRatio,
   isBeautyRunning,
+  isAiResultCompare,
   isOriginalCompare,
   isDragging,
+  onToggleAiResultCompare,
   onToggleOriginalCompare,
   onUploadClick,
+  onCommitHistory,
   pan,
   panHandlers,
   photo,
@@ -3135,15 +3168,19 @@ function Stage({
   onSelectTextElement
 }: {
   activeTool: PhotoTool | null;
+  aiComparePhoto: UploadedPhoto | null;
   appliedCrop: ReturnType<typeof useCropBox>["rect"] | null;
   beautyStatusMessage: string | null;
   cropBox: ReturnType<typeof useCropBox>;
   cropRatio: CropRatio;
   isBeautyRunning: boolean;
+  isAiResultCompare: boolean;
   isOriginalCompare: boolean;
   isDragging: boolean;
+  onToggleAiResultCompare: () => void;
   onToggleOriginalCompare: () => void;
   onUploadClick: () => void;
+  onCommitHistory: () => void;
   pan: { x: number; y: number };
   panHandlers: {
     onPointerCancel: (event: React.PointerEvent<HTMLElement>) => void;
@@ -3178,8 +3215,11 @@ function Stage({
     id: selectedFilterId,
     strength: sliders.filterStrength
   });
-  const appliedCropStyle = buildAppliedCropStyle(isOriginalCompare ? null : appliedCrop);
-  const baseShellStyle = isOriginalCompare ? { transform: previewStyle.transform } : previewStyle;
+  const isCompareMode = isAiResultCompare || isOriginalCompare;
+  const displayedPhoto = isAiResultCompare && aiComparePhoto ? aiComparePhoto : photo;
+  const shouldShowRawPhoto = isCompareMode;
+  const appliedCropStyle = buildAppliedCropStyle(shouldShowRawPhoto ? null : appliedCrop);
+  const baseShellStyle = shouldShowRawPhoto ? { transform: previewStyle.transform } : previewStyle;
   const activeBorder = photoBorderPresets.find((preset) => preset.id === selectedBorderId) ?? photoBorderPresets[0];
   const borderWidth = activeBorder.id === "none" ? 0 : sliders.borderWidth;
   const borderBottomWidth = activeBorder.id === "polaroid" ? borderWidth * 2.65 : borderWidth;
@@ -3189,7 +3229,7 @@ function Stage({
     "--photo-frame-inner-radius": `${Math.max(sliders.radius - Math.min(borderWidth, sliders.radius), 0)}px`,
     "--photo-frame-radius": `${sliders.radius}px`,
     "--photo-frame-width": `${borderWidth}px`,
-    aspectRatio: photo?.aspectRatio,
+    aspectRatio: displayedPhoto?.aspectRatio,
     height: "min(100%, 82vh)",
     ...baseShellStyle,
     ...appliedCropStyle.shellStyle
@@ -3206,7 +3246,14 @@ function Stage({
           <button className={styles.active} type="button">
             {activeTool?.modeLabel ?? "画布预览"}
           </button>
-          <button type="button">AI 结果对比</button>
+          <button
+            className={isAiResultCompare ? styles.active : ""}
+            disabled={!aiComparePhoto}
+            onClick={onToggleAiResultCompare}
+            type="button"
+          >
+            {isAiResultCompare ? "退出 AI 对比" : "AI 结果对比"}
+          </button>
         </div>
         <div className={styles.canvasTools}>
           <button
@@ -3224,7 +3271,7 @@ function Stage({
         aria-label="图片画布"
         className={`${styles.canvasWrap} ${isBeautyRunning ? styles.lockedCanvas : ""}`}
       >
-        {photo ? (
+        {displayedPhoto ? (
           <div
             className={`${styles.photoShell} ${styles[`photoBorder${borderClassName}`]} ${isDragging ? styles.dragging : ""}`}
             data-photo-canvas
@@ -3239,37 +3286,43 @@ function Stage({
           >
             <div className={styles.photoImageFrame}>
               <img
-                alt={photo.name}
+                alt={displayedPhoto.name}
                 className={styles.photoPreview}
                 draggable={false}
                 onDragStart={(event) => event.preventDefault()}
-                src={photo.objectUrl}
+                src={displayedPhoto.objectUrl}
                 style={appliedCropStyle.imageStyle}
               />
             </div>
-            {textElements.map((element) => (
-              <DraggableText
-                element={element}
-                isActive={selectedTextId === element.id}
-                key={element.id}
-                onDelete={onDeleteTextElement}
-                onMove={onMoveTextElement}
-                onRotate={onRotateTextElement}
-                onSelect={onSelectTextElement}
-              />
-            ))}
-            {stickerElements.map((element) => (
-              <DraggableSticker
-                element={element}
-                isActive={selectedStickerId === element.id}
-                key={element.id}
-                onDelete={onDeleteStickerElement}
-                onMove={onMoveStickerElement}
-                onResize={onResizeStickerElement}
-                onRotate={onRotateStickerElement}
-                onSelect={onSelectStickerElement}
-              />
-            ))}
+            {!isCompareMode
+              ? textElements.map((element) => (
+                  <DraggableText
+                    element={element}
+                    isActive={selectedTextId === element.id}
+                    key={element.id}
+                    onDelete={onDeleteTextElement}
+                    onCommitHistory={onCommitHistory}
+                    onMove={onMoveTextElement}
+                    onRotate={onRotateTextElement}
+                    onSelect={onSelectTextElement}
+                  />
+                ))
+              : null}
+            {!isCompareMode
+              ? stickerElements.map((element) => (
+                  <DraggableSticker
+                    element={element}
+                    isActive={selectedStickerId === element.id}
+                    key={element.id}
+                    onDelete={onDeleteStickerElement}
+                    onCommitHistory={onCommitHistory}
+                    onMove={onMoveStickerElement}
+                    onResize={onResizeStickerElement}
+                    onRotate={onRotateStickerElement}
+                    onSelect={onSelectStickerElement}
+                  />
+                ))
+              : null}
             {showCropBox ? (
               <div
                 className={`${styles.cropBox} ${canResizeCrop ? styles.resizableCropBox : styles.lockedCropBox}`}
@@ -3293,7 +3346,7 @@ function Stage({
           </div>
         ) : (
           <button className={styles.canvasUpload} onClick={onUploadClick} type="button">
-            <span className={styles.canvasUploadIcon} />
+            <span className={styles.canvasUploadIcon}>+</span>
             <strong>上传图片</strong>
             <small>选择一张图片开始编辑</small>
           </button>
@@ -3314,6 +3367,7 @@ function Stage({
 function DraggableText({
   element,
   isActive,
+  onCommitHistory,
   onDelete,
   onMove,
   onRotate,
@@ -3321,6 +3375,7 @@ function DraggableText({
 }: {
   element: TextElement;
   isActive: boolean;
+  onCommitHistory: () => void;
   onDelete: (id: string) => void;
   onMove: (id: string, position: { x: number; y: number }) => void;
   onRotate: (id: string, rotation: number) => void;
@@ -3341,6 +3396,7 @@ function DraggableText({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       originX: event.clientX,
@@ -3388,6 +3444,7 @@ function DraggableText({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     const overlay = event.currentTarget.closest<HTMLElement>("[data-text-overlay]");
     const rect = overlay?.getBoundingClientRect();
 
@@ -3510,6 +3567,7 @@ function DraggableText({
 function DraggableSticker({
   element,
   isActive,
+  onCommitHistory,
   onDelete,
   onMove,
   onResize,
@@ -3518,6 +3576,7 @@ function DraggableSticker({
 }: {
   element: StickerElement;
   isActive: boolean;
+  onCommitHistory: () => void;
   onDelete: (id: string) => void;
   onMove: (id: string, position: { x: number; y: number }) => void;
   onResize: (id: string, size: number) => void;
@@ -3544,6 +3603,7 @@ function DraggableSticker({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       originX: event.clientX,
@@ -3591,6 +3651,7 @@ function DraggableSticker({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     event.currentTarget.setPointerCapture(event.pointerId);
     resizeRef.current = {
       originX: event.clientX,
@@ -3631,6 +3692,7 @@ function DraggableSticker({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     const overlay = event.currentTarget.closest<HTMLElement>("[data-sticker-overlay]");
     const rect = overlay?.getBoundingClientRect();
 

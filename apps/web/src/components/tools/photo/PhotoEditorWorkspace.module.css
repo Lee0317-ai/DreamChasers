@@ -1,19 +1,32 @@
 .page {
-  --photo-bg: oklch(99% 0.002 240);
-  --photo-surface: oklch(100% 0 0);
-  --photo-fg: oklch(18% 0.012 250);
-  --photo-muted: oklch(54% 0.012 250);
-  --photo-border: oklch(92% 0.005 250);
-  --photo-accent: oklch(58% 0.18 255);
-  --photo-soft: oklch(96% 0.025 255);
+  --photo-app-header-height: 60px;
+  --photo-bg: oklch(8.5% 0.014 220);
+  --photo-canvas-bg: oklch(11.5% 0.013 220);
+  --photo-surface: oklch(9.5% 0.012 220);
+  --photo-surface-2: oklch(13.5% 0.011 220);
+  --photo-surface-3: oklch(17% 0.01 220);
+  --photo-fg: oklch(91% 0.012 95);
+  --photo-muted: oklch(67% 0.01 225);
+  --photo-border: oklch(27% 0.012 225);
+  --photo-strong-border: oklch(38% 0.014 225);
+  --photo-accent: oklch(78% 0.105 205);
+  --photo-accent-2: oklch(82% 0.12 84);
+  --photo-soft: oklch(24% 0.038 205);
+  --photo-radius-sm: 8px;
+  --photo-radius-md: 12px;
+  --photo-radius-lg: 14px;
+  --photo-shadow-sm: 0 10px 24px oklch(0% 0 0 / 0.16);
+  --photo-shadow-md: 0 18px 42px oklch(0% 0 0 / 0.32);
+  --photo-shadow-lg: 0 24px 72px oklch(0% 0 0 / 0.42);
+  --photo-tools-column: clamp(280px, 16vw, 340px);
+  --photo-params-column: clamp(300px, 18vw, 360px);
+  --photo-ai-column: clamp(360px, 22vw, 430px);
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100svh - var(--photo-app-header-height));
   overflow: hidden;
-  background:
-    linear-gradient(to right, var(--photo-border) 1px, transparent 1px) 0 0 / 48px 48px,
-    linear-gradient(to bottom, var(--photo-border) 1px, transparent 1px) 0 0 / 48px 48px,
-    var(--photo-bg);
+  background: var(--photo-bg);
   color: var(--photo-fg);
+  font-family: var(--font-body);
 }
 
 .fileInput {
@@ -28,47 +41,31 @@
 
 .workspace {
   display: grid;
-  height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  height: calc(100svh - var(--photo-app-header-height));
   min-height: 620px;
+  overflow: hidden;
+  background: var(--photo-bg);
   grid-template:
-    "top top top top" 58px
-    "tools params stage ai" minmax(0, 1fr) / 228px 286px minmax(500px, 1fr) 348px;
+    "tools params stage ai" minmax(0, 1fr) / var(--photo-tools-column) var(--photo-params-column) minmax(0, 1fr) var(--photo-ai-column);
 }
 
 .paramsCollapsed .workspace {
   grid-template:
-    "top top top" 58px
-    "tools stage ai" minmax(0, 1fr) / 228px minmax(500px, 1fr) 348px;
+    "tools stage ai" minmax(0, 1fr) / var(--photo-tools-column) minmax(0, 1fr) var(--photo-ai-column);
 }
 
 .aiCollapsed .workspace {
   grid-template:
-    "top top top" 58px
-    "tools params stage" minmax(0, 1fr) / 228px 286px minmax(500px, 1fr);
+    "tools params stage" minmax(0, 1fr) / var(--photo-tools-column) var(--photo-params-column) minmax(0, 1fr);
 }
 
 .paramsCollapsed.aiCollapsed .workspace {
   grid-template:
-    "top top" 58px
-    "tools stage" minmax(0, 1fr) / 228px minmax(500px, 1fr);
+    "tools stage" minmax(0, 1fr) / var(--photo-tools-column) minmax(0, 1fr);
 }
 
-.topbar {
-  z-index: 10;
-  grid-area: top;
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border-bottom: 1px solid var(--photo-border);
-  background: oklch(100% 0 0 / 0.92);
-  padding: 0 18px;
-  backdrop-filter: blur(16px);
-}
-
-.brand,
-.topActions,
 .uploadTop,
 .uploadActions,
 .stageToolbar,
@@ -81,35 +78,6 @@
   align-items: center;
 }
 
-.brand {
-  min-width: 220px;
-  gap: 12px;
-}
-
-.mark {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  border-radius: 9px;
-  background:
-    radial-gradient(circle at 70% 30%, #fff 0 12%, transparent 13%),
-    linear-gradient(135deg, var(--photo-accent), oklch(68% 0.14 285));
-}
-
-.brandTitle {
-  font-family: var(--font-display);
-  font-size: 0.94rem;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.brandSub {
-  color: var(--photo-muted);
-  font-size: 0.75rem;
-}
-
-.filePill,
-.usageChip,
 .button,
 .ghostButton,
 .primaryButton {
@@ -119,21 +87,18 @@
   justify-content: center;
   gap: 8px;
   border: 1px solid var(--photo-border);
-  border-radius: 9px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   font-size: 0.81rem;
   font-weight: 650;
   padding: 0 12px;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
   white-space: nowrap;
-}
-
-.filePill {
-  flex: 1;
-  max-width: 440px;
-  border-radius: 999px;
-  color: var(--photo-muted);
-  font-weight: 500;
 }
 
 .button.active {
@@ -142,37 +107,22 @@
   color: var(--photo-accent);
 }
 
-.filePill strong {
-  color: var(--photo-fg);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.topActions {
-  gap: 10px;
-}
-
-.usageChip {
-  border-radius: 999px;
-  background: color-mix(in oklch, var(--photo-accent) 8%, var(--photo-surface));
-}
-
-.usageDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--photo-accent);
-}
-
 .ghostButton {
-  background: transparent;
+  background: var(--photo-surface);
   color: var(--photo-muted);
 }
 
 .primaryButton {
-  border-color: var(--photo-accent);
-  background: var(--photo-accent);
-  color: #fff;
+  border-color: color-mix(in oklch, var(--photo-accent) 52%, var(--photo-border));
+  background: color-mix(in oklch, var(--photo-accent) 24%, var(--photo-surface-2));
+  color: var(--photo-fg);
+}
+
+.button:not(:disabled):hover,
+.ghostButton:not(:disabled):hover,
+.primaryButton:not(:disabled):hover {
+  border-color: color-mix(in oklch, var(--photo-accent) 28%, var(--photo-border));
+  box-shadow: var(--photo-shadow-sm);
 }
 
 .ghostButton:disabled,
@@ -183,27 +133,37 @@
 
 .toolsPanel {
   grid-area: tools;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
+  overflow: hidden;
   border-right: 1px solid var(--photo-border);
-  background: color-mix(in oklch, var(--photo-surface) 86%, var(--photo-bg));
+  background: var(--photo-surface);
 }
 
 .uploadCard {
-  margin: 14px;
-  border: 1px solid color-mix(in oklch, var(--photo-accent) 16%, var(--photo-border));
-  border-radius: 14px;
-  background: var(--photo-surface);
+  min-width: 0;
+  overflow: hidden;
+  margin: 12px;
+  border: 1px solid var(--photo-strong-border);
+  border-radius: var(--photo-radius-lg);
+  background: var(--photo-surface-2);
+  box-shadow: var(--photo-shadow-sm);
   padding: 12px;
 }
 
 .uploadTop {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  min-width: 0;
   gap: 10px;
   margin-bottom: 10px;
 }
 
 .fileAvatar,
 .fileAvatarImage {
-  background: linear-gradient(135deg, oklch(82% 0.04 242), oklch(65% 0.08 145));
+  background: var(--photo-soft);
 }
 
 .fileAvatar,
@@ -212,7 +172,7 @@
   height: 34px;
   flex: 0 0 auto;
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
 }
 
 .fileAvatarImage {
@@ -221,11 +181,14 @@
 
 .uploadCopy {
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .uploadCopy strong,
 .uploadCopy small {
   display: block;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -242,35 +205,49 @@
 
 .uploadActions {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.historyActions {
+  display: contents;
 }
 
 .uploadActions button {
-  min-height: 30px;
+  min-width: 0;
+  min-height: 34px;
   border: 1px solid var(--photo-border);
-  border-radius: 8px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-3);
   color: var(--photo-fg);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  overflow: hidden;
+  padding: 0 6px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .uploadActions .uploadPrimary {
-  border-color: var(--photo-accent);
-  background: var(--photo-accent);
-  color: #fff;
+  grid-column: 1 / -1;
+  border-color: color-mix(in oklch, var(--photo-accent) 64%, var(--photo-border));
+  background: oklch(89% 0.055 205);
+  color: oklch(12% 0.016 220);
+  font-size: 0.76rem;
 }
 
 .toolScroll {
-  max-height: calc(100vh - 154px);
+  min-height: 0;
+  max-height: none;
   overflow: auto;
-  padding: 0 10px 16px;
+  padding: 0 12px 14px;
 }
 
 .toolGroup {
   border-top: 1px solid var(--photo-border);
-  padding: 12px 0;
+  padding: 10px 0;
 }
 
 .toolGroup:first-child {
@@ -281,21 +258,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 4px 8px;
+  margin: 0 0 10px;
   color: var(--photo-muted);
   font-size: 0.69rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 
 .groupLabel span:last-child {
-  color: color-mix(in oklch, var(--photo-accent) 75%, var(--photo-muted));
+  color: var(--photo-muted);
   letter-spacing: 0;
 }
 
 .toolList {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 
 .toolItem {
@@ -305,21 +282,22 @@
 .navTool {
   display: grid;
   width: 100%;
-  min-height: 42px;
+  min-height: 46px;
   grid-template-columns: 30px minmax(0, 1fr) auto;
   align-items: center;
   gap: 9px;
-  border: 0;
-  border-radius: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--photo-radius-md);
   background: transparent;
   color: var(--photo-muted);
-  padding: 7px 9px;
+  padding: 7px 8px;
   text-align: left;
 }
 
 .navTool:hover,
 .navTool.active {
-  background: var(--photo-surface);
+  border-color: color-mix(in oklch, var(--photo-accent) 32%, var(--photo-border));
+  background: color-mix(in oklch, var(--photo-accent) 13%, var(--photo-surface-2));
   color: var(--photo-fg);
 }
 
@@ -349,8 +327,8 @@
   height: 30px;
   place-items: center;
   border: 1px solid var(--photo-border);
-  border-radius: 9px;
-  background: var(--photo-surface);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-2);
   font-family: var(--font-mono);
   font-size: 0.66rem;
   font-weight: 800;
@@ -370,7 +348,7 @@
 
 .toolText strong {
   color: inherit;
-  font-size: 0.81rem;
+  font-size: 0.84rem;
 }
 
 .toolText small {
@@ -383,10 +361,10 @@
   min-width: 20px;
   height: 20px;
   place-items: center;
-  border: 1px solid color-mix(in oklch, var(--photo-accent) 18%, var(--photo-border));
+  border: 1px solid var(--photo-border);
   border-radius: 999px;
-  background: color-mix(in oklch, var(--photo-accent) 9%, var(--photo-surface));
-  color: var(--photo-accent);
+  background: var(--photo-surface-3);
+  color: var(--photo-fg);
   font-size: 0.64rem;
   font-weight: 800;
   padding: 0 6px;
@@ -408,12 +386,12 @@
   grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
   border-right: 1px solid var(--photo-border);
-  background: var(--photo-surface);
+  background: color-mix(in oklch, var(--photo-surface) 88%, black);
 }
 
 .paramHead {
   border-bottom: 1px solid var(--photo-border);
-  padding: 18px;
+  padding: 18px 20px;
 }
 
 .paramKicker,
@@ -421,7 +399,7 @@
   color: var(--photo-accent);
   font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .paramKicker {
@@ -431,8 +409,8 @@
 .paramTitle {
   margin-bottom: 7px;
   font-family: var(--font-display);
-  font-size: 1.13rem;
-  letter-spacing: -0.02em;
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
 }
 
 .paramDesc,
@@ -447,7 +425,7 @@
 .paramBody {
   min-height: 0;
   overflow: auto;
-  padding: 14px 16px 18px;
+  padding: 18px 20px 22px;
 }
 
 .sectionLabel {
@@ -457,11 +435,12 @@
 
 .controlCard,
 .aiPanelCard {
-  border: 1px solid var(--photo-border);
-  border-radius: 14px;
-  background: var(--photo-surface);
-  padding: 14px;
-  margin-bottom: 12px;
+  border: 1px solid var(--photo-strong-border);
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface-2);
+  box-shadow: var(--photo-shadow-sm);
+  padding: 16px;
+  margin-bottom: 14px;
 }
 
 .slider {
@@ -498,10 +477,10 @@
 .runButton {
   width: 100%;
   min-height: 36px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--photo-accent);
-  color: #fff;
+  border: 1px solid color-mix(in oklch, var(--photo-accent) 52%, var(--photo-border));
+  border-radius: var(--photo-radius-md);
+  background: color-mix(in oklch, var(--photo-accent) 24%, var(--photo-surface-2));
+  color: var(--photo-fg);
   font-size: 0.81rem;
   font-weight: 800;
   margin-top: 12px;
@@ -545,7 +524,7 @@
   min-width: 72px;
   min-height: 36px;
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   font-size: 0.81rem;
@@ -574,8 +553,8 @@
   align-items: center;
   gap: 10px;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface);
   margin: 12px 0;
   padding: 8px;
 }
@@ -587,7 +566,7 @@
   height: 42px;
   place-items: center;
   border: 1px solid var(--photo-border);
-  border-radius: 8px;
+  border-radius: var(--photo-radius-sm);
   background:
     linear-gradient(45deg, oklch(92% 0.01 250) 25%, transparent 25%),
     linear-gradient(-45deg, oklch(92% 0.01 250) 25%, transparent 25%),
@@ -635,8 +614,8 @@
   display: grid;
   gap: 6px;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface-2);
   color: var(--photo-muted);
   font-size: 0.75rem;
   margin: 0 0 14px;
@@ -655,7 +634,7 @@
   gap: 8px;
   min-width: 0;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   padding: 8px;
@@ -663,8 +642,8 @@
 }
 
 .brandPreviewCard.active {
-  border-color: color-mix(in oklch, var(--photo-accent) 56%, var(--photo-border));
-  box-shadow: 0 0 0 2px color-mix(in oklch, var(--photo-accent) 14%, transparent);
+  border-color: var(--photo-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--photo-accent) 12%, transparent);
 }
 
 .brandPreviewFrame {
@@ -672,8 +651,8 @@
   display: block;
   overflow: hidden;
   aspect-ratio: 4 / 3;
-  border-radius: 8px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-2);
 }
 
 .brandPreviewImage,
@@ -690,7 +669,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 22px;
-  border: 1px solid oklch(100% 0 0 / 0.42);
+  border: 1px solid color-mix(in oklch, var(--photo-surface) 48%, transparent);
   border-radius: 999px;
   background: oklch(18% 0.012 250 / 0.76);
   color: #fff;
@@ -737,8 +716,8 @@
   overflow: hidden;
   aspect-ratio: 16 / 9;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface-2);
   margin: 10px 0 14px;
 }
 
@@ -756,7 +735,7 @@
   width: 44px;
   height: 32px;
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   padding: 3px;
 }
@@ -772,7 +751,7 @@
 .option {
   min-height: 42px;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   font-size: 0.81rem;
@@ -780,30 +759,28 @@
 }
 
 .option.active {
-  border-color: color-mix(in oklch, var(--photo-accent) 40%, var(--photo-border));
-  background: color-mix(in oklch, var(--photo-accent) 8%, var(--photo-surface));
+  border-color: var(--photo-accent);
+  background: var(--photo-soft);
   color: var(--photo-accent);
 }
 
 .filterCard {
   overflow: hidden;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   padding: 0;
   text-align: left;
 }
 
 .filterCard.active {
-  border-color: color-mix(in oklch, var(--photo-accent) 56%, var(--photo-border));
-  box-shadow: 0 0 0 2px color-mix(in oklch, var(--photo-accent) 16%, transparent);
+  border-color: var(--photo-accent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--photo-accent) 12%, transparent);
 }
 
 .filterThumb {
   height: 76px;
-  background:
-    radial-gradient(circle at 68% 34%, oklch(83% 0.13 75 / 0.9), transparent 22%),
-    linear-gradient(135deg, oklch(78% 0.08 250), oklch(91% 0.04 60));
+  background: var(--photo-surface-2);
 }
 
 .filterThumb2 {
@@ -849,9 +826,9 @@
 .textareaInput {
   width: 100%;
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
   outline: 0;
-  background: var(--photo-bg);
+  background: var(--photo-surface-2);
   color: var(--photo-fg);
   font-size: 0.81rem;
   padding: 10px 11px;
@@ -894,7 +871,7 @@
 .fontOption {
   min-height: 34px;
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   font-size: 0.81rem;
@@ -913,7 +890,7 @@
   overflow: hidden;
   grid-template-columns: repeat(2, 38px);
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   margin: 10px 0 14px;
 }
@@ -961,8 +938,8 @@
   gap: 10px;
   margin-top: 14px;
   border: 1px dashed color-mix(in oklch, var(--photo-accent) 42%, var(--photo-border));
-  border-radius: 12px;
-  background: color-mix(in oklch, var(--photo-accent) 6%, var(--photo-surface));
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface-2);
   color: var(--photo-fg);
   padding: 11px;
   text-align: left;
@@ -974,8 +951,8 @@
   height: 34px;
   place-items: center;
   border-radius: 10px;
-  background: var(--photo-accent);
-  color: #fff;
+  background: var(--photo-soft);
+  color: var(--photo-accent);
   font-size: 1.1rem;
   font-weight: 900;
 }
@@ -1030,7 +1007,7 @@
   align-items: center;
   gap: 10px;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   padding: 10px;
   text-align: left;
@@ -1041,8 +1018,8 @@
   width: 30px;
   height: 30px;
   place-items: center;
-  border-radius: 8px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-2);
   font-size: 0.75rem;
   font-weight: 800;
 }
@@ -1054,7 +1031,7 @@
   align-items: center;
   justify-items: center;
   border: 1px solid var(--photo-border);
-  border-radius: 10px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   padding: 6px;
@@ -1062,9 +1039,9 @@
 }
 
 .stickerPreset.active {
-  border-color: color-mix(in oklch, var(--photo-accent) 54%, var(--photo-border));
-  background: color-mix(in oklch, var(--photo-accent) 8%, var(--photo-surface));
-  box-shadow: 0 0 0 2px color-mix(in oklch, var(--photo-accent) 14%, transparent);
+  border-color: var(--photo-accent);
+  background: var(--photo-soft);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--photo-accent) 12%, transparent);
 }
 
 .borderPresetGrid {
@@ -1081,7 +1058,7 @@
   justify-items: center;
   gap: 8px;
   border: 1px solid var(--photo-border);
-  border-radius: 12px;
+  border-radius: var(--photo-radius-md);
   background: var(--photo-surface);
   color: var(--photo-fg);
   padding: 10px 8px;
@@ -1089,9 +1066,9 @@
 }
 
 .borderPreset.active {
-  border-color: color-mix(in oklch, var(--photo-accent) 54%, var(--photo-border));
-  background: color-mix(in oklch, var(--photo-accent) 8%, var(--photo-surface));
-  box-shadow: 0 0 0 2px color-mix(in oklch, var(--photo-accent) 14%, transparent);
+  border-color: var(--photo-accent);
+  background: var(--photo-soft);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--photo-accent) 12%, transparent);
 }
 
 .borderPresetPreview {
@@ -1100,9 +1077,7 @@
   height: 42px;
   overflow: hidden;
   border-radius: 6px;
-  background:
-    radial-gradient(circle at 68% 34%, oklch(88% 0.13 72), transparent 20%),
-    linear-gradient(135deg, oklch(78% 0.08 250), oklch(91% 0.04 60));
+  background: var(--photo-surface-2);
   box-shadow: inset 0 0 0 1px oklch(18% 0.012 250 / 0.08);
 }
 
@@ -1186,8 +1161,8 @@
 }
 
 .aiPanelCard {
-  border-color: color-mix(in oklch, var(--photo-accent) 18%, var(--photo-border));
-  background: color-mix(in oklch, var(--photo-accent) 6%, var(--photo-surface));
+  border-color: var(--photo-border);
+  background: var(--photo-surface-2);
 }
 
 .aiPanelCard h3 {
@@ -1199,15 +1174,17 @@
   grid-area: stage;
   display: grid;
   min-width: 0;
-  grid-template-rows: 46px minmax(0, 1fr);
+  overflow: hidden;
+  grid-template-rows: 52px minmax(0, 1fr);
+  background: var(--photo-canvas-bg);
 }
 
 .stageToolbar {
   justify-content: space-between;
   gap: 12px;
   border-bottom: 1px solid var(--photo-border);
-  background: color-mix(in oklch, var(--photo-surface) 72%, var(--photo-bg));
-  padding: 0 18px;
+  background: color-mix(in oklch, var(--photo-surface) 82%, black);
+  padding: 0 20px;
 }
 
 .modeTabs {
@@ -1215,18 +1192,24 @@
 }
 
 .modeTabs button {
-  min-height: 30px;
+  min-height: 34px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--photo-radius-sm);
   background: transparent;
   color: var(--photo-muted);
-  font-size: 0.81rem;
-  padding: 0 10px;
+  font-size: 0.84rem;
+  font-weight: 750;
+  padding: 0 13px;
+}
+
+.modeTabs button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .modeTabs button.active {
-  border: 1px solid var(--photo-border);
-  background: var(--photo-surface);
+  border: 1px solid var(--photo-strong-border);
+  background: var(--photo-surface-3);
   color: var(--photo-fg);
 }
 
@@ -1240,7 +1223,7 @@
   width: 30px;
   height: 30px;
   border: 1px solid var(--photo-border);
-  border-radius: 8px;
+  border-radius: var(--photo-radius-sm);
   background: var(--photo-surface);
   color: var(--photo-fg);
 }
@@ -1250,7 +1233,12 @@
   display: grid;
   overflow: hidden;
   place-items: center;
-  padding: 24px;
+  padding: clamp(20px, 3vw, 44px);
+  background:
+    linear-gradient(to right, oklch(100% 0 0 / 0.035) 1px, transparent 1px) 0 0 / 64px 64px,
+    linear-gradient(to bottom, oklch(100% 0 0 / 0.035) 1px, transparent 1px) 0 0 / 64px 64px,
+    radial-gradient(circle at 50% 48%, oklch(23% 0.012 220 / 0.36), transparent 52%),
+    var(--photo-canvas-bg);
 }
 
 .lockedCanvas {
@@ -1271,7 +1259,7 @@
   border: 0;
   border-radius: var(--photo-frame-radius);
   background: transparent;
-  box-shadow: 0 18px 50px oklch(18% 0.012 250 / 0.08);
+  box-shadow: var(--photo-shadow-md);
   cursor: grab;
   touch-action: none;
   transform-origin: center;
@@ -1339,28 +1327,27 @@
 
 .canvasUpload {
   display: grid;
-  width: min(82%, 760px);
-  min-height: min(54vh, 520px);
+  width: min(70%, 760px);
+  min-height: min(56vh, 520px);
   place-items: center;
   align-content: center;
-  gap: 10px;
-  border: 1px dashed color-mix(in oklch, var(--photo-accent) 44%, var(--photo-border));
-  border-radius: 18px;
-  background: oklch(100% 0 0 / 0.72);
-  box-shadow: 0 18px 50px oklch(18% 0.012 250 / 0.08);
+  gap: 12px;
+  border: 1.5px dashed color-mix(in oklch, var(--photo-muted) 46%, transparent);
+  border-radius: var(--photo-radius-md);
+  background: color-mix(in oklch, var(--photo-surface-2) 58%, transparent);
+  box-shadow: none;
   color: var(--photo-fg);
   padding: 28px;
   text-align: center;
-  backdrop-filter: blur(14px);
 }
 
 .canvasUploadIcon {
-  width: 68px;
-  height: 68px;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 68% 30%, oklch(100% 0 0 / 0.86) 0 13%, transparent 14%),
-    linear-gradient(135deg, oklch(82% 0.04 242), oklch(65% 0.08 145));
+  width: 66px;
+  height: 66px;
+  border-radius: var(--photo-radius-md);
+  border: 1px solid color-mix(in oklch, var(--photo-accent) 42%, var(--photo-border));
+  background: color-mix(in oklch, var(--photo-accent) 14%, var(--photo-surface-3));
+  color: var(--photo-accent);
 }
 
 .canvasUpload strong {
@@ -1421,8 +1408,8 @@
   min-height: 22px;
   border: 1px solid color-mix(in oklch, var(--photo-accent) 22%, var(--photo-border));
   border-radius: 999px;
-  background: oklch(100% 0 0 / 0.92);
-  box-shadow: 0 10px 28px oklch(18% 0.012 250 / 0.1);
+  background: color-mix(in oklch, var(--photo-surface) 92%, transparent);
+  box-shadow: var(--photo-shadow-md);
   color: color-mix(in oklch, var(--photo-fg) 86%, var(--photo-accent));
   font-size: 0.82rem;
   font-weight: 750;
@@ -1762,20 +1749,21 @@
   display: grid;
   grid-area: ai;
   min-width: 0;
+  overflow: hidden;
   grid-template-rows: auto minmax(0, 1fr) auto;
   border-left: 1px solid var(--photo-border);
-  background: var(--photo-surface);
+  background: color-mix(in oklch, var(--photo-surface) 88%, black);
 }
 
 .aiHead {
   border-bottom: 1px solid var(--photo-border);
-  padding: 18px;
+  padding: 18px 18px 14px;
 }
 
 .aiTitleRow {
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .aiHeadActions {
@@ -1787,15 +1775,15 @@
 
 .aiTitle {
   font-family: var(--font-display);
-  font-size: 1.06rem;
-  letter-spacing: -0.02em;
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
 }
 
 .aiBadge {
-  border: 1px solid color-mix(in oklch, var(--photo-accent) 18%, var(--photo-border));
+  border: 1px solid var(--photo-strong-border);
   border-radius: 999px;
-  background: color-mix(in oklch, var(--photo-accent) 8%, var(--photo-surface));
-  color: var(--photo-accent);
+  background: var(--photo-surface-3);
+  color: var(--photo-fg);
   font-size: 0.75rem;
   font-weight: 800;
   padding: 5px 8px;
@@ -1805,8 +1793,8 @@
 .panelToggleButton {
   min-height: 28px;
   border: 1px solid var(--photo-border);
-  border-radius: 8px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-3);
   color: var(--photo-muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -1823,7 +1811,7 @@
   height: 58px;
   place-items: center;
   border: 0;
-  border-radius: 18px;
+  border-radius: var(--photo-radius-md);
   background: transparent;
   padding: 0;
   transform: translateY(-50%);
@@ -1846,12 +1834,11 @@
   width: 56px;
   height: 56px;
   place-items: center;
-  border-radius: 18px;
-  background: linear-gradient(135deg, var(--photo-accent), oklch(68% 0.14 285));
-  box-shadow:
-    0 12px 28px oklch(58% 0.18 255 / 0.28),
-    0 0 0 1px oklch(100% 0 0 / 0.55) inset;
-  color: #fff;
+  border: 1px solid var(--photo-border);
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface);
+  box-shadow: var(--photo-shadow-md);
+  color: var(--photo-accent);
   font-family: var(--font-display);
   font-size: 1.12rem;
   font-weight: 850;
@@ -1860,8 +1847,9 @@
 }
 
 .aiUnavailable .floatingAiMark {
-  background: linear-gradient(135deg, oklch(72% 0.006 250), oklch(62% 0.008 250));
-  box-shadow: 0 10px 22px oklch(18% 0.012 250 / 0.12);
+  background: var(--photo-surface-2);
+  box-shadow: var(--photo-shadow-sm);
+  color: var(--photo-muted);
 }
 
 .floatingAiQuota {
@@ -1875,8 +1863,8 @@
   padding: 0 5px;
   border-radius: 999px;
   border: 2px solid var(--photo-bg);
-  background: oklch(100% 0 0);
-  box-shadow: 0 4px 10px oklch(18% 0.012 250 / 0.16);
+  background: var(--photo-surface);
+  box-shadow: var(--photo-shadow-sm);
   color: var(--photo-accent);
   font-size: 0.76rem;
   line-height: 1;
@@ -1889,29 +1877,37 @@
 .aiCapabilities {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .capability {
-  border: 1px solid var(--photo-border);
+  border: 1px solid var(--photo-strong-border);
   border-radius: 999px;
-  background: var(--photo-bg);
+  background: var(--photo-surface-3);
   font-size: 0.75rem;
-  padding: 6px 8px;
+  font-weight: 760;
+  padding: 7px 10px;
+}
+
+.capability:first-child {
+  border-color: color-mix(in oklch, var(--photo-accent) 48%, var(--photo-border));
+  background: color-mix(in oklch, var(--photo-accent) 16%, var(--photo-surface-3));
+  color: var(--photo-accent);
 }
 
 .chat {
   display: flex;
+  min-height: 0;
   overflow: auto;
   flex-direction: column;
-  gap: 14px;
-  padding: 18px;
+  gap: 10px;
+  padding: 16px 18px;
 }
 
 .message {
   max-width: 92%;
-  border-radius: 16px;
+  border-radius: var(--photo-radius-md);
   font-size: 0.81rem;
   line-height: 1.55;
   padding: 12px 13px;
@@ -1919,30 +1915,35 @@
 
 .aiMessage {
   align-self: flex-start;
-  border: 1px solid var(--photo-border);
-  background: var(--photo-bg);
+  border: 1px solid var(--photo-strong-border);
+  background: var(--photo-surface-2);
 }
 
 .userMessage {
   align-self: flex-end;
-  background: var(--photo-fg);
-  color: #fff;
+  background: color-mix(in oklch, var(--photo-accent) 24%, var(--photo-surface-3));
+  color: var(--photo-fg);
 }
 
 .suggestions {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .suggestion {
-  border: 1px solid var(--photo-border);
-  border-radius: 12px;
-  background: var(--photo-surface);
+  border: 1px solid var(--photo-strong-border);
+  border-radius: var(--photo-radius-md);
+  background: var(--photo-surface-2);
   color: var(--photo-fg);
   font-size: 0.81rem;
   line-height: 1.35;
-  padding: 10px 11px;
+  padding: 12px 14px;
   text-align: left;
+}
+
+.suggestion:not(:disabled):hover {
+  border-color: color-mix(in oklch, var(--photo-accent) 32%, var(--photo-border));
+  background: color-mix(in oklch, var(--photo-accent) 12%, var(--photo-surface-2));
 }
 
 .suggestion:disabled,
@@ -1961,17 +1962,17 @@
 
 .composer {
   border-top: 1px solid var(--photo-border);
-  background: var(--photo-surface);
-  padding: 14px;
+  background: color-mix(in oklch, var(--photo-surface) 88%, black);
+  padding: 12px 14px;
 }
 
 .composerBox {
   display: grid;
   gap: 10px;
-  border: 1px solid var(--photo-border);
-  border-radius: 16px;
-  background: var(--photo-bg);
-  padding: 10px;
+  border: 1px solid var(--photo-strong-border);
+  border-radius: var(--photo-radius-lg);
+  background: var(--photo-surface-2);
+  padding: 12px;
 }
 
 .composer textarea {
@@ -1984,26 +1985,29 @@
 }
 
 .composerActions {
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 8px;
 }
 
 .miniButton,
 .sendButton {
-  min-height: 28px;
-  border: 1px solid var(--photo-border);
-  border-radius: 8px;
-  background: var(--photo-surface);
+  min-width: 0;
+  min-height: 36px;
+  border: 1px solid var(--photo-strong-border);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-3);
   color: var(--photo-muted);
   font-size: 0.75rem;
   padding: 0 9px;
 }
 
 .sendButton {
-  border-color: var(--photo-accent);
-  background: var(--photo-accent);
-  color: #fff;
-  padding: 0 12px;
+  border-color: color-mix(in oklch, var(--photo-accent) 64%, var(--photo-border));
+  background: oklch(89% 0.055 205);
+  color: oklch(12% 0.016 220);
+  font-weight: 850;
+  padding: 0 18px;
 }
 
 .upgrade {
@@ -2012,12 +2016,11 @@
   top: 78px;
   right: 388px;
   width: 342px;
-  border: 1px solid color-mix(in oklch, var(--photo-accent) 22%, var(--photo-border));
-  border-radius: 18px;
-  background: oklch(100% 0 0 / 0.96);
-  box-shadow: 0 18px 50px oklch(18% 0.012 250 / 0.08);
+  border: 1px solid var(--photo-border);
+  border-radius: var(--photo-radius-lg);
+  background: var(--photo-surface);
+  box-shadow: var(--photo-shadow-md);
   padding: 16px;
-  backdrop-filter: blur(18px);
 }
 
 .upgradeTop {
@@ -2038,8 +2041,8 @@
   height: 28px;
   flex: 0 0 auto;
   border: 0;
-  border-radius: 8px;
-  background: var(--photo-bg);
+  border-radius: var(--photo-radius-sm);
+  background: var(--photo-surface-2);
   color: var(--photo-muted);
 }
 
@@ -2087,7 +2090,7 @@
   height: 17px;
   place-items: center;
   border-radius: 50%;
-  background: color-mix(in oklch, var(--photo-accent) 10%, var(--photo-surface));
+  background: var(--photo-soft);
   color: var(--photo-accent);
   content: "✓";
   font-size: 0.65rem;
@@ -2099,24 +2102,34 @@
 }
 
 @media (max-width: 1280px) {
+  .page {
+    --photo-tools-column: clamp(236px, 22vw, 280px);
+    --photo-params-column: clamp(248px, 24vw, 284px);
+    --photo-ai-column: clamp(300px, 27vw, 340px);
+  }
+
   .workspace {
     grid-template:
-      "top top top top" 58px
-      "tools params stage ai" minmax(0, 1fr) / 224px 286px minmax(420px, 1fr) 320px;
+      "tools params stage ai" minmax(0, 1fr) / var(--photo-tools-column) var(--photo-params-column) minmax(0, 1fr) var(--photo-ai-column);
+  }
+
+  .paramsCollapsed .workspace {
+    grid-template:
+      "tools stage ai" minmax(0, 1fr) / var(--photo-tools-column) minmax(0, 1fr) var(--photo-ai-column);
   }
 
   .aiCollapsed .workspace {
     grid-template:
-      "top top top" 58px
-      "tools params stage" minmax(0, 1fr) / 224px 286px minmax(420px, 1fr);
+      "tools params stage" minmax(0, 1fr) / var(--photo-tools-column) var(--photo-params-column) minmax(0, 1fr);
+  }
+
+  .paramsCollapsed.aiCollapsed .workspace {
+    grid-template:
+      "tools stage" minmax(0, 1fr) / var(--photo-tools-column) minmax(0, 1fr);
   }
 
   .upgrade {
-    right: 360px;
-  }
-
-  .filePill {
-    display: none;
+    right: min(330px, 25vw);
   }
 }
 
@@ -2128,9 +2141,8 @@
 
   .workspace {
     height: auto;
-    min-height: 100svh;
+    min-height: calc(100svh - var(--photo-app-header-height));
     grid-template:
-      "top" auto
       "stage" minmax(360px, auto)
       "tools" auto
       "ai" auto / minmax(0, 1fr);
@@ -2140,35 +2152,11 @@
   .aiCollapsed .workspace,
   .paramsCollapsed.aiCollapsed .workspace {
     height: auto;
-    min-height: 100svh;
+    min-height: calc(100svh - var(--photo-app-header-height));
     grid-template:
-      "top" auto
       "stage" minmax(360px, auto)
       "tools" auto
       "ai" auto / minmax(0, 1fr);
-  }
-
-  .topbar {
-    position: sticky;
-    top: 0;
-    flex-wrap: wrap;
-    padding: 12px 14px;
-  }
-
-  .brand {
-    min-width: 0;
-  }
-
-  .topActions {
-    width: 100%;
-    overflow: auto;
-    padding-bottom: 2px;
-  }
-
-  .topActions .ghostButton,
-  .topActions .primaryButton,
-  .topActions .usageChip {
-    flex: 0 0 auto;
   }
 
   .toolsPanel,
@@ -2194,11 +2182,11 @@
     display: grid;
     gap: 12px;
     margin: 6px 0 10px;
-    border: 1px solid color-mix(in oklch, var(--photo-accent) 18%, var(--photo-border));
-    border-radius: 12px;
+    border: 1px solid var(--photo-border);
+    border-radius: var(--photo-radius-md);
     background: var(--photo-surface);
     padding: 12px;
-    box-shadow: 0 10px 24px oklch(18% 0.012 250 / 0.06);
+    box-shadow: var(--photo-shadow-sm);
   }
 
   .mobileParamHead {
@@ -2275,7 +2263,6 @@
 @media (max-width: 560px) {
   .workspace {
     grid-template:
-      "top" auto
       "stage" minmax(330px, auto)
       "tools" auto / minmax(0, 1fr);
   }
@@ -2284,23 +2271,8 @@
   .aiCollapsed .workspace,
   .paramsCollapsed.aiCollapsed .workspace {
     grid-template:
-      "top" auto
       "stage" minmax(330px, auto)
       "tools" auto / minmax(0, 1fr);
-  }
-
-  .brandSub,
-  .usageChip {
-    display: none;
-  }
-
-  .topbar {
-    gap: 10px;
-    padding: 10px 12px;
-  }
-
-  .topActions {
-    gap: 8px;
   }
 
   .ghostButton,
