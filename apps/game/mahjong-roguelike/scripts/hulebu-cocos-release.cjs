@@ -3,6 +3,7 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const crypto = require("node:crypto");
 
 class HulebuReleaseError extends Error {
   constructor(message) {
@@ -25,11 +26,39 @@ function loadReleaseConfig(configPath) {
 }
 
 function validateReleaseConfig(config) {
-  if (config?.schemaVersion !== 1) {
-    throw new HulebuReleaseError("release schemaVersion must be 1");
+  if (config?.schemaVersion !== 3) {
+    throw new HulebuReleaseError("release schemaVersion must be 3");
+  }
+  if (config.gameId !== "hulebu") {
+    throw new HulebuReleaseError("gameId must be hulebu");
+  }
+  if (
+    typeof config.displayName !== "string" ||
+    config.displayName.trim().length === 0
+  ) {
+    throw new HulebuReleaseError("displayName must be a non-empty string");
   }
   if (config.creatorVersion !== "3.8.8") {
     throw new HulebuReleaseError("creatorVersion must be 3.8.8");
+  }
+  if (
+    typeof config.creatorExecutableRealPath !== "string" ||
+    !path.isAbsolute(config.creatorExecutableRealPath) ||
+    /[\0\r\n]/.test(config.creatorExecutableRealPath)
+  ) {
+    throw new HulebuReleaseError(
+      "creatorExecutableRealPath must be an absolute single-line path",
+    );
+  }
+  if (!/^[0-9a-f]{64}$/i.test(config.creatorExecutableSha256)) {
+    throw new HulebuReleaseError(
+      "creatorExecutableSha256 must be a SHA-256 digest",
+    );
+  }
+  if (config.creatorBundleIdentifier !== "com.cocos.creator") {
+    throw new HulebuReleaseError(
+      "creatorBundleIdentifier must be com.cocos.creator",
+    );
   }
   if (config.platform !== "web-mobile") {
     throw new HulebuReleaseError("platform must be web-mobile");
@@ -40,11 +69,21 @@ function validateReleaseConfig(config) {
   if (config.outputName !== "web-mobile") {
     throw new HulebuReleaseError("outputName must be web-mobile");
   }
+  if (
+    typeof config.contentVersion !== "string" ||
+    !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(config.contentVersion)
+  ) {
+    throw new HulebuReleaseError("contentVersion must be a semantic version");
+  }
+  if (!Number.isInteger(config.saveSchemaVersion) || config.saveSchemaVersion <= 0) {
+    throw new HulebuReleaseError("saveSchemaVersion must be a positive integer");
+  }
   for (const key of [
     "requiredFiles",
     "requiredJsonFiles",
     "smokePaths",
     "allowedNonZeroExitCodes",
+    "forbiddenBundleText",
   ]) {
     if (!Array.isArray(config[key]) || config[key].length === 0) {
       throw new HulebuReleaseError(`${key} must be a non-empty array`);
@@ -65,6 +104,27 @@ function validateReleaseConfig(config) {
       );
     }
   });
+  config.forbiddenBundleText.forEach((entry, index) => {
+    if (
+      typeof entry !== "string" ||
+      entry.length === 0 ||
+      entry.includes("\0") ||
+      entry.includes("\r") ||
+      entry.includes("\n")
+    ) {
+      throw new HulebuReleaseError(
+        `forbiddenBundleText[${index}] must be a non-empty single-line string`,
+      );
+    }
+  });
+  if (new Set(config.forbiddenBundleText).size !== config.forbiddenBundleText.length) {
+    throw new HulebuReleaseError("forbiddenBundleText entries must be unique");
+  }
+  if (!config.forbiddenBundleText.includes("__HULEBU_DEBUG__")) {
+    throw new HulebuReleaseError(
+      "forbiddenBundleText must include __HULEBU_DEBUG__",
+    );
+  }
   if (!config.requiredFiles.includes("index.html")) {
     throw new HulebuReleaseError("requiredFiles must include index.html");
   }
@@ -234,6 +294,23 @@ function validateBuildArtifacts(buildRoot, config) {
       errors.push("index.html missing System.import bootstrap");
     }
   }
+  try {
+    const { files } = collectBuildFiles(realBuildRoot);
+    for (const file of files) {
+      const contents = fs.readFileSync(file.absolutePath);
+      for (const forbiddenText of config.forbiddenBundleText) {
+        if (contents.includes(Buffer.from(forbiddenText, "utf8"))) {
+          errors.push(
+            `forbidden production bundle text ${forbiddenText} in ${file.relativePath}`,
+          );
+        }
+      }
+    }
+  } catch (error) {
+    errors.push(
+      `unable to scan production JavaScript bundles: ${error.message}`,
+    );
+  }
   return { ok: errors.length === 0, errors };
 }
 
@@ -258,11 +335,42 @@ function evaluateCreatorBuild({ exitCode, logText, artifactErrors, config }) {
       "Creator build log is missing the finished marker",
     );
   }
+  const creatorVersionMatches = [
+    ...logText.matchAll(
+      /Build with Cocos Creator ([0-9]+(?:\.[0-9]+){2})(?=\r?$)/gm,
+    ),
+  ];
+  if (creatorVersionMatches.length === 0) {
+    throw new HulebuReleaseError(
+      "Creator build log is missing Creator version evidence",
+    );
+  }
+  if (creatorVersionMatches.length !== 1) {
+    throw new HulebuReleaseError(
+      "Creator build log has duplicate version evidence",
+    );
+  }
+  const actualCreatorVersion = creatorVersionMatches[0][1];
+  if (actualCreatorVersion !== config.creatorVersion) {
+    throw new HulebuReleaseError(
+      `Creator version ${actualCreatorVersion} does not match ${config.creatorVersion}`,
+    );
+  }
   if (exitCode === 0) {
-    return { accepted: true, normalized: false, originalExitCode: 0 };
+    return {
+      accepted: true,
+      actualCreatorVersion,
+      normalized: false,
+      originalExitCode: 0,
+    };
   }
   if (config.allowedNonZeroExitCodes.includes(exitCode)) {
-    return { accepted: true, normalized: true, originalExitCode: exitCode };
+    return {
+      accepted: true,
+      actualCreatorVersion,
+      normalized: true,
+      originalExitCode: exitCode,
+    };
   }
   throw new HulebuReleaseError(
     `Creator exited with unsupported code ${exitCode}`,
@@ -270,13 +378,35 @@ function evaluateCreatorBuild({ exitCode, logText, artifactErrors, config }) {
 }
 
 function collectBuildStats(buildRoot) {
+  const { files } = collectBuildFiles(buildRoot);
+  return {
+    fileCount: files.length,
+    totalBytes: files.reduce((total, file) => total + file.size, 0),
+  };
+}
+
+function calculateArtifactSha256(buildRoot) {
+  const { files } = collectBuildFiles(buildRoot);
+  const hash = crypto.createHash("sha256");
+  for (const file of files) {
+    const pathBuffer = Buffer.from(file.relativePath, "utf8");
+    const sizeBuffer = Buffer.from(String(file.size), "ascii");
+    hash.update(Buffer.from(String(pathBuffer.length), "ascii"));
+    hash.update(Buffer.from(":"));
+    hash.update(pathBuffer);
+    hash.update(Buffer.from("\0"));
+    hash.update(sizeBuffer);
+    hash.update(Buffer.from("\0"));
+    hash.update(fs.readFileSync(file.absolutePath));
+    hash.update(Buffer.from("\0"));
+  }
+  return hash.digest("hex");
+}
+
+function collectBuildFiles(buildRoot) {
   const absoluteBuildRoot = resolveBuildDirectory(buildRoot);
-  const excludedRootFiles = new Set([
-    "hulebu-build.json",
-    "hulebu-build.json.tmp",
-  ]);
-  let fileCount = 0;
-  let totalBytes = 0;
+  const excludedRootFiles = new Set(["hulebu-build.json"]);
+  const files = [];
 
   function visit(directoryPath, isRoot) {
     let entries;
@@ -288,7 +418,8 @@ function collectBuildStats(buildRoot) {
       );
     }
 
-    for (const entry of entries) {
+    for (const entry of entries.sort((left, right) =>
+      comparePortableText(left.name, right.name))) {
       if (isRoot && excludedRootFiles.has(entry.name)) continue;
 
       const entryPath = path.join(directoryPath, entry.name);
@@ -314,13 +445,24 @@ function collectBuildStats(buildRoot) {
           `Build output contains an unsupported filesystem entry: ${entryPath}`,
         );
       }
-      fileCount += 1;
-      totalBytes += status.size;
+      files.push({
+        absolutePath: entryPath,
+        relativePath: path.relative(absoluteBuildRoot, entryPath).split(path.sep).join("/"),
+        size: status.size,
+      });
     }
   }
 
   visit(absoluteBuildRoot, true);
-  return { fileCount, totalBytes };
+  files.sort((left, right) =>
+    comparePortableText(left.relativePath, right.relativePath));
+  return { absoluteBuildRoot, files };
+}
+
+function comparePortableText(left, right) {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
 }
 
 function resolveBuildDirectory(buildRoot) {
@@ -345,33 +487,89 @@ function resolveBuildDirectory(buildRoot) {
 
 function writeBuildManifest(
   buildRoot,
-  { buildId, commit, config, creatorDecision, createdAt, smokeResults },
+  {
+    buildId,
+    commit,
+    config,
+    creatorDecision,
+    creatorExecutableEvidence,
+    createdAt,
+    releaseConfigSha256,
+    sourceInputs,
+    sourceState,
+    sourceTreeSha256,
+    smokeResults,
+  },
 ) {
   const absoluteBuildRoot = resolveBuildDirectory(buildRoot);
+  validateCommit(commit, "manifest commit");
+  validateCanonicalCreatedAt(createdAt, "manifest createdAt");
+  if (buildId !== createManifestBuildId(commit, createdAt)) {
+    throw new HulebuReleaseError(
+      "manifest buildId does not match commit and timestamp",
+    );
+  }
+  validateSha256(releaseConfigSha256, "releaseConfigSha256");
+  validateSha256(sourceTreeSha256, "sourceTreeSha256");
+  if (sourceState !== "clean") {
+    throw new HulebuReleaseError("manifest sourceState must be clean");
+  }
+  if (!Array.isArray(sourceInputs) || sourceInputs.length === 0) {
+    throw new HulebuReleaseError("manifest sourceInputs must be a non-empty array");
+  }
+  if (creatorDecision?.actualCreatorVersion !== config.creatorVersion) {
+    throw new HulebuReleaseError(
+      "manifest Creator version evidence does not match release config",
+    );
+  }
+  for (const [key, expected] of [
+    ["creatorExecutableRealPath", config.creatorExecutableRealPath],
+    ["creatorExecutableSha256", config.creatorExecutableSha256],
+    ["creatorBundleIdentifier", config.creatorBundleIdentifier],
+    ["creatorBundleVersion", config.creatorVersion],
+  ]) {
+    if (creatorExecutableEvidence?.[key] !== expected) {
+      throw new HulebuReleaseError(
+        `manifest ${key} evidence does not match release config`,
+      );
+    }
+  }
+  const manifestPath = path.join(absoluteBuildRoot, "hulebu-build.json");
+  const temporaryPath = path.join(absoluteBuildRoot, "hulebu-build.json.tmp");
+  try {
+    fs.rmSync(temporaryPath, { force: true });
+  } catch (error) {
+    throw new HulebuReleaseError(
+      `Unable to remove reserved temporary manifest: ${error.message}`,
+    );
+  }
   const stats = collectBuildStats(absoluteBuildRoot);
   const data = {
-    schemaVersion: 1,
+    schemaVersion: 4,
     buildId,
     gameId: config.gameId,
     displayName: config.displayName,
-    creatorVersion: config.creatorVersion,
+    creatorVersion: creatorDecision.actualCreatorVersion,
+    ...creatorExecutableEvidence,
     platform: config.platform,
     debug: config.debug,
     contentVersion: config.contentVersion,
     saveSchemaVersion: config.saveSchemaVersion,
     commit,
     createdAt,
+    sourceState,
+    sourceInputs: [...sourceInputs],
+    sourceTreeSha256,
+    releaseConfigSha256,
     creatorExitCode: creatorDecision.originalExitCode,
     creatorExitNormalized: creatorDecision.normalized,
     smokeResults,
+    artifactSha256: calculateArtifactSha256(absoluteBuildRoot),
     ...stats,
   };
-  const manifestPath = path.join(absoluteBuildRoot, "hulebu-build.json");
-  const temporaryPath = path.join(absoluteBuildRoot, "hulebu-build.json.tmp");
   let temporaryFileDescriptor;
 
   try {
-    fs.rmSync(temporaryPath, { force: true });
     const noFollowFlag = fs.constants.O_NOFOLLOW;
     if (typeof noFollowFlag !== "number") {
       throw new HulebuReleaseError(
@@ -410,6 +608,203 @@ function writeBuildManifest(
   }
 
   return { path: manifestPath, data };
+}
+
+function readBuildManifest(
+  buildRoot,
+  { commit, config, releaseConfigSha256, sourceInputs, sourceTreeSha256 },
+) {
+  const absoluteBuildRoot = resolveBuildDirectory(buildRoot);
+  validateCommit(commit, "current HEAD");
+  validateSha256(releaseConfigSha256, "releaseConfigSha256");
+  validateSha256(sourceTreeSha256, "sourceTreeSha256");
+  const manifestPath = path.join(absoluteBuildRoot, "hulebu-build.json");
+  const temporaryPath = path.join(absoluteBuildRoot, "hulebu-build.json.tmp");
+  try {
+    fs.lstatSync(temporaryPath);
+    throw new HulebuReleaseError(
+      "build output contains a reserved temporary manifest",
+    );
+  } catch (error) {
+    if (error instanceof HulebuReleaseError) throw error;
+    if (error?.code !== "ENOENT") {
+      throw new HulebuReleaseError(
+        `unable to inspect reserved temporary manifest: ${error.message}`,
+      );
+    }
+  }
+  let descriptor;
+  let text;
+  try {
+    const noFollowFlag = fs.constants.O_NOFOLLOW;
+    if (typeof noFollowFlag !== "number") {
+      throw new HulebuReleaseError(
+        "Filesystem no-follow opens are unavailable",
+      );
+    }
+    descriptor = fs.openSync(
+      manifestPath,
+      fs.constants.O_RDONLY | noFollowFlag,
+    );
+    const descriptorStatus = fs.fstatSync(descriptor, { bigint: true });
+    const pathStatusBefore = fs.lstatSync(manifestPath, { bigint: true });
+    if (!descriptorStatus.isFile() || !pathStatusBefore.isFile()) {
+      throw new HulebuReleaseError("build manifest must be a regular file");
+    }
+    if (!sameFileIdentity(descriptorStatus, pathStatusBefore)) {
+      throw new HulebuReleaseError("build manifest changed during inspection");
+    }
+    if (descriptorStatus.size <= 0n || descriptorStatus.size > 1024n * 1024n) {
+      throw new HulebuReleaseError("build manifest size is invalid");
+    }
+    text = fs.readFileSync(descriptor, "utf8");
+    const pathStatusAfter = fs.lstatSync(manifestPath, { bigint: true });
+    if (!sameFileIdentity(descriptorStatus, pathStatusAfter)) {
+      throw new HulebuReleaseError("build manifest changed during inspection");
+    }
+  } catch (error) {
+    if (error instanceof HulebuReleaseError) throw error;
+    if (error?.code === "ENOENT") {
+      throw new HulebuReleaseError("missing build manifest");
+    }
+    if (error?.code === "ELOOP" || error?.code === "EMLINK") {
+      throw new HulebuReleaseError("build manifest must be a regular file");
+    }
+    throw new HulebuReleaseError(`unable to read build manifest: ${error.message}`);
+  } finally {
+    if (descriptor !== undefined) {
+      try {
+        fs.closeSync(descriptor);
+      } catch {
+        // Preserve the manifest inspection result.
+      }
+    }
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new HulebuReleaseError("invalid build manifest JSON");
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new HulebuReleaseError("build manifest must be an object");
+  }
+  if (data.schemaVersion !== 4) {
+    throw new HulebuReleaseError("build manifest schemaVersion must be 4");
+  }
+  for (const [key, expected] of [
+    ["gameId", config.gameId],
+    ["displayName", config.displayName],
+    ["creatorVersion", config.creatorVersion],
+    ["creatorExecutableRealPath", config.creatorExecutableRealPath],
+    ["creatorExecutableSha256", config.creatorExecutableSha256],
+    ["creatorBundleIdentifier", config.creatorBundleIdentifier],
+    ["creatorBundleVersion", config.creatorVersion],
+    ["platform", config.platform],
+    ["debug", config.debug],
+    ["contentVersion", config.contentVersion],
+    ["saveSchemaVersion", config.saveSchemaVersion],
+  ]) {
+    if (data[key] !== expected) {
+      throw new HulebuReleaseError(`build manifest ${key} does not match release config`);
+    }
+  }
+  if (data.commit !== commit) {
+    throw new HulebuReleaseError("build manifest commit does not match current HEAD");
+  }
+  if (data.sourceState !== "clean") {
+    throw new HulebuReleaseError("build manifest sourceState must be clean");
+  }
+  if (
+    !Array.isArray(data.sourceInputs) ||
+    JSON.stringify(data.sourceInputs) !== JSON.stringify(sourceInputs)
+  ) {
+    throw new HulebuReleaseError(
+      "build manifest sourceInputs do not match release inputs",
+    );
+  }
+  if (data.releaseConfigSha256 !== releaseConfigSha256) {
+    throw new HulebuReleaseError(
+      "build manifest releaseConfigSha256 does not match release config",
+    );
+  }
+  if (data.sourceTreeSha256 !== sourceTreeSha256) {
+    throw new HulebuReleaseError(
+      "build manifest sourceTreeSha256 does not match release source tree",
+    );
+  }
+  validateCanonicalCreatedAt(data.createdAt, "build manifest createdAt");
+  if (data.buildId !== createManifestBuildId(commit, data.createdAt)) {
+    throw new HulebuReleaseError(
+      "build manifest buildId does not match commit and timestamp",
+    );
+  }
+  const validCreatorDecision =
+    (data.creatorExitCode === 0 && data.creatorExitNormalized === false) ||
+    (config.allowedNonZeroExitCodes.includes(data.creatorExitCode) &&
+      data.creatorExitNormalized === true);
+  if (!validCreatorDecision) {
+    throw new HulebuReleaseError("build manifest Creator exit evidence is invalid");
+  }
+  if (
+    !Array.isArray(data.smokeResults) ||
+    data.smokeResults.length !== config.smokePaths.length ||
+    data.smokeResults.some(
+      (result, index) =>
+        !result ||
+        result.pathname !== config.smokePaths[index] ||
+        result.status !== 200 ||
+        !Number.isInteger(result.bytes) ||
+        result.bytes <= 0 ||
+        result.bytes !== fs.statSync(
+          resolveRequestPath(absoluteBuildRoot, result.pathname),
+        ).size,
+    )
+  ) {
+    throw new HulebuReleaseError("build manifest smoke evidence is invalid");
+  }
+  const stats = collectBuildStats(absoluteBuildRoot);
+  if (data.fileCount !== stats.fileCount || data.totalBytes !== stats.totalBytes) {
+    throw new HulebuReleaseError("build manifest artifact statistics do not match output");
+  }
+  const artifactSha256 = calculateArtifactSha256(absoluteBuildRoot);
+  if (data.artifactSha256 !== artifactSha256) {
+    throw new HulebuReleaseError("build manifest artifactSha256 does not match output");
+  }
+  return data;
+}
+
+function validateCommit(value, label) {
+  if (typeof value !== "string" || !/^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i.test(value)) {
+    throw new HulebuReleaseError(`${label} must be a full Git commit`);
+  }
+}
+
+function sameFileIdentity(left, right) {
+  return left.dev === right.dev && left.ino === right.ino;
+}
+
+function validateCanonicalCreatedAt(value, label) {
+  if (
+    typeof value !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) ||
+    !Number.isFinite(Date.parse(value)) ||
+    new Date(value).toISOString() !== value
+  ) {
+    throw new HulebuReleaseError(`${label} is invalid`);
+  }
+}
+
+function createManifestBuildId(commit, createdAt) {
+  const suffix = createdAt.replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  return `${commit.slice(0, 12)}-${suffix}`;
+}
+
+function validateSha256(value, label) {
+  if (typeof value !== "string" || !/^[0-9a-f]{64}$/i.test(value)) {
+    throw new HulebuReleaseError(`${label} must be a SHA-256 digest`);
+  }
 }
 
 function resolveRequestPath(buildRoot, rawPathname) {
@@ -675,9 +1070,11 @@ async function smokeBuild(buildRoot, smokePaths) {
 
 module.exports = {
   HulebuReleaseError,
+  calculateArtifactSha256,
   collectBuildStats,
   evaluateCreatorBuild,
   loadReleaseConfig,
+  readBuildManifest,
   resolveRequestPath,
   smokeBuild,
   startStaticServer,

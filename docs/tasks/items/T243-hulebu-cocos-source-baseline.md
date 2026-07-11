@@ -4,7 +4,7 @@
 - 负责人：Lee
 - 状态：进行中
 - 依赖：T242
-- 主要文件范围：Cocos `assets/scripts/**` 中当前正式运行时增量、`assets/resources/ui/v6.meta`、`assets/resources/ui/v6/**`、`apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs`、`apps/game/mahjong-roguelike/scripts/hulebu-cocos-release.cjs`、`packages/shared/src/hulebu-cocos-release.test.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、本任务计划/领取/进展/完成与模块交接文档
+- 主要文件范围：Cocos `assets/scripts/**` 中当前正式运行时增量、`assets/resources/ui/v6.meta`、`assets/resources/ui/v6/**`、`apps/game/mahjong-roguelike/release/hulebu-v1.release.json`、`apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs`、`apps/game/mahjong-roguelike/scripts/hulebu-cocos-release.cjs`、`packages/shared/src/hulebu-cocos-release.test.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、本任务计划/领取/进展/完成与模块交接文档
 - 禁止修改范围：Cocos `settings/v2/packages/information.json`、`profiles/**`、`temp/**`、`library/**`、`build/**`，Web 版与 `hulebu-demo`、prototype、数据库、账号、共享山体生成器、非 Cocos 配置测试及其他模块
 - 验证方式：`npm run test -w packages/shared -- mahjong-cocos-project`; `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`; `npm run game:hulebu:build`; 干净 worktree 同命令；`git diff --check`
 
@@ -18,8 +18,10 @@ T242 建立了 production 构建、产物清单和 HTTP smoke，但随后从干�
 
 - 逐文件审查并接纳能从干净 checkout 独立构建的 Cocos 正式运行时、绑定器、配置、工具和 v6 UI 资源。
 - 修正工程契约：`profiles/**` 是本机编辑器状态，不是正式源码或干净 checkout 前置条件。
-- production 构建前检查正式输入路径；存在已修改、删除或未跟踪输入时立即失败，避免产物清单把脏源码归属于错误提交。
+- production 构建前后检查正式输入路径；存在已修改、删除或未跟踪输入时立即失败，避免产物清单把脏源码归属于错误提交。`information.json` 虽禁止直接纳入本任务提交，但因 Creator 可能读取，仍属于必须保持 clean 的受控输入。
 - 清单继续记录提交，并新增可机器读取的源码清洁度证据。
+- production 产物必须通过禁用调试符号扫描；Creator 必须同时通过 realpath、二进制 SHA-256、bundle id、Info.plist 版本和唯一进程日志版本行校验。
+- Creator 必须读取精确 `HEAD` 快照；构建先进入唯一 attempt，全部门禁通过后再 promote。同步异常回滚到上一份有效包；进程崩溃由持久 journal 在下次拿锁后恢复。跨平台固定普通目录不承诺零间隙交换。
 - 在干净 worktree 完成测试、类型检查、真实 Creator 构建、产物校验和 5 条 HTTP smoke。
 
 ## 不做
@@ -31,8 +33,8 @@ T242 建立了 production 构建、产物清单和 HTTP smoke，但随后从干�
 
 ## 验收标准
 
-- 干净 checkout 不依赖 `profiles/**` 即可通过 31 项 Cocos 工程测试。
+- 干净 checkout 不依赖 `profiles/**` 即可通过 32 项 Cocos 工程测试。
 - 本任务的正式源码集合在干净 worktree 中通过 Cocos TypeScript 和真实 production 构建。
-- 任一正式构建输入被修改、删除或新增未跟踪文件时，构建在启动 Creator 前失败并列出路径。
+- 任一正式构建输入被修改、删除或新增未跟踪文件时，构建在启动 Creator 前失败并列出路径；构建期间发生变化也必须在写 manifest 前失败。
 - Web、prototype、数据库、`information.json` 和共享山体生成器的现有工作区改动不进入提交。
 - 最终 production 清单对应一个包含全部正式构建输入的可复现提交。

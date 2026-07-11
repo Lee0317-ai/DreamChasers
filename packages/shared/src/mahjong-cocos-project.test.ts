@@ -1292,6 +1292,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
       HULEBU_ADVANCED_REWARD_POOLS: Record<string, string[]>;
       HULEBU_MAINLINE_RUN_PROFILE: unknown;
       createHulebuAdvancedRunProfile: (tier: string) => unknown;
+      createHulebuDailyRunProfile: (date: string) => unknown;
+      getHulebuDailyMutatorProfile: (date: string) => { rewardBias: string[] };
       getHulebuRewardChoicesForRun: (profile: unknown, level: unknown) => string[];
     };
     const runtimeModule = await import(pathToFileURL(path.join(cocosRoot, runtimeStatePath)).href) as {
@@ -2346,16 +2348,17 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("this.runRewards,");
     expect(gameSceneController).toContain("private restartRun()");
 
+    type RunRewardState = {
+      reserveBonus: number;
+      shieldBonus: number;
+      startingCoins: number;
+      toolBonus: { shuffle: number; undo: number; discard: number; vision: number };
+      scoreBonus: { gang: number; bugang: number; chi: number; peng: number; hu: number };
+      pickedRewards: string[];
+    };
     const runtimeModule = await import(pathToFileURL(path.join(cocosRoot, runtimeStatePath)).href) as {
-      createHulebuRunRewardState: () => {
-        reserveBonus: number;
-        shieldBonus: number;
-        startingCoins: number;
-        toolBonus: { shuffle: number; undo: number; discard: number; vision: number };
-        scoreBonus: { gang: number; bugang: number; chi: number; peng: number; hu: number };
-        pickedRewards: string[];
-      };
-      applyHulebuRewardToRunState: (state: unknown, rewardId: string) => unknown;
+      createHulebuRunRewardState: () => RunRewardState;
+      applyHulebuRewardToRunState: (state: RunRewardState, rewardId: string) => RunRewardState;
       HulebuRuntimeState: new (level: unknown, rewards?: unknown) => {
         executeComboByKey: (candidateKey: string | null) => boolean;
         toSceneModel: (layout: { width: number; height: number; cssWidth: number; cssHeight: number; scale: number }) => {

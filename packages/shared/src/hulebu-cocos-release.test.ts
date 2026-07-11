@@ -11,14 +11,17 @@ import {
   rmSync,
   statSync,
   symlinkSync,
+  utimesSync,
   writeSync,
   writeFileSync,
 } from "node:fs";
 import { EventEmitter } from "node:events";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { request as httpRequest } from "node:http";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -27,6 +30,9 @@ type HulebuReleaseConfig = {
   gameId: string;
   displayName: string;
   creatorVersion: string;
+  creatorExecutableRealPath: string;
+  creatorExecutableSha256: string;
+  creatorBundleIdentifier: string;
   platform: string;
   debug: boolean;
   outputName: string;
@@ -34,6 +40,7 @@ type HulebuReleaseConfig = {
   saveSchemaVersion: number;
   finishedMarker: string;
   allowedNonZeroExitCodes: number[];
+  forbiddenBundleText: string[];
   requiredFiles: string[];
   requiredJsonFiles: string[];
   smokePaths: string[];
@@ -48,8 +55,16 @@ type CreatorBuildInput = {
 
 type CreatorBuildDecision = {
   accepted: boolean;
+  actualCreatorVersion: string;
   normalized: boolean;
   originalExitCode: number;
+};
+
+type CreatorExecutableEvidence = {
+  creatorBundleIdentifier: string;
+  creatorBundleVersion: string;
+  creatorExecutableRealPath: string;
+  creatorExecutableSha256: string;
 };
 
 type SmokeResult = {
@@ -71,6 +86,7 @@ const mutableFs = require("node:fs") as {
   ) => ReturnType<typeof import("node:fs").lstatSync>;
   readFileSync: (...args: unknown[]) => unknown;
   renameSync: (...args: unknown[]) => unknown;
+  rmSync: (...args: unknown[]) => unknown;
   statSync: (
     ...args: unknown[]
   ) => ReturnType<typeof import("node:fs").statSync>;
@@ -92,11 +108,24 @@ const buildCliPath = join(
   "apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs",
 );
 const rootPackagePath = join(repositoryRoot, "package.json");
+const FULL_COMMIT_A = "a".repeat(40);
+const FULL_COMMIT_B = "b".repeat(40);
+const RELEASE_CONFIG_SHA256 = "c".repeat(64);
+const SOURCE_TREE_SHA256 = "d".repeat(64);
+const CREATOR_EXECUTABLE_EVIDENCE: CreatorExecutableEvidence = {
+  creatorBundleIdentifier: "com.cocos.creator",
+  creatorBundleVersion: "3.8.8",
+  creatorExecutableRealPath:
+    "/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator",
+  creatorExecutableSha256:
+    "3a8452496c03e85f2784e64679a1fd203701b0b245125efee02c7923f2bd3464",
+};
 const {
   HulebuReleaseError,
   collectBuildStats,
   evaluateCreatorBuild,
   loadReleaseConfig,
+  readBuildManifest,
   resolveRequestPath,
   smokeBuild,
   startStaticServer,
@@ -111,10 +140,21 @@ const {
   };
   evaluateCreatorBuild: (input: CreatorBuildInput) => {
     accepted: boolean;
+    actualCreatorVersion: string;
     normalized: boolean;
     originalExitCode: number;
   };
   loadReleaseConfig: (configPath: string) => HulebuReleaseConfig;
+  readBuildManifest: (
+    buildRoot: string,
+    expected: {
+      commit: string;
+      config: HulebuReleaseConfig;
+      releaseConfigSha256: string;
+      sourceInputs: readonly string[];
+      sourceTreeSha256: string;
+    },
+  ) => Record<string, unknown>;
   resolveRequestPath: (buildRoot: string, rawPathname: string) => string;
   smokeBuild: (
     buildRoot: string,
@@ -136,7 +176,12 @@ const {
       commit: string;
       config: HulebuReleaseConfig;
       creatorDecision: CreatorBuildDecision;
+      creatorExecutableEvidence: CreatorExecutableEvidence;
       createdAt: string;
+      releaseConfigSha256: string;
+      sourceInputs: string[];
+      sourceState: "clean";
+      sourceTreeSha256: string;
       smokeResults: SmokeResult[];
     },
   ) => { path: string; data: Record<string, unknown> };
@@ -148,6 +193,77 @@ function createTemporaryRoot(label: string): string {
   const root = mkdtempSync(join(tmpdir(), `hulebu-cocos-${label}-`));
   temporaryRoots.push(root);
   return root;
+}
+
+function createTemporaryGitRepository(label: string): string {
+  const root = createTemporaryRoot(label);
+  execFileSync("git", ["init", "--quiet"], { cwd: root });
+  execFileSync("git", ["config", "user.email", "hulebu-tests@example.invalid"], {
+    cwd: root,
+  });
+  execFileSync("git", ["config", "user.name", "Hulebu Tests"], { cwd: root });
+  mkdirSync(join(root, "formal"), { recursive: true });
+  writeFileSync(join(root, "formal/a.txt"), "tracked-a\n", "utf8");
+  writeFileSync(join(root, "formal/b.txt"), "tracked-b\n", "utf8");
+  writeFileSync(join(root, "unrelated.txt"), "unrelated\n", "utf8");
+  execFileSync("git", ["add", "formal/a.txt", "formal/b.txt", "unrelated.txt"], {
+    cwd: root,
+  });
+  execFileSync("git", ["commit", "--quiet", "-m", "fixture"], { cwd: root });
+  return root;
+}
+
+function createMockReleaseLifecycle(
+  outputRoot: string,
+  projectRoot: string,
+  events?: string[],
+) {
+  const attemptRoot = join(outputRoot, ".hulebu-attempt-test");
+  const attemptBuildRoot = join(attemptRoot, "web-mobile");
+  const attemptLogPath = join(attemptRoot, "hulebu-cocos-build.log");
+  return {
+    attemptBuildRoot,
+    attemptLogPath,
+    createExactCommitProjectSnapshot: () => {
+      events?.push("snapshot");
+      return {
+        checkoutRoot: join(projectRoot, "checkout"),
+        projectRoot,
+        release: () => events?.push("snapshot-release"),
+      };
+    },
+    inspectCreatorExecutable: () => {
+      events?.push("creator-inspect");
+      return CREATOR_EXECUTABLE_EVIDENCE;
+    },
+    recoverPendingBuildPromotion: () => {
+      events?.push("promotion-recover");
+      return { cleanupWarnings: [], recovered: false };
+    },
+    createBuildAttempt: () => {
+      events?.push("attempt");
+      mkdirSync(attemptRoot, { recursive: true });
+      return {
+        buildRoot: attemptBuildRoot,
+        logPath: attemptLogPath,
+        outputRoot: attemptRoot,
+        cleanup: () => {
+          events?.push("attempt-cleanup");
+          rmSync(attemptRoot, { force: true, recursive: true });
+        },
+      };
+    },
+    beginBuildPromotion: () => {
+      events?.push("promote");
+      return {
+        finalize: () => {
+          events?.push("promote-finalize");
+          return { cleanupWarnings: [] };
+        },
+        rollback: () => events?.push("promote-rollback"),
+      };
+    },
+  };
 }
 
 function createValidBuild(config: HulebuReleaseConfig): string {
@@ -171,6 +287,20 @@ function createValidBuild(config: HulebuReleaseConfig): string {
   }
 
   return buildRoot;
+}
+
+function createSmokeEvidence(
+  config: HulebuReleaseConfig,
+  buildRoot: string,
+): SmokeResult[] {
+  return config.smokePaths.map((pathname) => {
+    const relativePath = pathname === "/" ? "index.html" : pathname.slice(1);
+    return {
+      pathname,
+      status: 200,
+      bytes: statSync(join(buildRoot, relativePath)).size,
+    };
+  });
 }
 
 function tryCreateSymlink(
@@ -228,11 +358,83 @@ function requestRaw(
 
 type BuildCli = {
   DEFAULT_CREATOR_EXECUTABLE: string;
+  RELEASE_SOURCE_INPUTS: readonly string[];
+  assertReleaseInputsClean: (input: {
+    commit?: string;
+    git?: (...args: string[]) => string | Buffer;
+    repositoryRoot: string;
+    sourceInputs?: readonly string[];
+  }) => {
+    sourceInputs: string[];
+    sourceState: "clean";
+    sourceTreeSha256: string;
+  };
+  acquireOutputLock: (
+    outputRoot: string,
+    options?: {
+      hostname?: string;
+      now?: () => Date;
+      pid?: number;
+      probePid?: (pid: number) => "alive" | "dead" | "unknown";
+      staleGraceMs?: number;
+      tokenFactory?: () => string;
+    },
+  ) => { assertOwnership: () => void; release: () => void };
   buildCreatorArguments: (input: {
     config: HulebuReleaseConfig;
     outputRoot: string;
     projectRoot: string;
   }) => string[];
+  createExactCommitProjectSnapshot: (input: {
+    commit: string;
+    projectRoot: string;
+    repositoryRoot: string;
+    temporaryRoot?: string;
+  }) => {
+    checkoutRoot: string;
+    projectRoot: string;
+    release: () => void;
+  };
+  inspectCreatorExecutable: (
+    executablePath: string,
+    config: HulebuReleaseConfig,
+    options?: {
+      readBundleMetadata?: (realPath: string) => {
+        bundleIdentifier: string;
+        version: string;
+      };
+    },
+  ) => {
+    creatorBundleIdentifier: string;
+    creatorBundleVersion: string;
+    creatorExecutableRealPath: string;
+    creatorExecutableSha256: string;
+  };
+  createBuildAttempt: (input: {
+    outputName: string;
+    outputRoot: string;
+  }) => {
+    buildRoot: string;
+    logPath: string;
+    outputRoot: string;
+    cleanup: () => void;
+  };
+  beginBuildPromotion: (input: {
+    attemptBuildRoot: string;
+    attemptLogPath: string;
+    finalBuildRoot: string;
+    finalLogPath: string;
+    outputRoot: string;
+    renameSync?: (oldPath: string, newPath: string) => void;
+  }) => {
+    finalize: () => { cleanupWarnings: string[] };
+    rollback: () => void;
+  };
+  recoverPendingBuildPromotion: (outputRoot: string) => {
+    action?: "completed" | "rolled-back";
+    cleanupWarnings: string[];
+    recovered: boolean;
+  };
   main: (
     argv: string[],
     effects: Record<string, unknown>,
@@ -245,10 +447,6 @@ type BuildCli = {
     outputRoot?: string;
     verifyOnly: boolean;
   };
-  prepareBuildOutput: (paths: {
-    buildRoot: string;
-    outputRoot: string;
-  }) => void;
   resolveOutputPaths: (input: {
     config: HulebuReleaseConfig;
     cwd: string;
@@ -290,10 +488,16 @@ describe("Hulebu Cocos production release contract", () => {
   it("loads the pinned Cocos Creator release settings", () => {
     expect(loadReleaseConfig(realConfigPath)).toMatchObject({
       creatorVersion: "3.8.8",
+      creatorExecutableRealPath:
+        "/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator",
+      creatorExecutableSha256:
+        "3a8452496c03e85f2784e64679a1fd203701b0b245125efee02c7923f2bd3464",
+      creatorBundleIdentifier: "com.cocos.creator",
       debug: false,
       platform: "web-mobile",
       outputName: "web-mobile",
       allowedNonZeroExitCodes: [36],
+      forbiddenBundleText: ["__HULEBU_DEBUG__"],
     });
   });
 
@@ -303,12 +507,75 @@ describe("Hulebu Cocos production release contract", () => {
     expect(() => validateReleaseConfig(config)).not.toThrow();
   });
 
+  it("binds Creator execution to a real path, binary digest, and bundle metadata", () => {
+    const cli = loadBuildCli();
+    const executablePath = join(
+      createTemporaryRoot("creator-provenance"),
+      "CocosCreator",
+    );
+    const executableBytes = Buffer.from("fixture-cocos-creator", "utf8");
+    writeFileSync(executablePath, executableBytes, { mode: 0o755 });
+    const config = {
+      ...loadReleaseConfig(realConfigPath),
+      creatorExecutableRealPath: realpathSync(executablePath),
+      creatorExecutableSha256: createHash("sha256")
+        .update(executableBytes)
+        .digest("hex"),
+    };
+
+    expect(
+      cli.inspectCreatorExecutable(executablePath, config, {
+        readBundleMetadata: () => ({
+          bundleIdentifier: "com.cocos.creator",
+          version: "3.8.8",
+        }),
+      }),
+    ).toEqual({
+      creatorBundleIdentifier: "com.cocos.creator",
+      creatorBundleVersion: "3.8.8",
+      creatorExecutableRealPath: realpathSync(executablePath),
+      creatorExecutableSha256: config.creatorExecutableSha256,
+    });
+
+    expect(() =>
+      cli.inspectCreatorExecutable(
+        executablePath,
+        { ...config, creatorExecutableSha256: "0".repeat(64) },
+        {
+          readBundleMetadata: () => ({
+            bundleIdentifier: "com.cocos.creator",
+            version: "3.8.8",
+          }),
+        },
+      ),
+    ).toThrow("Creator executable SHA-256 does not match release config");
+  });
+
   it.each([
-    ["schemaVersion", 2, "release schemaVersion must be 1"],
+    ["schemaVersion", 2, "release schemaVersion must be 3"],
+    ["gameId", "other", "gameId must be hulebu"],
+    ["displayName", "", "displayName must be a non-empty string"],
     ["creatorVersion", "3.8.7", "creatorVersion must be 3.8.8"],
+    [
+      "creatorExecutableRealPath",
+      "relative/creator",
+      "creatorExecutableRealPath must be an absolute single-line path",
+    ],
+    [
+      "creatorExecutableSha256",
+      "invalid",
+      "creatorExecutableSha256 must be a SHA-256 digest",
+    ],
+    [
+      "creatorBundleIdentifier",
+      "other.creator",
+      "creatorBundleIdentifier must be com.cocos.creator",
+    ],
     ["platform", "web-desktop", "platform must be web-mobile"],
     ["debug", true, "debug must be false"],
     ["outputName", "release", "outputName must be web-mobile"],
+    ["contentVersion", "draft", "contentVersion must be a semantic version"],
+    ["saveSchemaVersion", 0, "saveSchemaVersion must be a positive integer"],
     ["requiredFiles", [], "requiredFiles must be a non-empty array"],
     ["requiredJsonFiles", [], "requiredJsonFiles must be a non-empty array"],
     ["smokePaths", [], "smokePaths must be a non-empty array"],
@@ -318,6 +585,11 @@ describe("Hulebu Cocos production release contract", () => {
       "allowedNonZeroExitCodes must be a non-empty array",
     ],
     ["finishedMarker", "", "finishedMarker must be a non-empty string"],
+    [
+      "forbiddenBundleText",
+      [],
+      "forbiddenBundleText must be a non-empty array",
+    ],
   ])("rejects an invalid %s field", (key, value, message) => {
     const config = loadReleaseConfig(realConfigPath);
 
@@ -504,6 +776,17 @@ describe("Hulebu Cocos production release contract", () => {
     ).toThrow("allowedNonZeroExitCodes[1] must be a positive integer");
   });
 
+  it("requires the production debug symbol to remain forbidden", () => {
+    const config = loadReleaseConfig(realConfigPath);
+
+    expect(() =>
+      validateReleaseConfig({
+        ...config,
+        forbiddenBundleText: ["harmless"],
+      }),
+    ).toThrow("forbiddenBundleText must include __HULEBU_DEBUG__");
+  });
+
   it("wraps unreadable config failures in the release error", () => {
     const invalidConfigPath = join(
       createTemporaryRoot("config"),
@@ -578,6 +861,42 @@ describe("Hulebu Cocos build artifact validation", () => {
       ]),
     );
   });
+
+  it("rejects a forbidden debug symbol in any production JavaScript bundle", () => {
+    const invalidBuildRoot = createValidBuild(config);
+    const nestedBundlePath = join(invalidBuildRoot, "assets/main/runtime.js");
+    mkdirSync(dirname(nestedBundlePath), { recursive: true });
+    writeFileSync(
+      nestedBundlePath,
+      "globalThis.__HULEBU_DEBUG__ = {};\n",
+      "utf8",
+    );
+
+    expect(validateBuildArtifacts(invalidBuildRoot, config).errors).toContain(
+      "forbidden production bundle text __HULEBU_DEBUG__ in assets/main/runtime.js",
+    );
+  });
+
+  it.each(["index.html", "assets/main/runtime.mjs", "assets/main/runtime.cjs"])(
+    "rejects a forbidden debug symbol in production artifact %s",
+    (relativePath) => {
+      const invalidBuildRoot = createValidBuild(config);
+      const artifactPath = join(invalidBuildRoot, relativePath);
+      mkdirSync(dirname(artifactPath), { recursive: true });
+      const existing = existsSync(artifactPath)
+        ? readFileSync(artifactPath, "utf8")
+        : "";
+      writeFileSync(
+        artifactPath,
+        `${existing}\nglobalThis.__HULEBU_DEBUG__ = {};\n`,
+        "utf8",
+      );
+
+      expect(validateBuildArtifacts(invalidBuildRoot, config).errors).toContain(
+        `forbidden production bundle text __HULEBU_DEBUG__ in ${relativePath}`,
+      );
+    },
+  );
 
   it("rejects a directory used as a required artifact without throwing", () => {
     const directoryArtifactRoot = createValidBuild(config);
@@ -674,40 +993,73 @@ describe("Hulebu Cocos Creator build decision", () => {
     expect(
       evaluateCreatorBuild({
         exitCode: 0,
-        logText: config.finishedMarker,
+        logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
         artifactErrors: [],
         config,
       }),
-    ).toEqual({ accepted: true, normalized: false, originalExitCode: 0 });
+    ).toEqual({
+      accepted: true,
+      actualCreatorVersion: "3.8.8",
+      normalized: false,
+      originalExitCode: 0,
+    });
   });
 
   it("normalizes Creator exit 36 when the build is otherwise valid", () => {
     expect(
       evaluateCreatorBuild({
         exitCode: 36,
-        logText: config.finishedMarker,
+        logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
         artifactErrors: [],
         config,
       }),
-    ).toEqual({ accepted: true, normalized: true, originalExitCode: 36 });
+    ).toEqual({
+      accepted: true,
+      actualCreatorVersion: "3.8.8",
+      normalized: true,
+      originalExitCode: 36,
+    });
   });
 
   it("rejects an allowed non-zero exit without the finished marker", () => {
     expect(() =>
       evaluateCreatorBuild({
         exitCode: 36,
-        logText: "build started",
+        logText: "Build with Cocos Creator 3.8.8\nbuild started",
         artifactErrors: [],
         config,
       }),
     ).toThrow("Creator build log is missing the finished marker");
   });
 
+  it.each([
+    ["missing", "build started", "missing Creator version evidence"],
+    [
+      "mismatched",
+      "Build with Cocos Creator 3.8.7",
+      "Creator version 3.8.7 does not match 3.8.8",
+    ],
+    [
+      "duplicated",
+      "Build with Cocos Creator 3.8.8\nBuild with Cocos Creator 3.8.8",
+      "Creator build log has duplicate version evidence",
+    ],
+  ])("rejects %s Creator version evidence", (_label, versionLog, message) => {
+    expect(() =>
+      evaluateCreatorBuild({
+        exitCode: 0,
+        logText: `${versionLog}\n${config.finishedMarker}`,
+        artifactErrors: [],
+        config,
+      }),
+    ).toThrow(message);
+  });
+
   it("rejects invalid build artifacts", () => {
     expect(() =>
       evaluateCreatorBuild({
         exitCode: 36,
-        logText: config.finishedMarker,
+        logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
         artifactErrors: ["missing required file: index.html"],
         config,
       }),
@@ -718,7 +1070,7 @@ describe("Hulebu Cocos Creator build decision", () => {
     expect(() =>
       evaluateCreatorBuild({
         exitCode: 9,
-        logText: config.finishedMarker,
+        logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
         artifactErrors: [],
         config,
       }),
@@ -729,7 +1081,7 @@ describe("Hulebu Cocos Creator build decision", () => {
 describe("Hulebu Cocos build manifest", () => {
   const config = loadReleaseConfig(realConfigPath);
 
-  it("counts regular files exactly while excluding only root manifest files", () => {
+  it("counts regular files exactly while excluding only the final root manifest", () => {
     const buildRoot = createTemporaryRoot("stats");
     mkdirSync(join(buildRoot, "nested"));
     writeFileSync(join(buildRoot, "index.html"), "abc", "utf8");
@@ -743,11 +1095,12 @@ describe("Hulebu Cocos build manifest", () => {
     writeFileSync(join(buildRoot, "hulebu-build.json.tmp"), "stale", "utf8");
 
     expect(collectBuildStats(buildRoot)).toEqual({
-      fileCount: 3,
+      fileCount: 4,
       totalBytes:
         Buffer.byteLength("abc") +
         Buffer.byteLength("世界") +
-        Buffer.byteLength("nested"),
+        Buffer.byteLength("nested") +
+        Buffer.byteLength("stale"),
     });
   });
 
@@ -783,34 +1136,46 @@ describe("Hulebu Cocos build manifest", () => {
       bytes: 42,
     }));
     const input = {
-      buildId: "abc1234-20260711T010203Z",
-      commit: "abc1234",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
       config,
       creatorDecision: {
         accepted: true,
+        actualCreatorVersion: config.creatorVersion,
         normalized: true,
         originalExitCode: 36,
       },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
       createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs: ["formal/a", "formal/b"],
+      sourceState: "clean" as const,
+      sourceTreeSha256: SOURCE_TREE_SHA256,
       smokeResults,
     };
 
     const manifest = writeBuildManifest(validBuildRoot, input);
     const expectedData = {
-      schemaVersion: 1,
+      schemaVersion: 4,
       buildId: input.buildId,
       gameId: config.gameId,
       displayName: config.displayName,
       creatorVersion: config.creatorVersion,
+      ...CREATOR_EXECUTABLE_EVIDENCE,
       platform: config.platform,
       debug: config.debug,
       contentVersion: config.contentVersion,
       saveSchemaVersion: config.saveSchemaVersion,
       commit: input.commit,
       createdAt: input.createdAt,
+      sourceInputs: input.sourceInputs,
+      sourceState: input.sourceState,
+      sourceTreeSha256: input.sourceTreeSha256,
+      releaseConfigSha256: input.releaseConfigSha256,
       creatorExitCode: 36,
       creatorExitNormalized: true,
       smokeResults,
+      artifactSha256: expect.stringMatching(/^[0-9a-f]{64}$/),
       ...expectedStats,
     };
 
@@ -828,14 +1193,242 @@ describe("Hulebu Cocos build manifest", () => {
 
     const replacement = writeBuildManifest(validBuildRoot, {
       ...input,
-      buildId: "def5678-20260711T020304Z",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T020304Z`,
       createdAt: "2026-07-11T02:03:04.000Z",
     });
     expect(replacement.data).toMatchObject({
-      buildId: "def5678-20260711T020304Z",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T020304Z`,
       createdAt: "2026-07-11T02:03:04.000Z",
       ...expectedStats,
     });
+  });
+
+  it("reads only a clean manifest for the current commit and source inputs", () => {
+    const validBuildRoot = createValidBuild(config);
+    const sourceInputs = ["formal/a", "formal/b"];
+    const manifest = writeBuildManifest(validBuildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs,
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
+    });
+
+    expect(
+      readBuildManifest(validBuildRoot, {
+        commit: FULL_COMMIT_A,
+        config,
+        releaseConfigSha256: RELEASE_CONFIG_SHA256,
+        sourceInputs,
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+    ).toEqual(manifest.data);
+    expect(() =>
+      readBuildManifest(validBuildRoot, {
+        commit: FULL_COMMIT_B,
+        config,
+        releaseConfigSha256: RELEASE_CONFIG_SHA256,
+        sourceInputs,
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+    ).toThrow("build manifest commit does not match current HEAD");
+
+    writeFileSync(
+      manifest.path,
+      `${JSON.stringify({ ...manifest.data, sourceState: "dirty" })}\n`,
+      "utf8",
+    );
+    expect(() =>
+      readBuildManifest(validBuildRoot, {
+        commit: FULL_COMMIT_A,
+        config,
+        releaseConfigSha256: RELEASE_CONFIG_SHA256,
+        sourceInputs,
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+    ).toThrow("build manifest sourceState must be clean");
+  });
+
+  it("detects same-size artifact tampering", () => {
+    const validBuildRoot = createValidBuild(config);
+    const sourceInputs = ["formal"];
+    writeBuildManifest(validBuildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs,
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
+    });
+    const indexJsPath = join(validBuildRoot, "index.js");
+    const original = readFileSync(indexJsPath, "utf8");
+    writeFileSync(
+      indexJsPath,
+      `${original.slice(0, -1)}${original.endsWith("x") ? "y" : "x"}`,
+      "utf8",
+    );
+    expect(statSync(indexJsPath).size).toBe(Buffer.byteLength(original));
+
+    expect(() =>
+      readBuildManifest(validBuildRoot, {
+        commit: FULL_COMMIT_A,
+        config,
+        releaseConfigSha256: RELEASE_CONFIG_SHA256,
+        sourceInputs,
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+    ).toThrow("build manifest artifactSha256 does not match output");
+  });
+
+  it("rejects a reserved temporary manifest added after signing", () => {
+    const validBuildRoot = createValidBuild(config);
+    const sourceInputs = ["formal"];
+    writeBuildManifest(validBuildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs,
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
+    });
+    writeFileSync(
+      join(validBuildRoot, "hulebu-build.json.tmp"),
+      '{"untrusted":true}\n',
+      "utf8",
+    );
+
+    expect(() =>
+      readBuildManifest(validBuildRoot, {
+        commit: FULL_COMMIT_A,
+        config,
+        releaseConfigSha256: RELEASE_CONFIG_SHA256,
+        sourceInputs,
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+    ).toThrow("build output contains a reserved temporary manifest");
+  });
+
+  it.each([
+    ["displayName", "伪造标题", "displayName does not match release config"],
+    ["createdAt", "July 11, 2026 01:02:03 UTC", "createdAt is invalid"],
+    [
+      "buildId",
+      `${FULL_COMMIT_A.slice(0, 12)}-forged`,
+      "buildId does not match commit and timestamp",
+    ],
+  ])("rejects a tampered manifest %s", (key, value, message) => {
+    const validBuildRoot = createValidBuild(config);
+    const sourceInputs = ["formal"];
+    const manifest = writeBuildManifest(validBuildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs,
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
+    });
+    writeFileSync(
+      manifest.path,
+      `${JSON.stringify({ ...manifest.data, [key]: value })}\n`,
+      "utf8",
+    );
+
+    expect(() =>
+      readBuildManifest(validBuildRoot, {
+        commit: FULL_COMMIT_A,
+        config,
+        releaseConfigSha256: RELEASE_CONFIG_SHA256,
+        sourceInputs,
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+    ).toThrow(`build manifest ${message}`);
+  });
+
+  it("rejects missing, malformed, or mismatched manifest source inputs", () => {
+    const validBuildRoot = createValidBuild(config);
+    const manifestPath = join(validBuildRoot, "hulebu-build.json");
+    const expected = {
+      commit: FULL_COMMIT_A,
+      config,
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs: ["formal"],
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+    };
+
+    expect(() => readBuildManifest(validBuildRoot, expected)).toThrow(
+      "missing build manifest",
+    );
+    writeFileSync(manifestPath, "not json\n", "utf8");
+    expect(() => readBuildManifest(validBuildRoot, expected)).toThrow(
+      "invalid build manifest JSON",
+    );
+    const validManifest = writeBuildManifest(validBuildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs: expected.sourceInputs,
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
+    });
+    writeFileSync(
+      manifestPath,
+      `${JSON.stringify({ ...validManifest.data, sourceInputs: ["other"] })}\n`,
+      "utf8",
+    );
+    expect(() => readBuildManifest(validBuildRoot, expected)).toThrow(
+      "build manifest sourceInputs do not match release inputs",
+    );
   });
 
   it("replaces a stale temporary symlink without altering its target", () => {
@@ -849,24 +1442,86 @@ describe("Hulebu Cocos build manifest", () => {
     if (!tryCreateSymlink(externalPath, temporaryPath, "file")) return;
 
     const manifest = writeBuildManifest(validBuildRoot, {
-      buildId: "safe-build",
-      commit: "abc1234",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
       config,
       creatorDecision: {
         accepted: true,
+        actualCreatorVersion: config.creatorVersion,
         normalized: false,
         originalExitCode: 0,
       },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
       createdAt: "2026-07-11T01:02:03.000Z",
-      smokeResults: [],
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs: ["formal"],
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
     });
 
     expect(readFileSync(externalPath, "utf8")).toBe(externalContent);
     expect(lstatSync(manifest.path).isFile()).toBe(true);
     expect(lstatSync(manifest.path).isSymbolicLink()).toBe(false);
     expect(JSON.parse(readFileSync(manifest.path, "utf8"))).toMatchObject({
-      buildId: "safe-build",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
     });
+  });
+
+  it("reads the manifest through one no-follow descriptor", () => {
+    const validBuildRoot = createValidBuild(config);
+    const sourceInputs = ["formal"];
+    const manifest = writeBuildManifest(validBuildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs,
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, validBuildRoot),
+    });
+    const externalRoot = createTemporaryRoot("manifest-read-race");
+    const externalManifestPath = join(externalRoot, "outside.json");
+    writeFileSync(
+      externalManifestPath,
+      readFileSync(manifest.path, "utf8"),
+      "utf8",
+    );
+    const originalReadFileSync = mutableFs.readFileSync;
+    let pathReadAttempted = false;
+    mutableFs.readFileSync = (...args: unknown[]) => {
+      if (args[0] === manifest.path) {
+        pathReadAttempted = true;
+        rmSync(manifest.path);
+        symlinkSync(externalManifestPath, manifest.path, "file");
+      }
+      return originalReadFileSync(...args);
+    };
+
+    try {
+      expect(
+        readBuildManifest(validBuildRoot, {
+          commit: FULL_COMMIT_A,
+          config,
+          releaseConfigSha256: RELEASE_CONFIG_SHA256,
+          sourceInputs,
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+        }),
+      ).toMatchObject({ buildId: manifest.data.buildId });
+      expect(pathReadAttempted).toBe(false);
+      expect(lstatSync(manifest.path).isSymbolicLink()).toBe(false);
+    } finally {
+      mutableFs.readFileSync = originalReadFileSync;
+    }
   });
 
   it("removes the temporary manifest when atomic replacement fails", () => {
@@ -879,16 +1534,22 @@ describe("Hulebu Cocos build manifest", () => {
     try {
       expect(() =>
         writeBuildManifest(validBuildRoot, {
-          buildId: "failure-build",
-          commit: "abc1234",
+          buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+          commit: FULL_COMMIT_A,
           config,
           creatorDecision: {
             accepted: true,
+            actualCreatorVersion: config.creatorVersion,
             normalized: false,
             originalExitCode: 0,
           },
+          creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
           createdAt: "2026-07-11T01:02:03.000Z",
-          smokeResults: [],
+          releaseConfigSha256: RELEASE_CONFIG_SHA256,
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+          smokeResults: createSmokeEvidence(config, validBuildRoot),
         }),
       ).toThrow("simulated rename failure");
       expect(existsSync(join(validBuildRoot, "hulebu-build.json.tmp"))).toBe(
@@ -1180,6 +1841,150 @@ describe("Hulebu Cocos production build CLI", () => {
     );
   });
 
+  it("pins the complete formal source input allowlist", () => {
+    const cli = loadBuildCli();
+
+    expect(cli.RELEASE_SOURCE_INPUTS).toEqual([
+      "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/.creator",
+      "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets",
+      "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/package.json",
+      "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/settings/v2/packages",
+      "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json",
+      "apps/game/mahjong-roguelike/release/hulebu-v1.release.json",
+      "apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs",
+      "apps/game/mahjong-roguelike/scripts/hulebu-cocos-release.cjs",
+      "package.json",
+    ]);
+  });
+
+  it.each([
+    [" M formal/tracked.txt\0", "formal/tracked.txt"],
+    [" D formal/deleted.txt\0", "formal/deleted.txt"],
+    ["?? formal/untracked.txt\0", "formal/untracked.txt"],
+    ["!! formal/ignored.txt\0", "formal/ignored.txt"],
+  ])("rejects dirty formal input status %j", (status, expectedPath) => {
+    const cli = loadBuildCli();
+    const repositoryRoot = createTemporaryRoot("cli-dirty-source");
+    const git = (...args: string[]) => {
+      expect(args).toEqual([
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        "--ignored=matching",
+        "--no-renames",
+        "--",
+        ":(literal)formal",
+      ]);
+      return status;
+    };
+
+    expect(() =>
+      cli.assertReleaseInputsClean({
+        repositoryRoot,
+        sourceInputs: ["formal"],
+        git,
+      } as never),
+    ).toThrow(`formal build inputs are dirty: ${expectedPath}`);
+  });
+
+  it("accepts clean formal inputs while ignoring unrelated paths", () => {
+    const cli = loadBuildCli();
+    const temporaryRepositoryRoot = createTemporaryGitRepository(
+      "cli-clean-source",
+    );
+    writeFileSync(join(temporaryRepositoryRoot, "unrelated.txt"), "dirty\n", "utf8");
+
+    const evidence = cli.assertReleaseInputsClean({
+      repositoryRoot: temporaryRepositoryRoot,
+      sourceInputs: ["formal/a.txt", "formal/b.txt"],
+    });
+
+    expect(evidence).toMatchObject({
+      sourceInputs: ["formal/a.txt", "formal/b.txt"],
+      sourceState: "clean",
+    });
+    expect(evidence.sourceTreeSha256).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it("rejects a source input root that matches no tracked file", () => {
+    const cli = loadBuildCli();
+    const temporaryRepositoryRoot = createTemporaryGitRepository(
+      "cli-missing-source-root",
+    );
+
+    expect(() =>
+      cli.assertReleaseInputsClean({
+        repositoryRoot: temporaryRepositoryRoot,
+        sourceInputs: ["formal/missing"],
+      }),
+    ).toThrow(
+      "formal build input paths do not match tracked files: formal/missing",
+    );
+  });
+
+  it.each(["--assume-unchanged", "--skip-worktree"])(
+    "rejects the special index flag %s even when status is clean",
+    (flag) => {
+      const cli = loadBuildCli();
+      const temporaryRepositoryRoot = createTemporaryGitRepository(
+        "cli-special-index",
+      );
+      execFileSync("git", ["update-index", flag, "formal/a.txt"], {
+        cwd: temporaryRepositoryRoot,
+      });
+      writeFileSync(join(temporaryRepositoryRoot, "formal/a.txt"), "hidden\n", "utf8");
+
+      expect(() =>
+        cli.assertReleaseInputsClean({
+          repositoryRoot: temporaryRepositoryRoot,
+          sourceInputs: ["formal"],
+        }),
+      ).toThrow("formal build inputs use special index flags: formal/a.txt");
+    },
+  );
+
+  it.each(["120000", "160000"])(
+    "rejects tracked variable source entry mode %s",
+    (mode) => {
+      const cli = loadBuildCli();
+      let callCount = 0;
+
+      expect(() =>
+        cli.assertReleaseInputsClean({
+          repositoryRoot: createTemporaryRoot("cli-variable-entry"),
+          sourceInputs: ["formal"],
+          git: (...args: string[]) => {
+            callCount += 1;
+            if (args[0] === "status") return "";
+            return `${mode} ${"a".repeat(40)} 0\tformal/link\0`;
+          },
+        } as never),
+      ).toThrow("formal build inputs contain a symlink or gitlink: formal/link");
+      expect(callCount).toBe(2);
+    },
+  );
+
+  it("rejects malformed or non-UTF-8 Git status", () => {
+    const cli = loadBuildCli();
+    const repositoryRoot = createTemporaryRoot("cli-malformed-status");
+
+    expect(() =>
+      cli.assertReleaseInputsClean({
+        repositoryRoot,
+        sourceInputs: ["formal"],
+        git: () => "broken\0",
+      } as never),
+    ).toThrow("Git returned malformed formal build status");
+    expect(() =>
+      cli.assertReleaseInputsClean({
+        repositoryRoot,
+        sourceInputs: ["formal"],
+        git: () => Buffer.from([0xff, 0]),
+      } as never),
+    ).toThrow("Git returned non-UTF-8 formal build status");
+  });
+
   it("parses strict arguments with CLI-over-environment precedence", () => {
     const cli = loadBuildCli();
 
@@ -1260,81 +2065,836 @@ describe("Hulebu Cocos production build CLI", () => {
         projectRoot,
       }),
     ).toThrow("output root must not be a filesystem root");
+    expect(() =>
+      cli.resolveOutputPaths({
+        config,
+        cwd: repositoryRoot,
+        outputRoot: "build;debug=true",
+        projectRoot,
+      }),
+    ).toThrow("output root contains characters unsupported by Creator");
   });
 
-  it("removes only the validated web-mobile child and rejects a symlink", () => {
+  it("rejects an output root overlapping formal release inputs before locking", async () => {
     const cli = loadBuildCli();
-    const outputRoot = createTemporaryRoot("cli-delete");
+    let lockCalled = false;
+
+    await expect(
+      cli.runRelease(
+        [
+          "--output-root",
+          "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/build",
+        ],
+        {
+          acquireOutputLock: () => {
+            lockCalled = true;
+            return { release: () => undefined };
+          },
+          cwd: repositoryRoot,
+          environment: {},
+          hashFileSha256: () => RELEASE_CONFIG_SHA256,
+          loadReleaseConfig: () => config,
+        },
+      ),
+    ).rejects.toThrow("output root overlaps formal build inputs");
+    expect(lockCalled).toBe(false);
+  });
+
+  it("creates an isolated project snapshot from the exact commit", () => {
+    const cli = loadBuildCli();
+    const temporaryRepositoryRoot = createTemporaryGitRepository(
+      "cli-exact-snapshot",
+    );
+    const projectRoot = join(temporaryRepositoryRoot, "formal");
+    const commit = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: temporaryRepositoryRoot,
+      encoding: "utf8",
+    }).trim();
+    writeFileSync(join(projectRoot, "a.txt"), "working-tree-b\n", "utf8");
+    const snapshotContainer = createTemporaryRoot("cli-snapshot-container");
+
+    const snapshot = cli.createExactCommitProjectSnapshot({
+      commit,
+      projectRoot,
+      repositoryRoot: temporaryRepositoryRoot,
+      temporaryRoot: snapshotContainer,
+    });
+    expect(readFileSync(join(snapshot.projectRoot, "a.txt"), "utf8")).toBe(
+      "tracked-a\n",
+    );
+    expect(realpathSync(snapshot.projectRoot)).not.toBe(realpathSync(projectRoot));
+    expect(
+      execFileSync("git", ["worktree", "list", "--porcelain"], {
+        cwd: temporaryRepositoryRoot,
+        encoding: "utf8",
+      }),
+    ).toContain(snapshot.checkoutRoot);
+
+    snapshot.release();
+    expect(existsSync(snapshot.checkoutRoot)).toBe(false);
+    expect(
+      execFileSync("git", ["worktree", "list", "--porcelain"], {
+        cwd: temporaryRepositoryRoot,
+        encoding: "utf8",
+      }),
+    ).not.toContain(snapshot.checkoutRoot);
+  });
+
+  it("retries only snapshot container cleanup after worktree removal succeeds", () => {
+    const cli = loadBuildCli();
+    const temporaryRepositoryRoot = createTemporaryGitRepository(
+      "cli-snapshot-release-retry",
+    );
+    const commit = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: temporaryRepositoryRoot,
+      encoding: "utf8",
+    }).trim();
+    const snapshot = cli.createExactCommitProjectSnapshot({
+      commit,
+      projectRoot: join(temporaryRepositoryRoot, "formal"),
+      repositoryRoot: temporaryRepositoryRoot,
+      temporaryRoot: createTemporaryRoot("cli-snapshot-release-container"),
+    });
+    const containerRoot = dirname(snapshot.checkoutRoot);
+    const originalRmSync = mutableFs.rmSync;
+    let failedOnce = false;
+    mutableFs.rmSync = (...args: unknown[]) => {
+      if (args[0] === containerRoot && !failedOnce) {
+        failedOnce = true;
+        throw new Error("simulated snapshot container cleanup failure");
+      }
+      return originalRmSync(...args);
+    };
+
+    try {
+      expect(() => snapshot.release()).toThrow(
+        "simulated snapshot container cleanup failure",
+      );
+      expect(
+        execFileSync("git", ["worktree", "list", "--porcelain"], {
+          cwd: temporaryRepositoryRoot,
+          encoding: "utf8",
+        }),
+      ).not.toContain(snapshot.checkoutRoot);
+      expect(() => snapshot.release()).not.toThrow();
+      expect(existsSync(containerRoot)).toBe(false);
+    } finally {
+      mutableFs.rmSync = originalRmSync;
+    }
+  });
+
+  it("promotes a validated attempt and can finalize old backups", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-promote-success");
+    const finalBuildRoot = join(outputRoot, "web-mobile");
+    const finalLogPath = join(outputRoot, "hulebu-cocos-build.log");
+    mkdirSync(finalBuildRoot);
+    writeFileSync(join(finalBuildRoot, "version.txt"), "old", "utf8");
+    writeFileSync(finalLogPath, "old-log", "utf8");
+    const attempt = cli.createBuildAttempt({
+      outputName: "web-mobile",
+      outputRoot,
+    });
+    mkdirSync(attempt.buildRoot);
+    writeFileSync(join(attempt.buildRoot, "version.txt"), "new", "utf8");
+    writeFileSync(attempt.logPath, "new-log", "utf8");
+
+    const promotion = cli.beginBuildPromotion({
+      attemptBuildRoot: attempt.buildRoot,
+      attemptLogPath: attempt.logPath,
+      finalBuildRoot,
+      finalLogPath,
+      outputRoot,
+    });
+    expect(readFileSync(join(finalBuildRoot, "version.txt"), "utf8")).toBe(
+      "new",
+    );
+    expect(readFileSync(finalLogPath, "utf8")).toBe("new-log");
+    expect(promotion.finalize()).toEqual({ cleanupWarnings: [] });
+    attempt.cleanup();
+    expect(
+      readdirSync(outputRoot).filter((entry) =>
+        entry.startsWith(".hulebu-backup-"),
+      ),
+    ).toEqual([]);
+  });
+
+  it("restores the old build and log when promotion fails midway", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-promote-rollback");
+    const finalBuildRoot = join(outputRoot, "web-mobile");
+    const finalLogPath = join(outputRoot, "hulebu-cocos-build.log");
+    mkdirSync(finalBuildRoot);
+    writeFileSync(join(finalBuildRoot, "version.txt"), "old", "utf8");
+    writeFileSync(finalLogPath, "old-log", "utf8");
+    const attempt = cli.createBuildAttempt({
+      outputName: "web-mobile",
+      outputRoot,
+    });
+    mkdirSync(attempt.buildRoot);
+    writeFileSync(join(attempt.buildRoot, "version.txt"), "new", "utf8");
+    writeFileSync(attempt.logPath, "new-log", "utf8");
+    let renameCount = 0;
+
+    expect(() =>
+      cli.beginBuildPromotion({
+        attemptBuildRoot: attempt.buildRoot,
+        attemptLogPath: attempt.logPath,
+        finalBuildRoot,
+        finalLogPath,
+        outputRoot,
+        renameSync: (oldPath, newPath) => {
+          renameCount += 1;
+          if (renameCount === 4) throw new Error("simulated log promotion failure");
+          renameSync(oldPath, newPath);
+        },
+      }),
+    ).toThrow("simulated log promotion failure");
+    expect(readFileSync(join(finalBuildRoot, "version.txt"), "utf8")).toBe(
+      "old",
+    );
+    expect(readFileSync(finalLogPath, "utf8")).toBe("old-log");
+    expect(readFileSync(join(attempt.buildRoot, "version.txt"), "utf8")).toBe(
+      "new",
+    );
+    expect(readFileSync(attempt.logPath, "utf8")).toBe("new-log");
+  });
+
+  it("continues a partially failed rollback without moving restored files twice", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-promote-rollback-retry");
+    const finalBuildRoot = join(outputRoot, "web-mobile");
+    const finalLogPath = join(outputRoot, "hulebu-cocos-build.log");
+    mkdirSync(finalBuildRoot);
+    writeFileSync(join(finalBuildRoot, "version.txt"), "old", "utf8");
+    writeFileSync(finalLogPath, "old-log", "utf8");
+    const attempt = cli.createBuildAttempt({
+      outputName: "web-mobile",
+      outputRoot,
+    });
+    mkdirSync(attempt.buildRoot);
+    writeFileSync(join(attempt.buildRoot, "version.txt"), "new", "utf8");
+    writeFileSync(attempt.logPath, "new-log", "utf8");
+    let failNewBuildRollback = true;
+    const promotion = cli.beginBuildPromotion({
+      attemptBuildRoot: attempt.buildRoot,
+      attemptLogPath: attempt.logPath,
+      finalBuildRoot,
+      finalLogPath,
+      outputRoot,
+      renameSync: (oldPath, newPath) => {
+        if (
+          failNewBuildRollback &&
+          oldPath === finalBuildRoot &&
+          newPath === attempt.buildRoot
+        ) {
+          failNewBuildRollback = false;
+          throw new Error("simulated first rollback failure");
+        }
+        renameSync(oldPath, newPath);
+      },
+    });
+
+    expect(() => promotion.rollback()).toThrow(
+      "simulated first rollback failure",
+    );
+    expect(() => promotion.rollback()).not.toThrow();
+    expect(readFileSync(join(finalBuildRoot, "version.txt"), "utf8")).toBe(
+      "old",
+    );
+    expect(readFileSync(finalLogPath, "utf8")).toBe("old-log");
+    expect(readFileSync(join(attempt.buildRoot, "version.txt"), "utf8")).toBe(
+      "new",
+    );
+    expect(readFileSync(attempt.logPath, "utf8")).toBe("new-log");
+  });
+
+  it("rolls back an interrupted promotion journal before the next build", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-promote-journal-rollback");
+    const token = "e".repeat(32);
+    const attemptName = ".hulebu-attempt-crashed";
+    const attemptRoot = join(outputRoot, attemptName);
+    const finalBuildRoot = join(outputRoot, "web-mobile");
+    const finalLogPath = join(outputRoot, "hulebu-cocos-build.log");
+    const backupBuildName = `.hulebu-backup-build-${token}`;
+    const backupLogName = `.hulebu-backup-log-${token}`;
+    mkdirSync(finalBuildRoot);
+    writeFileSync(join(finalBuildRoot, "version.txt"), "new", "utf8");
+    mkdirSync(attemptRoot);
+    writeFileSync(join(attemptRoot, "hulebu-cocos-build.log"), "new-log", "utf8");
+    mkdirSync(join(outputRoot, backupBuildName));
+    writeFileSync(
+      join(outputRoot, backupBuildName, "version.txt"),
+      "old",
+      "utf8",
+    );
+    writeFileSync(join(outputRoot, backupLogName), "old-log", "utf8");
+    writeFileSync(
+      join(outputRoot, ".hulebu-cocos-promotion.json"),
+      `${JSON.stringify({
+        schemaVersion: 1,
+        token,
+        phase: "promoting",
+        step: "new-build-published",
+        attemptName,
+        backupBuildName,
+        backupLogName,
+        finalBuildName: "web-mobile",
+        finalLogName: "hulebu-cocos-build.log",
+        hadOldBuild: true,
+        hadOldLog: true,
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+
+    expect(cli.recoverPendingBuildPromotion(outputRoot)).toEqual({
+      action: "rolled-back",
+      cleanupWarnings: [],
+      recovered: true,
+    });
+    expect(readFileSync(join(finalBuildRoot, "version.txt"), "utf8")).toBe(
+      "old",
+    );
+    expect(readFileSync(finalLogPath, "utf8")).toBe("old-log");
+    expect(existsSync(attemptRoot)).toBe(false);
+    expect(existsSync(join(outputRoot, backupBuildName))).toBe(false);
+    expect(existsSync(join(outputRoot, backupLogName))).toBe(false);
+    expect(
+      existsSync(join(outputRoot, ".hulebu-cocos-promotion.json")),
+    ).toBe(false);
+  });
+
+  it("completes cleanup for a committed promotion journal", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-promote-journal-committed");
+    const token = "f".repeat(32);
+    const attemptName = ".hulebu-attempt-committed";
+    const backupBuildName = `.hulebu-backup-build-${token}`;
+    const backupLogName = `.hulebu-backup-log-${token}`;
+    const attemptRoot = join(outputRoot, attemptName);
+    const finalBuildRoot = join(outputRoot, "web-mobile");
+    const finalLogPath = join(outputRoot, "hulebu-cocos-build.log");
+    mkdirSync(finalBuildRoot);
+    writeFileSync(join(finalBuildRoot, "version.txt"), "new", "utf8");
+    writeFileSync(finalLogPath, "new-log", "utf8");
+    mkdirSync(attemptRoot);
+    mkdirSync(join(outputRoot, backupBuildName));
+    writeFileSync(
+      join(outputRoot, backupBuildName, "version.txt"),
+      "old",
+      "utf8",
+    );
+    writeFileSync(join(outputRoot, backupLogName), "old-log", "utf8");
+    writeFileSync(
+      join(outputRoot, ".hulebu-cocos-promotion.json"),
+      `${JSON.stringify({
+        schemaVersion: 1,
+        token,
+        phase: "committed",
+        step: "publication-verified",
+        attemptName,
+        backupBuildName,
+        backupLogName,
+        finalBuildName: "web-mobile",
+        finalLogName: "hulebu-cocos-build.log",
+        hadOldBuild: true,
+        hadOldLog: true,
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+
+    expect(cli.recoverPendingBuildPromotion(outputRoot)).toEqual({
+      action: "completed",
+      cleanupWarnings: [],
+      recovered: true,
+    });
+    expect(readFileSync(join(finalBuildRoot, "version.txt"), "utf8")).toBe(
+      "new",
+    );
+    expect(readFileSync(finalLogPath, "utf8")).toBe("new-log");
+    expect(existsSync(attemptRoot)).toBe(false);
+    expect(existsSync(join(outputRoot, backupBuildName))).toBe(false);
+    expect(existsSync(join(outputRoot, backupLogName))).toBe(false);
+    expect(
+      existsSync(join(outputRoot, ".hulebu-cocos-promotion.json")),
+    ).toBe(false);
+  });
+
+  it("does not overwrite a pending promotion journal", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-promote-journal-pending");
+    const pendingToken = "d".repeat(32);
+    const journalPath = join(outputRoot, ".hulebu-cocos-promotion.json");
+    const pendingJournal = `${JSON.stringify({
+      schemaVersion: 1,
+      token: pendingToken,
+      phase: "promoting",
+      step: "old-build-parked",
+      attemptName: ".hulebu-attempt-existing",
+      backupBuildName: `.hulebu-backup-build-${pendingToken}`,
+      backupLogName: `.hulebu-backup-log-${pendingToken}`,
+      finalBuildName: "web-mobile",
+      finalLogName: "hulebu-cocos-build.log",
+      hadOldBuild: true,
+      hadOldLog: true,
+    })}\n`;
+    writeFileSync(journalPath, pendingJournal, { encoding: "utf8", mode: 0o600 });
+    const attempt = cli.createBuildAttempt({
+      outputName: "web-mobile",
+      outputRoot,
+    });
+    mkdirSync(attempt.buildRoot);
+    writeFileSync(join(attempt.buildRoot, "version.txt"), "new", "utf8");
+    writeFileSync(attempt.logPath, "new-log", "utf8");
+
+    expect(() =>
+      cli.beginBuildPromotion({
+        attemptBuildRoot: attempt.buildRoot,
+        attemptLogPath: attempt.logPath,
+        finalBuildRoot: join(outputRoot, "web-mobile"),
+        finalLogPath: join(outputRoot, "hulebu-cocos-build.log"),
+        outputRoot,
+      }),
+    ).toThrow("pending build promotion must be recovered");
+    expect(readFileSync(journalPath, "utf8")).toBe(pendingJournal);
+    expect(readFileSync(join(attempt.buildRoot, "version.txt"), "utf8")).toBe(
+      "new",
+    );
+  });
+
+  it("creates an isolated attempt without touching the formal build", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-attempt-isolation");
     const buildRoot = join(outputRoot, "web-mobile");
     mkdirSync(buildRoot);
     writeFileSync(join(buildRoot, "old.txt"), "old", "utf8");
     writeFileSync(join(outputRoot, "keep.txt"), "keep", "utf8");
 
-    cli.prepareBuildOutput({ buildRoot, outputRoot });
+    const attempt = cli.createBuildAttempt({
+      outputName: "web-mobile",
+      outputRoot,
+    });
 
-    expect(existsSync(buildRoot)).toBe(false);
+    expect(readFileSync(join(buildRoot, "old.txt"), "utf8")).toBe("old");
     expect(readFileSync(join(outputRoot, "keep.txt"), "utf8")).toBe("keep");
+    expect(dirname(attempt.outputRoot)).toBe(outputRoot);
+    expect(attempt.buildRoot).toBe(join(attempt.outputRoot, "web-mobile"));
+    attempt.cleanup();
+    expect(existsSync(buildRoot)).toBe(true);
+  });
 
-    const externalRoot = createTemporaryRoot("cli-delete-target");
-    writeFileSync(join(externalRoot, "outside.txt"), "outside", "utf8");
-    if (!tryCreateSymlink(externalRoot, buildRoot, "dir")) return;
+  it("does not clean an attempt through a replaced output root path", () => {
+    const cli = loadBuildCli();
+    const parentRoot = createTemporaryRoot("cli-attempt-root-replaced");
+    const outputRoot = join(parentRoot, "output");
+    const parkedRoot = join(parentRoot, "parked-output");
+    mkdirSync(outputRoot);
+    const attempt = cli.createBuildAttempt({
+      outputName: "web-mobile",
+      outputRoot,
+    });
+    const attemptName = basename(attempt.outputRoot);
 
-    expect(() => cli.prepareBuildOutput({ buildRoot, outputRoot })).toThrow(
-      "build root must not be a symlink",
-    );
-    expect(readFileSync(join(externalRoot, "outside.txt"), "utf8")).toBe(
-      "outside",
+    renameSync(outputRoot, parkedRoot);
+    mkdirSync(join(outputRoot, attemptName), { recursive: true });
+    const replacementSentinel = join(outputRoot, attemptName, "keep.txt");
+    writeFileSync(replacementSentinel, "replacement", "utf8");
+
+    expect(() => attempt.cleanup()).toThrow("output root identity changed");
+    expect(readFileSync(replacementSentinel, "utf8")).toBe("replacement");
+  });
+
+  it("creates a diagnostic 0600 lock and rejects a concurrent live holder", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-lock-live");
+    const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+    const acquiredAt = new Date("2026-07-11T01:02:03.000Z");
+    const lock = cli.acquireOutputLock(outputRoot, {
+      hostname: "test-host",
+      now: () => acquiredAt,
+      pid: 4242,
+      tokenFactory: () => "a".repeat(64),
+    });
+
+    expect(JSON.parse(readFileSync(lockPath, "utf8"))).toEqual({
+      schemaVersion: 1,
+      token: "a".repeat(64),
+      pid: 4242,
+      hostname: "test-host",
+      acquiredAt: acquiredAt.toISOString(),
+    });
+    expect(statSync(lockPath).mode & 0o777).toBe(0o600);
+    expect(() =>
+      cli.acquireOutputLock(outputRoot, {
+        hostname: "test-host",
+        now: () => acquiredAt,
+        pid: 5252,
+        probePid: () => "alive",
+        tokenFactory: () => "b".repeat(64),
+      }),
+    ).toThrow("another Hulebu build is using output root");
+
+    lock.release();
+    expect(existsSync(lockPath)).toBe(false);
+    expect(() => lock.release()).not.toThrow();
+  });
+
+  it("invalidates a lock when the output root path is replaced", () => {
+    const cli = loadBuildCli();
+    const parentRoot = createTemporaryRoot("cli-lock-root-identity");
+    const outputRoot = join(parentRoot, "output");
+    const parkedRoot = join(parentRoot, "parked-output");
+    mkdirSync(outputRoot);
+    const lock = cli.acquireOutputLock(outputRoot, {
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:02:03.000Z"),
+      pid: 4242,
+      tokenFactory: () => "a".repeat(64),
+    });
+
+    renameSync(outputRoot, parkedRoot);
+    mkdirSync(outputRoot);
+
+    expect(() => lock.assertOwnership()).toThrow(
+      "output root identity changed",
     );
   });
 
-  it("aborts when the output directory identity changes before deletion", () => {
+  it("does not acquire a concurrent lock through a replaced output root path", () => {
     const cli = loadBuildCli();
-    const parentRoot = createTemporaryRoot("cli-delete-swap");
+    const parentRoot = createTemporaryRoot("cli-lock-root-replaced");
     const outputRoot = join(parentRoot, "output");
-    const parkedOutputRoot = join(parentRoot, "output-original");
-    const buildRoot = join(outputRoot, "web-mobile");
-    const externalRoot = createTemporaryRoot("cli-delete-swap-target");
-    const externalBuildRoot = join(externalRoot, "web-mobile");
-    mkdirSync(buildRoot, { recursive: true });
-    mkdirSync(externalBuildRoot, { recursive: true });
-    writeFileSync(join(buildRoot, "old.txt"), "old", "utf8");
-    writeFileSync(join(externalBuildRoot, "outside.txt"), "outside", "utf8");
+    const parkedRoot = join(parentRoot, "parked-output");
+    mkdirSync(outputRoot);
+    cli.acquireOutputLock(outputRoot, {
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:02:03.000Z"),
+      pid: 4242,
+      tokenFactory: () => "a".repeat(64),
+    });
 
-    const probePath = join(parentRoot, "symlink-probe");
-    if (!tryCreateSymlink(externalRoot, probePath, "dir")) return;
-    rmSync(probePath);
+    renameSync(outputRoot, parkedRoot);
+    mkdirSync(outputRoot);
 
-    const originalLstatSync = mutableFs.lstatSync;
-    let swapped = false;
-    mutableFs.lstatSync = (...args: unknown[]) => {
-      const status = originalLstatSync(...args);
-      if (!swapped && args[0] === buildRoot) {
-        swapped = true;
-        renameSync(outputRoot, parkedOutputRoot);
-        symlinkSync(externalRoot, outputRoot, "dir");
-      }
-      return status;
-    };
+    expect(() =>
+      cli.acquireOutputLock(outputRoot, {
+        hostname: "test-host",
+        now: () => new Date("2026-07-11T01:02:04.000Z"),
+        pid: 5252,
+        probePid: () => "alive",
+        tokenFactory: () => "b".repeat(64),
+      }),
+    ).toThrow("another Hulebu build is using output root");
+  });
 
-    try {
-      expect(() => cli.prepareBuildOutput({ buildRoot, outputRoot })).toThrow(
-        "output root changed during cleanup",
+  it("stops before validation and promotion when Creator replaces the output root", async () => {
+    const cli = loadBuildCli();
+    const parentRoot = createTemporaryRoot("cli-lock-root-build-race");
+    const outputRoot = join(parentRoot, "output");
+    const parkedRoot = join(parentRoot, "parked-output");
+    const projectRoot = createTemporaryRoot("cli-lock-root-build-project");
+    mkdirSync(outputRoot);
+    let validationCalled = false;
+    let promotionCalled = false;
+
+    await expect(
+      cli.runRelease(["--output-root", outputRoot], {
+        assertReleaseInputsClean: () => ({
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+        }),
+        createExactCommitProjectSnapshot: () => ({
+          checkoutRoot: join(projectRoot, "checkout"),
+          projectRoot,
+          release: () => undefined,
+        }),
+        environment: {},
+        getCommit: () => FULL_COMMIT_A,
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
+        inspectCreatorExecutable: () => CREATOR_EXECUTABLE_EVIDENCE,
+        loadReleaseConfig: () => config,
+        paths: {
+          configPath: realConfigPath,
+          projectRoot,
+          repositoryRoot,
+        },
+        releaseSourceInputs: ["formal"],
+        runCreatorProcess: async () => {
+          renameSync(outputRoot, parkedRoot);
+          mkdirSync(outputRoot);
+          return {
+            logPath: join(parkedRoot, "attempt.log"),
+            logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
+            outcome: { kind: "exit", exitCode: 0 },
+          };
+        },
+        validateBuildArtifacts: () => {
+          validationCalled = true;
+          return { ok: true, errors: [] };
+        },
+        beginBuildPromotion: () => {
+          promotionCalled = true;
+          throw new Error("promotion must not run");
+        },
+      }),
+    ).rejects.toThrow("output root identity changed");
+
+    expect(validationCalled).toBe(false);
+    expect(promotionCalled).toBe(false);
+    expect(existsSync(join(outputRoot, "web-mobile"))).toBe(false);
+  });
+
+  it("does not delete a replacement lock when the old holder releases", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-lock-replaced");
+    const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+    const parkedPath = join(outputRoot, "parked.lock");
+    const lock = cli.acquireOutputLock(outputRoot, {
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:02:03.000Z"),
+      pid: 4242,
+      tokenFactory: () => "a".repeat(64),
+    });
+    renameSync(lockPath, parkedPath);
+    writeFileSync(
+      lockPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        token: "b".repeat(64),
+        pid: 5252,
+        hostname: "test-host",
+        acquiredAt: "2026-07-11T01:02:04.000Z",
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+
+    expect(() => lock.release()).toThrow("build lock ownership changed");
+    expect(JSON.parse(readFileSync(lockPath, "utf8"))).toMatchObject({
+      token: "b".repeat(64),
+    });
+  });
+
+  it("reclaims a confirmed-dead stale lock through a recovery claim", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-lock-stale");
+    const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+    writeFileSync(
+      lockPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        token: "a".repeat(64),
+        pid: 1111,
+        hostname: "test-host",
+        acquiredAt: "2026-07-11T01:00:00.000Z",
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+
+    const lock = cli.acquireOutputLock(outputRoot, {
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:02:03.000Z"),
+      pid: 2222,
+      probePid: () => "dead",
+      staleGraceMs: 30_000,
+      tokenFactory: () => "b".repeat(64),
+    });
+    expect(JSON.parse(readFileSync(lockPath, "utf8"))).toMatchObject({
+      token: "b".repeat(64),
+      pid: 2222,
+    });
+    expect(
+      readdirSync(outputRoot).filter((entry) => entry.includes(".reap-")),
+    ).toEqual([]);
+    lock.release();
+  });
+
+  it("recovers an orphaned dead stale-lock recovery claim", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-lock-stale-claim");
+    const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+    const staleLockText = `${JSON.stringify({
+      schemaVersion: 1,
+      token: "a".repeat(64),
+      pid: 1111,
+      hostname: "test-host",
+      acquiredAt: "2026-07-11T01:00:00.000Z",
+    })}\n`;
+    const targetFingerprint = createHash("sha256")
+      .update(staleLockText)
+      .digest("hex");
+    const claimPath = `${lockPath}.reap-${targetFingerprint.slice(0, 32)}`;
+    writeFileSync(lockPath, staleLockText, {
+      encoding: "utf8",
+      mode: 0o600,
+    });
+    writeFileSync(
+      claimPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        token: "c".repeat(64),
+        pid: 3333,
+        hostname: "test-host",
+        acquiredAt: "2026-07-11T01:00:30.000Z",
+        targetFingerprint,
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+
+    const lock = cli.acquireOutputLock(outputRoot, {
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:02:03.000Z"),
+      pid: 2222,
+      probePid: () => "dead",
+      staleGraceMs: 30_000,
+      tokenFactory: () => "b".repeat(64),
+    });
+
+    expect(JSON.parse(readFileSync(lockPath, "utf8"))).toMatchObject({
+      token: "b".repeat(64),
+      pid: 2222,
+    });
+    expect(existsSync(claimPath)).toBe(false);
+    lock.release();
+  });
+
+  it.each(["", '{"schemaVersion":1'])(
+    "recovers an old invalid stale-lock recovery claim %j",
+    (claimText) => {
+      const cli = loadBuildCli();
+      const outputRoot = createTemporaryRoot("cli-lock-invalid-claim");
+      const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+      const staleLockText = `${JSON.stringify({
+        schemaVersion: 1,
+        token: "a".repeat(64),
+        pid: 1111,
+        hostname: "test-host",
+        acquiredAt: "2026-07-11T01:00:00.000Z",
+      })}\n`;
+      const targetFingerprint = createHash("sha256")
+        .update(staleLockText)
+        .digest("hex");
+      const claimPath = `${lockPath}.reap-${targetFingerprint.slice(0, 32)}`;
+      writeFileSync(lockPath, staleLockText, { encoding: "utf8", mode: 0o600 });
+      writeFileSync(claimPath, claimText, { encoding: "utf8", mode: 0o600 });
+      const oldTime = new Date("2026-07-11T01:00:30.000Z");
+      utimesSync(claimPath, oldTime, oldTime);
+
+      const lock = cli.acquireOutputLock(outputRoot, {
+        hostname: "test-host",
+        now: () => new Date("2026-07-11T01:02:03.000Z"),
+        pid: 2222,
+        probePid: () => "dead",
+        staleGraceMs: 30_000,
+        tokenFactory: () => "b".repeat(64),
+      });
+
+      expect(existsSync(claimPath)).toBe(false);
+      expect(JSON.parse(readFileSync(lockPath, "utf8"))).toMatchObject({
+        token: "b".repeat(64),
+      });
+      lock.release();
+    },
+  );
+
+  it.each([
+    ["fresh dead", "dead", "2026-07-11T01:01:50.000Z"],
+    ["old alive", "alive", "2026-07-11T01:00:30.000Z"],
+  ] as const)(
+    "does not reclaim through a %s stale-lock recovery claim",
+    (_label, claimProbe, claimAcquiredAt) => {
+      const cli = loadBuildCli();
+      const outputRoot = createTemporaryRoot("cli-lock-held-claim");
+      const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+      const staleLockText = `${JSON.stringify({
+        schemaVersion: 1,
+        token: "a".repeat(64),
+        pid: 1111,
+        hostname: "test-host",
+        acquiredAt: "2026-07-11T01:00:00.000Z",
+      })}\n`;
+      const targetFingerprint = createHash("sha256")
+        .update(staleLockText)
+        .digest("hex");
+      const claimPath = `${lockPath}.reap-${targetFingerprint.slice(0, 32)}`;
+      writeFileSync(lockPath, staleLockText, {
+        encoding: "utf8",
+        mode: 0o600,
+      });
+      writeFileSync(
+        claimPath,
+        `${JSON.stringify({
+          schemaVersion: 1,
+          token: "c".repeat(64),
+          pid: 3333,
+          hostname: "test-host",
+          acquiredAt: claimAcquiredAt,
+          targetFingerprint,
+        })}\n`,
+        { encoding: "utf8", mode: 0o600 },
       );
-      expect(readFileSync(join(externalBuildRoot, "outside.txt"), "utf8")).toBe(
-        "outside",
-      );
-      expect(
-        readFileSync(join(parkedOutputRoot, "web-mobile/old.txt"), "utf8"),
-      ).toBe("old");
-    } finally {
-      mutableFs.lstatSync = originalLstatSync;
-      if (existsSync(outputRoot) && lstatSync(outputRoot).isSymbolicLink()) {
-        rmSync(outputRoot);
-      }
-      if (existsSync(parkedOutputRoot)) {
-        renameSync(parkedOutputRoot, outputRoot);
-      }
-    }
+
+      expect(() =>
+        cli.acquireOutputLock(outputRoot, {
+          hostname: "test-host",
+          now: () => new Date("2026-07-11T01:02:03.000Z"),
+          pid: 2222,
+          probePid: (pid) => (pid === 1111 ? "dead" : claimProbe),
+          staleGraceMs: 30_000,
+          tokenFactory: () => "b".repeat(64),
+        }),
+      ).toThrow("another process is recovering the stale Hulebu build lock");
+      expect(existsSync(lockPath)).toBe(true);
+      expect(existsSync(claimPath)).toBe(true);
+    },
+  );
+
+  it.each([
+    ["fresh dead", "dead", "2026-07-11T01:01:50.000Z"],
+    ["old alive", "alive", "2026-07-11T01:00:00.000Z"],
+    ["old unknown", "unknown", "2026-07-11T01:00:00.000Z"],
+  ] as const)("does not reclaim a %s lock", (_label, probe, acquiredAt) => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-lock-not-stale");
+    const lockPath = join(outputRoot, ".hulebu-cocos-build.lock");
+    writeFileSync(
+      lockPath,
+      `${JSON.stringify({
+        schemaVersion: 1,
+        token: "a".repeat(64),
+        pid: 1111,
+        hostname: "test-host",
+        acquiredAt,
+      })}\n`,
+      { encoding: "utf8", mode: 0o600 },
+    );
+
+    expect(() =>
+      cli.acquireOutputLock(outputRoot, {
+        hostname: "test-host",
+        now: () => new Date("2026-07-11T01:02:03.000Z"),
+        pid: 2222,
+        probePid: () => probe,
+        staleGraceMs: 30_000,
+        tokenFactory: () => "b".repeat(64),
+      }),
+    ).toThrow("another Hulebu build is using output root");
+    expect(JSON.parse(readFileSync(lockPath, "utf8"))).toMatchObject({
+      token: "a".repeat(64),
+    });
+  });
+
+  it("rejects a symlink used as the output root", () => {
+    const cli = loadBuildCli();
+    const parentRoot = createTemporaryRoot("cli-output-symlink");
+    const externalRoot = createTemporaryRoot("cli-output-symlink-target");
+    const outputRoot = join(parentRoot, "output");
+    if (!tryCreateSymlink(externalRoot, outputRoot, "dir")) return;
+
+    expect(() =>
+      cli.createBuildAttempt({ outputName: "web-mobile", outputRoot }),
+    ).toThrow("output root must be a real directory");
   });
 
   it("captures one combined Creator log with shell disabled", async () => {
@@ -1502,9 +3062,26 @@ describe("Hulebu Cocos production build CLI", () => {
     const buildRoot = join(outputRoot, config.outputName);
     cpSync(createValidBuild(config), buildRoot, { recursive: true });
     const logPath = join(outputRoot, "hulebu-cocos-build.log");
-    const manifestPath = join(buildRoot, "hulebu-build.json");
     writeFileSync(logPath, "existing log", "utf8");
-    writeFileSync(manifestPath, '{"existing":true}\n', "utf8");
+    const manifest = writeBuildManifest(buildRoot, {
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
+      config,
+      creatorDecision: {
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      createdAt: "2026-07-11T01:02:03.000Z",
+      releaseConfigSha256: RELEASE_CONFIG_SHA256,
+      sourceInputs: ["formal"],
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
+      smokeResults: createSmokeEvidence(config, buildRoot),
+    });
+    const manifestPath = manifest.path;
     const before = {
       log: readFileSync(logPath, "utf8"),
       logMtime: statSync(logPath).mtimeMs,
@@ -1518,13 +3095,20 @@ describe("Hulebu Cocos production build CLI", () => {
       {
         cwd: repositoryRoot,
         environment: {},
-        getCommit: () => "abcdef123456",
+        assertReleaseInputsClean: () => ({
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+        }),
+        getCommit: () => FULL_COMMIT_A,
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
         now: () => new Date("2026-07-11T01:02:03.456Z"),
         paths: {
           configPath: realConfigPath,
           projectRoot: createTemporaryRoot("cli-verify-project"),
           repositoryRoot,
         },
+        releaseSourceInputs: ["formal"],
         runCreatorProcess: () => {
           creatorInvoked = true;
           throw new Error("Creator must not run");
@@ -1536,9 +3120,13 @@ describe("Hulebu Cocos production build CLI", () => {
       ok: true,
       mode: "verify-only",
       buildRoot,
-      commit: "abcdef123456",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+      commit: FULL_COMMIT_A,
       creatorInvoked: false,
       manifestWritten: false,
+      sourceInputs: ["formal"],
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
       verifiedAt: "2026-07-11T01:02:03.456Z",
     });
     expect(creatorInvoked).toBe(false);
@@ -1552,27 +3140,56 @@ describe("Hulebu Cocos production build CLI", () => {
     const cli = loadBuildCli();
     const events: string[] = [];
     const outputRoot = createTemporaryRoot("cli-order");
+    const projectRoot = createTemporaryRoot("cli-order-project");
+    const lifecycle = createMockReleaseLifecycle(
+      outputRoot,
+      projectRoot,
+      events,
+    );
     const smokeResults = [{ pathname: "/", status: 200, bytes: 10 }];
     const summary = await cli.runRelease(["--output-root", outputRoot], {
       cwd: repositoryRoot,
       environment: {},
+      assertReleaseInputsClean: () => {
+        events.push("source-clean");
+        return {
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+        };
+      },
       evaluateCreatorBuild: (input: CreatorBuildInput) => {
         events.push("evaluate");
         expect(input.exitCode).toBe(36);
-        return { accepted: true, normalized: true, originalExitCode: 36 };
+        return {
+          accepted: true,
+          actualCreatorVersion: config.creatorVersion,
+          normalized: true,
+          originalExitCode: 36,
+        };
       },
       getCommit: () => {
         events.push("commit");
-        return "abcdef123456";
+        return FULL_COMMIT_A;
       },
+      hashFileSha256: () => RELEASE_CONFIG_SHA256,
       loadReleaseConfig: () => config,
       now: () => new Date("2026-07-11T01:02:03.456Z"),
       paths: {
         configPath: realConfigPath,
-        projectRoot: createTemporaryRoot("cli-order-project"),
+        projectRoot,
         repositoryRoot,
       },
-      prepareBuildOutput: () => events.push("prepare"),
+      ...lifecycle,
+      releaseSourceInputs: ["formal"],
+      readBuildManifest: () => {
+        events.push("manifest-read");
+        return {
+          buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+          commit: FULL_COMMIT_A,
+          createdAt: "2026-07-11T01:02:03.456Z",
+        };
+      },
       runCreatorProcess: async () => {
         events.push("creator");
         return {
@@ -1595,9 +3212,14 @@ describe("Hulebu Cocos production build CLI", () => {
       ) => {
         events.push("manifest");
         expect(input).toMatchObject({
-          buildId: "abcdef123456-20260711T010203Z",
-          commit: "abcdef123456",
+          buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+          commit: FULL_COMMIT_A,
           createdAt: "2026-07-11T01:02:03.456Z",
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+          releaseConfigSha256: RELEASE_CONFIG_SHA256,
+          creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
           smokeResults,
         });
         return {
@@ -1608,22 +3230,374 @@ describe("Hulebu Cocos production build CLI", () => {
     });
 
     expect(events).toEqual([
+      "promotion-recover",
       "commit",
-      "prepare",
+      "source-clean",
+      "commit",
+      "creator-inspect",
+      "snapshot",
+      "attempt",
       "creator",
       "validate",
       "evaluate",
       "smoke",
+      "commit",
+      "source-clean",
+      "commit",
       "manifest",
+      "manifest-read",
+      "commit",
+      "source-clean",
+      "commit",
+      "snapshot-release",
+      "promote",
+      "manifest-read",
+      "commit",
+      "source-clean",
+      "commit",
+      "promote-finalize",
+      "attempt-cleanup",
     ]);
     expect(summary).toMatchObject({
       ok: true,
       mode: "build",
-      buildId: "abcdef123456-20260711T010203Z",
+      buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       creatorExitCode: 36,
       creatorExitNormalized: true,
+      ...CREATOR_EXECUTABLE_EVIDENCE,
+      sourceInputs: ["formal"],
+      sourceState: "clean",
+      sourceTreeSha256: SOURCE_TREE_SHA256,
       smokeResults,
     });
+  });
+
+  it("rejects dirty inputs before acquiring the output lock or running Creator", async () => {
+    const cli = loadBuildCli();
+    let lockCalled = false;
+    let lockReleased = false;
+    let creatorCalled = false;
+
+    await expect(
+      cli.runRelease([], {
+        assertReleaseInputsClean: () => {
+          throw new Error("formal build inputs are dirty: formal/input.ts");
+        },
+        acquireOutputLock: () => {
+          lockCalled = true;
+          return { release: () => { lockReleased = true; } };
+        },
+        environment: {},
+        getCommit: () => FULL_COMMIT_A,
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
+        loadReleaseConfig: () => config,
+        paths: {
+          configPath: realConfigPath,
+          projectRoot: createTemporaryRoot("cli-preflight-project"),
+          repositoryRoot,
+        },
+        runCreatorProcess: async () => {
+          creatorCalled = true;
+          throw new Error("Creator must not run");
+        },
+      }),
+    ).rejects.toThrow("formal build inputs are dirty: formal/input.ts");
+    expect(lockCalled).toBe(true);
+    expect(lockReleased).toBe(true);
+    expect(creatorCalled).toBe(false);
+  });
+
+  it("reports both the build failure and the lock release failure", async () => {
+    const cli = loadBuildCli();
+
+    await expect(
+      cli.runRelease([], {
+        acquireOutputLock: () => ({
+          release: () => {
+            throw new Error("simulated unlock failure");
+          },
+        }),
+        assertReleaseInputsClean: () => {
+          throw new Error("simulated source failure");
+        },
+        environment: {},
+        getCommit: () => FULL_COMMIT_A,
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
+        loadReleaseConfig: () => config,
+        paths: {
+          configPath: realConfigPath,
+          projectRoot: createTemporaryRoot("cli-combined-failure-project"),
+          repositoryRoot,
+        },
+      }),
+    ).rejects.toThrow(
+      "simulated source failure; unable to release build lock: simulated unlock failure",
+    );
+  });
+
+  it("reports a post-publication unlock failure as a cleanup warning", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-post-publish-unlock");
+    const projectRoot = createTemporaryRoot("cli-post-publish-project");
+    const lifecycle = createMockReleaseLifecycle(outputRoot, projectRoot);
+
+    const summary = await cli.runRelease(["--output-root", outputRoot], {
+      ...lifecycle,
+      acquireOutputLock: () => ({
+        assertOwnership: () => undefined,
+        release: () => {
+          throw new Error("simulated post-publish unlock failure");
+        },
+      }),
+      captureReleaseSourceState: () => ({
+        commit: FULL_COMMIT_A,
+        sourceInputs: ["formal"],
+        sourceState: "clean",
+        sourceTreeSha256: SOURCE_TREE_SHA256,
+      }),
+      environment: {},
+      evaluateCreatorBuild: () => ({
+        accepted: true,
+        actualCreatorVersion: config.creatorVersion,
+        normalized: false,
+        originalExitCode: 0,
+      }),
+      hashFileSha256: () => RELEASE_CONFIG_SHA256,
+      loadReleaseConfig: () => config,
+      now: () => new Date("2026-07-11T01:02:03.000Z"),
+      paths: { configPath: realConfigPath, projectRoot, repositoryRoot },
+      readBuildManifest: () => ({
+        buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+        commit: FULL_COMMIT_A,
+        createdAt: "2026-07-11T01:02:03.000Z",
+      }),
+      releaseSourceInputs: ["formal"],
+      runCreatorProcess: async () => ({
+        logPath: lifecycle.attemptLogPath,
+        logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
+        outcome: { kind: "exit", exitCode: 0 },
+      }),
+      smokeBuild: async () => [],
+      validateBuildArtifacts: () => ({ ok: true, errors: [] }),
+      writeBuildManifest: () => ({ path: "manifest", data: {} }),
+    });
+
+    expect(summary).toMatchObject({
+      ok: true,
+      cleanupWarnings: [
+        "build lock release: simulated post-publish unlock failure",
+      ],
+    });
+  });
+
+  it("rejects sources or HEAD changed during the build before writing manifest", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-source-race");
+    let sourceCheckCount = 0;
+    let commitReadCount = 0;
+    let manifestCalled = false;
+    const projectRoot = createTemporaryRoot("cli-source-race-project");
+    const lifecycle = createMockReleaseLifecycle(outputRoot, projectRoot);
+
+    await expect(
+      cli.runRelease(["--output-root", outputRoot], {
+        assertReleaseInputsClean: () => {
+          sourceCheckCount += 1;
+          if (sourceCheckCount === 2) {
+            throw new Error("formal build inputs are dirty: formal/changed.ts");
+          }
+          return {
+            sourceInputs: ["formal"],
+            sourceState: "clean",
+            sourceTreeSha256: SOURCE_TREE_SHA256,
+          };
+        },
+        environment: {},
+        evaluateCreatorBuild: () => ({
+          accepted: true,
+          actualCreatorVersion: config.creatorVersion,
+          normalized: false,
+          originalExitCode: 0,
+        }),
+        getCommit: () => {
+          commitReadCount += 1;
+          return FULL_COMMIT_A;
+        },
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
+        loadReleaseConfig: () => config,
+      paths: {
+        configPath: realConfigPath,
+        projectRoot,
+        repositoryRoot,
+      },
+      ...lifecycle,
+        runCreatorProcess: async () => ({
+          logPath: join(outputRoot, "hulebu-cocos-build.log"),
+          logText: config.finishedMarker,
+          outcome: { kind: "exit", exitCode: 0 },
+        }),
+        smokeBuild: async () => [],
+        validateBuildArtifacts: () => ({ ok: true, errors: [] }),
+        writeBuildManifest: () => {
+          manifestCalled = true;
+          return { path: "/tmp/manifest", data: {} };
+        },
+      }),
+    ).rejects.toThrow("formal build inputs are dirty: formal/changed.ts");
+    expect(sourceCheckCount).toBe(2);
+    expect(commitReadCount).toBe(3);
+    expect(manifestCalled).toBe(false);
+  });
+
+  it("rejects a HEAD change before promotion and cleans the attempt manifest", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-manifest-race");
+    const projectRoot = createTemporaryRoot("cli-manifest-race-project");
+    const lifecycle = createMockReleaseLifecycle(outputRoot, projectRoot);
+    const manifestPath = join(
+      lifecycle.attemptBuildRoot,
+      "hulebu-build.json",
+    );
+    let captureCount = 0;
+
+    await expect(
+      cli.runRelease(["--output-root", outputRoot], {
+        captureReleaseSourceState: () => {
+          captureCount += 1;
+          return {
+            commit: captureCount < 3 ? FULL_COMMIT_A : FULL_COMMIT_B,
+            sourceInputs: ["formal"],
+            sourceState: "clean",
+            sourceTreeSha256: SOURCE_TREE_SHA256,
+          };
+        },
+        environment: {},
+        evaluateCreatorBuild: () => ({
+          accepted: true,
+          actualCreatorVersion: config.creatorVersion,
+          normalized: false,
+          originalExitCode: 0,
+        }),
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
+        loadReleaseConfig: () => config,
+      paths: {
+        configPath: realConfigPath,
+        projectRoot,
+        repositoryRoot,
+      },
+      ...lifecycle,
+        readBuildManifest: () => ({
+          buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+          commit: FULL_COMMIT_A,
+          createdAt: "2026-07-11T01:02:03.000Z",
+        }),
+        runCreatorProcess: async () => ({
+          logPath: join(outputRoot, "hulebu-cocos-build.log"),
+          logText: config.finishedMarker,
+          outcome: { kind: "exit", exitCode: 0 },
+        }),
+        smokeBuild: async () => [],
+        validateBuildArtifacts: () => ({ ok: true, errors: [] }),
+        writeBuildManifest: () => {
+          mkdirSync(lifecycle.attemptBuildRoot, { recursive: true });
+          writeFileSync(manifestPath, '{"temporary":true}\n', "utf8");
+          return { path: manifestPath, data: {} };
+        },
+      }),
+    ).rejects.toThrow("HEAD changed while preparing build publication");
+    expect(captureCount).toBe(3);
+    expect(existsSync(manifestPath)).toBe(false);
+  });
+
+  it("preserves the attempt when publication rollback cannot complete", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-rollback-preserve-attempt");
+    const projectRoot = createTemporaryRoot("cli-rollback-preserve-project");
+    const attemptRoot = join(outputRoot, ".hulebu-attempt-preserve");
+    const attemptBuildRoot = join(attemptRoot, "web-mobile");
+    const attemptLogPath = join(attemptRoot, "hulebu-cocos-build.log");
+    let attemptCleanupCalled = false;
+    let manifestReadCount = 0;
+    let rollbackCount = 0;
+
+    await expect(
+      cli.runRelease(["--output-root", outputRoot], {
+        acquireOutputLock: () => ({
+          assertOwnership: () => undefined,
+          release: () => undefined,
+        }),
+        beginBuildPromotion: () => ({
+          finalize: () => ({ cleanupWarnings: [] }),
+          rollback: () => {
+            rollbackCount += 1;
+            throw new Error("simulated persistent rollback failure");
+          },
+        }),
+        captureReleaseSourceState: () => ({
+          commit: FULL_COMMIT_A,
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+        }),
+        createBuildAttempt: () => {
+          mkdirSync(attemptBuildRoot, { recursive: true });
+          writeFileSync(attemptLogPath, "new-log", "utf8");
+          return {
+            buildRoot: attemptBuildRoot,
+            cleanup: () => {
+              attemptCleanupCalled = true;
+              rmSync(attemptRoot, { force: true, recursive: true });
+            },
+            logPath: attemptLogPath,
+            outputRoot: attemptRoot,
+          };
+        },
+        createExactCommitProjectSnapshot: () => ({
+          checkoutRoot: join(projectRoot, "checkout"),
+          projectRoot,
+          release: () => undefined,
+        }),
+        environment: {},
+        evaluateCreatorBuild: () => ({
+          accepted: true,
+          actualCreatorVersion: config.creatorVersion,
+          normalized: false,
+          originalExitCode: 0,
+        }),
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
+        inspectCreatorExecutable: () => CREATOR_EXECUTABLE_EVIDENCE,
+        loadReleaseConfig: () => config,
+        paths: { configPath: realConfigPath, projectRoot, repositoryRoot },
+        readBuildManifest: () => {
+          manifestReadCount += 1;
+          if (manifestReadCount === 2) {
+            throw new Error("simulated published manifest failure");
+          }
+          return {
+            buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
+            commit: FULL_COMMIT_A,
+            createdAt: "2026-07-11T01:02:03.000Z",
+          };
+        },
+        recoverPendingBuildPromotion: () => ({
+          cleanupWarnings: [],
+          recovered: false,
+        }),
+        releaseSourceInputs: ["formal"],
+        runCreatorProcess: async () => ({
+          logPath: attemptLogPath,
+          logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
+          outcome: { kind: "exit", exitCode: 0 },
+        }),
+        smokeBuild: async () => [],
+        validateBuildArtifacts: () => ({ ok: true, errors: [] }),
+        writeBuildManifest: () => ({ path: "manifest", data: {} }),
+      }),
+    ).rejects.toThrow("simulated persistent rollback failure");
+
+    expect(rollbackCount).toBe(2);
+    expect(attemptCleanupCalled).toBe(false);
+    expect(existsSync(attemptRoot)).toBe(true);
   });
 
   it.each([
@@ -1638,18 +3612,30 @@ describe("Hulebu Cocos production build CLI", () => {
       const cli = loadBuildCli();
       let smokeCalled = false;
       let manifestCalled = false;
+      const outputRoot = createTemporaryRoot(`cli-terminal-${outcome.kind}`);
+      const projectRoot = createTemporaryRoot(
+        `cli-terminal-project-${outcome.kind}`,
+      );
+      const lifecycle = createMockReleaseLifecycle(outputRoot, projectRoot);
 
       await expect(
-        cli.runRelease([], {
+        cli.runRelease(["--output-root", outputRoot], {
+          assertReleaseInputsClean: () => ({
+            sourceInputs: ["formal"],
+            sourceState: "clean",
+            sourceTreeSha256: SOURCE_TREE_SHA256,
+          }),
           environment: {},
-          getCommit: () => "abcdef123456",
+          getCommit: () => FULL_COMMIT_A,
+          hashFileSha256: () => RELEASE_CONFIG_SHA256,
           loadReleaseConfig: () => config,
           paths: {
             configPath: realConfigPath,
-            projectRoot: createTemporaryRoot("cli-terminal-project"),
+            projectRoot,
             repositoryRoot,
           },
-          prepareBuildOutput: () => undefined,
+          ...lifecycle,
+          releaseSourceInputs: ["formal"],
           runCreatorProcess: async () => ({
             logPath: "/tmp/fake.log",
             logText: "wrapper failure",
@@ -1671,27 +3657,55 @@ describe("Hulebu Cocos production build CLI", () => {
     },
   );
 
-  it("removes a final-named manifest recreated by a failed Creator attempt", async () => {
+  it("preserves the formal build when a failed attempt writes an untrusted manifest", async () => {
     const cli = loadBuildCli();
     const outputRoot = createTemporaryRoot("cli-failed-manifest");
     const buildRoot = join(outputRoot, config.outputName);
     const manifestPath = join(buildRoot, "hulebu-build.json");
+    const logPath = join(outputRoot, "hulebu-cocos-build.log");
+    const projectRoot = createTemporaryRoot("cli-failed-manifest-project");
+    const lifecycle = createMockReleaseLifecycle(outputRoot, projectRoot);
+    mkdirSync(buildRoot, { recursive: true });
+    writeFileSync(manifestPath, '{"trusted":"old"}\n', "utf8");
+    writeFileSync(logPath, "old-log\n", "utf8");
+    const before = {
+      log: readFileSync(logPath, "utf8"),
+      logMtime: statSync(logPath).mtimeMs,
+      manifest: readFileSync(manifestPath, "utf8"),
+      manifestMtime: statSync(manifestPath).mtimeMs,
+    };
+    const untrustedManifestPath = join(
+      lifecycle.attemptBuildRoot,
+      "hulebu-build.json",
+    );
 
     await expect(
       cli.runRelease(["--output-root", outputRoot], {
+        assertReleaseInputsClean: () => ({
+          sourceInputs: ["formal"],
+          sourceState: "clean",
+          sourceTreeSha256: SOURCE_TREE_SHA256,
+        }),
         environment: {},
-        getCommit: () => "abcdef123456",
+        getCommit: () => FULL_COMMIT_A,
+        hashFileSha256: () => RELEASE_CONFIG_SHA256,
         loadReleaseConfig: () => config,
         paths: {
           configPath: realConfigPath,
-          projectRoot: createTemporaryRoot("cli-failed-manifest-project"),
+          projectRoot,
           repositoryRoot,
         },
+        ...lifecycle,
+        releaseSourceInputs: ["formal"],
         runCreatorProcess: async () => {
-          mkdirSync(buildRoot, { recursive: true });
-          writeFileSync(manifestPath, '{"untrusted":true}\n', "utf8");
+          mkdirSync(lifecycle.attemptBuildRoot, { recursive: true });
+          writeFileSync(
+            untrustedManifestPath,
+            '{"untrusted":true}\n',
+            "utf8",
+          );
           return {
-            logPath: join(outputRoot, "hulebu-cocos-build.log"),
+            logPath: lifecycle.attemptLogPath,
             logText: "partial build",
             outcome: { kind: "signal", signal: "SIGTERM" },
           };
@@ -1700,7 +3714,11 @@ describe("Hulebu Cocos production build CLI", () => {
       }),
     ).rejects.toThrow("signal SIGTERM");
 
-    expect(existsSync(manifestPath)).toBe(false);
+    expect(readFileSync(manifestPath, "utf8")).toBe(before.manifest);
+    expect(statSync(manifestPath).mtimeMs).toBe(before.manifestMtime);
+    expect(readFileSync(logPath, "utf8")).toBe(before.log);
+    expect(statSync(logPath).mtimeMs).toBe(before.logMtime);
+    expect(existsSync(untrustedManifestPath)).toBe(false);
   });
 
   it("prints one compact success line or one sanitized error line", async () => {
