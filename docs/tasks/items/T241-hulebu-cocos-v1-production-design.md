@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 默认负责人：Lee
-- 状态：待验收
+- 状态：已完成
 - 依赖：方向确认完成；实现阶段需先核对 T239、T240 的收口状态
 - 主要文件范围：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T241-hulebu-cocos-v1-production-design.md`, `docs/tasks/claims/T241-lee.md`, `docs/superpowers/specs/2026-07-10-hulebu-cocos-v1-production-design.md`, `docs/modules/mahjong-roguelike/HULEBU_COCOS_V1_ROADMAP.html`, 以及 `npm run docs:sync` 自动更新的任务主文档摘要区
 - 禁止修改范围：`apps/**`, `packages/**`, 数据库与账号代码、PDF 工具箱、AI 修图工具、其他游戏模块；本任务不实施游戏功能
@@ -47,4 +47,4 @@
 - 已完成 Web/Cocos 代码结构、资源、音频、测试和 fresh build 现状审计。
 - Lee 已确认“Cocos 唯一正式运行时、冻结 Web demo、先做一个完整章节”的方向。
 - 已完成正式设计规格和可视化路线图，并通过无未决标记、结构、桌面/手机视口、UTF-8 无 BOM 与 diff 空白检查。
-- 当前等待 Lee 审阅书面规格；确认后再生成代码级实施计划，不在 T241 中修改游戏代码。
+- 2026-07-11 Lee 已确认开始实施，书面规格通过验收；后续代码工作从 T242 的 M0 发布基线开始。
