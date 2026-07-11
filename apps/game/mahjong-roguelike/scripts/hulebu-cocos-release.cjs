@@ -491,6 +491,7 @@ function writeBuildManifest(
     buildId,
     commit,
     config,
+    cocosTypecheckPassed,
     creatorDecision,
     creatorExecutableEvidence,
     createdAt,
@@ -522,6 +523,11 @@ function writeBuildManifest(
       "manifest Creator version evidence does not match release config",
     );
   }
+  if (cocosTypecheckPassed !== true) {
+    throw new HulebuReleaseError(
+      "manifest cocosTypecheckPassed evidence must be true",
+    );
+  }
   for (const [key, expected] of [
     ["creatorExecutableRealPath", config.creatorExecutableRealPath],
     ["creatorExecutableSha256", config.creatorExecutableSha256],
@@ -545,7 +551,7 @@ function writeBuildManifest(
   }
   const stats = collectBuildStats(absoluteBuildRoot);
   const data = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     buildId,
     gameId: config.gameId,
     displayName: config.displayName,
@@ -561,6 +567,7 @@ function writeBuildManifest(
     sourceInputs: [...sourceInputs],
     sourceTreeSha256,
     releaseConfigSha256,
+    cocosTypecheckPassed,
     creatorExitCode: creatorDecision.originalExitCode,
     creatorExitNormalized: creatorDecision.normalized,
     smokeResults,
@@ -690,8 +697,8 @@ function readBuildManifest(
   if (!data || typeof data !== "object" || Array.isArray(data)) {
     throw new HulebuReleaseError("build manifest must be an object");
   }
-  if (data.schemaVersion !== 4) {
-    throw new HulebuReleaseError("build manifest schemaVersion must be 4");
+  if (data.schemaVersion !== 5) {
+    throw new HulebuReleaseError("build manifest schemaVersion must be 5");
   }
   for (const [key, expected] of [
     ["gameId", config.gameId],
@@ -715,6 +722,11 @@ function readBuildManifest(
   }
   if (data.sourceState !== "clean") {
     throw new HulebuReleaseError("build manifest sourceState must be clean");
+  }
+  if (data.cocosTypecheckPassed !== true) {
+    throw new HulebuReleaseError(
+      "build manifest cocosTypecheckPassed evidence must be true",
+    );
   }
   if (
     !Array.isArray(data.sourceInputs) ||

@@ -1921,6 +1921,60 @@ function readCreatorBundleMetadata(executableRealPath) {
   };
 }
 
+function runCocosTypeCheck({
+  projectRoot,
+  repositoryRoot,
+  execFileSync = childProcess.execFileSync,
+}) {
+  const configPath = path.join(projectRoot, "tsconfig.json");
+  const generatedConfigPath = path.join(
+    projectRoot,
+    "temp/tsconfig.cocos.json",
+  );
+  for (const [candidate, label] of [
+    [configPath, "Cocos tsconfig"],
+    [generatedConfigPath, "generated Cocos tsconfig"],
+  ]) {
+    let status;
+    try {
+      status = fs.lstatSync(candidate);
+    } catch (error) {
+      throw new HulebuReleaseError(
+        `${label} is unavailable: ${sanitizeErrorMessage(error)}`,
+      );
+    }
+    if (status.isSymbolicLink() || !status.isFile()) {
+      throw new HulebuReleaseError(
+        `${label} must be a regular non-symlink file`,
+      );
+    }
+  }
+  let compilerPath;
+  try {
+    compilerPath = require.resolve("typescript/bin/tsc", {
+      paths: [repositoryRoot],
+    });
+    execFileSync(
+      process.execPath,
+      [compilerPath, "--noEmit", "-p", configPath],
+      {
+        cwd: repositoryRoot,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+        maxBuffer: 64 * 1024 * 1024,
+      },
+    );
+  } catch (error) {
+    const detail = [error?.stdout, error?.stderr]
+      .filter((entry) => typeof entry === "string" && entry.trim().length > 0)
+      .join(" ");
+    throw new HulebuReleaseError(
+      `Cocos TypeScript validation failed: ${sanitizeErrorMessage(detail || error)}`,
+    );
+  }
+  return { passed: true };
+}
+
 function captureReleaseSourceState({
   assertInputsClean,
   getCommit,
@@ -2130,6 +2184,18 @@ async function runRelease(argv, effects = {}) {
         artifactErrors: artifactResult.errors,
         config,
       });
+      const typecheckCocos =
+        effects.runCocosTypeCheck || runCocosTypeCheck;
+      const typecheckResult = typecheckCocos({
+        projectRoot: projectSnapshot.projectRoot,
+        repositoryRoot: paths.repositoryRoot,
+      });
+      if (typecheckResult?.passed !== true) {
+        throw new HulebuReleaseError(
+          "Cocos TypeScript validation did not report success",
+        );
+      }
+      assertOutputOwnership();
       const smokeResults = await runSmoke(
         attempt.buildRoot,
         config.smokePaths,
@@ -2159,6 +2225,7 @@ async function runRelease(argv, effects = {}) {
         buildId,
         commit: preflight.commit,
         config,
+        cocosTypecheckPassed: true,
         creatorDecision,
         creatorExecutableEvidence,
         createdAt,
@@ -2284,6 +2351,7 @@ async function runRelease(argv, effects = {}) {
         createdAt: manifestEvidence.createdAt,
         creatorExitCode: creatorDecision.originalExitCode,
         creatorExitNormalized: creatorDecision.normalized,
+        cocosTypecheckPassed: true,
         actualCreatorVersion: creatorDecision.actualCreatorVersion,
         ...creatorExecutableEvidence,
         sourceInputs: postflight.sourceInputs,
@@ -2419,6 +2487,7 @@ module.exports = {
   readGitCommit,
   recoverPendingBuildPromotion,
   resolveOutputPaths,
+  runCocosTypeCheck,
   runCreatorProcess,
   runRelease,
   sanitizeErrorMessage,

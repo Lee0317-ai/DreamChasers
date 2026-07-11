@@ -1,13 +1,41 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 const workspaceRoot = path.resolve(__dirname, "../../..");
 const cocosRoot = path.join(
   workspaceRoot,
   "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8",
 );
+const generatedCocosTsconfigPath = path.join(
+  cocosRoot,
+  "temp/tsconfig.cocos.json",
+);
+let createdFallbackCocosTsconfig = false;
+
+beforeAll(() => {
+  if (fs.existsSync(generatedCocosTsconfigPath)) return;
+  fs.mkdirSync(path.dirname(generatedCocosTsconfigPath), { recursive: true });
+  fs.writeFileSync(
+    generatedCocosTsconfigPath,
+    `${JSON.stringify({
+      compilerOptions: {
+        experimentalDecorators: true,
+        module: "ESNext",
+        moduleResolution: "Bundler",
+        target: "ES2022",
+      },
+    })}\n`,
+    "utf8",
+  );
+  createdFallbackCocosTsconfig = true;
+});
+
+afterAll(() => {
+  if (!createdFallbackCocosTsconfig) return;
+  fs.rmSync(generatedCocosTsconfigPath, { force: true });
+});
 
 function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.join(cocosRoot, relativePath), "utf8")) as T;

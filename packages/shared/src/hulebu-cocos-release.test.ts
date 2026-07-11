@@ -177,6 +177,7 @@ const {
       config: HulebuReleaseConfig;
       creatorDecision: CreatorBuildDecision;
       creatorExecutableEvidence: CreatorExecutableEvidence;
+      cocosTypecheckPassed: true;
       createdAt: string;
       releaseConfigSha256: string;
       sourceInputs: string[];
@@ -239,6 +240,10 @@ function createMockReleaseLifecycle(
     recoverPendingBuildPromotion: () => {
       events?.push("promotion-recover");
       return { cleanupWarnings: [], recovered: false };
+    },
+    runCocosTypeCheck: () => {
+      events?.push("typecheck");
+      return { passed: true as const };
     },
     createBuildAttempt: () => {
       events?.push("attempt");
@@ -468,6 +473,10 @@ type BuildCli = {
       | { kind: "signal"; signal: string }
       | { kind: "spawn-error"; error: Error };
   }>;
+  runCocosTypeCheck: (input: {
+    projectRoot: string;
+    repositoryRoot: string;
+  }) => { passed: true };
   runRelease: (
     argv: string[],
     effects?: Record<string, unknown>,
@@ -1146,6 +1155,7 @@ describe("Hulebu Cocos build manifest", () => {
         originalExitCode: 36,
       },
       creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      cocosTypecheckPassed: true as const,
       createdAt: "2026-07-11T01:02:03.000Z",
       releaseConfigSha256: RELEASE_CONFIG_SHA256,
       sourceInputs: ["formal/a", "formal/b"],
@@ -1156,12 +1166,13 @@ describe("Hulebu Cocos build manifest", () => {
 
     const manifest = writeBuildManifest(validBuildRoot, input);
     const expectedData = {
-      schemaVersion: 4,
+      schemaVersion: 5,
       buildId: input.buildId,
       gameId: config.gameId,
       displayName: config.displayName,
       creatorVersion: config.creatorVersion,
       ...CREATOR_EXECUTABLE_EVIDENCE,
+      cocosTypecheckPassed: input.cocosTypecheckPassed,
       platform: config.platform,
       debug: config.debug,
       contentVersion: config.contentVersion,
@@ -1210,6 +1221,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1267,6 +1279,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1308,6 +1321,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1354,6 +1368,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1407,6 +1422,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1445,6 +1461,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1475,6 +1492,7 @@ describe("Hulebu Cocos build manifest", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -1537,6 +1555,7 @@ describe("Hulebu Cocos build manifest", () => {
           buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
           commit: FULL_COMMIT_A,
           config,
+          cocosTypecheckPassed: true,
           creatorDecision: {
             accepted: true,
             actualCreatorVersion: config.creatorVersion,
@@ -3067,6 +3086,7 @@ describe("Hulebu Cocos production build CLI", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       commit: FULL_COMMIT_A,
       config,
+      cocosTypecheckPassed: true,
       creatorDecision: {
         accepted: true,
         actualCreatorVersion: config.creatorVersion,
@@ -3219,8 +3239,9 @@ describe("Hulebu Cocos production build CLI", () => {
           sourceState: "clean",
           sourceTreeSha256: SOURCE_TREE_SHA256,
           releaseConfigSha256: RELEASE_CONFIG_SHA256,
-          creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
-          smokeResults,
+      creatorExecutableEvidence: CREATOR_EXECUTABLE_EVIDENCE,
+      cocosTypecheckPassed: true,
+      smokeResults,
         });
         return {
           path: join(outputRoot, "web-mobile/hulebu-build.json"),
@@ -3240,6 +3261,7 @@ describe("Hulebu Cocos production build CLI", () => {
       "creator",
       "validate",
       "evaluate",
+      "typecheck",
       "smoke",
       "commit",
       "source-clean",
@@ -3264,6 +3286,7 @@ describe("Hulebu Cocos production build CLI", () => {
       buildId: `${FULL_COMMIT_A.slice(0, 12)}-20260711T010203Z`,
       creatorExitCode: 36,
       creatorExitNormalized: true,
+      cocosTypecheckPassed: true,
       ...CREATOR_EXECUTABLE_EVIDENCE,
       sourceInputs: ["formal"],
       sourceState: "clean",
@@ -3589,6 +3612,7 @@ describe("Hulebu Cocos production build CLI", () => {
           logText: `Build with Cocos Creator 3.8.8\n${config.finishedMarker}`,
           outcome: { kind: "exit", exitCode: 0 },
         }),
+        runCocosTypeCheck: () => ({ passed: true }),
         smokeBuild: async () => [],
         validateBuildArtifacts: () => ({ ok: true, errors: [] }),
         writeBuildManifest: () => ({ path: "manifest", data: {} }),
