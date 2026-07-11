@@ -8,6 +8,8 @@
 
 **Tech Stack:** Node.js 22 built-ins、Vitest 4、Cocos Creator 3.8.8 CLI、npm workspaces。
 
+**Implementation Status:** 2026-07-12 已完成。真实 production build、5 条 HTTP smoke、verify-only 不变性验证、139 项聚焦测试和 Cocos TypeScript 检查均通过。
+
 ## Global Constraints
 
 - Cocos Creator 版本固定为 `3.8.8`，平台固定为 `web-mobile`，`debug` 固定为 `false`。
@@ -366,7 +368,7 @@ git commit -m "feat(hulebu): add build manifest and HTTP smoke"
 - Consumes: all release-library exports from Tasks 1–2 and the Creator executable.
 - Produces: `npm run game:hulebu:build` and `npm run game:hulebu:verify-build`.
 
-- [ ] **Step 1: Add failing CLI contract tests**
+- [ ] **Step 1: Add failing CLI behavior tests**
 
 Read `package.json` and CLI source. Assert:
 
@@ -383,6 +385,8 @@ expect(cliSource).toContain("smokeBuild");
 expect(cliSource).toContain("writeBuildManifest");
 ```
 
+The source checks are wiring guards only. Add behavior tests for strict argv, exact `shell: false` Creator arguments, build-root-only deletion, async `error` followed by `close`, exit `0`/`36`, signal/spawn failures, atomic log identity, gate order, failed-attempt manifest cleanup, and verify-only preservation of existing log/manifest bytes and mtimes. No Vitest path may launch Creator.
+
 - [ ] **Step 2: Run tests and verify RED**
 
 Expected: FAIL because the CLI and package scripts do not exist.
@@ -394,7 +398,7 @@ The CLI must:
 1. Resolve the project at `../cocos/hulebu-cocos-3.8.8` and config at `../release/hulebu-v1.release.json`.
 2. Default Creator binary to `/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator`, overridable by `COCOS_CREATOR_BIN` or `--creator`.
 3. Default output root to `<project>/build/production`, overridable by `--output-root`; the build root is `<outputRoot>/web-mobile`.
-4. Support `--verify-only` without invoking Creator.
+4. Support `--verify-only` without invoking Creator. Verify-only validates existing artifacts and HTTP smoke only; it must not evaluate Creator evidence, touch the Creator log, or write/remove/replace `hulebu-build.json`.
 5. In build mode remove only `<outputRoot>/web-mobile`, never the whole Cocos `build/` directory.
 6. Invoke Creator with:
 
@@ -407,9 +411,9 @@ The CLI must:
 ]
 ```
 
-7. Save combined stdout/stderr as `<outputRoot>/hulebu-cocos-build.log`.
+7. In build mode, save combined stdout/stderr atomically as `<outputRoot>/hulebu-cocos-build.log` through one shared file descriptor with `shell: false`; verify-only does not touch this log.
 8. Validate artifacts before evaluating the Creator exit result.
-9. Run HTTP smoke before writing the final manifest.
+9. In build mode, run HTTP smoke before writing the final manifest. In verify-only, run artifact validation plus HTTP smoke and print a verification summary with `creatorInvoked: false` and `manifestWritten: false`, without a manifest.
 10. Use `git rev-parse --short=12 HEAD` for `commit`, a UTC timestamp for `createdAt`, and `${commit}-${timestampWithoutPunctuation}` for `buildId`.
 11. Print one JSON summary and return 0 only after every gate succeeds; errors print one concise line and set `process.exitCode = 1`.
 
@@ -428,7 +432,7 @@ Run the release tests, then run:
 npm run game:hulebu:verify-build -- --output-root apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/build
 ```
 
-Expected: the existing `build/web-mobile` passes artifact and HTTP checks and emits a manifest. Remove that generated manifest after this compatibility check so M0 does not alter the older build folder.
+Expected: the existing `build/web-mobile` passes artifact and HTTP checks, prints a verify-only JSON summary, and remains byte-for-byte unmodified. It does not emit a manifest or Creator log.
 
 - [ ] **Step 6: Commit**
 
@@ -506,7 +510,7 @@ git commit -m "docs(hulebu): freeze legacy runtimes"
 - Modify: `docs/tasks/claims/T242-lee.md`
 - Create: `docs/progress/2026-07-11-lee.md`
 - Create: `docs/completion/2026-07-11-task-242-hulebu-cocos-v1-m0-production-baseline.md`
-- Regenerate: `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-07-11.md`
+- Regenerate: `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`
 
 **Interfaces:**
 - Consumes: completed production pipeline.
@@ -540,7 +544,7 @@ Record `creatorExitCode`, `creatorExitNormalized`, `fileCount`, `totalBytes`, an
 
 - [ ] **Step 4: Update task and progress documents**
 
-Mark T242 and its claim `已完成`. The completion record must list files, behavior, exact commands, pass/fail results, build manifest values, branch divergence, and M1 as the next step.
+Mark T242 and its claim `已完成`. The completion record must list files, behavior, exact commands, pass/fail results, build manifest values, branch divergence, and M1 as the next step. The current `scripts/docs-sync.mjs` refreshes the three task/status summaries above; it does not generate a daily aggregate progress file, so only the owner fragment is created here.
 
 - [ ] **Step 5: Sync and verify docs**
 

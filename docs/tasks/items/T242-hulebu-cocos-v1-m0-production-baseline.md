@@ -1,8 +1,8 @@
 # T242：胡了卜 Cocos v1 M0 production build 基线
 
 - 优先级：P0
-- 默认负责人：Lee
-- 状态：进行中
+- 负责人：Lee
+- 状态：已完成
 - 依赖：T241
 - 主要文件范围：`apps/game/mahjong-roguelike/release/hulebu-v1.release.json`, `apps/game/mahjong-roguelike/scripts/hulebu-cocos-release.cjs`, `apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/README.md`, `apps/game/mahjong-roguelike/prototypes/config-playable/LEGACY.md`, `apps/web/public/games/hulebu-demo/LEGACY.md`, `packages/shared/src/hulebu-cocos-release.test.ts`, `package.json`, `docs/superpowers/plans/2026-07-11-hulebu-cocos-v1-m0-production-baseline.md`, `docs/tasks/items/T242-hulebu-cocos-v1-m0-production-baseline.md`, `docs/tasks/claims/T242-lee.md`, `docs/progress/2026-07-11-lee.md`, `docs/completion/2026-07-11-task-242-hulebu-cocos-v1-m0-production-baseline.md`, 以及 `npm run docs:sync` 自动更新的任务主文档摘要区
 - 禁止修改范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/**`, Cocos `settings/**`, `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/prisma/**`, 账号 API、PDF 工具箱、AI 修图工具、其他游戏模块
@@ -28,3 +28,11 @@
 - `npm run game:hulebu:build` 在本机生成完整非 debug `web-mobile` 产物并返回 0；报告保留 Creator 原始退出码。
 - 构建产物可经本地 HTTP 读取 `/`、`/src/settings.json`、`/src/import-map.json`、`/assets/main/config.json`、`/assets/resources/config.json`。
 - 构建脚本不把 36 视为无条件成功，也不触碰 `assets/**` 或现有用户改动。
+
+## 完成摘要
+
+- 已建立 Cocos Creator 3.8.8、`web-mobile`、`debug=false` 的版本化发布契约、产物校验、HTTP smoke、manifest 和 production/verify-only CLI。
+- 已将 Cocos README 改为唯一正式运行时操作说明，并为配置原型与 Web Demo 增加 prospective Legacy Reference 冻结标记；M0 未切换当前站点入口。
+- 2026-07-12 真实构建返回包装器退出码 `0`。Creator 原始退出码 `36` 仅在 Finished 标记、零产物错误和 5 条 HTTP smoke 均通过后被归一化；manifest 记录 `566` 个文件、`135266376` 字节，目录约 `131M`。
+- `npm run test -w packages/shared -- hulebu-cocos-release mahjong-cocos-project` 通过 `139/139`；Cocos TypeScript 检查、真实 production build 和 verify-only 证据不变检查均通过。
+- 后续从 M1 开始拆分 `GameSession`、`RunStateMachine`、命令/快照/事件契约、内容仓库与存档服务；UI、音效和正式站点宿主切换不属于 M0 完成范围。
