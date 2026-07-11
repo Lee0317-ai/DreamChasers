@@ -14,7 +14,9 @@
     "lint": "npm run lint -w apps/web",
     "test": "node -e \"console.log('No workspace tests yet')\"",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "docs:sync": "node scripts/docs-sync.mjs"
+    "docs:sync": "node scripts/docs-sync.mjs",
+    "game:hulebu:build": "node apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs",
+    "game:hulebu:verify-build": "node apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs --verify-only"
   },
   "dependencies": {
     "next": "^16.2.6",

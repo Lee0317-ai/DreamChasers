@@ -1,14 +1,19 @@
 import {
+  cpSync,
   existsSync,
   lstatSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   rmSync,
+  statSync,
   symlinkSync,
+  writeSync,
   writeFileSync,
 } from "node:fs";
+import { EventEmitter } from "node:events";
 import { request as httpRequest } from "node:http";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
@@ -78,6 +83,11 @@ const releaseLibraryPath = join(
   repositoryRoot,
   "apps/game/mahjong-roguelike/scripts/hulebu-cocos-release.cjs",
 );
+const buildCliPath = join(
+  repositoryRoot,
+  "apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs",
+);
+const rootPackagePath = join(repositoryRoot, "package.json");
 const {
   HulebuReleaseError,
   collectBuildStats,
@@ -210,6 +220,60 @@ function requestRaw(
     request.on("error", rejectRequest);
     request.end();
   });
+}
+
+type BuildCli = {
+  DEFAULT_CREATOR_EXECUTABLE: string;
+  buildCreatorArguments: (input: {
+    config: HulebuReleaseConfig;
+    outputRoot: string;
+    projectRoot: string;
+  }) => string[];
+  main: (
+    argv: string[],
+    effects: Record<string, unknown>,
+  ) => Promise<Record<string, unknown> | null>;
+  parseArguments: (
+    argv: string[],
+    environment?: NodeJS.ProcessEnv,
+  ) => {
+    creatorExecutable: string;
+    outputRoot?: string;
+    verifyOnly: boolean;
+  };
+  prepareBuildOutput: (paths: {
+    buildRoot: string;
+    outputRoot: string;
+  }) => void;
+  resolveOutputPaths: (input: {
+    config: HulebuReleaseConfig;
+    cwd: string;
+    outputRoot?: string;
+    projectRoot: string;
+  }) => { buildRoot: string; outputRoot: string };
+  runCreatorProcess: (input: {
+    creatorArguments: string[];
+    creatorExecutable: string;
+    environment: NodeJS.ProcessEnv;
+    outputRoot: string;
+    projectRoot: string;
+    spawn: (...args: unknown[]) => EventEmitter;
+  }) => Promise<{
+    logPath: string;
+    logText: string;
+    outcome:
+      | { kind: "exit"; exitCode: number }
+      | { kind: "signal"; signal: string }
+      | { kind: "spawn-error"; error: Error };
+  }>;
+  runRelease: (
+    argv: string[],
+    effects?: Record<string, unknown>,
+  ) => Promise<Record<string, unknown>>;
+};
+
+function loadBuildCli(): BuildCli {
+  return require(buildCliPath) as BuildCli;
 }
 
 afterEach(() => {
@@ -1091,5 +1155,415 @@ describe("Hulebu Cocos build smoke", () => {
     await expect(smokeBuild(buildRoot, ["//example.com/"])).rejects.toThrow(
       HulebuReleaseError,
     );
+  });
+});
+
+describe("Hulebu Cocos production build CLI", () => {
+  const config = loadReleaseConfig(realConfigPath);
+
+  it("registers import-safe build and verify commands", () => {
+    const rootPackage = JSON.parse(readFileSync(rootPackagePath, "utf8"));
+    const cli = loadBuildCli();
+
+    expect(rootPackage.scripts).toMatchObject({
+      "game:hulebu:build":
+        "node apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs",
+      "game:hulebu:verify-build":
+        "node apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs --verify-only",
+    });
+    expect(cli.DEFAULT_CREATOR_EXECUTABLE).toBe(
+      "/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator",
+    );
+  });
+
+  it("parses strict arguments with CLI-over-environment precedence", () => {
+    const cli = loadBuildCli();
+
+    expect(cli.parseArguments([], {})).toEqual({
+      creatorExecutable: cli.DEFAULT_CREATOR_EXECUTABLE,
+      verifyOnly: false,
+    });
+    expect(
+      cli.parseArguments([], { COCOS_CREATOR_BIN: "/env/creator" }),
+    ).toEqual({
+      creatorExecutable: "/env/creator",
+      verifyOnly: false,
+    });
+    expect(
+      cli.parseArguments(
+        [
+          "--output-root",
+          "relative-output",
+          "--verify-only",
+          "--creator",
+          "/cli/creator",
+        ],
+        { COCOS_CREATOR_BIN: "/env/creator" },
+      ),
+    ).toEqual({
+      creatorExecutable: "/cli/creator",
+      outputRoot: "relative-output",
+      verifyOnly: true,
+    });
+  });
+
+  it.each([
+    [["--creator"], "Missing value for --creator"],
+    [["--creator", "--verify-only"], "Missing value for --creator"],
+    [["--output-root"], "Missing value for --output-root"],
+    [["--creator", "/a", "--creator", "/b"], "Duplicate argument: --creator"],
+    [
+      ["--output-root", "/a", "--output-root", "/b"],
+      "Duplicate argument: --output-root",
+    ],
+    [["--verify-only", "--verify-only"], "Duplicate argument: --verify-only"],
+    [["--creator=/a"], "Unknown argument: --creator=/a"],
+    [["positional"], "Unknown argument: positional"],
+  ])("rejects invalid argv %j", (argv, message) => {
+    expect(() => loadBuildCli().parseArguments(argv, {})).toThrow(message);
+  });
+
+  it("resolves the production output and exact Creator argv", () => {
+    const cli = loadBuildCli();
+    const projectRoot = createTemporaryRoot("cli-project");
+    const paths = cli.resolveOutputPaths({
+      config,
+      cwd: repositoryRoot,
+      projectRoot,
+    });
+
+    expect(paths).toEqual({
+      outputRoot: join(projectRoot, "build/production"),
+      buildRoot: join(projectRoot, "build/production/web-mobile"),
+    });
+    expect(
+      cli.buildCreatorArguments({
+        config,
+        outputRoot: paths.outputRoot,
+        projectRoot,
+      }),
+    ).toEqual([
+      "--project",
+      projectRoot,
+      "--build",
+      `platform=web-mobile;debug=false;buildPath=${paths.outputRoot};outputName=web-mobile`,
+    ]);
+    expect(() =>
+      cli.resolveOutputPaths({
+        config,
+        cwd: repositoryRoot,
+        outputRoot: "/",
+        projectRoot,
+      }),
+    ).toThrow("output root must not be a filesystem root");
+  });
+
+  it("removes only the validated web-mobile child and rejects a symlink", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-delete");
+    const buildRoot = join(outputRoot, "web-mobile");
+    mkdirSync(buildRoot);
+    writeFileSync(join(buildRoot, "old.txt"), "old", "utf8");
+    writeFileSync(join(outputRoot, "keep.txt"), "keep", "utf8");
+
+    cli.prepareBuildOutput({ buildRoot, outputRoot });
+
+    expect(existsSync(buildRoot)).toBe(false);
+    expect(readFileSync(join(outputRoot, "keep.txt"), "utf8")).toBe("keep");
+
+    const externalRoot = createTemporaryRoot("cli-delete-target");
+    writeFileSync(join(externalRoot, "outside.txt"), "outside", "utf8");
+    if (!tryCreateSymlink(externalRoot, buildRoot, "dir")) return;
+
+    expect(() => cli.prepareBuildOutput({ buildRoot, outputRoot })).toThrow(
+      "build root must not be a symlink",
+    );
+    expect(readFileSync(join(externalRoot, "outside.txt"), "utf8")).toBe(
+      "outside",
+    );
+  });
+
+  it("captures one combined Creator log with shell disabled", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-log");
+    const projectRoot = createTemporaryRoot("cli-log-project");
+    const creatorArguments = cli.buildCreatorArguments({
+      config,
+      outputRoot,
+      projectRoot,
+    });
+    let captured: unknown[] | undefined;
+    const spawn = (...args: unknown[]) => {
+      captured = args;
+      const child = new EventEmitter();
+      const options = args[2] as { stdio: [string, number, number] };
+      queueMicrotask(() => {
+        writeSync(options.stdio[1], "stdout line\n");
+        writeSync(options.stdio[2], `${config.finishedMarker}\n`);
+        child.emit("close", 36, null);
+      });
+      return child;
+    };
+
+    const result = await cli.runCreatorProcess({
+      creatorArguments,
+      creatorExecutable: "/fake/creator",
+      environment: {},
+      outputRoot,
+      projectRoot,
+      spawn,
+    });
+
+    expect(captured?.[0]).toBe("/fake/creator");
+    expect(captured?.[1]).toEqual(creatorArguments);
+    expect(captured?.[2]).toMatchObject({
+      cwd: projectRoot,
+      shell: false,
+      windowsHide: true,
+    });
+    expect(result.outcome).toEqual({ kind: "exit", exitCode: 36 });
+    expect(result.logText).toContain("stdout line");
+    expect(result.logText).toContain(config.finishedMarker);
+    expect(readFileSync(result.logPath, "utf8")).toBe(result.logText);
+    expect(
+      readdirSync(outputRoot).filter((name) => name.endsWith(".tmp")),
+    ).toEqual([]);
+  });
+
+  it.each([
+    ["signal", { kind: "signal", signal: "SIGTERM" }],
+    ["spawn-error", { kind: "spawn-error", error: new Error("ENOENT") }],
+  ] as const)(
+    "publishes a diagnostic log for a %s outcome",
+    async (_label, outcome) => {
+      const cli = loadBuildCli();
+      const outputRoot = createTemporaryRoot(`cli-${outcome.kind}`);
+      const projectRoot = createTemporaryRoot(`cli-${outcome.kind}-project`);
+      const spawn = () => {
+        if (outcome.kind === "spawn-error") throw outcome.error;
+        const child = new EventEmitter();
+        queueMicrotask(() => child.emit("close", null, outcome.signal));
+        return child;
+      };
+
+      const result = await cli.runCreatorProcess({
+        creatorArguments: [],
+        creatorExecutable: "/fake/creator",
+        environment: {},
+        outputRoot,
+        projectRoot,
+        spawn,
+      });
+
+      expect(result.outcome.kind).toBe(outcome.kind);
+      expect(result.logText).toContain("Hulebu wrapper:");
+      expect(existsSync(result.logPath)).toBe(true);
+    },
+  );
+
+  it("verifies an existing build without touching Creator evidence", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-verify");
+    const buildRoot = join(outputRoot, config.outputName);
+    cpSync(createValidBuild(config), buildRoot, { recursive: true });
+    const logPath = join(outputRoot, "hulebu-cocos-build.log");
+    const manifestPath = join(buildRoot, "hulebu-build.json");
+    writeFileSync(logPath, "existing log", "utf8");
+    writeFileSync(manifestPath, '{"existing":true}\n', "utf8");
+    const before = {
+      log: readFileSync(logPath, "utf8"),
+      logMtime: statSync(logPath).mtimeMs,
+      manifest: readFileSync(manifestPath, "utf8"),
+      manifestMtime: statSync(manifestPath).mtimeMs,
+    };
+    let creatorInvoked = false;
+
+    const summary = await cli.runRelease(
+      ["--verify-only", "--output-root", outputRoot],
+      {
+        cwd: repositoryRoot,
+        environment: {},
+        getCommit: () => "abcdef123456",
+        now: () => new Date("2026-07-11T01:02:03.456Z"),
+        paths: {
+          configPath: realConfigPath,
+          projectRoot: createTemporaryRoot("cli-verify-project"),
+          repositoryRoot,
+        },
+        runCreatorProcess: () => {
+          creatorInvoked = true;
+          throw new Error("Creator must not run");
+        },
+      },
+    );
+
+    expect(summary).toMatchObject({
+      ok: true,
+      mode: "verify-only",
+      buildRoot,
+      commit: "abcdef123456",
+      creatorInvoked: false,
+      manifestWritten: false,
+      verifiedAt: "2026-07-11T01:02:03.456Z",
+    });
+    expect(creatorInvoked).toBe(false);
+    expect(readFileSync(logPath, "utf8")).toBe(before.log);
+    expect(statSync(logPath).mtimeMs).toBe(before.logMtime);
+    expect(readFileSync(manifestPath, "utf8")).toBe(before.manifest);
+    expect(statSync(manifestPath).mtimeMs).toBe(before.manifestMtime);
+  });
+
+  it("orders build gates and preserves original Creator exit 36", async () => {
+    const cli = loadBuildCli();
+    const events: string[] = [];
+    const outputRoot = createTemporaryRoot("cli-order");
+    const smokeResults = [{ pathname: "/", status: 200, bytes: 10 }];
+    const summary = await cli.runRelease(["--output-root", outputRoot], {
+      cwd: repositoryRoot,
+      environment: {},
+      evaluateCreatorBuild: (input: CreatorBuildInput) => {
+        events.push("evaluate");
+        expect(input.exitCode).toBe(36);
+        return { accepted: true, normalized: true, originalExitCode: 36 };
+      },
+      getCommit: () => {
+        events.push("commit");
+        return "abcdef123456";
+      },
+      loadReleaseConfig: () => config,
+      now: () => new Date("2026-07-11T01:02:03.456Z"),
+      paths: {
+        configPath: realConfigPath,
+        projectRoot: createTemporaryRoot("cli-order-project"),
+        repositoryRoot,
+      },
+      prepareBuildOutput: () => events.push("prepare"),
+      runCreatorProcess: async () => {
+        events.push("creator");
+        return {
+          logPath: join(outputRoot, "hulebu-cocos-build.log"),
+          logText: config.finishedMarker,
+          outcome: { kind: "exit", exitCode: 36 },
+        };
+      },
+      smokeBuild: async () => {
+        events.push("smoke");
+        return smokeResults;
+      },
+      validateBuildArtifacts: () => {
+        events.push("validate");
+        return { ok: true, errors: [] };
+      },
+      writeBuildManifest: (
+        _buildRoot: string,
+        input: Record<string, unknown>,
+      ) => {
+        events.push("manifest");
+        expect(input).toMatchObject({
+          buildId: "abcdef123456-20260711T010203Z",
+          commit: "abcdef123456",
+          createdAt: "2026-07-11T01:02:03.456Z",
+          smokeResults,
+        });
+        return {
+          path: join(outputRoot, "web-mobile/hulebu-build.json"),
+          data: {},
+        };
+      },
+    });
+
+    expect(events).toEqual([
+      "commit",
+      "prepare",
+      "creator",
+      "validate",
+      "evaluate",
+      "smoke",
+      "manifest",
+    ]);
+    expect(summary).toMatchObject({
+      ok: true,
+      mode: "build",
+      buildId: "abcdef123456-20260711T010203Z",
+      creatorExitCode: 36,
+      creatorExitNormalized: true,
+      smokeResults,
+    });
+  });
+
+  it.each([
+    [{ kind: "signal", signal: "SIGTERM" }, "signal SIGTERM"],
+    [
+      { kind: "spawn-error", error: new Error("ENOENT") },
+      "unable to start Creator: ENOENT",
+    ],
+  ] as const)(
+    "rejects terminal Creator outcome %j before smoke or manifest",
+    async (outcome, message) => {
+      const cli = loadBuildCli();
+      let smokeCalled = false;
+      let manifestCalled = false;
+
+      await expect(
+        cli.runRelease([], {
+          environment: {},
+          getCommit: () => "abcdef123456",
+          loadReleaseConfig: () => config,
+          paths: {
+            configPath: realConfigPath,
+            projectRoot: createTemporaryRoot("cli-terminal-project"),
+            repositoryRoot,
+          },
+          prepareBuildOutput: () => undefined,
+          runCreatorProcess: async () => ({
+            logPath: "/tmp/fake.log",
+            logText: "wrapper failure",
+            outcome,
+          }),
+          smokeBuild: async () => {
+            smokeCalled = true;
+            return [];
+          },
+          validateBuildArtifacts: () => ({ ok: true, errors: [] }),
+          writeBuildManifest: () => {
+            manifestCalled = true;
+            return { path: "/tmp/manifest", data: {} };
+          },
+        }),
+      ).rejects.toThrow(message);
+      expect(smokeCalled).toBe(false);
+      expect(manifestCalled).toBe(false);
+    },
+  );
+
+  it("prints one compact success line or one sanitized error line", async () => {
+    const cli = loadBuildCli();
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    const exitCodes: number[] = [];
+
+    await cli.main([], {
+      runRelease: async () => ({ ok: true, mode: "verify-only" }),
+      setExitCode: (code: number) => exitCodes.push(code),
+      stderr: (line: string) => stderr.push(line),
+      stdout: (line: string) => stdout.push(line),
+    });
+    expect(stdout).toEqual(['{"ok":true,"mode":"verify-only"}\n']);
+    expect(stderr).toEqual([]);
+
+    stdout.length = 0;
+    await cli.main([], {
+      runRelease: async () => {
+        throw new Error("bad\n   multi-line\r message");
+      },
+      setExitCode: (code: number) => exitCodes.push(code),
+      stderr: (line: string) => stderr.push(line),
+      stdout: (line: string) => stdout.push(line),
+    });
+    expect(stdout).toEqual([]);
+    expect(stderr).toEqual([
+      "Hulebu Cocos build failed: bad multi-line message\n",
+    ]);
+    expect(exitCodes).toEqual([1]);
   });
 });
