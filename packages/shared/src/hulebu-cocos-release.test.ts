@@ -1,4 +1,10 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -30,6 +36,9 @@ type CreatorBuildInput = {
 };
 
 const require = createRequire(import.meta.url);
+const mutableFs = require("node:fs") as {
+  readFileSync: (...args: unknown[]) => unknown;
+};
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const realConfigPath = join(
   repositoryRoot,
@@ -91,6 +100,21 @@ function createValidBuild(config: HulebuReleaseConfig): string {
   return buildRoot;
 }
 
+function tryCreateSymlink(
+  targetPath: string,
+  linkPath: string,
+  type: "dir" | "file",
+): boolean {
+  try {
+    symlinkSync(targetPath, linkPath, type);
+    return true;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code && ["EACCES", "EPERM", "ENOSYS"].includes(code)) return false;
+    throw error;
+  }
+}
+
 afterEach(() => {
   for (const root of temporaryRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
@@ -133,6 +157,177 @@ describe("Hulebu Cocos production release contract", () => {
     const config = loadReleaseConfig(realConfigPath);
 
     expect(() => validateReleaseConfig({ ...config, [key]: value })).toThrow(message);
+  });
+
+  it.each(
+    (["requiredFiles", "requiredJsonFiles"] as const).flatMap((key) => [
+      { key, label: "non-string", value: 42, message: "must be a non-empty string" },
+      { key, label: "empty", value: "", message: "must be a non-empty string" },
+      {
+        key,
+        label: "POSIX absolute",
+        value: "/outside.json",
+        message: "must be a portable relative path",
+      },
+      {
+        key,
+        label: "Windows absolute",
+        value: "C:\\outside.json",
+        message: "must be a portable relative path",
+      },
+      {
+        key,
+        label: "Windows drive-relative",
+        value: "C:outside.json",
+        message: "must be a portable relative path",
+      },
+      {
+        key,
+        label: "backslash-separated",
+        value: "src\\settings.json",
+        message: "must be a portable relative path",
+      },
+      {
+        key,
+        label: "current-directory segment",
+        value: "src/./settings.json",
+        message: "must not contain dot segments",
+      },
+      {
+        key,
+        label: "parent-directory segment",
+        value: "src/../settings.json",
+        message: "must not contain dot segments",
+      },
+      {
+        key,
+        label: "noncanonical separators",
+        value: "src//settings.json",
+        message: "must be normalized",
+      },
+    ]),
+  )("rejects a $label entry in $key", ({ key, value, message }) => {
+    const config = loadReleaseConfig(realConfigPath);
+    const index = config[key].length;
+
+    expect(() =>
+      validateReleaseConfig({
+        ...config,
+        [key]: [...config[key], value],
+      }),
+    ).toThrow(`${key}[${index}] ${message}`);
+  });
+
+  it.each([
+    { label: "non-string", value: 42, message: "must be a non-empty string" },
+    { label: "empty", value: "", message: "must be a non-empty string" },
+    {
+      label: "path without a root slash",
+      value: "src/settings.json",
+      message: "must be an origin-relative HTTP path",
+    },
+    {
+      label: "scheme URL",
+      value: "https://example.com/settings.json",
+      message: "must be an origin-relative HTTP path",
+    },
+    {
+      label: "host-relative URL",
+      value: "//example.com/settings.json",
+      message: "must be an origin-relative HTTP path",
+    },
+    {
+      label: "backslash",
+      value: "/src\\settings.json",
+      message: "must not contain backslashes",
+    },
+    {
+      label: "query",
+      value: "/src/settings.json?raw=1",
+      message: "must not contain query or hash",
+    },
+    {
+      label: "hash",
+      value: "/src/settings.json#raw",
+      message: "must not contain query or hash",
+    },
+    {
+      label: "literal dot segment",
+      value: "/src/./settings.json",
+      message: "must not contain dot segments",
+    },
+    {
+      label: "encoded dot segment",
+      value: "/src/%2E%2e/settings.json",
+      message: "must not contain dot segments",
+    },
+    {
+      label: "multiply encoded dot segment",
+      value: "/src/%25252E%25252e/settings.json",
+      message: "must not contain dot segments",
+    },
+    {
+      label: "encoded backslash",
+      value: "/src/%5csettings.json",
+      message: "must not contain backslashes",
+    },
+    {
+      label: "encoded duplicate separator",
+      value: "/src/%2f/settings.json",
+      message: "must be normalized",
+    },
+    {
+      label: "duplicate separator",
+      value: "/src//settings.json",
+      message: "must be normalized",
+    },
+  ])("rejects a $label smoke path", ({ value, message }) => {
+    const config = loadReleaseConfig(realConfigPath);
+    const index = config.smokePaths.length;
+
+    expect(() =>
+      validateReleaseConfig({
+        ...config,
+        smokePaths: [...config.smokePaths, value],
+      }),
+    ).toThrow(`smokePaths[${index}] ${message}`);
+  });
+
+  it("requires index.html in requiredFiles", () => {
+    const config = loadReleaseConfig(realConfigPath);
+
+    expect(() =>
+      validateReleaseConfig({
+        ...config,
+        requiredFiles: config.requiredFiles.filter((entry) => entry !== "index.html"),
+      }),
+    ).toThrow("requiredFiles must include index.html");
+  });
+
+  it("requires every JSON artifact to also be a required file", () => {
+    const config = loadReleaseConfig(realConfigPath);
+
+    expect(() =>
+      validateReleaseConfig({
+        ...config,
+        requiredFiles: config.requiredFiles.filter(
+          (entry) => entry !== "src/settings.json",
+        ),
+      }),
+    ).toThrow(
+      "requiredJsonFiles entry must also be in requiredFiles: src/settings.json",
+    );
+  });
+
+  it("validates every allowed Creator exit code", () => {
+    const config = loadReleaseConfig(realConfigPath);
+
+    expect(() =>
+      validateReleaseConfig({
+        ...config,
+        allowedNonZeroExitCodes: [36, "36"],
+      }),
+    ).toThrow("allowedNonZeroExitCodes[1] must be a positive integer");
   });
 
   it("wraps unreadable config failures in the release error", () => {
@@ -195,6 +390,83 @@ describe("Hulebu Cocos build artifact validation", () => {
         "index.html missing System.import bootstrap",
       ]),
     );
+  });
+
+  it("rejects a directory used as a required artifact without throwing", () => {
+    const directoryArtifactRoot = createValidBuild(config);
+    const artifactPath = join(directoryArtifactRoot, "index.html");
+    rmSync(artifactPath);
+    mkdirSync(artifactPath);
+
+    expect(() => validateBuildArtifacts(directoryArtifactRoot, config)).not.toThrow();
+    expect(validateBuildArtifacts(directoryArtifactRoot, config).errors).toContain(
+      "required artifact is not a regular file: index.html",
+    );
+  });
+
+  it("rejects a direct artifact symlink when symlinks are supported", () => {
+    const symlinkBuildRoot = createValidBuild(config);
+    const externalRoot = createTemporaryRoot("direct-symlink-target");
+    const targetPath = join(externalRoot, "index.js");
+    const linkPath = join(symlinkBuildRoot, "index.js");
+    writeFileSync(targetPath, "external artifact", "utf8");
+    rmSync(linkPath);
+
+    if (!tryCreateSymlink(targetPath, linkPath, "file")) return;
+
+    expect(validateBuildArtifacts(symlinkBuildRoot, config).errors).toContain(
+      "required file must not be a symlink: index.js",
+    );
+  });
+
+  it("rejects an artifact escaping through a parent symlink when supported", () => {
+    const symlinkBuildRoot = createValidBuild(config);
+    const externalRoot = createTemporaryRoot("parent-symlink-target");
+    writeFileSync(join(externalRoot, "config.json"), JSON.stringify({ valid: true }));
+    const parentLinkPath = join(symlinkBuildRoot, "assets/main");
+    rmSync(parentLinkPath, { recursive: true });
+
+    if (!tryCreateSymlink(externalRoot, parentLinkPath, "dir")) return;
+
+    expect(validateBuildArtifacts(symlinkBuildRoot, config).errors).toContain(
+      "required file escapes build root: assets/main/config.json",
+    );
+  });
+
+  it("returns a structured error when artifact inspection fails", () => {
+    const invalidHierarchyRoot = createValidBuild(config);
+    const invalidHierarchyConfig = {
+      ...config,
+      requiredFiles: [...config.requiredFiles, "index.html/child.js"],
+    };
+
+    expect(() =>
+      validateBuildArtifacts(invalidHierarchyRoot, invalidHierarchyConfig),
+    ).not.toThrow();
+    expect(
+      validateBuildArtifacts(invalidHierarchyRoot, invalidHierarchyConfig).errors,
+    ).toContain("unable to inspect required file: index.html/child.js");
+  });
+
+  it("returns a structured error when a validated artifact read fails", () => {
+    const readFailureRoot = createValidBuild(config);
+    const failingPath = join(readFailureRoot, "src/settings.json");
+    const originalReadFileSync = mutableFs.readFileSync;
+    mutableFs.readFileSync = (...args: unknown[]) => {
+      if (args[0] === failingPath) {
+        throw Object.assign(new Error("simulated read failure"), { code: "EIO" });
+      }
+      return originalReadFileSync(...args);
+    };
+
+    try {
+      expect(() => validateBuildArtifacts(readFailureRoot, config)).not.toThrow();
+      expect(validateBuildArtifacts(readFailureRoot, config).errors).toContain(
+        "unable to read required file: src/settings.json",
+      );
+    } finally {
+      mutableFs.readFileSync = originalReadFileSync;
+    }
   });
 });
 

@@ -47,35 +47,181 @@ function validateReleaseConfig(config) {
       throw new HulebuReleaseError(`${key} must be a non-empty array`);
     }
   }
+  for (const key of ["requiredFiles", "requiredJsonFiles"]) {
+    config[key].forEach((entry, index) => {
+      validateArtifactPath(entry, `${key}[${index}]`);
+    });
+  }
+  config.smokePaths.forEach((entry, index) => {
+    validateSmokePath(entry, `smokePaths[${index}]`);
+  });
+  config.allowedNonZeroExitCodes.forEach((entry, index) => {
+    if (!Number.isInteger(entry) || entry <= 0) {
+      throw new HulebuReleaseError(
+        `allowedNonZeroExitCodes[${index}] must be a positive integer`,
+      );
+    }
+  });
+  if (!config.requiredFiles.includes("index.html")) {
+    throw new HulebuReleaseError("requiredFiles must include index.html");
+  }
+  const requiredFileSet = new Set(config.requiredFiles);
+  for (const relativePath of config.requiredJsonFiles) {
+    if (!requiredFileSet.has(relativePath)) {
+      throw new HulebuReleaseError(
+        `requiredJsonFiles entry must also be in requiredFiles: ${relativePath}`,
+      );
+    }
+  }
   if (typeof config.finishedMarker !== "string" || !config.finishedMarker) {
     throw new HulebuReleaseError("finishedMarker must be a non-empty string");
   }
 }
 
-function validateBuildArtifacts(buildRoot, config) {
-  const errors = [];
-  for (const relativePath of config.requiredFiles) {
-    const filePath = path.join(buildRoot, relativePath);
-    if (!fs.existsSync(filePath)) {
-      errors.push(`missing required file: ${relativePath}`);
-      continue;
-    }
-    if (fs.statSync(filePath).size === 0) {
-      errors.push(`empty required file: ${relativePath}`);
+function validateArtifactPath(value, label) {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new HulebuReleaseError(`${label} must be a non-empty string`);
+  }
+  if (
+    path.posix.isAbsolute(value) ||
+    path.win32.isAbsolute(value) ||
+    /^[A-Za-z]:/.test(value) ||
+    value.includes("\\") ||
+    value.includes("\0")
+  ) {
+    throw new HulebuReleaseError(`${label} must be a portable relative path`);
+  }
+  const segments = value.split("/");
+  if (segments.includes(".") || segments.includes("..")) {
+    throw new HulebuReleaseError(`${label} must not contain dot segments`);
+  }
+  if (path.posix.normalize(value) !== value || value.endsWith("/")) {
+    throw new HulebuReleaseError(`${label} must be normalized`);
+  }
+}
+
+function validateSmokePath(value, label) {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new HulebuReleaseError(`${label} must be a non-empty string`);
+  }
+  let decoded = value;
+  while (true) {
+    validateDecodedSmokePath(decoded, label);
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) return;
+      decoded = next;
+    } catch {
+      throw new HulebuReleaseError(`${label} must be normalized`);
     }
   }
-  for (const relativePath of config.requiredJsonFiles) {
+}
+
+function validateDecodedSmokePath(value, label) {
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    throw new HulebuReleaseError(`${label} must be an origin-relative HTTP path`);
+  }
+  if (value.includes("\\")) {
+    throw new HulebuReleaseError(`${label} must not contain backslashes`);
+  }
+  if (value.includes("?") || value.includes("#")) {
+    throw new HulebuReleaseError(`${label} must not contain query or hash`);
+  }
+  const segments = value.split("/");
+  if (segments.includes(".") || segments.includes("..")) {
+    throw new HulebuReleaseError(`${label} must not contain dot segments`);
+  }
+  if (path.posix.normalize(value) !== value) {
+    throw new HulebuReleaseError(`${label} must be normalized`);
+  }
+}
+
+function validateBuildArtifacts(buildRoot, config) {
+  const errors = [];
+  let realBuildRoot;
+  try {
+    realBuildRoot = fs.realpathSync(buildRoot);
+    if (!fs.statSync(realBuildRoot).isDirectory()) {
+      errors.push("build root is not a directory");
+      return { ok: false, errors };
+    }
+  } catch {
+    errors.push("unable to inspect build root");
+    return { ok: false, errors };
+  }
+
+  const readableFiles = new Set();
+  for (const relativePath of config.requiredFiles) {
     const filePath = path.join(buildRoot, relativePath);
-    if (!fs.existsSync(filePath)) continue;
+    let linkStatus;
     try {
-      JSON.parse(fs.readFileSync(filePath, "utf8"));
+      linkStatus = fs.lstatSync(filePath);
+    } catch (error) {
+      if (error?.code === "ENOENT") {
+        errors.push(`missing required file: ${relativePath}`);
+      } else {
+        errors.push(`unable to inspect required file: ${relativePath}`);
+      }
+      continue;
+    }
+    if (linkStatus.isSymbolicLink()) {
+      errors.push(`required file must not be a symlink: ${relativePath}`);
+      continue;
+    }
+    if (!linkStatus.isFile()) {
+      errors.push(`required artifact is not a regular file: ${relativePath}`);
+      continue;
+    }
+
+    let realFilePath;
+    let fileStatus;
+    try {
+      realFilePath = fs.realpathSync(filePath);
+      if (!isPathInside(realBuildRoot, realFilePath)) {
+        errors.push(`required file escapes build root: ${relativePath}`);
+        continue;
+      }
+      fileStatus = fs.statSync(filePath);
+      fs.accessSync(filePath, fs.constants.R_OK);
+    } catch {
+      errors.push(`unable to inspect required file: ${relativePath}`);
+      continue;
+    }
+    if (!fileStatus.isFile()) {
+      errors.push(`required artifact is not a regular file: ${relativePath}`);
+      continue;
+    }
+    if (fileStatus.size === 0) {
+      errors.push(`empty required file: ${relativePath}`);
+      continue;
+    }
+    readableFiles.add(relativePath);
+  }
+  for (const relativePath of config.requiredJsonFiles) {
+    if (!readableFiles.has(relativePath)) continue;
+    const filePath = path.join(buildRoot, relativePath);
+    let jsonText;
+    try {
+      jsonText = fs.readFileSync(filePath, "utf8");
+    } catch {
+      errors.push(`unable to read required file: ${relativePath}`);
+      continue;
+    }
+    try {
+      JSON.parse(jsonText);
     } catch {
       errors.push(`invalid JSON: ${relativePath}`);
     }
   }
   const indexPath = path.join(buildRoot, "index.html");
-  if (fs.existsSync(indexPath)) {
-    const indexHtml = fs.readFileSync(indexPath, "utf8");
+  if (readableFiles.has("index.html")) {
+    let indexHtml;
+    try {
+      indexHtml = fs.readFileSync(indexPath, "utf8");
+    } catch {
+      errors.push("unable to read required file: index.html");
+      return { ok: false, errors };
+    }
     if (!indexHtml.includes('id="GameCanvas"')) {
       errors.push("index.html missing GameCanvas");
     }
@@ -84,6 +230,16 @@ function validateBuildArtifacts(buildRoot, config) {
     }
   }
   return { ok: errors.length === 0, errors };
+}
+
+function isPathInside(parentPath, candidatePath) {
+  const relativePath = path.relative(parentPath, candidatePath);
+  return (
+    relativePath === "" ||
+    (relativePath !== ".." &&
+      !relativePath.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relativePath))
+  );
 }
 
 function evaluateCreatorBuild({ exitCode, logText, artifactErrors, config }) {
