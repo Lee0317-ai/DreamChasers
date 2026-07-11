@@ -119,16 +119,63 @@ function prepareBuildOutput({ buildRoot, outputRoot }) {
   if (outputStatus.isSymbolicLink() || !outputStatus.isDirectory()) {
     throw new HulebuReleaseError("output root must be a real directory");
   }
+  const realOutputRoot = fs.realpathSync(resolvedOutputRoot);
+  let buildExists = false;
   try {
     const buildStatus = fs.lstatSync(resolvedBuildRoot);
     if (buildStatus.isSymbolicLink()) {
       throw new HulebuReleaseError("build root must not be a symlink");
     }
+    buildExists = true;
   } catch (error) {
     if (error instanceof HulebuReleaseError) throw error;
     if (error?.code !== "ENOENT") throw error;
   }
-  fs.rmSync(resolvedBuildRoot, { recursive: true, force: true });
+  assertOutputRootIdentity(resolvedOutputRoot, outputStatus, realOutputRoot);
+  if (!buildExists) return;
+
+  const tombstonePath = path.join(
+    resolvedOutputRoot,
+    `.hulebu-web-mobile-remove-${process.pid}-${crypto
+      .randomBytes(8)
+      .toString("hex")}`,
+  );
+  fs.renameSync(resolvedBuildRoot, tombstonePath);
+  try {
+    assertOutputRootIdentity(resolvedOutputRoot, outputStatus, realOutputRoot);
+  } catch (error) {
+    try {
+      fs.renameSync(tombstonePath, resolvedBuildRoot);
+    } catch {
+      // Preserve the identity-change failure; the tombstone is not deleted.
+    }
+    throw error;
+  }
+  fs.rmSync(tombstonePath, { recursive: true, force: true });
+}
+
+function assertOutputRootIdentity(
+  outputRoot,
+  expectedStatus,
+  expectedRealPath,
+) {
+  let currentStatus;
+  let currentRealPath;
+  try {
+    currentStatus = fs.lstatSync(outputRoot);
+    currentRealPath = fs.realpathSync(outputRoot);
+  } catch {
+    throw new HulebuReleaseError("output root changed during cleanup");
+  }
+  if (
+    currentStatus.isSymbolicLink() ||
+    !currentStatus.isDirectory() ||
+    currentStatus.dev !== expectedStatus.dev ||
+    currentStatus.ino !== expectedStatus.ino ||
+    currentRealPath !== expectedRealPath
+  ) {
+    throw new HulebuReleaseError("output root changed during cleanup");
+  }
 }
 
 function createExclusiveTemporaryFile(finalPath) {
@@ -181,15 +228,20 @@ async function runCreatorProcess({
       });
       outcome = await new Promise((resolveOutcome) => {
         let settled = false;
+        let asynchronousSpawnError;
         const settle = (value) => {
           if (settled) return;
           settled = true;
           resolveOutcome(value);
         };
         child.once("error", (error) => {
-          settle({ kind: "spawn-error", error });
+          asynchronousSpawnError = error;
         });
         child.once("close", (exitCode, signal) => {
+          if (asynchronousSpawnError) {
+            settle({ kind: "spawn-error", error: asynchronousSpawnError });
+            return;
+          }
           if (signal || !Number.isInteger(exitCode)) {
             settle({ kind: "signal", signal: signal || "unknown" });
             return;
@@ -217,13 +269,14 @@ async function runCreatorProcess({
     }
 
     fs.fsyncSync(fileDescriptor);
+    const temporaryStatus = fs.fstatSync(fileDescriptor);
     fs.closeSync(fileDescriptor);
     descriptorOpen = false;
     fs.renameSync(temporaryPath, logPath);
     return {
       outcome,
       logPath,
-      logText: fs.readFileSync(logPath, "utf8"),
+      logText: readPublishedLog(logPath, temporaryStatus),
     };
   } finally {
     if (descriptorOpen) {
@@ -238,6 +291,87 @@ async function runCreatorProcess({
     } catch {
       // Preserve the original process or log failure.
     }
+  }
+}
+
+function readPublishedLog(logPath, expectedStatus) {
+  const noFollowFlag =
+    typeof fs.constants.O_NOFOLLOW === "number" ? fs.constants.O_NOFOLLOW : 0;
+  const descriptor = fs.openSync(logPath, fs.constants.O_RDONLY | noFollowFlag);
+  try {
+    const publishedStatus = fs.fstatSync(descriptor);
+    if (
+      publishedStatus.dev !== expectedStatus.dev ||
+      publishedStatus.ino !== expectedStatus.ino
+    ) {
+      throw new HulebuReleaseError("Creator log changed during publication");
+    }
+    return fs.readFileSync(descriptor, "utf8");
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function acquireOutputLock(outputRoot) {
+  fs.mkdirSync(outputRoot, { recursive: true });
+  const outputStatus = fs.lstatSync(outputRoot);
+  if (outputStatus.isSymbolicLink() || !outputStatus.isDirectory()) {
+    throw new HulebuReleaseError("output root must be a real directory");
+  }
+  const lockPath = path.join(outputRoot, ".hulebu-cocos-build.lock");
+  const noFollowFlag =
+    typeof fs.constants.O_NOFOLLOW === "number" ? fs.constants.O_NOFOLLOW : 0;
+  let descriptor;
+  try {
+    descriptor = fs.openSync(
+      lockPath,
+      fs.constants.O_WRONLY |
+        fs.constants.O_CREAT |
+        fs.constants.O_EXCL |
+        noFollowFlag,
+      0o600,
+    );
+  } catch (error) {
+    if (error?.code === "EEXIST") {
+      throw new HulebuReleaseError(
+        `another Hulebu build is using output root: ${outputRoot}`,
+      );
+    }
+    throw error;
+  }
+  fs.writeFileSync(descriptor, `${process.pid}\n`, "utf8");
+  let released = false;
+  return {
+    release() {
+      if (released) return;
+      released = true;
+      try {
+        fs.closeSync(descriptor);
+      } finally {
+        fs.rmSync(lockPath, { force: true });
+      }
+    },
+  };
+}
+
+function removeReservedManifestFiles(buildRoot) {
+  let buildStatus;
+  try {
+    buildStatus = fs.lstatSync(buildRoot);
+  } catch (error) {
+    if (error?.code === "ENOENT") return;
+    throw error;
+  }
+  if (buildStatus.isSymbolicLink()) {
+    fs.rmSync(buildRoot, { force: true });
+    return;
+  }
+  if (!buildStatus.isDirectory()) return;
+  for (const filename of ["hulebu-build.json", "hulebu-build.json.tmp"]) {
+    fs.rmSync(path.join(buildRoot, filename), {
+      recursive: true,
+      force: true,
+    });
   }
 }
 
@@ -314,70 +448,94 @@ async function runRelease(argv, effects = {}) {
   }
 
   const commit = getCommit();
-  const prepareOutput = effects.prepareBuildOutput || prepareBuildOutput;
-  prepareOutput(outputPaths);
-  const creatorArguments = buildCreatorArguments({
-    config,
-    outputRoot: outputPaths.outputRoot,
-    projectRoot: paths.projectRoot,
-  });
-  const executeCreator = effects.runCreatorProcess || runCreatorProcess;
-  const creatorResult = await executeCreator({
-    creatorArguments,
-    creatorExecutable: parsed.creatorExecutable,
-    environment,
-    outputRoot: outputPaths.outputRoot,
-    projectRoot: paths.projectRoot,
-    spawn: effects.spawn || childProcess.spawn,
-  });
-  const artifactResult = validateArtifacts(outputPaths.buildRoot, config);
+  const lockOutput = effects.acquireOutputLock || acquireOutputLock;
+  const outputLock = lockOutput(outputPaths.outputRoot);
+  let prepared = false;
+  try {
+    const prepareOutput = effects.prepareBuildOutput || prepareBuildOutput;
+    prepareOutput(outputPaths);
+    prepared = true;
+    const creatorArguments = buildCreatorArguments({
+      config,
+      outputRoot: outputPaths.outputRoot,
+      projectRoot: paths.projectRoot,
+    });
+    const executeCreator = effects.runCreatorProcess || runCreatorProcess;
+    const creatorResult = await executeCreator({
+      creatorArguments,
+      creatorExecutable: parsed.creatorExecutable,
+      environment,
+      outputRoot: outputPaths.outputRoot,
+      projectRoot: paths.projectRoot,
+      spawn: effects.spawn || childProcess.spawn,
+    });
+    const artifactResult = validateArtifacts(outputPaths.buildRoot, config);
 
-  if (creatorResult.outcome.kind === "spawn-error") {
-    throw new HulebuReleaseError(
-      `unable to start Creator: ${creatorResult.outcome.error.message}`,
+    if (creatorResult.outcome.kind === "spawn-error") {
+      throw new HulebuReleaseError(
+        `unable to start Creator: ${creatorResult.outcome.error.message}`,
+      );
+    }
+    if (creatorResult.outcome.kind === "signal") {
+      throw new HulebuReleaseError(
+        `Creator terminated by signal ${creatorResult.outcome.signal}`,
+      );
+    }
+
+    const evaluateBuild = effects.evaluateCreatorBuild || evaluateCreatorBuild;
+    const creatorDecision = evaluateBuild({
+      exitCode: creatorResult.outcome.exitCode,
+      logText: creatorResult.logText,
+      artifactErrors: artifactResult.errors,
+      config,
+    });
+    const smokeResults = await runSmoke(
+      outputPaths.buildRoot,
+      config.smokePaths,
     );
-  }
-  if (creatorResult.outcome.kind === "signal") {
-    throw new HulebuReleaseError(
-      `Creator terminated by signal ${creatorResult.outcome.signal}`,
-    );
-  }
+    const createdAt = now().toISOString();
+    const buildId = createBuildId(commit, createdAt);
+    const writeManifest = effects.writeBuildManifest || writeBuildManifest;
+    const manifest = writeManifest(outputPaths.buildRoot, {
+      buildId,
+      commit,
+      config,
+      creatorDecision,
+      createdAt,
+      smokeResults,
+    });
 
-  const evaluateBuild = effects.evaluateCreatorBuild || evaluateCreatorBuild;
-  const creatorDecision = evaluateBuild({
-    exitCode: creatorResult.outcome.exitCode,
-    logText: creatorResult.logText,
-    artifactErrors: artifactResult.errors,
-    config,
-  });
-  const smokeResults = await runSmoke(outputPaths.buildRoot, config.smokePaths);
-  const createdAt = now().toISOString();
-  const buildId = createBuildId(commit, createdAt);
-  const writeManifest = effects.writeBuildManifest || writeBuildManifest;
-  const manifest = writeManifest(outputPaths.buildRoot, {
-    buildId,
-    commit,
-    config,
-    creatorDecision,
-    createdAt,
-    smokeResults,
-  });
-
-  return {
-    ok: true,
-    mode: "build",
-    projectRoot: paths.projectRoot,
-    outputRoot: outputPaths.outputRoot,
-    buildRoot: outputPaths.buildRoot,
-    logPath: creatorResult.logPath,
-    manifestPath: manifest.path,
-    buildId,
-    commit,
-    createdAt,
-    creatorExitCode: creatorDecision.originalExitCode,
-    creatorExitNormalized: creatorDecision.normalized,
-    smokeResults,
-  };
+    return {
+      ok: true,
+      mode: "build",
+      projectRoot: paths.projectRoot,
+      outputRoot: outputPaths.outputRoot,
+      buildRoot: outputPaths.buildRoot,
+      logPath: creatorResult.logPath,
+      manifestPath: manifest.path,
+      buildId,
+      commit,
+      createdAt,
+      creatorExitCode: creatorDecision.originalExitCode,
+      creatorExitNormalized: creatorDecision.normalized,
+      smokeResults,
+    };
+  } catch (error) {
+    if (prepared) {
+      const removeManifest =
+        effects.removeReservedManifestFiles || removeReservedManifestFiles;
+      try {
+        removeManifest(outputPaths.buildRoot);
+      } catch (cleanupError) {
+        throw new HulebuReleaseError(
+          `${sanitizeErrorMessage(error)}; unable to remove failed manifest: ${sanitizeErrorMessage(cleanupError)}`,
+        );
+      }
+    }
+    throw error;
+  } finally {
+    outputLock.release();
+  }
 }
 
 function sanitizeErrorMessage(error) {

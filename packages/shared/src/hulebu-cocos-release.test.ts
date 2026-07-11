@@ -7,6 +7,7 @@ import {
   readFileSync,
   readdirSync,
   realpathSync,
+  renameSync,
   rmSync,
   statSync,
   symlinkSync,
@@ -65,6 +66,9 @@ const mutableFs = require("node:fs") as {
   fstatSync: (
     ...args: unknown[]
   ) => ReturnType<typeof import("node:fs").fstatSync>;
+  lstatSync: (
+    ...args: unknown[]
+  ) => ReturnType<typeof import("node:fs").lstatSync>;
   readFileSync: (...args: unknown[]) => unknown;
   renameSync: (...args: unknown[]) => unknown;
   statSync: (
@@ -1283,6 +1287,56 @@ describe("Hulebu Cocos production build CLI", () => {
     );
   });
 
+  it("aborts when the output directory identity changes before deletion", () => {
+    const cli = loadBuildCli();
+    const parentRoot = createTemporaryRoot("cli-delete-swap");
+    const outputRoot = join(parentRoot, "output");
+    const parkedOutputRoot = join(parentRoot, "output-original");
+    const buildRoot = join(outputRoot, "web-mobile");
+    const externalRoot = createTemporaryRoot("cli-delete-swap-target");
+    const externalBuildRoot = join(externalRoot, "web-mobile");
+    mkdirSync(buildRoot, { recursive: true });
+    mkdirSync(externalBuildRoot, { recursive: true });
+    writeFileSync(join(buildRoot, "old.txt"), "old", "utf8");
+    writeFileSync(join(externalBuildRoot, "outside.txt"), "outside", "utf8");
+
+    const probePath = join(parentRoot, "symlink-probe");
+    if (!tryCreateSymlink(externalRoot, probePath, "dir")) return;
+    rmSync(probePath);
+
+    const originalLstatSync = mutableFs.lstatSync;
+    let swapped = false;
+    mutableFs.lstatSync = (...args: unknown[]) => {
+      const status = originalLstatSync(...args);
+      if (!swapped && args[0] === buildRoot) {
+        swapped = true;
+        renameSync(outputRoot, parkedOutputRoot);
+        symlinkSync(externalRoot, outputRoot, "dir");
+      }
+      return status;
+    };
+
+    try {
+      expect(() => cli.prepareBuildOutput({ buildRoot, outputRoot })).toThrow(
+        "output root changed during cleanup",
+      );
+      expect(readFileSync(join(externalBuildRoot, "outside.txt"), "utf8")).toBe(
+        "outside",
+      );
+      expect(
+        readFileSync(join(parkedOutputRoot, "web-mobile/old.txt"), "utf8"),
+      ).toBe("old");
+    } finally {
+      mutableFs.lstatSync = originalLstatSync;
+      if (existsSync(outputRoot) && lstatSync(outputRoot).isSymbolicLink()) {
+        rmSync(outputRoot);
+      }
+      if (existsSync(parkedOutputRoot)) {
+        renameSync(parkedOutputRoot, outputRoot);
+      }
+    }
+  });
+
   it("captures one combined Creator log with shell disabled", async () => {
     const cli = loadBuildCli();
     const outputRoot = createTemporaryRoot("cli-log");
@@ -1360,6 +1414,87 @@ describe("Hulebu Cocos production build CLI", () => {
       expect(existsSync(result.logPath)).toBe(true);
     },
   );
+
+  it("waits for close after an asynchronous child error", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-async-error");
+    const projectRoot = createTemporaryRoot("cli-async-error-project");
+    let closeSeen = false;
+    let lateWriteError: unknown;
+    const spawn = (...args: unknown[]) => {
+      const child = new EventEmitter();
+      const options = args[2] as { stdio: [string, number, number] };
+      queueMicrotask(() => {
+        child.emit("error", new Error("async ENOENT"));
+        queueMicrotask(() => {
+          try {
+            writeSync(options.stdio[1], "late child output\n");
+          } catch (error) {
+            lateWriteError = error;
+          }
+          closeSeen = true;
+          child.emit("close", -1, null);
+        });
+      });
+      return child;
+    };
+
+    const result = await cli.runCreatorProcess({
+      creatorArguments: [],
+      creatorExecutable: "/fake/creator",
+      environment: {},
+      outputRoot,
+      projectRoot,
+      spawn,
+    });
+
+    expect(closeSeen).toBe(true);
+    expect(lateWriteError).toBeUndefined();
+    expect(result.outcome).toMatchObject({ kind: "spawn-error" });
+    expect(result.logText).toContain("late child output");
+    expect(result.logText).toContain("async ENOENT");
+  });
+
+  it("rejects a Creator log replaced between publication and reading", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-log-replacement");
+    const projectRoot = createTemporaryRoot("cli-log-replacement-project");
+    const logPath = join(outputRoot, "hulebu-cocos-build.log");
+    const originalRenameSync = mutableFs.renameSync;
+    mutableFs.renameSync = (...args: unknown[]) => {
+      const result = originalRenameSync(...args);
+      if (args[1] === logPath) {
+        const foreignPath = join(outputRoot, "foreign.log");
+        writeFileSync(foreignPath, `${config.finishedMarker}\n`, "utf8");
+        originalRenameSync(foreignPath, logPath);
+      }
+      return result;
+    };
+    const spawn = (...args: unknown[]) => {
+      const child = new EventEmitter();
+      const options = args[2] as { stdio: [string, number, number] };
+      queueMicrotask(() => {
+        writeSync(options.stdio[1], "current attempt without marker\n");
+        child.emit("close", 36, null);
+      });
+      return child;
+    };
+
+    try {
+      await expect(
+        cli.runCreatorProcess({
+          creatorArguments: [],
+          creatorExecutable: "/fake/creator",
+          environment: {},
+          outputRoot,
+          projectRoot,
+          spawn,
+        }),
+      ).rejects.toThrow("Creator log changed during publication");
+    } finally {
+      mutableFs.renameSync = originalRenameSync;
+    }
+  });
 
   it("verifies an existing build without touching Creator evidence", async () => {
     const cli = loadBuildCli();
@@ -1535,6 +1670,38 @@ describe("Hulebu Cocos production build CLI", () => {
       expect(manifestCalled).toBe(false);
     },
   );
+
+  it("removes a final-named manifest recreated by a failed Creator attempt", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-failed-manifest");
+    const buildRoot = join(outputRoot, config.outputName);
+    const manifestPath = join(buildRoot, "hulebu-build.json");
+
+    await expect(
+      cli.runRelease(["--output-root", outputRoot], {
+        environment: {},
+        getCommit: () => "abcdef123456",
+        loadReleaseConfig: () => config,
+        paths: {
+          configPath: realConfigPath,
+          projectRoot: createTemporaryRoot("cli-failed-manifest-project"),
+          repositoryRoot,
+        },
+        runCreatorProcess: async () => {
+          mkdirSync(buildRoot, { recursive: true });
+          writeFileSync(manifestPath, '{"untrusted":true}\n', "utf8");
+          return {
+            logPath: join(outputRoot, "hulebu-cocos-build.log"),
+            logText: "partial build",
+            outcome: { kind: "signal", signal: "SIGTERM" },
+          };
+        },
+        validateBuildArtifacts: () => ({ ok: true, errors: [] }),
+      }),
+    ).rejects.toThrow("signal SIGTERM");
+
+    expect(existsSync(manifestPath)).toBe(false);
+  });
 
   it("prints one compact success line or one sanitized error line", async () => {
     const cli = loadBuildCli();
