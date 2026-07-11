@@ -1,8 +1,10 @@
 import {
   existsSync,
+  lstatSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -52,8 +54,17 @@ type SmokeResult = {
 
 const require = createRequire(import.meta.url);
 const mutableFs = require("node:fs") as {
+  createReadStream: (
+    ...args: unknown[]
+  ) => ReturnType<typeof import("node:fs").createReadStream>;
+  fstatSync: (
+    ...args: unknown[]
+  ) => ReturnType<typeof import("node:fs").fstatSync>;
   readFileSync: (...args: unknown[]) => unknown;
   renameSync: (...args: unknown[]) => unknown;
+  statSync: (
+    ...args: unknown[]
+  ) => ReturnType<typeof import("node:fs").statSync>;
 };
 const repositoryRoot = resolve(
   dirname(fileURLToPath(import.meta.url)),
@@ -759,6 +770,37 @@ describe("Hulebu Cocos build manifest", () => {
     });
   });
 
+  it("replaces a stale temporary symlink without altering its target", () => {
+    const validBuildRoot = createValidBuild(config);
+    const externalRoot = createTemporaryRoot("manifest-symlink-target");
+    const externalPath = join(externalRoot, "outside.json");
+    const temporaryPath = join(validBuildRoot, "hulebu-build.json.tmp");
+    const externalContent = '{"outside":true}\n';
+    writeFileSync(externalPath, externalContent, "utf8");
+
+    if (!tryCreateSymlink(externalPath, temporaryPath, "file")) return;
+
+    const manifest = writeBuildManifest(validBuildRoot, {
+      buildId: "safe-build",
+      commit: "abc1234",
+      config,
+      creatorDecision: {
+        accepted: true,
+        normalized: false,
+        originalExitCode: 0,
+      },
+      createdAt: "2026-07-11T01:02:03.000Z",
+      smokeResults: [],
+    });
+
+    expect(readFileSync(externalPath, "utf8")).toBe(externalContent);
+    expect(lstatSync(manifest.path).isFile()).toBe(true);
+    expect(lstatSync(manifest.path).isSymbolicLink()).toBe(false);
+    expect(JSON.parse(readFileSync(manifest.path, "utf8"))).toMatchObject({
+      buildId: "safe-build",
+    });
+  });
+
   it("removes the temporary manifest when atomic replacement fails", () => {
     const validBuildRoot = createValidBuild(config);
     const originalRenameSync = mutableFs.renameSync;
@@ -902,6 +944,52 @@ describe("Hulebu Cocos build HTTP server", () => {
       await server.close();
     }
   });
+
+  it("streams the opened file descriptor when the pathname is replaced", async () => {
+    const buildRoot = createTemporaryRoot("server-descriptor-race");
+    const externalRoot = createTemporaryRoot("server-descriptor-target");
+    const filePath = join(buildRoot, "race.txt");
+    const externalPath = join(externalRoot, "outside.txt");
+    const probePath = join(buildRoot, "symlink-probe.txt");
+    writeFileSync(filePath, "trusted-data", "utf8");
+    writeFileSync(externalPath, "hostile-data", "utf8");
+    const realFilePath = realpathSync(filePath);
+
+    if (!tryCreateSymlink(externalPath, probePath, "file")) return;
+    rmSync(probePath);
+
+    const originalFstatSync = mutableFs.fstatSync;
+    const originalStatSync = mutableFs.statSync;
+    let swapped = false;
+    const swapPath = () => {
+      if (swapped) return;
+      swapped = true;
+      rmSync(filePath);
+      symlinkSync(externalPath, filePath, "file");
+    };
+    mutableFs.fstatSync = (...args: unknown[]) => {
+      const status = originalFstatSync(...args);
+      swapPath();
+      return status;
+    };
+    mutableFs.statSync = (...args: unknown[]) => {
+      const status = originalStatSync(...args);
+      if (args[0] === filePath || args[0] === realFilePath) swapPath();
+      return status;
+    };
+
+    const server = await startStaticServer(buildRoot);
+    try {
+      const response = await requestRaw(server.origin, "/race.txt");
+      expect(response.status).toBe(200);
+      expect(response.body.toString("utf8")).toBe("trusted-data");
+      expect(response.contentLength).toBe(String(response.body.byteLength));
+    } finally {
+      mutableFs.fstatSync = originalFstatSync;
+      mutableFs.statSync = originalStatSync;
+      await server.close();
+    }
+  });
 });
 
 describe("Hulebu Cocos build smoke", () => {
@@ -958,6 +1046,41 @@ describe("Hulebu Cocos build smoke", () => {
       ]);
     },
   );
+
+  it("wraps response-body transport failures and closes the server", async () => {
+    const buildRoot = createTemporaryRoot("smoke-body-failure");
+    const pathname = "/broken.bin";
+    writeFileSync(join(buildRoot, pathname.slice(1)), Buffer.alloc(256 * 1024));
+    const originalCreateReadStream = mutableFs.createReadStream;
+    let failureInjected = false;
+    mutableFs.createReadStream = (...args: unknown[]) => {
+      const stream = originalCreateReadStream(...args);
+      if (!failureInjected) {
+        failureInjected = true;
+        stream.once("data", () => {
+          stream.destroy(new Error("simulated response-body failure"));
+        });
+      }
+      return stream;
+    };
+
+    let failure: unknown;
+    try {
+      failure = await smokeBuild(buildRoot, [pathname]).catch(
+        (error: unknown) => error,
+      );
+    } finally {
+      mutableFs.createReadStream = originalCreateReadStream;
+    }
+
+    expect(failure).toBeInstanceOf(HulebuReleaseError);
+    expect((failure as Error).message).toContain(pathname);
+
+    writeFileSync(join(buildRoot, "healthy.json"), '{"healthy":true}', "utf8");
+    await expect(smokeBuild(buildRoot, ["/healthy.json"])).resolves.toEqual([
+      expect.objectContaining({ pathname: "/healthy.json", status: 200 }),
+    ]);
+  });
 
   it("rejects full and protocol-relative smoke URLs", async () => {
     const buildRoot = createTemporaryRoot("smoke-url");

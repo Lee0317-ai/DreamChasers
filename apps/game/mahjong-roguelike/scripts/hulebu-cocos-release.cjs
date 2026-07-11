@@ -368,15 +368,40 @@ function writeBuildManifest(
   };
   const manifestPath = path.join(absoluteBuildRoot, "hulebu-build.json");
   const temporaryPath = path.join(absoluteBuildRoot, "hulebu-build.json.tmp");
+  let temporaryFileDescriptor;
 
   try {
-    fs.writeFileSync(
+    fs.rmSync(temporaryPath, { force: true });
+    const noFollowFlag = fs.constants.O_NOFOLLOW;
+    if (typeof noFollowFlag !== "number") {
+      throw new HulebuReleaseError(
+        "Filesystem no-follow opens are unavailable",
+      );
+    }
+    temporaryFileDescriptor = fs.openSync(
       temporaryPath,
+      fs.constants.O_WRONLY |
+        fs.constants.O_CREAT |
+        fs.constants.O_EXCL |
+        noFollowFlag,
+      0o600,
+    );
+    fs.writeFileSync(
+      temporaryFileDescriptor,
       `${JSON.stringify(data, null, 2)}\n`,
       "utf8",
     );
+    fs.closeSync(temporaryFileDescriptor);
+    temporaryFileDescriptor = undefined;
     fs.renameSync(temporaryPath, manifestPath);
   } finally {
+    if (temporaryFileDescriptor !== undefined) {
+      try {
+        fs.closeSync(temporaryFileDescriptor);
+      } catch {
+        // Preserve the original write error when closing also fails.
+      }
+    }
     try {
       fs.rmSync(temporaryPath, { force: true });
     } catch {
@@ -460,8 +485,8 @@ async function startStaticServer(buildRoot) {
       return;
     }
 
-    const status = inspectServedFile(absoluteBuildRoot, filePath);
-    if (!status) {
+    const openedFile = openServedFile(absoluteBuildRoot, filePath);
+    if (!openedFile) {
       sendStatus(response, 404);
       return;
     }
@@ -470,14 +495,25 @@ async function startStaticServer(buildRoot) {
       "Content-Type":
         CONTENT_TYPES.get(path.extname(filePath).toLowerCase()) ||
         "application/octet-stream",
-      "Content-Length": status.size,
+      "Content-Length": openedFile.size,
     });
     if (request.method === "HEAD") {
+      fs.closeSync(openedFile.fileDescriptor);
       response.end();
       return;
     }
 
-    const stream = fs.createReadStream(filePath);
+    let stream;
+    try {
+      stream = fs.createReadStream(filePath, {
+        autoClose: true,
+        fd: openedFile.fileDescriptor,
+      });
+    } catch {
+      fs.closeSync(openedFile.fileDescriptor);
+      response.destroy();
+      return;
+    }
     stream.on("error", () => response.destroy());
     stream.pipe(response);
   });
@@ -516,9 +552,10 @@ async function startStaticServer(buildRoot) {
   };
 }
 
-function inspectServedFile(buildRoot, filePath) {
+function openServedFile(buildRoot, filePath) {
   const relativePath = path.relative(buildRoot, filePath);
   let currentPath = buildRoot;
+  let fileDescriptor;
   try {
     for (const segment of relativePath.split(path.sep)) {
       currentPath = path.join(currentPath, segment);
@@ -529,8 +566,26 @@ function inspectServedFile(buildRoot, filePath) {
     }
     const realFilePath = fs.realpathSync(filePath);
     if (!isPathInside(fs.realpathSync(buildRoot), realFilePath)) return null;
-    return fs.statSync(realFilePath);
+    const noFollowFlag = fs.constants.O_NOFOLLOW;
+    if (typeof noFollowFlag !== "number") return null;
+    fileDescriptor = fs.openSync(
+      filePath,
+      fs.constants.O_RDONLY | noFollowFlag,
+    );
+    const status = fs.fstatSync(fileDescriptor);
+    if (!status.isFile()) {
+      fs.closeSync(fileDescriptor);
+      return null;
+    }
+    return { fileDescriptor, size: status.size };
   } catch {
+    if (fileDescriptor !== undefined) {
+      try {
+        fs.closeSync(fileDescriptor);
+      } catch {
+        // The request already resolves to a not-found response.
+      }
+    }
     return null;
   }
 }
@@ -576,39 +631,41 @@ async function smokeBuild(buildRoot, smokePaths) {
   const results = [];
   try {
     for (const pathname of smokePaths) {
-      let response;
       try {
-        response = await fetch(`${server.origin}${pathname}`);
-      } catch (error) {
-        throw new HulebuReleaseError(
-          `Smoke check failed for ${pathname}: ${error.message}`,
-        );
-      }
-      const body = Buffer.from(await response.arrayBuffer());
-      if (response.status !== 200) {
-        throw new HulebuReleaseError(
-          `Smoke check failed for ${pathname}: HTTP ${response.status}`,
-        );
-      }
-      if (body.byteLength === 0) {
-        throw new HulebuReleaseError(
-          `Smoke check failed for ${pathname}: empty response body`,
-        );
-      }
-      if (pathname.endsWith(".json")) {
-        try {
-          JSON.parse(body.toString("utf8"));
-        } catch {
+        const response = await fetch(`${server.origin}${pathname}`);
+        const body = Buffer.from(await response.arrayBuffer());
+        if (response.status !== 200) {
           throw new HulebuReleaseError(
-            `Smoke check failed for ${pathname}: invalid JSON`,
+            `Smoke check failed for ${pathname}: HTTP ${response.status}`,
           );
         }
+        if (body.byteLength === 0) {
+          throw new HulebuReleaseError(
+            `Smoke check failed for ${pathname}: empty response body`,
+          );
+        }
+        if (pathname.endsWith(".json")) {
+          try {
+            JSON.parse(body.toString("utf8"));
+          } catch {
+            throw new HulebuReleaseError(
+              `Smoke check failed for ${pathname}: invalid JSON`,
+            );
+          }
+        }
+        results.push({
+          pathname,
+          status: response.status,
+          bytes: body.byteLength,
+        });
+      } catch (error) {
+        if (error instanceof HulebuReleaseError) throw error;
+        throw new HulebuReleaseError(
+          `Smoke check failed for ${pathname}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
       }
-      results.push({
-        pathname,
-        status: response.status,
-        bytes: body.byteLength,
-      });
     }
     return results;
   } finally {
