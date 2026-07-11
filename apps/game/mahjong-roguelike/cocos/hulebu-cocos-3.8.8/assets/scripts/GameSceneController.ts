@@ -1,10 +1,53 @@
-import { _decorator, Button, Camera, Canvas, Color, Component, Graphics, Label, Layers, Node, UITransform, Vec3 } from "cc";
+import { _decorator, BlockInputEvents, Button, Camera, Canvas, Color, Component, Graphics, Label, Layers, Node, resources, Sprite, SpriteFrame, sys, UITransform, Vec3 } from "cc";
+import { DEBUG } from "cc/env";
 import { BoardLayerBinder } from "./BoardLayerBinder";
 import { ComboBarBinder } from "./ComboBarBinder";
 import { HudBinder } from "./HudBinder";
+import { MeldRiverLayerBinder } from "./MeldRiverLayerBinder";
 import { SlotLayerBinder } from "./SlotLayerBinder";
+import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
+import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { createHulebuConfiguredSceneModelForLayout } from "./bootstrap/HulebuConfiguredSceneModel";
-import { HULEBU_LEVEL_CONFIGS, HULEBU_REWARD_LABELS, HULEBU_REWARD_LEVEL_ORDERS } from "./config/HulebuLevelConfig";
+import {
+  createHulebuAdvancedRunProfile,
+  createHulebuDailyRunProfile,
+  getHulebuDailyMutatorProfile,
+  getHulebuAdvancedAbilityChoices,
+  getHulebuAdvancedRunPressureConfig,
+  getHulebuRewardChoicesForRun,
+  getHulebuSpecialEventChoices,
+  getHulebuLevelIndexForRunOrder,
+  HULEBU_EVENT_LEVEL_ORDERS,
+  HULEBU_RUN_ARCHETYPES,
+  HULEBU_MAINLINE_RUN_PROFILE,
+  HULEBU_LEVEL_CONFIGS,
+  HULEBU_REWARD_LABELS,
+  HULEBU_REWARD_LEVEL_ORDERS,
+  HULEBU_SPECIAL_EVENT_DANGER_LABELS,
+  HULEBU_SPECIAL_EVENT_LABELS,
+  HULEBU_SPECIAL_EVENT_RARITY_LABELS,
+  shouldCompleteHulebuRunAtOrder,
+  type HulebuAdvancedAbilityConfig,
+  type HulebuAdvancedRunTier,
+  type HulebuRunArchetypeId,
+  type HulebuRunProfile,
+} from "./config/HulebuLevelConfig";
+import {
+  HulebuRuntimeState,
+  applyHulebuRewardToRunState,
+  applyHulebuSpecialEventToLevelState,
+  createHulebuLevelModifierState,
+  createHulebuMetaUpgradeState,
+  createHulebuRunArchetypeState,
+  createHulebuRunRewardState,
+  mergeHulebuLevelModifierStates,
+  type HulebuLevelModifierState,
+  type HulebuMetaUpgradeState,
+  type HulebuRunArchetypeState,
+  type HulebuRunRewardState,
+  type HulebuRuntimeComboCandidateOption,
+  type HulebuRuntimeSnapshot,
+} from "./runtime/HulebuRuntimeState";
 import {
   centerLayoutX,
   centerLayoutY,
@@ -13,21 +56,36 @@ import {
   scaleLayoutValue,
 } from "./bootstrap/HulebuSampleSceneModel";
 import type { HulebuLayoutSize } from "./bootstrap/HulebuSampleSceneModel";
-import type { HulebuRuntimeState } from "./runtime/HulebuRuntimeState";
 import type {
   HulebuBoardNodeModel,
   HulebuCellNodeModel,
   HulebuCocosSceneModel,
   HulebuComboControlModel,
   HulebuComboType,
+  HulebuHudModel,
+  HulebuTileCounterItemModel,
+  HulebuTileCounterModel,
 } from "./contracts/HulebuSceneModel";
 
 const { ccclass, property } = _decorator;
 type RuntimeLayout = Required<HulebuLayoutSize>;
-type HulebuGamePhase = "playing" | "cleared" | "reward";
+type HulebuGamePhase = "lobby" | "meta" | "collection" | "advanced" | "advancedAbility" | "playing" | "cleared" | "reward" | "event" | "archetype";
+type HulebuResumableRunPhase = "playing" | "cleared" | "reward" | "event" | "advancedAbility" | "archetype";
+type HulebuMetaUpgradeAxis = keyof HulebuMetaUpgradeState;
+type HulebuAccountSyncState = "local" | "syncing" | "ready" | "guest" | "error";
+type HulebuAchievementId =
+  | "mainline-first-clear"
+  | "boss-hulebu-king"
+  | "endless-first-step"
+  | "endless-layer-25"
+  | "daily-first-checkin"
+  | "daily-clear"
+  | "upgrade-first-buy"
+  | "ascension-west-clear";
 
 const RUNTIME_CAMERA_NAME = "RuntimeCamera";
 const SHELL_ROOT_NAME = "VisualShellRoot";
+const TOOL_OVERLAY_ROOT_NAME = "ToolOverlayRoot";
 const CAMERA_Z = 1000;
 const TABLE_FELT_FILL = new Color(33, 88, 69, 255);
 const TABLE_FELT_SHADOW = new Color(16, 49, 41, 255);
@@ -40,9 +98,139 @@ const WOOD_FILL = new Color(99, 59, 35, 255);
 const WOOD_STROKE = new Color(177, 116, 65, 255);
 const TOOL_FILL = new Color(49, 116, 87, 255);
 const OVERLAY_BACKDROP = new Color(10, 25, 22, 220);
-const HULEBU_TILE_WIDTH = 52;
-const HULEBU_TILE_HEIGHT = 70;
-const HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.05;
+const HULEBU_TILE_WIDTH = 38;
+const HULEBU_TILE_HEIGHT = 51;
+const HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.001;
+const REWARD_CHOICE_CARD_WIDTH = 106;
+const REWARD_CHOICE_CARD_HEIGHT = 120;
+const REWARD_CHOICE_CARD_GAP = 112;
+const TOOL_BUTTON_SPRITES: Record<string, string> = {
+  ToolButton_Wash: "ui/v6/buttons/tools/tool_shuffle/spriteFrame",
+  ToolButton_Undo: "ui/v6/buttons/tools/tool_undo/spriteFrame",
+  ToolButton_Hint: "ui/v6/buttons/tools/tool_hint/spriteFrame",
+};
+const TOP_PLAQUE_SPRITES: Record<string, string> = {
+  LevelPlaque: "ui/v6/hud/level_badge/spriteFrame",
+  ScorePlaque: "ui/v6/hud/score_badge/spriteFrame",
+  CounterPlaque: "ui/v6/hud/tile_counter_wide/spriteFrame",
+};
+const HULEBU_SCENE_BACKGROUND_SPRITE = "ui/v6/backgrounds/teahouse_table_background/spriteFrame";
+const OVERLAY_PANEL_BG_SPRITE = "ui/v6/combo-choice/panel_bg/spriteFrame";
+const REWARD_CARD_SPRITES: Record<string, string> = {
+  reserve_plus_1: "ui/v6/cards/reward_slot_expand/spriteFrame",
+  advanced_south_stable_table: "ui/v6/cards/reward_slot_expand/spriteFrame",
+  advanced_west_tail_gate: "ui/v6/cards/reward_slot_expand/spriteFrame",
+  advanced_north_stable_life: "ui/v6/cards/reward_slot_expand/spriteFrame",
+  gang_score_plus_25: "ui/v6/cards/reward_score_bonus/spriteFrame",
+  chi_score_plus_8: "ui/v6/cards/reward_score_bonus/spriteFrame",
+  coin_plus_20: "ui/v6/cards/reward_score_bonus/spriteFrame",
+  peng_score_plus_10: "ui/v6/cards/reward_score_bonus/spriteFrame",
+  advanced_east_flow: "ui/v6/cards/reward_score_bonus/spriteFrame",
+  advanced_east_probe: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  first_protect_shield: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  shield_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  undo_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  vision_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  shuffle_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  advanced_south_river_guard: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  advanced_west_trial_audit: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  advanced_north_kong_tide: "ui/v6/cards/reward_combo_strength/spriteFrame",
+};
+const HULEBU_META_UPGRADE_OPTIONS: Array<{ axis: HulebuMetaUpgradeAxis; label: string; step: number }> = [
+  { axis: "reserveBonus", label: "备用槽", step: 1 },
+  { axis: "shieldBonus", label: "护符", step: 1 },
+  { axis: "toolBonus", label: "工具", step: 1 },
+  { axis: "riverBonus", label: "牌河", step: 1 },
+  { axis: "startingCoins", label: "铜钱", step: 10 },
+  { axis: "visionBonus", label: "看山", step: 1 },
+];
+const HULEBU_META_INITIAL_COINS = 200;
+const HULEBU_RUN_COMPLETE_META_COIN_REWARD = 120;
+const HULEBU_META_UPGRADE_COSTS: Record<HulebuMetaUpgradeAxis, number[]> = {
+  reserveBonus: [80, 240],
+  shieldBonus: [120, 260, 420],
+  toolBonus: [100, 220, 360],
+  riverBonus: [90, 210, 360],
+  startingCoins: [70, 160, 300],
+  visionBonus: [80, 180, 320],
+};
+const HULEBU_META_UPGRADE_MAX_LEVELS: Record<HulebuMetaUpgradeAxis, number> = {
+  reserveBonus: HULEBU_META_UPGRADE_COSTS.reserveBonus.length,
+  shieldBonus: HULEBU_META_UPGRADE_COSTS.shieldBonus.length,
+  toolBonus: HULEBU_META_UPGRADE_COSTS.toolBonus.length,
+  riverBonus: HULEBU_META_UPGRADE_COSTS.riverBonus.length,
+  startingCoins: HULEBU_META_UPGRADE_COSTS.startingCoins.length,
+  visionBonus: HULEBU_META_UPGRADE_COSTS.visionBonus.length,
+};
+const HULEBU_ACTIVE_RUN_STORAGE_KEY = "hulebu-cocos-active-run";
+const HULEBU_LAST_SETTLEMENT_STORAGE_KEY = "hulebu-cocos-last-settlement";
+const HULEBU_META_PROGRESS_STORAGE_KEY = "hulebu-cocos-meta-progress";
+const HULEBU_META_PROFILE_STORAGE_KEY = "hulebu-cocos-meta-profile";
+const HULEBU_ACHIEVEMENTS_STORAGE_KEY = "hulebu-cocos-achievements";
+const HULEBU_ACCOUNT_PROGRESS_ENDPOINT = "/api/games/hulebu/progress";
+const HULEBU_BOARD_REVISION = "tutorial-pointer-2026-07-08";
+const HULEBU_ACHIEVEMENTS: Array<{ id: HulebuAchievementId; title: string; description: string; hint: string }> = [
+  { id: "mainline-first-clear", title: "主线首通", description: "完成一轮主线通关。", hint: "把 20 关主线打穿一次。" },
+  { id: "boss-hulebu-king", title: "胡了卜王", description: "击破第 20 关终章 Boss。", hint: "在主线终章拿下胡了卜王。" },
+  { id: "endless-first-step", title: "无尽起步", description: "首次进入无尽牌山。", hint: "把无尽面板点开并打到第 21 层起步。" },
+  { id: "endless-layer-25", title: "冲到 25 层", description: "无尽最高层达到第 25 层。", hint: "继续往后冲到第 25 层。" },
+  { id: "daily-first-checkin", title: "每日打卡", description: "第一次挑战每日牌局。", hint: "今天先开一局每日。" },
+  { id: "daily-clear", title: "每日完成", description: "任意一天完成过每日牌局。", hint: "把当天的每日打穿一次。" },
+  { id: "upgrade-first-buy", title: "第一次升级", description: "买下任意一项局外升级。", hint: "先花一次铜钱。" },
+  { id: "ascension-west-clear", title: "西风立住", description: "把高阶推进到西风场并完成过结算。", hint: "先把高阶周目推进到第三档。" },
+];
+
+interface HulebuActiveRunSnapshot {
+  boardRevision: string;
+  runProfile: HulebuRunProfile;
+  pendingRunProfile: HulebuRunProfile | null;
+  currentDisplayLevelOrder: number;
+  resumablePhase: HulebuResumableRunPhase;
+  updatedAt: string;
+  runRewards: HulebuRunRewardState;
+  metaUpgrades: HulebuMetaUpgradeState;
+  metaCoins: number;
+  runArchetypeId: HulebuRunArchetypeId;
+  selectedAdvancedAbilityId: string | null;
+  eventSeenLevelOrders: number[];
+  runtimeSnapshot: HulebuRuntimeSnapshot | null;
+}
+
+interface HulebuSettlementSnapshot {
+  runProfile: HulebuRunProfile;
+  reachedLevelOrder: number;
+  metaCoinsEarned: number;
+  pickedRewards: number;
+  summary: string;
+}
+
+interface HulebuMetaProgressSnapshot {
+  bestMainlineLevel: number;
+  bestEndlessLayer: number;
+  dailyBestLevels: Record<string, number>;
+  dailyStreak: number;
+  lastDailySeed: string | null;
+  bestAdvancedTier: HulebuAdvancedRunTier | null;
+}
+
+interface HulebuMetaProfileSnapshot {
+  metaCoins: number;
+  metaUpgrades: HulebuMetaUpgradeState;
+}
+
+type HulebuAchievementSnapshot = Partial<Record<HulebuAchievementId, string>>;
+
+interface HulebuAccountProgressRecord {
+  bankedCoins: number;
+  bestEndlessLayer: number;
+  bestAscensionLevel: number;
+  dailyBestLevels: Record<string, number>;
+  dailyStreak: number;
+  lastDailySeed: string | null;
+  achievements: Record<string, string>;
+  upgrades: Record<string, number>;
+  activeRun: Record<string, unknown> | null;
+}
 
 @ccclass("GameSceneController")
 export class GameSceneController extends Component {
@@ -54,6 +242,9 @@ export class GameSceneController extends Component {
 
   @property(ComboBarBinder)
   comboBar: ComboBarBinder | null = null;
+
+  @property(MeldRiverLayerBinder)
+  meldRiverLayer: MeldRiverLayerBinder | null = null;
 
   @property(HudBinder)
   hud: HudBinder | null = null;
@@ -70,13 +261,38 @@ export class GameSceneController extends Component {
   private latestSceneModel: HulebuCocosSceneModel | null = null;
   private latestLayout: RuntimeLayout | null = null;
   private runtimeState: HulebuRuntimeState | null = null;
+  private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
+  private counterExpanded = false;
   private currentLevelIndex = 0;
+  private currentDisplayLevelOrder = 1;
+  private runProfile: HulebuRunProfile = HULEBU_MAINLINE_RUN_PROFILE;
   private gamePhase: HulebuGamePhase = "playing";
   private pendingRewardLevelIndex: number | null = null;
+  private pendingEventLevelIndex: number | null = null;
+  private pendingRunProfile: HulebuRunProfile | null = null;
+  private selectedAdvancedAbility: HulebuAdvancedAbilityConfig | null = null;
+  private readonly eventSeenLevelOrders = new Set<number>();
   private readonly selectedSlots: HulebuBoardNodeModel[] = [];
   private score = 0;
+  private discardSelecting = false;
+  private pendingComboChoice: { combo: HulebuComboType; options: HulebuRuntimeComboCandidateOption[] } | null = null;
+  private runRewards: HulebuRunRewardState = createHulebuRunRewardState();
+  private levelEventModifiers: HulebuLevelModifierState = createHulebuLevelModifierState();
+  private metaUpgrades: HulebuMetaUpgradeState = createHulebuMetaUpgradeState();
+  private metaCoins = HULEBU_META_INITIAL_COINS;
+  private runArchetype: HulebuRunArchetypeState = createHulebuRunArchetypeState();
+  private activeRunSnapshot: HulebuActiveRunSnapshot | null = null;
+  private lastSettlementSnapshot: HulebuSettlementSnapshot | null = null;
+  private metaProgress: HulebuMetaProgressSnapshot = createDefaultMetaProgressSnapshot();
+  private achievements: HulebuAchievementSnapshot = {};
+  private accountSyncState: HulebuAccountSyncState = "local";
+  private accountSyncMessage = "账号：当前使用本地档案";
+  private accountSyncPromise: Promise<void> | null = null;
+  private accountSyncTimer: ReturnType<typeof setTimeout> | null = null;
+  private suppressAccountSyncPush = false;
 
   start(): void {
+    this.exposeBrowserDebugApi();
     const visibleSize = this.ensureCanvasHost();
     this.latestLayout = visibleSize;
     this.ensureVisualShell(visibleSize);
@@ -92,7 +308,15 @@ export class GameSceneController extends Component {
     }
 
     if (this.loadConfiguredLevelOnStart) {
-      this.startLevel(this.currentLevelIndex);
+      this.activeRunSnapshot = this.readActiveRunSnapshot();
+      this.lastSettlementSnapshot = this.readLastSettlementSnapshot();
+      this.metaProgress = this.readMetaProgressSnapshot();
+      const metaProfile = this.readMetaProfileSnapshot();
+      this.metaCoins = metaProfile.metaCoins;
+      this.metaUpgrades = cloneMetaUpgradeState(metaProfile.metaUpgrades);
+      this.achievements = this.readAchievementSnapshot();
+      this.enterDefaultTutorialLevel();
+      this.syncAccountProgressOnLobbyEntry();
       return;
     }
 
@@ -102,13 +326,40 @@ export class GameSceneController extends Component {
   }
 
   applySceneModel(sceneModel: HulebuCocosSceneModel): void {
+    this.exposeBrowserDebugApi();
     this.ensureLayerReferences();
     this.bindInputHandlers();
     this.latestSceneModel = sceneModel;
     this.boardLayer?.applyBoardNodes(sceneModel.boardNodes);
     this.slotLayer?.applySlotNodes(sceneModel.slotNodes, sceneModel.reserveNodes);
+    this.meldRiverLayer?.applyMeldRiverNodes(sceneModel.openMeldNodes, sceneModel.riverNodes);
     this.comboBar?.applyComboControls(sceneModel.comboControls);
-    this.hud?.applyHud(sceneModel.hud);
+    this.applyShellHud(sceneModel.hud);
+    if (this.hud) {
+      this.hud.node.active = false;
+    }
+  }
+
+  private exposeBrowserDebugApi(): void {
+    if (!DEBUG || typeof window === "undefined") {
+      return;
+    }
+
+    (globalThis as unknown as {
+      __HULEBU_DEBUG__?: {
+        getSceneModel: () => HulebuCocosSceneModel | null;
+        getPhase: () => HulebuGamePhase;
+        startMainlineRun: () => void;
+        startLevel: (displayLevelOrder: number) => void;
+        selectTile: (tileId: string) => void;
+      };
+    }).__HULEBU_DEBUG__ = {
+      getSceneModel: () => this.latestSceneModel,
+      getPhase: () => this.gamePhase,
+      startMainlineRun: () => this.startMainlineRun(),
+      startLevel: (displayLevelOrder: number) => this.startLevel(displayLevelOrder),
+      selectTile: (tileId: string) => this.handleTileClick(tileId),
+    };
   }
 
   selectTile(tileId: string): void {
@@ -129,6 +380,7 @@ export class GameSceneController extends Component {
   pickReward(rewardId: string): void {
     if (this.gamePhase === "reward") {
       console.log(`[Hulebu] pick reward: ${rewardId}`);
+      this.runRewards = applyHulebuRewardToRunState(this.runRewards, rewardId);
       this.startNextLevel(this.pendingRewardLevelIndex ?? this.currentLevelIndex + 1);
       return;
     }
@@ -136,9 +388,151 @@ export class GameSceneController extends Component {
     console.log(`[Hulebu] pick reward: ${rewardId}`);
   }
 
+  pickSpecialEvent(eventId: string): void {
+    if (this.gamePhase === "event") {
+      console.log(`[Hulebu] pick event: ${eventId}`);
+      this.levelEventModifiers = applyHulebuSpecialEventToLevelState(createHulebuLevelModifierState(), eventId);
+      const nextDisplayOrder = this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder;
+      this.eventSeenLevelOrders.add(nextDisplayOrder);
+      this.startLevel(nextDisplayOrder);
+      return;
+    }
+
+    console.log(`[Hulebu] pick event: ${eventId}`);
+  }
+
+  startMainlineRun(): void {
+    this.startRunWithProfile(HULEBU_MAINLINE_RUN_PROFILE);
+  }
+
+  startEndlessRun(): void {
+    this.startRunWithProfile({
+      mode: "endless",
+      displayName: "无尽",
+      startOrder: 21,
+    });
+  }
+
+  startDailyRun(dailySeed = this.getTodaySeed()): void {
+    this.persistDailyParticipation(dailySeed);
+    this.persistAchievements({ "daily-first-checkin": this.createAchievementTimestamp() });
+    this.startRunWithProfile(createHulebuDailyRunProfile(dailySeed));
+  }
+
+  startAdvancedRun(tier: HulebuAdvancedRunTier): void {
+    this.startRunWithProfile(createHulebuAdvancedRunProfile(tier));
+  }
+
+  applyMetaUpgrades(upgrades: Partial<HulebuMetaUpgradeState>): void {
+    this.metaUpgrades = {
+      ...this.metaUpgrades,
+      ...upgrades,
+    };
+    this.persistMetaProfile();
+  }
+
+  selectRunArchetype(archetypeId: HulebuRunArchetypeId): void {
+    this.runArchetype = createHulebuRunArchetypeState(archetypeId);
+  }
+
+  openMetaUpgradePanel(): void {
+    this.showMetaUpgradeOverlay();
+  }
+
+  pickRunArchetype(archetypeId: HulebuRunArchetypeId): void {
+    console.log(`[Hulebu] pick run archetype: ${archetypeId}`);
+    this.completeRunArchetypeSelection(archetypeId);
+  }
+
+  pickAdvancedAbility(abilityId: string): void {
+    console.log(`[Hulebu] pick advanced ability: ${abilityId}`);
+    const profile = this.pendingRunProfile ?? this.runProfile;
+    const ability = getHulebuAdvancedAbilityChoices(profile).find((choice) => choice.id === abilityId) ?? null;
+    if (!ability) {
+      return;
+    }
+
+    this.selectedAdvancedAbility = ability;
+    this.gamePhase = "archetype";
+    this.showRunArchetypeOverlay();
+  }
+
+  returnToLobby(): void {
+    this.runtimeState = null;
+    this.pendingRunProfile = null;
+    this.selectedAdvancedAbility = null;
+    this.pendingRewardLevelIndex = null;
+    this.pendingEventLevelIndex = null;
+    this.discardSelecting = false;
+    this.activeRunSnapshot = this.readActiveRunSnapshot();
+    this.lastSettlementSnapshot = this.readLastSettlementSnapshot();
+    this.metaProgress = this.readMetaProgressSnapshot();
+    const metaProfile = this.readMetaProfileSnapshot();
+    this.metaCoins = metaProfile.metaCoins;
+    this.metaUpgrades = cloneMetaUpgradeState(metaProfile.metaUpgrades);
+    this.achievements = this.readAchievementSnapshot();
+    this.gamePhase = "lobby";
+    this.showLobbyOverlay();
+    this.syncAccountProgressOnLobbyEntry();
+  }
+
+  private enterDefaultTutorialLevel(): void {
+    if (this.activeRunSnapshot) {
+      this.resumeActiveRun();
+      return;
+    }
+
+    this.startLevel(1);
+  }
+
+  resumeActiveRun(): void {
+    const snapshot = this.activeRunSnapshot ?? this.readActiveRunSnapshot();
+    if (!snapshot) {
+      this.showLobbyOverlay();
+      return;
+    }
+
+    this.metaUpgrades = cloneMetaUpgradeState(snapshot.metaUpgrades);
+    this.metaCoins = snapshot.metaCoins;
+    this.runRewards = cloneRunRewardState(snapshot.runRewards);
+    this.runProfile = snapshot.runProfile;
+    this.runArchetype = createHulebuRunArchetypeState(snapshot.runArchetypeId);
+    const effectiveRunProfile = snapshot.pendingRunProfile ?? snapshot.runProfile;
+    this.selectedAdvancedAbility = this.resolveAdvancedAbilityById(effectiveRunProfile, snapshot.selectedAdvancedAbilityId);
+    this.eventSeenLevelOrders.clear();
+    snapshot.eventSeenLevelOrders.forEach((levelOrder) => this.eventSeenLevelOrders.add(levelOrder));
+    this.pendingRunProfile = snapshot.pendingRunProfile ? { ...snapshot.pendingRunProfile } : null;
+    if (snapshot.resumablePhase === "advancedAbility") {
+      this.resumeAdvancedAbilityPhase(snapshot);
+      return;
+    }
+    if (snapshot.resumablePhase === "archetype") {
+      this.resumeArchetypePhase(snapshot);
+      return;
+    }
+    if (snapshot.resumablePhase === "event") {
+      this.resumeEventPhase(snapshot);
+      return;
+    }
+    if (snapshot.resumablePhase === "reward") {
+      this.resumeRewardPhase(snapshot);
+      return;
+    }
+    if (snapshot.resumablePhase === "cleared") {
+      this.resumeClearedPhase(snapshot);
+      return;
+    }
+    if (snapshot.runtimeSnapshot) {
+      this.resumeRuntimeSnapshot(snapshot);
+      return;
+    }
+    this.startLevel(snapshot.currentDisplayLevelOrder);
+  }
+
   private ensureLayerReferences(): void {
     this.boardLayer = this.boardLayer ?? this.findComponent("BoardRoot", BoardLayerBinder);
     this.slotLayer = this.slotLayer ?? this.findComponent("SlotRoot", SlotLayerBinder);
+    this.meldRiverLayer = this.meldRiverLayer ?? this.findComponent("MeldRiverRoot", MeldRiverLayerBinder);
     this.comboBar = this.comboBar ?? this.findComponent("ComboRoot", ComboBarBinder);
     this.hud = this.hud ?? this.findComponent("HudRoot", HudBinder);
     this.rewardOverlay = this.rewardOverlay ?? this.node.getChildByName("RewardOverlay");
@@ -146,6 +540,7 @@ export class GameSceneController extends Component {
 
   private bindInputHandlers(): void {
     this.boardLayer?.setTileClickHandler((tileId) => this.handleTileClick(tileId));
+    this.slotLayer?.setSlotClickHandler((slotIndex) => this.handleSlotClick(slotIndex));
     this.comboBar?.setComboClickHandler((combo) => this.handleComboClick(combo));
   }
 
@@ -154,8 +549,13 @@ export class GameSceneController extends Component {
       return;
     }
 
+    if (this.isLatestSceneTileBlocked(tileId)) {
+      return;
+    }
+
     if (this.runtimeState) {
       if (this.runtimeState.moveTileToSlot(tileId)) {
+        this.discardSelecting = false;
         this.refreshRuntimeScene();
       }
       return;
@@ -176,6 +576,11 @@ export class GameSceneController extends Component {
     this.refreshPlayableScene();
   }
 
+  private isLatestSceneTileBlocked(tileId: string): boolean {
+    const tile = this.latestSceneModel?.boardNodes.find((item) => item.tileId === tileId);
+    return !tile || !tile.interactable;
+  }
+
   private handleComboClick(combo: HulebuComboType): void {
     if (this.gamePhase !== "playing") {
       return;
@@ -183,7 +588,15 @@ export class GameSceneController extends Component {
 
     if (this.runtimeState) {
       const control = this.latestSceneModel?.comboControls.find((item) => item.combo === combo);
-      if (this.runtimeState.executeComboByKey(control?.candidateKey ?? null)) {
+      const options = this.runtimeState.getComboCandidateOptions(combo);
+      if (options.length > 1) {
+        this.showComboChoiceOverlay(combo, options);
+        return;
+      }
+      const candidateKey = options[0]?.key ?? control?.candidateKey ?? null;
+      if (this.runtimeState.executeComboByKey(candidateKey)) {
+        this.discardSelecting = false;
+        this.pendingComboChoice = null;
         this.refreshRuntimeScene();
       }
       return;
@@ -199,6 +612,48 @@ export class GameSceneController extends Component {
     this.refreshPlayableScene();
   }
 
+  private handleSlotClick(slotIndex: number): void {
+    if (this.gamePhase !== "playing" || !this.discardSelecting || !this.runtimeState) {
+      return;
+    }
+
+    if (this.runtimeState.discardSlotTile(slotIndex)) {
+      this.discardSelecting = false;
+      this.refreshRuntimeScene();
+    }
+  }
+
+  private startDiscardSelection(): void {
+    if (this.gamePhase !== "playing" || !this.runtimeState) {
+      return;
+    }
+
+    this.discardSelecting = !this.discardSelecting;
+    this.refreshRuntimeScene();
+  }
+
+  private useShuffleTool(): void {
+    if (this.gamePhase !== "playing" || !this.runtimeState) {
+      return;
+    }
+
+    if (this.runtimeState.useShuffleTool()) {
+      this.discardSelecting = false;
+      this.refreshRuntimeScene();
+    }
+  }
+
+  private useUndoTool(): void {
+    if (this.gamePhase !== "playing" || !this.runtimeState) {
+      return;
+    }
+
+    if (this.runtimeState.useUndoTool()) {
+      this.discardSelecting = false;
+      this.refreshRuntimeScene();
+    }
+  }
+
   private refreshRuntimeScene(): void {
     if (!this.runtimeState) {
       return;
@@ -206,7 +661,7 @@ export class GameSceneController extends Component {
 
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     this.applySceneModel(this.runtimeState.toSceneModel(layout));
-    if (this.runtimeState.isBoardCleared()) {
+    if (this.runtimeState.isLevelCleared()) {
       this.gamePhase = "cleared";
       this.showClearOverlay();
       return;
@@ -215,27 +670,87 @@ export class GameSceneController extends Component {
     this.hideFlowOverlay();
   }
 
-  private startLevel(levelIndex: number): void {
+  private startLevel(displayLevelOrder: number): void {
+    const nextLevelIndex = getHulebuLevelIndexForRunOrder(this.runProfile, displayLevelOrder);
     const maxIndex = HULEBU_LEVEL_CONFIGS.length - 1;
-    this.currentLevelIndex = Math.min(Math.max(0, levelIndex), maxIndex);
+    this.currentLevelIndex = Math.min(Math.max(0, nextLevelIndex), maxIndex);
+    this.currentDisplayLevelOrder = displayLevelOrder;
     this.gamePhase = "playing";
     this.pendingRewardLevelIndex = null;
+    this.pendingEventLevelIndex = null;
     this.hideFlowOverlay();
 
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
-    const configured = createHulebuConfiguredSceneModelForLayout(layout, this.currentLevelIndex);
+    const levelModifiers = mergeHulebuLevelModifierStates(
+      this.createAdvancedRunLevelModifiers(),
+      this.levelEventModifiers,
+    );
+    const configured = createHulebuConfiguredSceneModelForLayout(
+      layout,
+      this.currentLevelIndex,
+      this.runRewards,
+      levelModifiers,
+      this.metaUpgrades,
+      this.runArchetype,
+      this.runProfile,
+      displayLevelOrder,
+    );
+    this.levelEventModifiers = createHulebuLevelModifierState();
     this.runtimeState = configured.runtimeState;
+    this.discardSelecting = false;
     this.ensureVisualShell(layout, this.runtimeState.getLevelOrder());
     this.applySceneModel(configured.sceneModel);
+    this.persistActiveRun();
   }
 
-  private startNextLevel(levelIndex = this.currentLevelIndex + 1): void {
-    if (levelIndex >= HULEBU_LEVEL_CONFIGS.length) {
+  private createAdvancedRunLevelModifiers(): HulebuLevelModifierState {
+    const pressure = getHulebuAdvancedRunPressureConfig(this.runProfile);
+    const modifiers = createHulebuLevelModifierState();
+    if (!pressure && !this.selectedAdvancedAbility) {
+      return modifiers;
+    }
+
+    if (pressure) {
+      modifiers.activeEventIds.push(`advanced_${pressure.tier}`);
+      modifiers.coinBonus += pressure.coinBonus;
+      modifiers.toolBonus.shuffle += pressure.toolBonus.shuffle ?? 0;
+      modifiers.toolBonus.undo += pressure.toolBonus.undo ?? 0;
+      modifiers.toolBonus.discard += pressure.toolBonus.discard ?? 0;
+      modifiers.toolBonus.vision += pressure.toolBonus.vision ?? 0;
+      modifiers.toolLocks = { ...pressure.toolLocks };
+    }
+
+    if (this.selectedAdvancedAbility) {
+      modifiers.activeEventIds.push(`ability_${this.selectedAdvancedAbility.id}`);
+      modifiers.coinBonus += this.selectedAdvancedAbility.coinBonus;
+      modifiers.toolBonus.shuffle += this.selectedAdvancedAbility.toolBonus.shuffle ?? 0;
+      modifiers.toolBonus.undo += this.selectedAdvancedAbility.toolBonus.undo ?? 0;
+      modifiers.toolBonus.discard += this.selectedAdvancedAbility.toolBonus.discard ?? 0;
+      modifiers.toolBonus.vision += this.selectedAdvancedAbility.toolBonus.vision ?? 0;
+      modifiers.toolLocks = {
+        ...modifiers.toolLocks,
+        ...this.selectedAdvancedAbility.toolLocks,
+      };
+    }
+
+    return modifiers;
+  }
+
+  private startNextLevel(displayLevelOrder = this.currentDisplayLevelOrder + 1): void {
+    if (shouldCompleteHulebuRunAtOrder(this.runProfile, displayLevelOrder)) {
       this.showRunCompleteOverlay();
       return;
     }
 
-    this.startLevel(levelIndex);
+    const levelOrder = this.getDisplayLevelOrderForFlow(displayLevelOrder);
+    if (HULEBU_EVENT_LEVEL_ORDERS.has(levelOrder) && !this.eventSeenLevelOrders.has(displayLevelOrder)) {
+      this.pendingEventLevelIndex = displayLevelOrder;
+      this.gamePhase = "event";
+      this.showEventOverlay();
+      return;
+    }
+
+    this.startLevel(displayLevelOrder);
   }
 
   private continueAfterClear(): void {
@@ -243,8 +758,8 @@ export class GameSceneController extends Component {
       return;
     }
 
-    if (this.runtimeState && HULEBU_REWARD_LEVEL_ORDERS.has(this.runtimeState.getLevelOrder())) {
-      this.pendingRewardLevelIndex = this.currentLevelIndex + 1;
+    if (this.runtimeState && HULEBU_REWARD_LEVEL_ORDERS.has(this.getDisplayLevelOrderForFlow())) {
+      this.pendingRewardLevelIndex = this.currentDisplayLevelOrder + 1;
       this.gamePhase = "reward";
       this.showRewardOverlay();
       return;
@@ -254,10 +769,12 @@ export class GameSceneController extends Component {
   }
 
   private showClearOverlay(): void {
+    this.gamePhase = "cleared";
+    this.persistActiveRun();
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const level = this.runtimeState?.getLevelConfig();
-    const title = level ? `第 ${level.order} 关通关` : "通关";
+    const title = `${this.getRunModeLabel()}第 ${this.currentDisplayLevelOrder} 层通关`;
     const subtitle = level ? `${level.name} / ${level.subtitle}` : "牌山已清空";
 
     this.drawOverlayPanel(overlay, layout);
@@ -267,12 +784,251 @@ export class GameSceneController extends Component {
   }
 
   private showRewardOverlay(): void {
+    this.gamePhase = "reward";
+    this.persistActiveRun();
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
-    this.drawOverlayPanel(overlay, layout, 318, 252);
-    this.writeOverlayLabel(overlay, "OverlayTitle", "选择本局获得的奖励", 20, new Color(255, 246, 216, 255), 88);
-    this.writeOverlayLabel(overlay, "OverlaySubtitle", "三选一后进入下一关", 14, new Color(232, 207, 166, 255), 58);
+    this.drawOverlayPanel(overlay, layout, 368, 328);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "选择本局获得的奖励", 20, new Color(255, 246, 216, 255), 118);
+    this.writeOverlayLabel(overlay, "OverlaySubtitle", "三选一后进入下一关", 14, new Color(232, 207, 166, 255), 88);
     this.drawRewardChoices(overlay);
+  }
+
+  private showEventOverlay(): void {
+    this.gamePhase = "event";
+    this.persistActiveRun();
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const displayOrder = this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder;
+    const level = HULEBU_LEVEL_CONFIGS[getHulebuLevelIndexForRunOrder(this.runProfile, displayOrder)];
+    this.drawOverlayPanel(overlay, layout, 332, 266);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "关前事件", 20, new Color(255, 246, 216, 255), 94);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      level ? `${this.getRunModeLabel()}第 ${displayOrder} 层前选择一项` : "选择一项进入下一关",
+      14,
+      new Color(232, 207, 166, 255),
+      64,
+    );
+    this.drawEventChoices(overlay);
+  }
+
+  private showComboChoiceOverlay(combo: HulebuComboType, options: HulebuRuntimeComboCandidateOption[]): void {
+    if (!this.runtimeState || options.length === 0) {
+      return;
+    }
+
+    this.pendingComboChoice = { combo, options };
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.drawOverlayPanel(overlay, layout, 334, 268);
+    this.writeOverlayLabel(overlay, "OverlayTitle", `选择${this.getComboDisplayName(combo)}组合`, 20, new Color(255, 246, 216, 255), 96);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      "同类组合存在多组，点选本次要发动的一组",
+      13,
+      new Color(232, 207, 166, 255),
+      66,
+    );
+    this.drawComboChoiceOptions(overlay, options);
+    this.createOverlayButton(overlay, "ComboChoice_Back", "返回", 0, -106, () => this.closeComboChoiceOverlay(), 126, 36);
+  }
+
+  private drawComboChoiceOptions(overlay: Node, options: HulebuRuntimeComboCandidateOption[]): void {
+    const visibleOptions = options.slice(0, 4);
+    const startY = visibleOptions.length > 2 ? 30 : 16;
+    visibleOptions.forEach((option, index) => {
+      const row = Math.floor(index / 2);
+      const column = index % 2;
+      const x = visibleOptions.length === 1 ? 0 : column === 0 ? -78 : 78;
+      const y = startY - row * 58;
+      const labels = option.labels.join(" ");
+      const button = this.createOverlayButton(
+        overlay,
+        `ComboChoice_${index}`,
+        labels || this.getComboDisplayName(option.type),
+        x,
+        y,
+        () => this.executeComboCandidateOption(option),
+        142,
+        50,
+      );
+      this.drawComboChoiceTilePreview(button, option);
+    });
+  }
+
+  private drawComboChoiceTilePreview(button: Node, option: HulebuRuntimeComboCandidateOption): void {
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const tileKeys = option.prefabKeys.slice(0, 4);
+    const tileCount = Math.max(1, tileKeys.length);
+    const tileWidth = scaleLayoutValue(22, layout.scale);
+    const tileHeight = scaleLayoutValue(30, layout.scale);
+    const gap = scaleLayoutValue(21, layout.scale);
+    const startX = -((tileCount - 1) * gap) / 2;
+    tileKeys.forEach((tileKey, index) => {
+      const artNode = this.ensureChild(button, `ComboChoiceTileArt_${index}`);
+      artNode.layer = button.layer;
+      artNode.setPosition(new Vec3(startX + index * gap, scaleLayoutValue(9, layout.scale), 2));
+      const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+      uiTransform.setContentSize(tileWidth, tileHeight);
+      const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+      sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+      artNode.active = false;
+      this.tileSpriteCatalog.loadTileSpriteFrame(tileKey, (spriteFrame) => {
+        if (!spriteFrame) {
+          artNode.active = false;
+          return;
+        }
+        if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+          return;
+        }
+        artNode.active = true;
+      });
+    });
+    const label = button.getChildByName("Label");
+    if (label) {
+      label.setPosition(new Vec3(0, -scaleLayoutValue(14, layout.scale), 1));
+    }
+  }
+
+  private executeComboCandidateOption(option: HulebuRuntimeComboCandidateOption): void {
+    if (!this.runtimeState || !this.pendingComboChoice) {
+      return;
+    }
+
+    if (this.runtimeState.executeComboByKey(option.key)) {
+      this.discardSelecting = false;
+      this.pendingComboChoice = null;
+      this.hideFlowOverlay();
+      this.refreshRuntimeScene();
+    }
+  }
+
+  private closeComboChoiceOverlay(): void {
+    this.pendingComboChoice = null;
+    this.hideFlowOverlay();
+  }
+
+  private getComboDisplayName(combo: HulebuComboType): string {
+    const labels: Record<HulebuComboType, string> = {
+      hu: "胡",
+      gang: "杠",
+      peng: "碰",
+      chi: "吃",
+      bugang: "补杠",
+    };
+    return labels[combo];
+  }
+
+  private showRunArchetypeOverlay(): void {
+    this.gamePhase = "archetype";
+    this.persistActiveRun();
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.drawOverlayPanel(overlay, layout, 340, 312);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "选择本局流派", 20, new Color(255, 246, 216, 255), 112);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      "每局开局前决定本局打法",
+      14,
+      new Color(232, 207, 166, 255),
+      82,
+    );
+    this.drawRunArchetypeChoices(overlay);
+  }
+
+  private showLobbyOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.gamePhase = "lobby";
+    this.drawOverlayPanel(overlay, layout, 338, 360);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "胡了卜", 24, new Color(255, 246, 216, 255), 132);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      this.getLobbySubtitle(),
+      14,
+      new Color(232, 207, 166, 255),
+      98,
+    );
+    this.drawLobbyModeChoices(overlay);
+  }
+
+  private showMetaUpgradeOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.gamePhase = "meta";
+    this.drawOverlayPanel(overlay, layout, 352, 374);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "局外成长", 20, new Color(255, 246, 216, 255), 142);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      `铜钱 ${this.metaCoins} / 点击升级，下一局生效`,
+      14,
+      new Color(232, 207, 166, 255),
+      112,
+    );
+    this.drawMetaUpgradeChoices(overlay);
+    this.createOverlayButton(overlay, "MetaUpgrade_Back", "返回", 0, -146, () => this.returnToLobby(), 128, 38);
+  }
+
+  private showCollectionOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.gamePhase = "collection";
+    this.drawOverlayPanel(overlay, layout, 352, 420);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "生涯总览", 20, new Color(255, 246, 216, 255), 164);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      "查看本地累计进度与最近战绩",
+      14,
+      new Color(232, 207, 166, 255),
+      134,
+    );
+    this.drawCollectionSummary(overlay);
+    this.createOverlayButton(overlay, "Collection_Back", "返回", 0, -170, () => this.returnToLobby(), 128, 38);
+  }
+
+  private showAdvancedRunOverlay(): void {
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.gamePhase = "advanced";
+    this.drawOverlayPanel(overlay, layout, 352, 342);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "高阶周目", 20, new Color(255, 246, 216, 255), 124);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      "选择风场后进入本局流派",
+      14,
+      new Color(232, 207, 166, 255),
+      94,
+    );
+    this.drawAdvancedRunChoices(overlay);
+    this.createOverlayButton(overlay, "AdvancedRun_Back", "返回", 0, -128, () => this.returnToLobby(), 128, 38);
+  }
+
+  private showAdvancedAbilityOverlay(): void {
+    this.gamePhase = "advancedAbility";
+    this.persistActiveRun();
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.gamePhase = "advancedAbility";
+    this.drawOverlayPanel(overlay, layout, 352, 336);
+    this.writeOverlayLabel(overlay, "OverlayTitle", "高阶能力", 20, new Color(255, 246, 216, 255), 122);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      "选择一项承压能力",
+      14,
+      new Color(232, 207, 166, 255),
+      92,
+    );
+    this.drawAdvancedAbilityChoices(overlay);
+    this.createOverlayButton(overlay, "AdvancedAbility_Back", "返回", 0, -126, () => this.showAdvancedRunOverlay(), 128, 38);
   }
 
   private showRunCompleteOverlay(): void {
@@ -280,27 +1036,1052 @@ export class GameSceneController extends Component {
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     this.gamePhase = "cleared";
     this.drawOverlayPanel(overlay, layout);
-    this.writeOverlayLabel(overlay, "OverlayTitle", "本轮通关", 24, new Color(255, 246, 216, 255), 38);
-    this.writeOverlayLabel(overlay, "OverlaySubtitle", "20 关流程已走通", 15, new Color(232, 207, 166, 255), 2);
-    this.createOverlayButton(overlay, "ContinueButton", "从第 1 关再来", 0, -54, () => this.startNextLevel(0));
+    this.writeOverlayLabel(overlay, "OverlayTitle", `${this.runProfile.displayName}通关`, 24, new Color(255, 246, 216, 255), 38);
+    this.writeOverlayLabel(
+      overlay,
+      "OverlaySubtitle",
+      `获得铜钱 ${HULEBU_RUN_COMPLETE_META_COIN_REWARD}`,
+      15,
+      new Color(232, 207, 166, 255),
+      2,
+    );
+    this.createOverlayButton(overlay, "ContinueButton", "回到局外", 0, -54, () => this.returnToLobbyWithMetaReward());
+    this.persistLastSettlement();
+    this.persistMetaProgress();
+    this.persistAchievements(this.buildAchievementUnlocks());
+    this.clearActiveRun();
+  }
+
+  private restartRun(): void {
+    this.startRunWithProfile(this.runProfile);
   }
 
   private drawRewardChoices(overlay: Node): void {
-    const choices = this.runtimeState?.getRewardChoices() ?? [];
-    const startX = -94;
+    const choices = this.getCurrentRewardChoices();
+    const startX = -REWARD_CHOICE_CARD_GAP;
     choices.forEach((rewardId, index) => {
       const rewardName = HULEBU_REWARD_LABELS[rewardId] ?? rewardId;
-      this.createOverlayButton(
+      const button = this.createOverlayButton(
         overlay,
         `RewardChoice_${index}`,
         rewardName,
-        startX + index * 94,
-        -30,
+        startX + index * REWARD_CHOICE_CARD_GAP,
+        -36,
         () => this.pickReward(rewardId),
-        84,
+        REWARD_CHOICE_CARD_WIDTH,
+        REWARD_CHOICE_CARD_HEIGHT,
+        this.getRewardDetailText(rewardId),
+      );
+      this.applyRewardCardSprite(button, rewardId);
+    });
+  }
+
+  private getCurrentRewardChoices(): string[] {
+    const levelConfig = this.runtimeState?.getLevelConfig();
+    if (!levelConfig) {
+      return [];
+    }
+
+    return getHulebuRewardChoicesForRun(this.runProfile, levelConfig);
+  }
+
+  private drawEventChoices(overlay: Node): void {
+    const levelOrder = this.getDisplayLevelOrderForFlow(this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder);
+    const choices = getHulebuSpecialEventChoices(levelOrder, this.runProfile, this.runArchetype.archetypeId);
+    const startX = -102;
+    choices.forEach((eventConfig, index) => {
+      const eventName = HULEBU_SPECIAL_EVENT_LABELS[eventConfig.id] ?? eventConfig.name;
+      const eventMeta = this.formatSpecialEventMeta(eventConfig.rarity, eventConfig.dangerLevel, eventConfig.tags);
+      this.createOverlayButton(
+        overlay,
+        `EventChoice_${index}`,
+        eventName,
+        startX + index * 102,
+        -34,
+        () => this.pickSpecialEvent(eventConfig.id),
         92,
+        102,
+        `${eventConfig.subtitle}\n${eventMeta}`,
       );
     });
+  }
+
+  private formatSpecialEventMeta(
+    rarity: keyof typeof HULEBU_SPECIAL_EVENT_RARITY_LABELS,
+    dangerLevel: keyof typeof HULEBU_SPECIAL_EVENT_DANGER_LABELS,
+    tags: string[],
+  ): string {
+    const rarityText = HULEBU_SPECIAL_EVENT_RARITY_LABELS[rarity] ?? "普通";
+    const dangerText = HULEBU_SPECIAL_EVENT_DANGER_LABELS[dangerLevel] ?? "无压";
+    const tagText = tags.slice(0, 2).join("/");
+    return tagText ? `${rarityText} · ${dangerText}\n${tagText}` : `${rarityText} · ${dangerText}`;
+  }
+
+  private drawRunArchetypeChoices(overlay: Node): void {
+    const startX = -106;
+    const startY = 22;
+    HULEBU_RUN_ARCHETYPES.forEach((archetype, index) => {
+      const column = index % 3;
+      const row = Math.floor(index / 3);
+      this.createOverlayButton(
+        overlay,
+        `RunArchetypeChoice_${archetype.id}`,
+        archetype.name,
+        startX + column * 106,
+        startY - row * 86,
+        () => this.pickRunArchetype(archetype.id),
+        96,
+        76,
+        archetype.subtitle,
+      );
+    });
+  }
+
+  private drawLobbyModeChoices(overlay: Node): void {
+    if (this.activeRunSnapshot) {
+      this.createOverlayButton(overlay, "LobbyMode_Resume", "继续本轮", 0, 36, () => this.resumeActiveRun(), 300, 42);
+      this.createOverlayButton(overlay, "LobbyMode_Mainline", "主线", -104, -28, () => this.startMainlineRun(), 92, 72, this.getMainlineProgressText());
+      this.createOverlayButton(overlay, "LobbyMode_Endless", "无尽", 0, -28, () => this.startEndlessRun(), 92, 72, this.getEndlessProgressText());
+      this.createOverlayButton(overlay, "LobbyMode_Daily", "每日", 104, -28, () => this.startDailyRun(), 92, 72, this.getDailyProgressText());
+    } else {
+      this.createOverlayButton(overlay, "LobbyMode_Mainline", "主线", -104, 4, () => this.startMainlineRun(), 92, 72, this.getMainlineProgressText());
+      this.createOverlayButton(overlay, "LobbyMode_Endless", "无尽", 0, 4, () => this.startEndlessRun(), 92, 72, this.getEndlessProgressText());
+      this.createOverlayButton(overlay, "LobbyMode_Daily", "每日", 104, 4, () => this.startDailyRun(), 92, 72, this.getDailyProgressText());
+    }
+    this.createOverlayButton(overlay, "LobbyMode_Advanced", "高阶", 0, -96, () => this.showAdvancedRunOverlay(), 300, 40, this.getAdvancedProgressText());
+    this.createOverlayButton(overlay, "LobbyMode_Upgrade", "升级", -78, -144, () => this.showMetaUpgradeOverlay(), 144, 40);
+    this.createOverlayButton(overlay, "LobbyMode_Collection", "生涯", 78, -144, () => this.showCollectionOverlay(), 144, 40);
+  }
+
+  private drawAdvancedRunChoices(overlay: Node): void {
+    const east = getHulebuAdvancedRunPressureConfig(createHulebuAdvancedRunProfile("east"));
+    const south = getHulebuAdvancedRunPressureConfig(createHulebuAdvancedRunProfile("south"));
+    const west = getHulebuAdvancedRunPressureConfig(createHulebuAdvancedRunProfile("west"));
+    const north = getHulebuAdvancedRunPressureConfig(createHulebuAdvancedRunProfile("north"));
+    this.createOverlayButton(overlay, "AdvancedRun_East", "东风场", -86, 34, () => this.startAdvancedRun("east"), 122, 58, east.subtitle);
+    this.createOverlayButton(overlay, "AdvancedRun_South", "南风场", 86, 34, () => this.startAdvancedRun("south"), 122, 58, south.subtitle);
+    this.createOverlayButton(overlay, "AdvancedRun_West", "西风场", -86, -38, () => this.startAdvancedRun("west"), 122, 58, west.subtitle);
+    this.createOverlayButton(overlay, "AdvancedRun_North", "北风场", 86, -38, () => this.startAdvancedRun("north"), 122, 58, north.subtitle);
+  }
+
+  private drawAdvancedAbilityChoices(overlay: Node): void {
+    const profile = this.pendingRunProfile ?? this.runProfile;
+    const choices = getHulebuAdvancedAbilityChoices(profile);
+    const startX = -102;
+    choices.forEach((ability, index) => {
+      this.createOverlayButton(
+        overlay,
+        `AdvancedAbility_${ability.id}`,
+        ability.name,
+        startX + index * 102,
+        -18,
+        () => this.pickAdvancedAbility(ability.id),
+        92,
+        96,
+        ability.subtitle,
+      );
+    });
+  }
+
+  private drawMetaUpgradeChoices(overlay: Node): void {
+    const startX = -82;
+    const startY = 62;
+    HULEBU_META_UPGRADE_OPTIONS.forEach((option, index) => {
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      const value = this.getMetaUpgradeValue(option.axis);
+      const priceText = this.getMetaUpgradeCost(option.axis) === null ? "满级" : `${this.getMetaUpgradeCost(option.axis)}铜`;
+      this.createOverlayButton(
+        overlay,
+        `MetaUpgrade_${option.axis}`,
+        `${option.label} Lv${value}`,
+        startX + column * 164,
+        startY - row * 62,
+        () => this.upgradeMetaAxis(option.axis),
+        148,
+        52,
+        this.getMetaUpgradeDetailText(option.axis, priceText),
+      );
+    });
+  }
+
+  private getRewardDetailText(rewardId: string): string {
+    const details: Record<string, string> = {
+      first_protect_shield: "首败保一手",
+      reserve_plus_1: "备用槽 +1",
+      shield_plus_1: "护符 +1",
+      undo_plus_1: "撤回 +1",
+      vision_plus_1: "看山 +1",
+      gang_score_plus_25: "杠分 +25",
+      chi_score_plus_8: "吃分 +8",
+      coin_plus_20: "开局铜钱 +20",
+      peng_score_plus_10: "碰分 +10",
+      shuffle_plus_1: "洗牌 +1",
+      advanced_east_probe: "看山 +1 / 吃分加成",
+      advanced_east_flow: "胡分加成 / 顺手摸牌",
+      advanced_south_river_guard: "打牌 +1 / 留手稳河",
+      advanced_south_stable_table: "备用槽 +1 / 碰分加成",
+      advanced_west_trial_audit: "撤回 +1 / 试锋读账",
+      advanced_west_tail_gate: "护符 +1 / 尾门收口",
+      advanced_north_kong_tide: "洗牌 +1 / 杠潮爆发",
+      advanced_north_stable_life: "护符 +1 / 稳压续命",
+    };
+    return details[rewardId] ?? "本局即时生效";
+  }
+
+  private getMetaUpgradeDetailText(axis: HulebuMetaUpgradeAxis, priceText: string): string {
+    const labels: Record<HulebuMetaUpgradeAxis, string> = {
+      reserveBonus: "暗格容错",
+      shieldBonus: "满槽护符",
+      toolBonus: "初始工具",
+      riverBonus: "牌河上限",
+      startingCoins: "开局铜钱",
+      visionBonus: "看山预置",
+    };
+    return `${labels[axis]} · ${priceText}`;
+  }
+
+  private drawCollectionSummary(overlay: Node): void {
+    const currentRunText = this.activeRunSnapshot ? this.formatActiveRunSummary(this.activeRunSnapshot) : "当前无进行中本轮";
+    const lastRunText = this.lastSettlementSnapshot ? this.formatLastSettlementSummary(this.lastSettlementSnapshot) : "最近一轮暂无记录";
+    const growthText = this.formatMetaUpgradeSummary();
+    const dailySummaryText = this.getDailyCollectionSummaryText();
+    const unlockedCount = Object.keys(this.achievements).length;
+    const nextAchievement = this.getNextLockedAchievement();
+    this.writeOverlaySummaryLine(overlay, "Collection_CurrentRun", `本轮：${currentRunText}`, 92);
+    this.writeOverlaySummaryLine(overlay, "Collection_LastRun", `最近：${lastRunText}`, 58);
+    this.writeOverlaySummaryLine(overlay, "Collection_Coins", `铜钱：${this.metaCoins}`, 24);
+    this.writeOverlaySummaryLine(overlay, "Collection_Growth", `成长：${growthText}`, -10);
+    this.writeOverlaySummaryLine(overlay, "Collection_Mainline", `主线：${this.getMainlineProgressText()}`, -44);
+    this.writeOverlaySummaryLine(overlay, "Collection_Endless", `无尽：${this.getEndlessProgressText()}`, -78);
+    this.writeOverlaySummaryLine(overlay, "Collection_Daily", `每日：${dailySummaryText}`, -112);
+    this.writeOverlaySummaryLine(overlay, "Collection_Advanced", `高阶：${this.getAdvancedProgressText()}`, -146);
+    this.writeOverlaySummaryLine(overlay, "Collection_AchievementHeadline", `图鉴：${unlockedCount}/${HULEBU_ACHIEVEMENTS.length} 项已解锁`, -180);
+    this.writeOverlaySummaryLine(
+      overlay,
+      "Collection_AchievementNext",
+      `下一项：${nextAchievement ? `${nextAchievement.title} · ${nextAchievement.hint}` : "首批图鉴已齐"}`,
+      -214,
+    );
+    this.writeOverlaySummaryLine(overlay, "Collection_AchievementList", this.formatAchievementListSummary(), -248);
+    this.writeOverlaySummaryLine(overlay, "Collection_AccountSync", this.getAccountSyncStatusText(), -282);
+  }
+
+  private upgradeMetaAxis(axis: HulebuMetaUpgradeAxis): void {
+    const option = HULEBU_META_UPGRADE_OPTIONS.find((upgradeOption) => upgradeOption.axis === axis);
+    const step = option?.step ?? 1;
+    const cost = this.getMetaUpgradeCost(axis);
+    if (cost === null || this.metaCoins < cost) {
+      this.showMetaUpgradeOverlay();
+      return;
+    }
+
+    this.metaCoins -= cost;
+    this.applyMetaUpgrades({ [axis]: this.getMetaUpgradeValue(axis) + step });
+    this.persistAchievements({ "upgrade-first-buy": this.createAchievementTimestamp() });
+    this.showMetaUpgradeOverlay();
+  }
+
+  private getMetaUpgradeValue(axis: HulebuMetaUpgradeAxis): number {
+    return this.metaUpgrades[axis];
+  }
+
+  private getMetaUpgradeCost(axis: HulebuMetaUpgradeAxis): number | null {
+    const value = this.getMetaUpgradeValue(axis);
+    const option = HULEBU_META_UPGRADE_OPTIONS.find((upgradeOption) => upgradeOption.axis === axis);
+    const step = option?.step ?? 1;
+    const level = Math.floor(value / step);
+    if (level >= HULEBU_META_UPGRADE_MAX_LEVELS[axis]) {
+      return null;
+    }
+
+    return HULEBU_META_UPGRADE_COSTS[axis][level] ?? null;
+  }
+
+  private returnToLobbyWithMetaReward(): void {
+    this.awardMetaCoinsForRun();
+    this.lastSettlementSnapshot = this.readLastSettlementSnapshot();
+    this.returnToLobby();
+  }
+
+  private awardMetaCoinsForRun(): void {
+    this.metaCoins += HULEBU_RUN_COMPLETE_META_COIN_REWARD;
+    this.persistMetaProfile();
+  }
+
+  private startRunWithProfile(profile: HulebuRunProfile): void {
+    this.pendingRunProfile = profile;
+    this.selectedAdvancedAbility = null;
+    if (profile.mode === "advanced" && getHulebuAdvancedAbilityChoices(profile).length > 0) {
+      this.gamePhase = "advancedAbility";
+      this.showAdvancedAbilityOverlay();
+      return;
+    }
+
+    this.gamePhase = "archetype";
+    this.showRunArchetypeOverlay();
+  }
+
+  private completeRunArchetypeSelection(archetypeId: HulebuRunArchetypeId): void {
+    const profile = this.pendingRunProfile ?? this.runProfile;
+    this.selectRunArchetype(archetypeId);
+    this.runProfile = profile;
+    this.runRewards = createHulebuRunRewardState();
+    this.applySelectedAdvancedAbilityRewards();
+    this.levelEventModifiers = createHulebuLevelModifierState();
+    this.eventSeenLevelOrders.clear();
+    this.pendingRunProfile = null;
+    this.startNextLevel(profile.startOrder);
+  }
+
+  private resumeRuntimeSnapshot(snapshot: HulebuActiveRunSnapshot): void {
+    if (!snapshot.runtimeSnapshot) {
+      this.startLevel(snapshot.currentDisplayLevelOrder);
+      return;
+    }
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const levelIndex = getHulebuLevelIndexForRunOrder(snapshot.runProfile, snapshot.currentDisplayLevelOrder);
+    const boundedLevelIndex = Math.min(Math.max(0, levelIndex), HULEBU_LEVEL_CONFIGS.length - 1);
+    const levelConfig = {
+      ...HULEBU_LEVEL_CONFIGS[boundedLevelIndex],
+      order: snapshot.currentDisplayLevelOrder,
+    };
+    const levelModifiers = mergeHulebuLevelModifierStates(
+      this.createAdvancedRunLevelModifiers(),
+      this.levelEventModifiers,
+    );
+
+    this.runtimeState = HulebuRuntimeState.fromSnapshot(
+      levelConfig,
+      snapshot.runtimeSnapshot,
+      snapshot.runRewards,
+      levelModifiers,
+      snapshot.metaUpgrades,
+      this.runArchetype,
+    );
+    this.currentLevelIndex = boundedLevelIndex;
+    this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
+    this.gamePhase = "playing";
+    this.pendingRewardLevelIndex = null;
+    this.pendingEventLevelIndex = null;
+    this.discardSelecting = false;
+    this.levelEventModifiers = createHulebuLevelModifierState();
+    this.ensureVisualShell(layout, this.runtimeState.getLevelOrder());
+    this.applySceneModel(this.runtimeState.toSceneModel(layout));
+    this.hideFlowOverlay();
+  }
+
+  private resumeClearedPhase(snapshot: HulebuActiveRunSnapshot): void {
+    this.resumeRuntimeSnapshot({
+      ...snapshot,
+      resumablePhase: "playing",
+    });
+    this.gamePhase = "cleared";
+    this.showClearOverlay();
+  }
+
+  private resumeRewardPhase(snapshot: HulebuActiveRunSnapshot): void {
+    this.resumeRuntimeSnapshot({
+      ...snapshot,
+      resumablePhase: "playing",
+    });
+    this.pendingRewardLevelIndex = snapshot.currentDisplayLevelOrder + 1;
+    this.gamePhase = "reward";
+    this.showRewardOverlay();
+  }
+
+  private resumeEventPhase(snapshot: HulebuActiveRunSnapshot): void {
+    this.pendingEventLevelIndex = snapshot.currentDisplayLevelOrder;
+    this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
+    this.gamePhase = "event";
+    this.runtimeState = null;
+    this.discardSelecting = false;
+    this.showEventOverlay();
+  }
+
+  private resumeAdvancedAbilityPhase(snapshot: HulebuActiveRunSnapshot): void {
+    this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
+    this.pendingRunProfile = snapshot.pendingRunProfile ? { ...snapshot.pendingRunProfile } : { ...snapshot.runProfile };
+    this.runtimeState = null;
+    this.discardSelecting = false;
+    this.gamePhase = "advancedAbility";
+    this.showAdvancedAbilityOverlay();
+  }
+
+  private resumeArchetypePhase(snapshot: HulebuActiveRunSnapshot): void {
+    this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
+    this.pendingRunProfile = snapshot.pendingRunProfile ? { ...snapshot.pendingRunProfile } : { ...snapshot.runProfile };
+    this.runtimeState = null;
+    this.discardSelecting = false;
+    this.gamePhase = "archetype";
+    this.showRunArchetypeOverlay();
+  }
+
+  private persistActiveRun(): void {
+    if (
+      this.runProfile.mode === "mainline"
+      && !this.runtimeState
+      && !this.pendingRunProfile
+      && this.currentDisplayLevelOrder <= 1
+    ) {
+      return;
+    }
+
+    const pendingRunProfile = this.pendingRunProfile ? { ...this.pendingRunProfile } : null;
+    const snapshot: HulebuActiveRunSnapshot = {
+      boardRevision: HULEBU_BOARD_REVISION,
+      runProfile: { ...(pendingRunProfile ?? this.runProfile) },
+      pendingRunProfile,
+      currentDisplayLevelOrder: this.currentDisplayLevelOrder,
+      resumablePhase: this.getResumableRunPhase(),
+      updatedAt: new Date().toISOString(),
+      runRewards: cloneRunRewardState(this.runRewards),
+      metaUpgrades: cloneMetaUpgradeState(this.metaUpgrades),
+      metaCoins: this.metaCoins,
+      runArchetypeId: this.runArchetype.archetypeId,
+      selectedAdvancedAbilityId: this.selectedAdvancedAbility?.id ?? null,
+      eventSeenLevelOrders: [...this.eventSeenLevelOrders],
+      runtimeSnapshot: this.runtimeState?.exportSnapshot() ?? null,
+    };
+    this.activeRunSnapshot = snapshot;
+    sys.localStorage.setItem(HULEBU_ACTIVE_RUN_STORAGE_KEY, JSON.stringify(snapshot));
+    this.queueAccountProgressPush();
+  }
+
+  private getResumableRunPhase(): HulebuResumableRunPhase {
+    if (this.gamePhase === "advancedAbility") {
+      return "advancedAbility";
+    }
+    if (this.gamePhase === "archetype") {
+      return "archetype";
+    }
+    if (this.gamePhase === "reward") {
+      return "reward";
+    }
+    if (this.gamePhase === "event") {
+      return "event";
+    }
+    if (this.gamePhase === "cleared") {
+      return "cleared";
+    }
+    return "playing";
+  }
+
+  private clearActiveRun(): void {
+    this.activeRunSnapshot = null;
+    sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
+    this.queueAccountProgressPush();
+  }
+
+  private persistLastSettlement(): void {
+    const snapshot: HulebuSettlementSnapshot = {
+      runProfile: { ...this.runProfile },
+      reachedLevelOrder: this.currentDisplayLevelOrder,
+      metaCoinsEarned: HULEBU_RUN_COMPLETE_META_COIN_REWARD,
+      pickedRewards: this.runRewards.pickedRewards.length,
+      summary: this.formatSettlementSummaryText(),
+    };
+    this.lastSettlementSnapshot = snapshot;
+    sys.localStorage.setItem(HULEBU_LAST_SETTLEMENT_STORAGE_KEY, JSON.stringify(snapshot));
+  }
+
+  private persistMetaProgress(): void {
+    const activeDailySeed = this.runProfile.mode === "daily" ? this.runProfile.dailySeed ?? this.getTodaySeed() : null;
+    const nextProgress = {
+      ...this.metaProgress,
+      bestMainlineLevel:
+        this.runProfile.mode === "mainline"
+          ? Math.max(this.metaProgress.bestMainlineLevel, this.currentDisplayLevelOrder)
+          : this.metaProgress.bestMainlineLevel,
+      bestEndlessLayer:
+        this.runProfile.mode === "endless"
+          ? Math.max(this.metaProgress.bestEndlessLayer, this.currentDisplayLevelOrder)
+          : this.metaProgress.bestEndlessLayer,
+      dailyBestLevels:
+        this.runProfile.mode === "daily" && activeDailySeed
+          ? {
+              ...this.metaProgress.dailyBestLevels,
+              [activeDailySeed]: Math.max(this.metaProgress.dailyBestLevels[activeDailySeed] ?? 0, this.currentDisplayLevelOrder),
+            }
+          : this.metaProgress.dailyBestLevels,
+      dailyStreak: this.metaProgress.dailyStreak,
+      lastDailySeed: this.metaProgress.lastDailySeed,
+      bestAdvancedTier:
+        this.runProfile.mode === "advanced"
+          ? getHigherAdvancedTier(this.metaProgress.bestAdvancedTier, this.runProfile.advancedTier ?? null)
+          : this.metaProgress.bestAdvancedTier,
+    };
+    this.metaProgress = nextProgress;
+    sys.localStorage.setItem(HULEBU_META_PROGRESS_STORAGE_KEY, JSON.stringify(nextProgress));
+    this.queueAccountProgressPush();
+  }
+
+  private persistMetaProfile(): void {
+    const snapshot: HulebuMetaProfileSnapshot = {
+      metaCoins: this.metaCoins,
+      metaUpgrades: cloneMetaUpgradeState(this.metaUpgrades),
+    };
+    sys.localStorage.setItem(HULEBU_META_PROFILE_STORAGE_KEY, JSON.stringify(snapshot));
+    this.queueAccountProgressPush();
+  }
+
+  private persistAchievements(unlocks: HulebuAchievementSnapshot): void {
+    const next = mergeAchievementSnapshot(this.achievements, unlocks);
+    this.achievements = next;
+    sys.localStorage.setItem(HULEBU_ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(next));
+    this.queueAccountProgressPush();
+  }
+
+  private readActiveRunSnapshot(): HulebuActiveRunSnapshot | null {
+    const raw = sys.localStorage.getItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<HulebuActiveRunSnapshot>;
+      if (!parsed.runProfile || typeof parsed.currentDisplayLevelOrder !== "number" || typeof parsed.metaCoins !== "number") {
+        return null;
+      }
+      if (parsed.boardRevision !== HULEBU_BOARD_REVISION) {
+        sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
+        return null;
+      }
+
+      return {
+        boardRevision: parsed.boardRevision,
+        runProfile: parsed.runProfile,
+        pendingRunProfile: parsed.pendingRunProfile ? parsed.pendingRunProfile : null,
+        currentDisplayLevelOrder: parsed.currentDisplayLevelOrder,
+        resumablePhase: resolveResumableRunPhase(parsed.resumablePhase),
+        updatedAt: typeof parsed.updatedAt === "string" && parsed.updatedAt ? parsed.updatedAt : new Date().toISOString(),
+        runRewards: cloneRunRewardState(parsed.runRewards),
+        metaUpgrades: cloneMetaUpgradeState(parsed.metaUpgrades),
+        metaCoins: parsed.metaCoins,
+        runArchetypeId: parsed.runArchetypeId ?? "peng",
+        selectedAdvancedAbilityId: parsed.selectedAdvancedAbilityId ?? null,
+        eventSeenLevelOrders: Array.isArray(parsed.eventSeenLevelOrders) ? parsed.eventSeenLevelOrders : [],
+        runtimeSnapshot: isRuntimeSnapshot(parsed.runtimeSnapshot) ? parsed.runtimeSnapshot : null,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private readLastSettlementSnapshot(): HulebuSettlementSnapshot | null {
+    const raw = sys.localStorage.getItem(HULEBU_LAST_SETTLEMENT_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<HulebuSettlementSnapshot>;
+      if (!parsed.runProfile || typeof parsed.reachedLevelOrder !== "number" || typeof parsed.metaCoinsEarned !== "number") {
+        return null;
+      }
+
+      return {
+        runProfile: parsed.runProfile,
+        reachedLevelOrder: parsed.reachedLevelOrder,
+        metaCoinsEarned: parsed.metaCoinsEarned,
+        pickedRewards: typeof parsed.pickedRewards === "number" ? parsed.pickedRewards : 0,
+        summary: typeof parsed.summary === "string" ? parsed.summary : "",
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private readMetaProgressSnapshot(): HulebuMetaProgressSnapshot {
+    const raw = sys.localStorage.getItem(HULEBU_META_PROGRESS_STORAGE_KEY);
+    if (!raw) {
+      return createDefaultMetaProgressSnapshot();
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<HulebuMetaProgressSnapshot>;
+      return {
+        bestMainlineLevel:
+          typeof parsed.bestMainlineLevel === "number" ? Math.max(0, parsed.bestMainlineLevel) : 0,
+        bestEndlessLayer:
+          typeof parsed.bestEndlessLayer === "number" ? Math.max(0, parsed.bestEndlessLayer) : 0,
+        dailyBestLevels:
+          parsed.dailyBestLevels && typeof parsed.dailyBestLevels === "object"
+            ? Object.fromEntries(
+                Object.entries(parsed.dailyBestLevels).flatMap(([seed, value]) =>
+                  typeof value === "number" && value > 0 ? [[seed, value]] : [],
+                ),
+              )
+            : {},
+        dailyStreak:
+          typeof parsed.dailyStreak === "number" ? Math.max(0, Math.floor(parsed.dailyStreak)) : 0,
+        lastDailySeed:
+          typeof parsed.lastDailySeed === "string" && parsed.lastDailySeed ? parsed.lastDailySeed : null,
+        bestAdvancedTier:
+          parsed.bestAdvancedTier === "east"
+          || parsed.bestAdvancedTier === "south"
+          || parsed.bestAdvancedTier === "west"
+          || parsed.bestAdvancedTier === "north"
+            ? parsed.bestAdvancedTier
+            : null,
+      };
+    } catch {
+      return createDefaultMetaProgressSnapshot();
+    }
+  }
+
+  private readMetaProfileSnapshot(): HulebuMetaProfileSnapshot {
+    const raw = sys.localStorage.getItem(HULEBU_META_PROFILE_STORAGE_KEY);
+    if (!raw) {
+      return createDefaultMetaProfileSnapshot();
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<HulebuMetaProfileSnapshot>;
+      return {
+        metaCoins: typeof parsed.metaCoins === "number" ? Math.max(0, parsed.metaCoins) : HULEBU_META_INITIAL_COINS,
+        metaUpgrades: cloneMetaUpgradeState(parsed.metaUpgrades),
+      };
+    } catch {
+      return createDefaultMetaProfileSnapshot();
+    }
+  }
+
+  private readAchievementSnapshot(): HulebuAchievementSnapshot {
+    const raw = sys.localStorage.getItem(HULEBU_ACHIEVEMENTS_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      return Object.fromEntries(
+        HULEBU_ACHIEVEMENTS.flatMap((achievement) => {
+          const value = parsed[achievement.id];
+          return typeof value === "string" && value ? [[achievement.id, value]] : [];
+        }),
+      ) as HulebuAchievementSnapshot;
+    } catch {
+      return {};
+    }
+  }
+
+  private getLobbySubtitle(): string {
+    if (this.activeRunSnapshot) {
+      return this.formatActiveRunSummary(this.activeRunSnapshot);
+    }
+
+    if (this.lastSettlementSnapshot) {
+      return this.formatLastSettlementSummary(this.lastSettlementSnapshot);
+    }
+
+    return "选择模式，或先升级局外成长";
+  }
+
+  private formatActiveRunSummary(snapshot: HulebuActiveRunSnapshot): string {
+    const runLabel = snapshot.runProfile.displayName;
+    return `${runLabel} · 第 ${snapshot.currentDisplayLevelOrder} 关 · 奖励 ${snapshot.runRewards.pickedRewards.length}`;
+  }
+
+  private formatLastSettlementSummary(snapshot: HulebuSettlementSnapshot): string {
+    return snapshot.summary || this.formatSettlementSummaryText(snapshot);
+  }
+
+  private formatSettlementSummaryText(snapshot: HulebuSettlementSnapshot | null = null): string {
+    const source = snapshot ?? {
+      runProfile: this.runProfile,
+      reachedLevelOrder: this.currentDisplayLevelOrder,
+      metaCoinsEarned: HULEBU_RUN_COMPLETE_META_COIN_REWARD,
+      pickedRewards: this.runRewards.pickedRewards.length,
+      summary: "",
+    };
+    return `${source.runProfile.displayName} · 最近到第 ${source.reachedLevelOrder} 关 · 铜钱 +${source.metaCoinsEarned}`;
+  }
+
+  private getMainlineProgressText(): string {
+    if (this.metaProgress.bestMainlineLevel > 0) {
+      return `最高第 ${this.metaProgress.bestMainlineLevel} 关`;
+    }
+
+    return this.lastSettlementSnapshot?.runProfile.mode === "mainline"
+      ? `最近第 ${this.lastSettlementSnapshot.reachedLevelOrder} 关`
+      : "20 关";
+  }
+
+  private getEndlessProgressText(): string {
+    return this.metaProgress.bestEndlessLayer > 0 ? `最高 ${this.metaProgress.bestEndlessLayer} 层` : "未冲层";
+  }
+
+  private getDailyProgressText(): string {
+    const todaySeed = this.getTodaySeed();
+    const bestToday = this.metaProgress.dailyBestLevels[todaySeed] ?? 0;
+    const mutator = getHulebuDailyMutatorProfile(todaySeed);
+    const streakText = this.metaProgress.dailyStreak > 0 ? `连 ${this.metaProgress.dailyStreak} 天` : "首日";
+    if (bestToday > 0) {
+      return `${mutator.rewardLabel} · 最佳 ${bestToday} 关 · ${streakText}`;
+    }
+
+    return `${mutator.label} · ${streakText}`;
+  }
+
+  private getDailyCollectionSummaryText(): string {
+    const todaySeed = this.getTodaySeed();
+    const bestToday = this.metaProgress.dailyBestLevels[todaySeed] ?? 0;
+    const mutator = getHulebuDailyMutatorProfile(todaySeed);
+    const streakText = this.metaProgress.dailyStreak > 0 ? `连 ${this.metaProgress.dailyStreak} 天` : "今天是第一天";
+    if (bestToday > 0) {
+      return `${mutator.label} / ${mutator.rewardLabel} / 最佳 ${bestToday} 关 / ${streakText}`;
+    }
+
+    return `${mutator.label} / ${mutator.rewardLabel} / ${streakText}`;
+  }
+
+  private getAdvancedProgressText(): string {
+    if (!this.metaProgress.bestAdvancedTier) {
+      return "尚未通关";
+    }
+
+    const label = this.metaProgress.bestAdvancedTier === "east"
+      ? "东风"
+      : this.metaProgress.bestAdvancedTier === "south"
+        ? "南风"
+        : this.metaProgress.bestAdvancedTier === "west"
+          ? "西风"
+          : "北风";
+    return `已到 ${label}`;
+  }
+
+  private formatMetaUpgradeSummary(): string {
+    return `槽${this.metaUpgrades.reserveBonus} 护${this.metaUpgrades.shieldBonus} 工${this.metaUpgrades.toolBonus} 河${this.metaUpgrades.riverBonus} 钱${this.metaUpgrades.startingCoins} 视${this.metaUpgrades.visionBonus}`;
+  }
+
+  private getAccountSyncStatusText(): string {
+    return this.accountSyncMessage;
+  }
+
+  private getNextLockedAchievement(): typeof HULEBU_ACHIEVEMENTS[number] | null {
+    return HULEBU_ACHIEVEMENTS.find((achievement) => !this.achievements[achievement.id]) ?? null;
+  }
+
+  private formatAchievementListSummary(): string {
+    const unlockedTitles = HULEBU_ACHIEVEMENTS
+      .filter((achievement) => Boolean(this.achievements[achievement.id]))
+      .slice(0, 3)
+      .map((achievement) => achievement.title);
+    return unlockedTitles.length > 0 ? `首批图鉴：${unlockedTitles.join(" / ")}` : "首批图鉴：尚未解锁";
+  }
+
+  private buildAchievementUnlocks(): HulebuAchievementSnapshot {
+    const unlocks: HulebuAchievementSnapshot = {};
+    const now = this.createAchievementTimestamp();
+
+    if (this.runProfile.mode === "mainline") {
+      unlocks["mainline-first-clear"] = now;
+      if (this.currentDisplayLevelOrder >= 20) {
+        unlocks["boss-hulebu-king"] = now;
+      }
+    }
+
+    if (this.runProfile.mode === "daily") {
+      unlocks["daily-clear"] = now;
+    }
+
+    if (this.metaProgress.bestEndlessLayer >= 21 || (this.runProfile.mode === "endless" && this.currentDisplayLevelOrder >= 21)) {
+      unlocks["endless-first-step"] = now;
+    }
+
+    if (this.metaProgress.bestEndlessLayer >= 25 || (this.runProfile.mode === "endless" && this.currentDisplayLevelOrder >= 25)) {
+      unlocks["endless-layer-25"] = now;
+    }
+
+    if ((this.metaProgress.bestAdvancedTier === "west" || this.metaProgress.bestAdvancedTier === "north")
+      || (this.runProfile.mode === "advanced" && (this.runProfile.advancedTier === "west" || this.runProfile.advancedTier === "north"))) {
+      unlocks["ascension-west-clear"] = now;
+    }
+
+    return unlocks;
+  }
+
+  private createAchievementTimestamp(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  private resolveAdvancedAbilityById(profile: HulebuRunProfile, abilityId: string | null): HulebuAdvancedAbilityConfig | null {
+    if (!abilityId) {
+      return null;
+    }
+
+    return getHulebuAdvancedAbilityChoices(profile).find((choice) => choice.id === abilityId) ?? null;
+  }
+
+  private applySelectedAdvancedAbilityRewards(): void {
+    if (!this.selectedAdvancedAbility) {
+      return;
+    }
+
+    this.selectedAdvancedAbility.rewardIds.forEach((rewardId) => {
+      this.runRewards = applyHulebuRewardToRunState(this.runRewards, rewardId);
+    });
+  }
+
+  private getDisplayLevelOrderForFlow(displayOrder = this.currentDisplayLevelOrder): number {
+    if (this.runProfile.mode === "mainline") {
+      return displayOrder;
+    }
+
+    return ((displayOrder - 1) % HULEBU_LEVEL_CONFIGS.length) + 1;
+  }
+
+  private getRunModeLabel(): string {
+    return this.runProfile.mode === "mainline" ? "" : `${this.runProfile.displayName} `;
+  }
+
+  private getTodaySeed(): string {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  private persistDailyParticipation(dailySeed: string): void {
+    const previousSeed = this.metaProgress.lastDailySeed;
+    const nextStreak = previousSeed === dailySeed
+      ? Math.max(1, this.metaProgress.dailyStreak)
+      : Math.max(1, this.metaProgress.dailyStreak + 1);
+    this.metaProgress = {
+      ...this.metaProgress,
+      dailyStreak: nextStreak,
+      lastDailySeed: dailySeed,
+    };
+    sys.localStorage.setItem(HULEBU_META_PROGRESS_STORAGE_KEY, JSON.stringify(this.metaProgress));
+    this.queueAccountProgressPush();
+  }
+
+  private syncAccountProgressOnLobbyEntry(): void {
+    if (!this.canUseAccountProgressSync()) {
+      this.accountSyncState = "local";
+      this.accountSyncMessage = "账号：当前使用本地档案";
+      this.refreshAccountSyncOverlay();
+      return;
+    }
+
+    if (this.accountSyncPromise) {
+      return;
+    }
+
+    void this.hydrateAccountProgress();
+  }
+
+  private canUseAccountProgressSync(): boolean {
+    return typeof fetch === "function" && typeof window !== "undefined";
+  }
+
+  private refreshAccountSyncOverlay(): void {
+    if (this.gamePhase === "lobby") {
+      this.showLobbyOverlay();
+      return;
+    }
+
+    if (this.gamePhase === "collection") {
+      this.showCollectionOverlay();
+    }
+  }
+
+  private queueAccountProgressPush(immediate = false): void {
+    if (this.suppressAccountSyncPush || !this.canUseAccountProgressSync()) {
+      return;
+    }
+
+    if (this.accountSyncTimer) {
+      globalThis.clearTimeout(this.accountSyncTimer);
+    }
+
+    this.accountSyncTimer = globalThis.setTimeout(() => {
+      this.accountSyncTimer = null;
+      void this.pushAccountProgress();
+    }, immediate ? 0 : 320);
+  }
+
+  private async hydrateAccountProgress(): Promise<void> {
+    this.accountSyncState = "syncing";
+    this.accountSyncMessage = "账号：正在同步";
+    this.refreshAccountSyncOverlay();
+
+    const task = (async () => {
+      try {
+        const accountProgress = await this.fetchAccountProgress();
+        if (accountProgress === "guest") {
+          this.accountSyncState = "guest";
+          this.accountSyncMessage = "账号：未登录，继续使用本地档";
+          return;
+        }
+        if (!accountProgress) {
+          this.accountSyncState = "local";
+          this.accountSyncMessage = "账号：接口不可用，继续使用本地档";
+          return;
+        }
+
+        const mergedProgress = this.mergeLocalAndAccountProgress(accountProgress);
+        this.applyMergedAccountProgress(mergedProgress);
+        this.accountSyncState = "ready";
+        this.accountSyncMessage = "账号：已同步长期进度";
+        this.queueAccountProgressPush(true);
+      } catch (error) {
+        console.warn("[Hulebu] account progress hydrate failed", error);
+        this.accountSyncState = "error";
+        this.accountSyncMessage = "账号：同步失败，继续使用本地档";
+      } finally {
+        this.accountSyncPromise = null;
+        this.refreshAccountSyncOverlay();
+      }
+    })();
+
+    this.accountSyncPromise = task;
+    await task;
+  }
+
+  private async pushAccountProgress(): Promise<void> {
+    if (this.suppressAccountSyncPush || !this.canUseAccountProgressSync()) {
+      return;
+    }
+
+    try {
+      const response = await fetch(HULEBU_ACCOUNT_PROGRESS_ENDPOINT, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
+        body: JSON.stringify(this.createAccountProgressPayload()),
+      });
+
+      if (response.status === 401) {
+        this.accountSyncState = "guest";
+        this.accountSyncMessage = "账号：未登录，继续使用本地档";
+        this.refreshAccountSyncOverlay();
+        return;
+      }
+
+      if (!response.ok) {
+        this.accountSyncState = "error";
+        this.accountSyncMessage = "账号：同步失败，继续使用本地档";
+        this.refreshAccountSyncOverlay();
+        return;
+      }
+
+      this.accountSyncState = "ready";
+      this.accountSyncMessage = "账号：已同步长期进度";
+      this.refreshAccountSyncOverlay();
+    } catch (error) {
+      console.warn("[Hulebu] account progress push failed", error);
+      this.accountSyncState = "error";
+      this.accountSyncMessage = "账号：同步失败，继续使用本地档";
+      this.refreshAccountSyncOverlay();
+    }
+  }
+
+  private async fetchAccountProgress(): Promise<HulebuAccountProgressRecord | "guest" | null> {
+    const response = await fetch(HULEBU_ACCOUNT_PROGRESS_ENDPOINT, {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+
+    if (response.status === 401) {
+      return "guest";
+    }
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return sanitizeAccountProgressRecord(await response.json().catch(() => null));
+  }
+
+  private createAccountProgressPayload(): HulebuAccountProgressRecord {
+    return {
+      bankedCoins: Math.max(0, this.metaCoins),
+      bestEndlessLayer: Math.max(0, this.metaProgress.bestEndlessLayer),
+      bestAscensionLevel: mapAdvancedTierToAccountLevel(this.metaProgress.bestAdvancedTier),
+      dailyBestLevels: { ...this.metaProgress.dailyBestLevels },
+      dailyStreak: Math.max(0, this.metaProgress.dailyStreak),
+      lastDailySeed: this.metaProgress.lastDailySeed,
+      achievements: { ...this.achievements },
+      upgrades: {
+        reserveBonus: this.metaUpgrades.reserveBonus,
+        shieldBonus: this.metaUpgrades.shieldBonus,
+        toolBonus: this.metaUpgrades.toolBonus,
+        riverBonus: this.metaUpgrades.riverBonus,
+        startingCoins: this.metaUpgrades.startingCoins,
+        visionBonus: this.metaUpgrades.visionBonus,
+      },
+      activeRun: createCocosAccountActiveRunPayload(this.activeRunSnapshot),
+    };
+  }
+
+  private mergeLocalAndAccountProgress(accountProgress: HulebuAccountProgressRecord): HulebuAccountProgressRecord {
+    const localProgress = this.createAccountProgressPayload();
+    return {
+      bankedCoins: Math.max(localProgress.bankedCoins, accountProgress.bankedCoins),
+      bestEndlessLayer: Math.max(localProgress.bestEndlessLayer, accountProgress.bestEndlessLayer),
+      bestAscensionLevel: Math.max(localProgress.bestAscensionLevel, accountProgress.bestAscensionLevel),
+      dailyBestLevels: mergeNumberMaps(accountProgress.dailyBestLevels, localProgress.dailyBestLevels),
+      dailyStreak: Math.max(localProgress.dailyStreak, accountProgress.dailyStreak),
+      lastDailySeed: localProgress.lastDailySeed ?? accountProgress.lastDailySeed,
+      achievements: {
+        ...accountProgress.achievements,
+        ...localProgress.achievements,
+      },
+      upgrades: mergeNumberMaps(accountProgress.upgrades, localProgress.upgrades),
+      activeRun: pickLatestAccountActiveRun(accountProgress.activeRun, localProgress.activeRun),
+    };
+  }
+
+  private applyMergedAccountProgress(progress: HulebuAccountProgressRecord): void {
+    this.suppressAccountSyncPush = true;
+    try {
+      this.metaCoins = progress.bankedCoins;
+      this.metaUpgrades = {
+        reserveBonus: progress.upgrades.reserveBonus ?? this.metaUpgrades.reserveBonus,
+        shieldBonus: progress.upgrades.shieldBonus ?? this.metaUpgrades.shieldBonus,
+        toolBonus: progress.upgrades.toolBonus ?? this.metaUpgrades.toolBonus,
+        riverBonus: progress.upgrades.riverBonus ?? this.metaUpgrades.riverBonus,
+        startingCoins: progress.upgrades.startingCoins ?? this.metaUpgrades.startingCoins,
+        visionBonus: progress.upgrades.visionBonus ?? this.metaUpgrades.visionBonus,
+      };
+      this.metaProgress = {
+        ...this.metaProgress,
+        bestEndlessLayer: progress.bestEndlessLayer,
+        dailyBestLevels: { ...progress.dailyBestLevels },
+        dailyStreak: progress.dailyStreak,
+        lastDailySeed: progress.lastDailySeed,
+        bestAdvancedTier: getHigherAdvancedTier(
+          this.metaProgress.bestAdvancedTier,
+          mapAccountLevelToAdvancedTier(progress.bestAscensionLevel),
+        ),
+      };
+      this.achievements = { ...progress.achievements };
+      this.activeRunSnapshot = readCocosActiveRunSnapshotFromProgress(progress.activeRun) ?? this.activeRunSnapshot;
+
+      sys.localStorage.setItem(HULEBU_META_PROFILE_STORAGE_KEY, JSON.stringify({
+        metaCoins: this.metaCoins,
+        metaUpgrades: this.metaUpgrades,
+      } satisfies HulebuMetaProfileSnapshot));
+      sys.localStorage.setItem(HULEBU_META_PROGRESS_STORAGE_KEY, JSON.stringify(this.metaProgress));
+      sys.localStorage.setItem(HULEBU_ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(this.achievements));
+      if (this.activeRunSnapshot) {
+        sys.localStorage.setItem(HULEBU_ACTIVE_RUN_STORAGE_KEY, JSON.stringify(this.activeRunSnapshot));
+      } else {
+        sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
+      }
+    } finally {
+      this.suppressAccountSyncPush = false;
+    }
   }
 
   private prepareFlowOverlay(): Node {
@@ -336,7 +2117,7 @@ export class GameSceneController extends Component {
       0,
       layout,
     );
-    this.drawRoundedPanel(
+    const panel = this.drawRoundedPanel(
       overlay,
       "OverlayPanel",
       layout.width / 2,
@@ -349,6 +2130,7 @@ export class GameSceneController extends Component {
       scaleLayoutValue(4, layout.scale),
       layout,
     );
+    this.applyOverlayPanelSprite(panel, layout, width, height);
   }
 
   private writeOverlayLabel(
@@ -374,6 +2156,22 @@ export class GameSceneController extends Component {
     label.color = color;
   }
 
+  private writeOverlaySummaryLine(overlay: Node, name: string, text: string, yOffset: number): void {
+    const labelNode = this.ensureChild(overlay, name);
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    labelNode.layer = overlay.layer;
+    labelNode.setPosition(new Vec3(0, scaleLayoutValue(yOffset, layout.scale), 1));
+    const labelTransform = labelNode.getComponent(UITransform) ?? labelNode.addComponent(UITransform);
+    labelTransform.setContentSize(scaleLayoutValue(296, layout.scale), scaleLayoutValue(28, layout.scale));
+    const label = labelNode.getComponent(Label) ?? labelNode.addComponent(Label);
+    label.string = text;
+    label.fontSize = scaleLayoutValue(12, layout.scale);
+    label.lineHeight = scaleLayoutValue(17, layout.scale);
+    label.horizontalAlign = Label.HorizontalAlign.LEFT;
+    label.verticalAlign = Label.VerticalAlign.CENTER;
+    label.color = new Color(96, 64, 38, 255);
+  }
+
   private createOverlayButton(
     overlay: Node,
     name: string,
@@ -383,6 +2181,7 @@ export class GameSceneController extends Component {
     handler: () => void,
     width = 116,
     height = 44,
+    secondaryText = "",
   ): Node {
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const node = this.drawRoundedPanel(
@@ -401,7 +2200,12 @@ export class GameSceneController extends Component {
     node.getComponent(Button) ?? node.addComponent(Button);
     node.on(Node.EventType.TOUCH_END, handler, this);
     node.on(Button.EventType.CLICK, handler, this);
-    this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), new Color(255, 246, 216, 255));
+    if (secondaryText) {
+      this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), new Color(255, 246, 216, 255), scaleLayoutValue(15, layout.scale));
+      this.writeShellLabel(node, "MetaLabel", secondaryText, scaleLayoutValue(10, layout.scale), new Color(238, 211, 158, 255), scaleLayoutValue(-20, layout.scale));
+    } else {
+      this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), new Color(255, 246, 216, 255));
+    }
     return node;
   }
 
@@ -420,8 +2224,51 @@ export class GameSceneController extends Component {
       scoreText: `分 ${this.score}`,
       coinsText: sceneModel.hud.coinsText,
       toolText: sceneModel.hud.toolText,
+      tileCounter: this.createTileCounterFromBoardNodes(sceneModel.boardNodes),
     };
     this.applySceneModel(sceneModel);
+  }
+
+  private createTileCounterFromBoardNodes(boardNodes: HulebuBoardNodeModel[]): HulebuTileCounterModel {
+    const suitOrder: Array<HulebuTileCounterModel["suits"][number]["suit"]> = ["wan", "tiao", "tong", "honor"];
+    const suitLabels: Record<HulebuTileCounterModel["suits"][number]["suit"], string> = {
+      wan: "万",
+      tiao: "条",
+      tong: "筒",
+      honor: "字",
+    };
+    const tileCounts = new Map<string, number>();
+    const suitTotals = new Map<string, number>();
+
+    boardNodes.forEach((node) => {
+      const [, suit, rank] = node.prefabKey.split(".");
+      if (!suit || !rank) {
+        return;
+      }
+      tileCounts.set(node.prefabKey, (tileCounts.get(node.prefabKey) ?? 0) + 1);
+      suitTotals.set(suit, (suitTotals.get(suit) ?? 0) + 1);
+    });
+
+    return {
+      total: boardNodes.length,
+      suits: suitOrder.map((suit) => {
+        const maxRank = suit === "honor" ? 7 : 9;
+        return {
+          suit,
+          label: suitLabels[suit],
+          total: suitTotals.get(suit) ?? 0,
+          tiles: Array.from({ length: maxRank }, (_, index) => {
+            const rank = index + 1;
+            const prefabKey = `tile.${suit}.${rank}`;
+            return {
+              label: suit === "honor" ? `字${rank}` : `${rank}${suitLabels[suit]}`,
+              prefabKey,
+              count: tileCounts.get(prefabKey) ?? 0,
+            };
+          }),
+        };
+      }),
+    };
   }
 
   private createSlotModels(): HulebuCellNodeModel[] {
@@ -439,7 +2286,7 @@ export class GameSceneController extends Component {
   }
 
   private createComboControls(): HulebuComboControlModel[] {
-    const combos: HulebuComboType[] = ["hu", "gang", "peng", "chi"];
+    const combos: HulebuComboType[] = ["hu", "gang", "peng", "chi", "bugang"];
     return combos.map((combo) => {
       const candidate = this.findComboCandidate(combo);
       return {
@@ -477,6 +2324,10 @@ export class GameSceneController extends Component {
           return indexes.slice(0, requiredCount);
         }
       }
+      return null;
+    }
+
+    if (combo === "bugang") {
       return null;
     }
 
@@ -594,7 +2445,7 @@ export class GameSceneController extends Component {
     if (combo === "hu") {
       return 80;
     }
-    if (combo === "gang") {
+    if (combo === "gang" || combo === "bugang") {
       return 40;
     }
     return combo === "peng" ? 30 : 20;
@@ -673,14 +2524,42 @@ export class GameSceneController extends Component {
     shellRoot.layer = this.node.layer;
     shellRoot.setSiblingIndex(0);
 
+    const tableRect = this.resolveTableRect(layout);
+
     this.drawGreenTableFelt(shellRoot, layout);
-    this.drawTopPlaques(shellRoot, layout, levelOrder);
-    this.drawRightToolButtons(shellRoot, layout);
-    this.drawSlotTray(shellRoot, layout);
+    this.drawTopPlaques(shellRoot, layout, levelOrder, tableRect);
+    this.drawRightToolButtons(this.ensureToolOverlayRoot(), layout, tableRect);
+  }
+
+  private resolveTableRect(layout: RuntimeLayout): { centerX: number; centerY: number; width: number; height: number; top: number; bottom: number } {
+    const topOrderHeight = scaleLayoutValue(96, layout.scale);
+    const bottomHandHeight = scaleLayoutValue(116, layout.scale);
+    const comboHeight = scaleLayoutValue(48, layout.scale);
+    const gap = scaleLayoutValue(12, layout.scale);
+    const top = topOrderHeight + gap;
+    const bottom = bottomHandHeight + comboHeight + gap * 2;
+    const height = Math.max(200, layout.height - top - bottom);
+    const width = layout.width;
+    return {
+      centerX: Math.round(width / 2),
+      centerY: Math.round(top + height / 2),
+      width,
+      height,
+      top,
+      bottom,
+    };
+  }
+
+  private ensureToolOverlayRoot(): Node {
+    const toolRoot = this.ensureChild(this.node, TOOL_OVERLAY_ROOT_NAME);
+    toolRoot.active = true;
+    toolRoot.layer = this.node.layer;
+    toolRoot.setSiblingIndex(this.node.children.length - 1);
+    return toolRoot;
   }
 
   private drawGreenTableFelt(root: Node, layout: RuntimeLayout): void {
-    this.drawRoundedPanel(
+    const felt = this.drawRoundedPanel(
       root,
       "GreenTableFelt",
       layout.width / 2,
@@ -694,7 +2573,7 @@ export class GameSceneController extends Component {
       layout,
     );
 
-    this.drawRoundedPanel(
+    const rim = this.drawRoundedPanel(
       root,
       "TableRim",
       layout.width / 2,
@@ -708,7 +2587,7 @@ export class GameSceneController extends Component {
       layout,
     );
 
-    this.drawRoundedPanel(
+    const lowerShade = this.drawRoundedPanel(
       root,
       "TableLowerShade",
       layout.width / 2,
@@ -721,9 +2600,11 @@ export class GameSceneController extends Component {
       0,
       layout,
     );
+
+    this.applySceneBackgroundSprite(root, layout, [felt, rim, lowerShade]);
   }
 
-  private drawTopPlaques(root: Node, layout: RuntimeLayout, levelOrder: number): void {
+  private drawTopPlaques(root: Node, layout: RuntimeLayout, levelOrder: number, tableRect: { centerX: number; centerY: number; width: number; height: number }): void {
     const y = layout.height - scaleLayoutValue(44, layout.scale);
     this.drawTopPlaque(
       root,
@@ -736,9 +2617,222 @@ export class GameSceneController extends Component {
       layout,
     );
     this.drawTopPlaque(root, "ScorePlaque", scaleLayoutValue(195, layout.scale), y, 100, 52, "分数\n0", layout);
-    this.drawTopPlaque(root, "ProgressPlaque", scaleLayoutValue(304, layout.scale), y, 162, 52, "本局进度", layout);
+    this.drawTopPlaque(
+      root,
+      "CounterPlaque",
+      tableRect.centerX - tableRect.width / 2 + scaleLayoutValue(80, layout.scale),
+      tableRect.centerY + tableRect.height / 2 - scaleLayoutValue(30, layout.scale),
+      162,
+      52,
+      "",
+      layout,
+    );
+    this.drawTopPlaque(
+      root,
+      "ProgressPlaque",
+      scaleLayoutValue(318, layout.scale),
+      y,
+      134,
+      52,
+      "余牌 42",
+      layout,
+    );
 
     this.drawProgressDots(root, layout);
+  }
+
+  private applyShellHud(hud: HulebuHudModel): void {
+    const shellRoot = this.node.getChildByName(SHELL_ROOT_NAME);
+    if (!shellRoot?.active) {
+      this.hud?.applyHud(hud);
+      return;
+    }
+
+    this.updateShellPlaqueText(shellRoot, "ScorePlaque", `分数\n${stripHudPrefix(hud.scoreText, "分")}`);
+    this.updateShellPlaqueText(shellRoot, "CounterPlaque", this.formatCounterPlaqueText(hud), 11);
+    this.updateShellPlaqueText(
+      shellRoot,
+      "ProgressPlaque",
+      hud.bossText ? hud.bossText : hud.boardRemainingText,
+      15,
+    );
+    this.drawTileCounterOverlay(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud);
+    this.updateShellToolBadges(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud.toolText);
+  }
+
+  private formatCounterPlaqueText(hud: HulebuHudModel): string {
+    const summary = hud.tileCounter.suits
+      .map((suit) => `${suit.label}${suit.total}`)
+      .join(" ");
+    return summary;
+  }
+
+  private toggleTileCounterOverlay(): void {
+    this.counterExpanded = !this.counterExpanded;
+    if (this.latestSceneModel) {
+      this.applyShellHud(this.latestSceneModel.hud);
+    }
+  }
+
+  private drawTileCounterOverlay(root: Node, hud: HulebuHudModel): void {
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const position = this.resolveTileCounterOverlayPosition(layout);
+    const panel = this.drawRoundedPanel(
+      root,
+      "CounterExpandedPanel",
+      position.x,
+      position.y,
+      scaleLayoutValue(374, layout.scale),
+      scaleLayoutValue(238, layout.scale),
+      scaleLayoutValue(16, layout.scale),
+      new Color(251, 235, 199, 246),
+      PLAQUE_STROKE,
+      scaleLayoutValue(3, layout.scale),
+      layout,
+    );
+    panel.active = this.counterExpanded;
+    panel.setSiblingIndex(0);
+    panel.getComponent(BlockInputEvents) ?? panel.addComponent(BlockInputEvents);
+    panel.getComponent(Button) ?? panel.addComponent(Button);
+    panel.off(Node.EventType.TOUCH_END);
+    panel.off(Button.EventType.CLICK);
+    panel.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this);
+
+    this.writeShellLabel(
+      panel,
+      "Title",
+      `记牌器  ${hud.tileCounter.total}`,
+      scaleLayoutValue(14, layout.scale),
+      PLAQUE_TEXT,
+      scaleLayoutValue(98, layout.scale),
+    );
+
+    hud.tileCounter.suits.forEach((suit, suitIndex) => {
+      const rowY = scaleLayoutValue(62 - suitIndex * 44, layout.scale);
+      const label = this.writeShellLabel(
+        panel,
+        `SuitLabel_${suit.suit}`,
+        `${suit.label}${suit.total}`,
+        scaleLayoutValue(12, layout.scale),
+        PLAQUE_TEXT,
+      );
+      label.node.setPosition(new Vec3(-scaleLayoutValue(162, layout.scale), rowY, 1));
+      const labelTransform = label.node.getComponent(UITransform) ?? label.node.addComponent(UITransform);
+      labelTransform.setContentSize(scaleLayoutValue(42, layout.scale), scaleLayoutValue(30, layout.scale));
+
+      suit.tiles.forEach((tile, tileIndex) => {
+        this.drawCounterTileCell(panel, tile, tileIndex, rowY, layout);
+      });
+    });
+  }
+
+  private resolveTileCounterOverlayPosition(layout: RuntimeLayout): { x: number; y: number } {
+    const boardNodes = this.latestSceneModel?.boardNodes ?? [];
+    if (boardNodes.length === 0) {
+      return {
+        x: layout.width / 2,
+        y: Math.max(scaleLayoutValue(150, layout.scale), layout.height * 0.42),
+      };
+    }
+
+    const minX = Math.min(...boardNodes.map((node) => node.position.x));
+    const maxX = Math.max(...boardNodes.map((node) => node.position.x));
+    const minY = Math.min(...boardNodes.map((node) => node.position.y));
+    const panelHalfWidth = scaleLayoutValue(187, layout.scale);
+    const panelHalfHeight = scaleLayoutValue(119, layout.scale);
+    const x = Math.min(
+      layout.width - panelHalfWidth - scaleLayoutValue(12, layout.scale),
+      Math.max(panelHalfWidth + scaleLayoutValue(12, layout.scale), (minX + maxX) / 2),
+    );
+    const y = Math.min(
+      layout.height - panelHalfHeight - scaleLayoutValue(76, layout.scale),
+      Math.max(panelHalfHeight + scaleLayoutValue(12, layout.scale), minY - scaleLayoutValue(96, layout.scale)),
+    );
+    return { x, y };
+  }
+
+  private drawCounterTileCell(
+    panel: Node,
+    tile: HulebuTileCounterItemModel,
+    tileIndex: number,
+    rowY: number,
+    layout: RuntimeLayout,
+  ): void {
+    const cell = this.drawRoundedPanel(
+      panel,
+      `CounterTile_${tile.prefabKey}`,
+      -scaleLayoutValue(122, layout.scale) + tileIndex * scaleLayoutValue(31, layout.scale),
+      rowY,
+      scaleLayoutValue(25, layout.scale),
+      scaleLayoutValue(34, layout.scale),
+      scaleLayoutValue(4, layout.scale),
+      tile.count > 0 ? new Color(255, 249, 235, 255) : new Color(205, 196, 182, 210),
+      new Color(112, 82, 49, 190),
+      scaleLayoutValue(1, layout.scale),
+    );
+    cell.active = true;
+    cell.layer = panel.layer;
+
+    const artNode = this.ensureChild(cell, "Art");
+    artNode.layer = cell.layer;
+    artNode.setPosition(new Vec3(0, scaleLayoutValue(3, layout.scale), 1));
+    const artTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    artTransform.setContentSize(scaleLayoutValue(21, layout.scale), scaleLayoutValue(27, layout.scale));
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+    this.tileSpriteCatalog.loadTileSpriteFrame(tile.prefabKey, (spriteFrame) => {
+      if (!spriteFrame) {
+        artNode.active = false;
+        return;
+      }
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+    });
+
+    const countLabel = this.writeShellLabel(
+      cell,
+      "Count",
+      String(tile.count),
+      scaleLayoutValue(9, layout.scale),
+      tile.count > 0 ? PLAQUE_TEXT : new Color(126, 116, 105, 255),
+      -scaleLayoutValue(12, layout.scale),
+    );
+    countLabel.node.setSiblingIndex(cell.children.length - 1);
+  }
+
+  private updateShellPlaqueText(root: Node, plaqueName: string, text: string, fontSize = 15): void {
+    const plaque = root.getChildByName(plaqueName);
+    if (!plaque) {
+      return;
+    }
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.writeShellLabel(plaque, "Label", text, scaleLayoutValue(fontSize, layout.scale), PLAQUE_TEXT);
+  }
+
+  private updateShellToolBadges(root: Node, toolText: string): void {
+    const counts = parseToolCounts(toolText);
+    this.updateShellToolBadge(root, "ToolButton_Wash", counts.wash);
+    this.updateShellToolBadge(root, "ToolButton_Undo", counts.undo);
+    this.updateShellToolBadge(root, "ToolButton_Hint", counts.discard);
+  }
+
+  private updateShellToolBadge(root: Node, toolName: string, count: string | null): void {
+    if (count === null) {
+      return;
+    }
+
+    const button = root.getChildByName(toolName);
+    const badgeBack = button?.getChildByName("BadgeBack");
+    if (!badgeBack) {
+      return;
+    }
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.writeShellLabel(badgeBack, "Label", count, scaleLayoutValue(11, layout.scale), new Color(255, 248, 225, 255));
   }
 
   private formatLevelLabel(levelOrder: number): string {
@@ -757,7 +2851,7 @@ export class GameSceneController extends Component {
     text: string,
     layout: RuntimeLayout,
   ): void {
-    this.drawRoundedPanel(
+    const node = this.drawRoundedPanel(
       root,
       name,
       x,
@@ -770,12 +2864,19 @@ export class GameSceneController extends Component {
       scaleLayoutValue(3, layout.scale),
       layout,
     );
-    this.writeShellLabel(root.getChildByName(name)!, "Label", text, scaleLayoutValue(15, layout.scale), PLAQUE_TEXT);
+    this.applyTopPlaqueSprite(node, name);
+    this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), PLAQUE_TEXT);
+    if (name === "CounterPlaque") {
+      node.getComponent(Button) ?? node.addComponent(Button);
+      node.off(Node.EventType.TOUCH_END);
+      node.off(Button.EventType.CLICK);
+      node.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this);
+    }
   }
 
   private drawProgressDots(root: Node, layout: RuntimeLayout): void {
-    const y = layout.height - scaleLayoutValue(44, layout.scale);
-    const startX = scaleLayoutValue(272, layout.scale);
+    const y = layout.height - scaleLayoutValue(72, layout.scale);
+    const startX = scaleLayoutValue(276, layout.scale);
     const gap = scaleLayoutValue(24, layout.scale);
     for (let index = 0; index < 4; index += 1) {
       const dot = this.drawRoundedPanel(
@@ -795,12 +2896,13 @@ export class GameSceneController extends Component {
     }
   }
 
-  private drawRightToolButtons(root: Node, layout: RuntimeLayout): void {
-    const x = scaleLayoutValue(Math.min(layout.cssWidth - 34, 352), layout.scale);
+  private drawRightToolButtons(root: Node, layout: RuntimeLayout, tableRect: { centerX: number; centerY: number; width: number; height: number }): void {
+    const x = tableRect.centerX + tableRect.width / 2 - scaleLayoutValue(30, layout.scale);
+    const toolSpacing = scaleLayoutValue(68, layout.scale);
     const tools = [
-      { name: "ToolButton_Wash", label: "洗牌", count: "3", yRatio: 0.57 },
-      { name: "ToolButton_Undo", label: "撤回", count: "3", yRatio: 0.45 },
-      { name: "ToolButton_Hint", label: "提示", count: "3", yRatio: 0.33 },
+      { name: "ToolButton_Wash", label: "洗牌", count: "3", offset: 1, handler: () => this.useShuffleTool() },
+      { name: "ToolButton_Undo", label: "撤回", count: "3", offset: 0, handler: () => this.useUndoTool() },
+      { name: "ToolButton_Hint", label: "打牌", count: "3", offset: -1, handler: () => this.startDiscardSelection() },
     ];
 
     tools.forEach((tool) => {
@@ -808,9 +2910,10 @@ export class GameSceneController extends Component {
         root,
         tool.name,
         x,
-        scaleLayoutValue(layout.cssHeight * tool.yRatio, layout.scale),
+        tableRect.centerY + tool.offset * toolSpacing,
         tool.label,
         tool.count,
+        tool.handler,
         layout,
       );
     });
@@ -823,6 +2926,7 @@ export class GameSceneController extends Component {
     y: number,
     label: string,
     count: string,
+    handler: (() => void) | null,
     layout: RuntimeLayout,
   ): void {
     const node = this.drawRoundedPanel(
@@ -830,15 +2934,24 @@ export class GameSceneController extends Component {
       name,
       x,
       y,
-      scaleLayoutValue(54, layout.scale),
-      scaleLayoutValue(64, layout.scale),
-      scaleLayoutValue(18, layout.scale),
+      scaleLayoutValue(46, layout.scale),
+      scaleLayoutValue(56, layout.scale),
+      scaleLayoutValue(16, layout.scale),
       TOOL_FILL,
       PLAQUE_STROKE,
       scaleLayoutValue(3, layout.scale),
       layout,
     );
-    this.writeShellLabel(node, "Label", label, scaleLayoutValue(13, layout.scale), new Color(255, 246, 216, 255), -8);
+    node.setSiblingIndex(root.children.length - 1);
+    if (handler) {
+      node.getComponent(Button) ?? node.addComponent(Button);
+      node.off(Node.EventType.TOUCH_END);
+      node.off(Button.EventType.CLICK);
+      node.on(Node.EventType.TOUCH_END, handler, this);
+      node.on(Button.EventType.CLICK, handler, this);
+    }
+    const labelNode = this.writeShellLabel(node, "Label", label, scaleLayoutValue(12, layout.scale), new Color(255, 246, 216, 255), -8).node;
+    this.applyToolButtonSprite(node, name, layout, labelNode);
     const badge = this.ensureChild(node, "Badge");
     badge.setPosition(new Vec3(scaleLayoutValue(20, layout.scale), -scaleLayoutValue(21, layout.scale), 0));
     this.drawRoundedPanel(
@@ -854,6 +2967,170 @@ export class GameSceneController extends Component {
       scaleLayoutValue(2, layout.scale),
     );
     this.writeShellLabel(node.getChildByName("BadgeBack")!, "Label", count, scaleLayoutValue(11, layout.scale), new Color(255, 248, 225, 255));
+  }
+
+  private applyToolButtonSprite(node: Node, name: string, layout: RuntimeLayout, labelNode: Node): void {
+    const spritePath = TOOL_BUTTON_SPRITES[name];
+    if (!spritePath) {
+      return;
+    }
+
+    const artNode = this.ensureChild(node, "ToolArt");
+    artNode.layer = node.layer;
+    artNode.setPosition(new Vec3(0, scaleLayoutValue(2, layout.scale), 1));
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    uiTransform.setContentSize(scaleLayoutValue(54, layout.scale), scaleLayoutValue(54, layout.scale));
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+    labelNode.active = true;
+
+    resources.load(spritePath, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        artNode.active = false;
+        labelNode.active = true;
+        return;
+      }
+
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+      labelNode.active = false;
+    });
+  }
+
+  private applySceneBackgroundSprite(root: Node, layout: RuntimeLayout, fallbackNodes: Node[]): void {
+    const artNode = this.ensureChild(root, "SceneBackgroundArt");
+    artNode.layer = root.layer;
+    artNode.setPosition(new Vec3(0, 0, 0));
+    artNode.setSiblingIndex(0);
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    uiTransform.setContentSize(layout.width, layout.height);
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+    fallbackNodes.forEach((node) => {
+      node.active = true;
+    });
+
+    resources.load(HULEBU_SCENE_BACKGROUND_SPRITE, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        artNode.active = false;
+        fallbackNodes.forEach((node) => {
+          node.active = true;
+        });
+        return;
+      }
+
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+      artNode.setSiblingIndex(0);
+      fallbackNodes.forEach((node) => {
+        node.active = false;
+      });
+    });
+  }
+
+  private applyOverlayPanelSprite(node: Node, layout: RuntimeLayout, width: number, height: number): void {
+    const artNode = this.ensureChild(node, "OverlayPanelArt");
+    artNode.layer = node.layer;
+    artNode.setPosition(new Vec3(0, 0, 1));
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    uiTransform.setContentSize(scaleLayoutValue(width, layout.scale), scaleLayoutValue(height, layout.scale));
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+
+    resources.load(OVERLAY_PANEL_BG_SPRITE, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        artNode.active = false;
+        return;
+      }
+
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+    });
+  }
+
+  private applyTopPlaqueSprite(node: Node, name: string): void {
+    const spritePath = TOP_PLAQUE_SPRITES[name];
+    if (!spritePath) {
+      return;
+    }
+
+    const artNode = this.ensureChild(node, "PlaqueArt");
+    artNode.layer = node.layer;
+    artNode.setPosition(new Vec3(0, 0, 1));
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    const nodeTransform = node.getComponent(UITransform);
+    uiTransform.setContentSize(nodeTransform?.width ?? 0, nodeTransform?.height ?? 0);
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+
+    resources.load(spritePath, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        artNode.active = false;
+        return;
+      }
+
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+      const labelNode = node.getChildByName("Label");
+      if (labelNode) {
+        labelNode.setSiblingIndex(node.children.length - 1);
+      }
+    });
+  }
+
+  private applyRewardCardSprite(node: Node, rewardId: string): void {
+    const spritePath = REWARD_CARD_SPRITES[rewardId];
+    if (!spritePath) {
+      return;
+    }
+
+    const artNode = this.ensureChild(node, "RewardCardArt");
+    artNode.layer = node.layer;
+    artNode.setPosition(new Vec3(0, 0, 1));
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    const buttonTransform = node.getComponent(UITransform);
+    uiTransform.setContentSize(buttonTransform?.width ?? 0, buttonTransform?.height ?? 0);
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+
+    const labelNode = node.getChildByName("Label");
+    const metaNode = node.getChildByName("MetaLabel");
+    resources.load(spritePath, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        artNode.active = false;
+        if (labelNode) {
+          labelNode.active = true;
+        }
+        if (metaNode) {
+          metaNode.active = true;
+        }
+        return;
+      }
+
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+      if (labelNode) {
+        labelNode.active = false;
+      }
+      if (metaNode) {
+        metaNode.active = false;
+      }
+    });
   }
 
   private drawSlotTray(root: Node, layout: RuntimeLayout): void {
@@ -931,4 +3208,295 @@ export class GameSceneController extends Component {
     parent.addChild(node);
     return node;
   }
+}
+
+function cloneRunRewardState(state: Partial<HulebuRunRewardState> | undefined): HulebuRunRewardState {
+  return {
+    reserveBonus: state?.reserveBonus ?? 0,
+    shieldBonus: state?.shieldBonus ?? 0,
+    firstProtect: state?.firstProtect ?? false,
+    startingCoins: state?.startingCoins ?? 0,
+    toolBonus: {
+      shuffle: state?.toolBonus?.shuffle ?? 0,
+      undo: state?.toolBonus?.undo ?? 0,
+      discard: state?.toolBonus?.discard ?? 0,
+      vision: state?.toolBonus?.vision ?? 0,
+    },
+    scoreBonus: {
+      hu: state?.scoreBonus?.hu ?? 0,
+      gang: state?.scoreBonus?.gang ?? 0,
+      peng: state?.scoreBonus?.peng ?? 0,
+      chi: state?.scoreBonus?.chi ?? 0,
+      bugang: state?.scoreBonus?.bugang ?? 0,
+    },
+    pickedRewards: [...(state?.pickedRewards ?? [])],
+  };
+}
+
+function cloneMetaUpgradeState(state: Partial<HulebuMetaUpgradeState> | undefined): HulebuMetaUpgradeState {
+  return {
+    reserveBonus: state?.reserveBonus ?? 0,
+    shieldBonus: state?.shieldBonus ?? 0,
+    toolBonus: state?.toolBonus ?? 0,
+    riverBonus: state?.riverBonus ?? 0,
+    startingCoins: state?.startingCoins ?? 0,
+    visionBonus: state?.visionBonus ?? 0,
+  };
+}
+
+function createDefaultMetaProgressSnapshot(): HulebuMetaProgressSnapshot {
+  return {
+    bestMainlineLevel: 0,
+    bestEndlessLayer: 0,
+    dailyBestLevels: {},
+    dailyStreak: 0,
+    lastDailySeed: null,
+    bestAdvancedTier: null,
+  };
+}
+
+function createDefaultMetaProfileSnapshot(): HulebuMetaProfileSnapshot {
+  return {
+    metaCoins: HULEBU_META_INITIAL_COINS,
+    metaUpgrades: createHulebuMetaUpgradeState(),
+  };
+}
+
+function sanitizeAccountNumberMap(input: unknown): Record<string, number> {
+  if (!input || typeof input !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(input).flatMap(([key, value]) =>
+      typeof value === "number" && Number.isFinite(value) ? [[key, Math.max(0, value)]] : [],
+    ),
+  );
+}
+
+function sanitizeAccountStringMap(input: unknown): Record<string, string> {
+  if (!input || typeof input !== "object") {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(input).flatMap(([key, value]) =>
+      typeof value === "string" && value ? [[key, value]] : [],
+    ),
+  );
+}
+
+function sanitizeAccountActiveRun(input: unknown): Record<string, unknown> | null {
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  const activeRun = input as Record<string, unknown>;
+  return typeof activeRun.sessionKey === "string" && typeof activeRun.updatedAt === "string"
+    ? activeRun
+    : null;
+}
+
+function sanitizeAccountProgressRecord(input: unknown): HulebuAccountProgressRecord {
+  const progress = input && typeof input === "object" ? input as Partial<HulebuAccountProgressRecord> : {};
+  return {
+    bankedCoins: typeof progress.bankedCoins === "number" ? Math.max(0, progress.bankedCoins) : 0,
+    bestEndlessLayer: typeof progress.bestEndlessLayer === "number" ? Math.max(0, progress.bestEndlessLayer) : 0,
+    bestAscensionLevel: typeof progress.bestAscensionLevel === "number" ? Math.max(1, Math.min(4, progress.bestAscensionLevel)) : 1,
+    dailyBestLevels: sanitizeAccountNumberMap(progress.dailyBestLevels),
+    dailyStreak: typeof progress.dailyStreak === "number" ? Math.max(0, progress.dailyStreak) : 0,
+    lastDailySeed: typeof progress.lastDailySeed === "string" && progress.lastDailySeed ? progress.lastDailySeed : null,
+    achievements: sanitizeAccountStringMap(progress.achievements),
+    upgrades: sanitizeAccountNumberMap(progress.upgrades),
+    activeRun: sanitizeAccountActiveRun(progress.activeRun),
+  };
+}
+
+function mergeNumberMaps(base: Record<string, number>, incoming: Record<string, number>): Record<string, number> {
+  const merged = { ...base };
+  Object.entries(incoming).forEach(([key, value]) => {
+    merged[key] = Math.max(value, merged[key] ?? 0);
+  });
+  return merged;
+}
+
+function mapAdvancedTierToAccountLevel(tier: HulebuAdvancedRunTier | null): number {
+  if (tier === "north") {
+    return 4;
+  }
+  if (tier === "west") {
+    return 3;
+  }
+  if (tier === "south") {
+    return 2;
+  }
+  return 1;
+}
+
+function mapAccountLevelToAdvancedTier(level: number): HulebuAdvancedRunTier | null {
+  if (level >= 4) {
+    return "north";
+  }
+  if (level === 3) {
+    return "west";
+  }
+  if (level === 2) {
+    return "south";
+  }
+  return null;
+}
+
+function pickLatestAccountActiveRun(
+  accountActiveRun: Record<string, unknown> | null,
+  localActiveRun: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  if (!accountActiveRun) {
+    return localActiveRun;
+  }
+  if (!localActiveRun) {
+    return accountActiveRun;
+  }
+
+  const accountTime = Date.parse(String(accountActiveRun.updatedAt ?? ""));
+  const localTime = Date.parse(String(localActiveRun.updatedAt ?? ""));
+  if (!Number.isFinite(accountTime)) {
+    return localActiveRun;
+  }
+  if (!Number.isFinite(localTime)) {
+    return accountActiveRun;
+  }
+  return localTime >= accountTime ? localActiveRun : accountActiveRun;
+}
+
+function createCocosAccountActiveRunPayload(snapshot: HulebuActiveRunSnapshot | null): Record<string, unknown> | null {
+  if (!snapshot) {
+    return null;
+  }
+
+  const effectiveProfile = snapshot.pendingRunProfile ?? snapshot.runProfile;
+  const sessionParts = [
+    "cocos",
+    effectiveProfile.mode,
+    String(snapshot.currentDisplayLevelOrder),
+    effectiveProfile.dailySeed ?? effectiveProfile.advancedTier ?? snapshot.runArchetypeId,
+  ];
+
+  return {
+    sessionKey: sessionParts.join(":"),
+    updatedAt: snapshot.updatedAt,
+    source: "cocos",
+    cocosSnapshot: snapshot,
+  };
+}
+
+function readCocosActiveRunSnapshotFromProgress(activeRun: Record<string, unknown> | null): HulebuActiveRunSnapshot | null {
+  if (!activeRun || typeof activeRun.cocosSnapshot !== "object" || !activeRun.cocosSnapshot) {
+    return null;
+  }
+
+  const snapshot = activeRun.cocosSnapshot as Partial<HulebuActiveRunSnapshot>;
+  if (!snapshot.runProfile || typeof snapshot.currentDisplayLevelOrder !== "number" || typeof snapshot.metaCoins !== "number") {
+    return null;
+  }
+  if (snapshot.boardRevision !== HULEBU_BOARD_REVISION) {
+    return null;
+  }
+
+  return {
+    boardRevision: snapshot.boardRevision,
+    runProfile: snapshot.runProfile,
+    pendingRunProfile: snapshot.pendingRunProfile ? snapshot.pendingRunProfile : null,
+    currentDisplayLevelOrder: snapshot.currentDisplayLevelOrder,
+    resumablePhase: resolveResumableRunPhase(snapshot.resumablePhase),
+    updatedAt: typeof snapshot.updatedAt === "string" && snapshot.updatedAt ? snapshot.updatedAt : String(activeRun.updatedAt ?? new Date().toISOString()),
+    runRewards: cloneRunRewardState(snapshot.runRewards),
+    metaUpgrades: cloneMetaUpgradeState(snapshot.metaUpgrades),
+    metaCoins: snapshot.metaCoins,
+    runArchetypeId: snapshot.runArchetypeId ?? "peng",
+    selectedAdvancedAbilityId: snapshot.selectedAdvancedAbilityId ?? null,
+    eventSeenLevelOrders: Array.isArray(snapshot.eventSeenLevelOrders) ? snapshot.eventSeenLevelOrders : [],
+    runtimeSnapshot: isRuntimeSnapshot(snapshot.runtimeSnapshot) ? snapshot.runtimeSnapshot : null,
+  };
+}
+
+function isRuntimeSnapshot(value: unknown): value is HulebuRuntimeSnapshot {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const snapshot = value as Partial<HulebuRuntimeSnapshot>;
+  return Array.isArray(snapshot.tiles)
+    && Array.isArray(snapshot.slot)
+    && Array.isArray(snapshot.reserve)
+    && Array.isArray(snapshot.river)
+    && Array.isArray(snapshot.openMelds)
+    && typeof snapshot.looseMountainDropIndex === "number"
+    && typeof snapshot.score === "number"
+    && typeof snapshot.coins === "number"
+    && Boolean(snapshot.tools)
+    && typeof snapshot.tools?.shuffle === "number"
+    && typeof snapshot.tools?.undo === "number"
+    && typeof snapshot.tools?.discard === "number"
+    && typeof snapshot.tools?.vision === "number";
+}
+
+function resolveResumableRunPhase(value: unknown): HulebuResumableRunPhase {
+  return value === "cleared"
+    || value === "reward"
+    || value === "event"
+    || value === "advancedAbility"
+    || value === "archetype"
+    ? value
+    : "playing";
+}
+
+function stripHudPrefix(value: string, prefix: string): string {
+  return value.startsWith(`${prefix} `) ? value.slice(prefix.length + 1) : value;
+}
+
+function parseToolCounts(toolText: string): { wash: string | null; undo: string | null; discard: string | null } {
+  return {
+    wash: parseToolCount(toolText, "洗"),
+    undo: parseToolCount(toolText, "撤"),
+    discard: parseToolCount(toolText, "打"),
+  };
+}
+
+function parseToolCount(toolText: string, label: string): string | null {
+  const match = new RegExp(`${label}\\s+(\\d+)`).exec(toolText);
+  return match?.[1] ?? null;
+}
+
+function mergeAchievementSnapshot(
+  current: HulebuAchievementSnapshot,
+  unlocks: HulebuAchievementSnapshot,
+): HulebuAchievementSnapshot {
+  const next = { ...current };
+  Object.entries(unlocks).forEach(([id, unlockedAt]) => {
+    if (typeof unlockedAt === "string" && unlockedAt && !next[id as HulebuAchievementId]) {
+      next[id as HulebuAchievementId] = unlockedAt;
+    }
+  });
+  return next;
+}
+
+function getHigherAdvancedTier(
+  current: HulebuAdvancedRunTier | null,
+  next: HulebuAdvancedRunTier | null,
+): HulebuAdvancedRunTier | null {
+  if (!next) {
+    return current;
+  }
+
+  const weight: Record<HulebuAdvancedRunTier, number> = {
+    east: 1,
+    south: 2,
+    west: 3,
+    north: 4,
+  };
+  if (!current) {
+    return next;
+  }
+
+  return weight[next] >= weight[current] ? next : current;
 }

@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, Graphics, Label, Node, UITransform, Vec3 } from "cc";
+import { _decorator, Button, Color, Component, Graphics, Label, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from "cc";
 import {
   centerLayoutX,
   centerLayoutY,
@@ -6,6 +6,8 @@ import {
   scaleLayoutValue,
 } from "./bootstrap/HulebuSampleSceneModel";
 import type { HulebuCellNodeModel } from "./contracts/HulebuSceneModel";
+import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
+import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 
 const { ccclass, property } = _decorator;
 const CELL_WIDTH = 40;
@@ -14,6 +16,7 @@ const CELL_GAP = 5;
 const WOOD_SLOT_FILL = new Color(67, 42, 29, 255);
 const WOOD_SLOT_STROKE = new Color(154, 97, 57, 255);
 const OCCUPIED_SLOT_FILL = new Color(255, 249, 236, 255);
+const HAND_SLOTS_SPRITE_PATH = "ui/v6/slots/hand_slots_8/spriteFrame";
 
 interface SlotLayout {
   width: number;
@@ -32,8 +35,18 @@ export class SlotLayerBinder extends Component {
   @property([Node])
   reserveNodes: Node[] = [];
 
+  private slotClickHandler: ((slotIndex: number) => void) | null = null;
+  private readonly slotTouchHandlers = new WeakMap<Node, () => void>();
+  private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
+  private readonly pendingSpriteKeys = new WeakMap<Node, string>();
+
+  setSlotClickHandler(handler: ((slotIndex: number) => void) | null): void {
+    this.slotClickHandler = handler;
+  }
+
   applySlotNodes(slotModels: HulebuCellNodeModel[], reserveModels: HulebuCellNodeModel[]): void {
     const layout = this.getVisibleLayout();
+    this.hideSlotTrayArt();
     this.applyCells("Slot", this.node, this.slotNodes, slotModels, layout.slotY, layout);
     this.applyCells(
       "Reserve",
@@ -43,6 +56,45 @@ export class SlotLayerBinder extends Component {
       layout.reserveY,
       layout,
     );
+  }
+
+  private applySlotTrayArt(layout: SlotLayout): void {
+    const trayNode = this.ensureSlotTrayArtNode(layout);
+    const sprite = trayNode.getComponent(Sprite) ?? trayNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    resources.load(HAND_SLOTS_SPRITE_PATH, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        trayNode.active = false;
+        return;
+      }
+
+      if (!safeApplySpriteFrame(trayNode, sprite, spriteFrame)) {
+        return;
+      }
+      trayNode.active = true;
+    });
+  }
+
+  private hideSlotTrayArt(): void {
+    const trayNode = this.node.getChildByName("SlotTrayArt");
+    if (trayNode) {
+      trayNode.active = false;
+    }
+  }
+
+  private ensureSlotTrayArtNode(layout: SlotLayout): Node {
+    let trayNode = this.node.getChildByName("SlotTrayArt");
+    if (!trayNode) {
+      trayNode = new Node("SlotTrayArt");
+      trayNode.layer = this.node.layer;
+      this.node.addChild(trayNode);
+    }
+
+    const uiTransform = trayNode.getComponent(UITransform) ?? trayNode.addComponent(UITransform);
+    uiTransform.setContentSize(scaleLayoutValue(574, layout.scale), scaleLayoutValue(138, layout.scale));
+    trayNode.setPosition(new Vec3(centerLayoutX(layout.centerX, layout), centerLayoutY(layout.slotY, layout), -2));
+    trayNode.setSiblingIndex(0);
+    return trayNode;
   }
 
   private applyCells(
@@ -67,11 +119,13 @@ export class SlotLayerBinder extends Component {
       const cellX = layout.centerX + index * (cellWidth + cellGap) - width / 2 + cellWidth / 2;
       node.setPosition(new Vec3(centerLayoutX(cellX, layout), centerLayoutY(y, layout), 0));
       this.applyCellVisual(node, model, scale);
+      this.bindCellClick(node, model, prefix);
       const label = this.ensureCellLabel(node, scale);
       this.configureLabel(label, scale);
       label.node.active = model.occupied;
       label.node.setSiblingIndex(node.children.length - 1);
       label.string = model.label ?? "";
+      this.applyCellSprite(node, model, scale, label);
     });
   }
 
@@ -86,6 +140,7 @@ export class SlotLayerBinder extends Component {
     root.addChild(node);
     node.addComponent(UITransform).setContentSize(scaleLayoutValue(CELL_WIDTH, scale), scaleLayoutValue(CELL_HEIGHT, scale));
     node.addComponent(Graphics);
+    node.addComponent(Button);
 
     const labelNode = new Node("Label");
     labelNode.layer = root.layer;
@@ -95,6 +150,28 @@ export class SlotLayerBinder extends Component {
     this.configureLabel(label, scale);
 
     return node;
+  }
+
+  private bindCellClick(node: Node, model: HulebuCellNodeModel, prefix: "Slot" | "Reserve"): void {
+    const existing = this.slotTouchHandlers.get(node);
+    if (existing) {
+      node.off(Node.EventType.TOUCH_END, existing, this);
+      node.off(Button.EventType.CLICK, existing, this);
+    }
+
+    const button = node.getComponent(Button) ?? node.addComponent(Button);
+    button.interactable = prefix === "Slot" && model.occupied;
+    const handler = (): void => {
+      if (prefix !== "Slot" || !model.occupied) {
+        return;
+      }
+
+      this.slotClickHandler?.(model.index);
+    };
+
+    node.on(Node.EventType.TOUCH_END, handler, this);
+    node.on(Button.EventType.CLICK, handler, this);
+    this.slotTouchHandlers.set(node, handler);
   }
 
   private applyCellVisual(node: Node, model: HulebuCellNodeModel, scale: number): void {
@@ -113,6 +190,33 @@ export class SlotLayerBinder extends Component {
     graphics.stroke();
   }
 
+  private applyCellSprite(node: Node, model: HulebuCellNodeModel, scale: number, label: Label): void {
+    const artNode = this.ensureCellArtNode(node, scale);
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    sprite.spriteFrame = null;
+    artNode.active = false;
+    label.node.active = model.occupied;
+
+    const tileKey = model.prefabKey;
+    if (!model.occupied || !tileKey) {
+      return;
+    }
+
+    this.pendingSpriteKeys.set(node, tileKey);
+    this.tileSpriteCatalog.loadTileSpriteFrame(tileKey, (spriteFrame: SpriteFrame | null) => {
+      if (this.pendingSpriteKeys.get(node) !== tileKey || !spriteFrame) {
+        return;
+      }
+
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      artNode.active = true;
+      label.node.active = false;
+    });
+  }
+
   private ensureCellLabel(node: Node, scale: number): Label {
     const labelNode = node.getChildByName("Label") ?? new Node("Label");
     labelNode.layer = node.layer;
@@ -123,6 +227,20 @@ export class SlotLayerBinder extends Component {
     const labelTransform = labelNode.getComponent(UITransform) ?? labelNode.addComponent(UITransform);
     labelTransform.setContentSize(scaleLayoutValue(CELL_WIDTH, scale), scaleLayoutValue(CELL_HEIGHT, scale));
     return labelNode.getComponent(Label) ?? labelNode.addComponent(Label);
+  }
+
+  private ensureCellArtNode(parent: Node, scale: number): Node {
+    let artNode = parent.getChildByName("TileArt");
+    if (!artNode) {
+      artNode = new Node("TileArt");
+      artNode.layer = parent.layer;
+      parent.addChild(artNode);
+    }
+
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    uiTransform.setContentSize(scaleLayoutValue(CELL_WIDTH, scale), scaleLayoutValue(CELL_HEIGHT, scale));
+    artNode.setSiblingIndex(parent.children.length - 1);
+    return artNode;
   }
 
   private configureLabel(label: Label, scale: number): void {
@@ -143,8 +261,8 @@ export class SlotLayerBinder extends Component {
       width: visibleSize.width,
       height: visibleSize.height,
       centerX: Math.round(visibleSize.width / 2),
-      slotY: scaleLayoutValue(Math.max(92, visibleSize.cssHeight * 0.15), visibleSize.scale),
-      reserveY: scaleLayoutValue(Math.max(168, visibleSize.cssHeight * 0.24), visibleSize.scale),
+      slotY: scaleLayoutValue(Math.max(64, visibleSize.cssHeight * 0.07), visibleSize.scale),
+      reserveY: scaleLayoutValue(Math.max(132, visibleSize.cssHeight * 0.155), visibleSize.scale),
       scale: visibleSize.scale,
     };
   }

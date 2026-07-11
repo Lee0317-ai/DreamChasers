@@ -1,4 +1,4 @@
-import { _decorator, Button, Color, Component, Graphics, Label, Node, Sprite, SpriteFrame, UIOpacity, UITransform, Vec3 } from "cc";
+import { _decorator, BlockInputEvents, Button, Color, Component, EventMouse, EventTouch, game, Graphics, Label, Node, Rect, Sprite, SpriteFrame, UIOpacity, UITransform, Vec2, Vec3 } from "cc";
 import {
   centerLayoutX,
   centerLayoutY,
@@ -7,16 +7,28 @@ import {
 } from "./bootstrap/HulebuSampleSceneModel";
 import type { HulebuBoardNodeModel } from "./contracts/HulebuSceneModel";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
+import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 
 const { ccclass, property } = _decorator;
-const TILE_WIDTH = 52;
-const TILE_HEIGHT = 70;
+const TILE_WIDTH = 32;
+const TILE_HEIGHT = 43;
 const TILE_FACE_COLOR = new Color(255, 249, 236, 255);
 const TILE_SIDE_COLOR = new Color(32, 118, 84, 255);
-const TILE_LOCKED_FACE_COLOR = new Color(208, 214, 204, 255);
+const TILE_LOCKED_FACE_COLOR = new Color(122, 132, 124, 255);
 const TILE_STROKE_COLOR = new Color(191, 133, 67, 255);
 const TILE_STACK_HINT_COLOR = new Color(36, 112, 80, 210);
 const TILE_STACK_HINT_STROKE = new Color(245, 221, 174, 230);
+const TILE_TOP_LAYER_THRESHOLD = 2;
+const TILE_TOP_SCALE_BOOST = 1.04;
+const TILE_TOP_STROKE_GLOW = new Color(244, 192, 74, 255);
+const TILE_TOP_SIDE_COLOR = new Color(10, 79, 64, 255);
+const TILE_TOP_FACE_COLOR = new Color(255, 252, 242, 255);
+const TILE_ACTIVE_SPRITE_COLOR = new Color(255, 255, 255, 255);
+const TILE_LOCKED_SPRITE_COLOR = new Color(72, 84, 76, 255);
+const TILE_LOW_LAYER_OPACITY = 82;
+const TILE_LOCK_OVERLAP_THRESHOLD = 0.001;
+type BoardPointerEvent = EventTouch | EventMouse;
+type CanvasPointerEvent = MouseEvent | PointerEvent | TouchEvent;
 
 @ccclass("BoardLayerBinder")
 export class BoardLayerBinder extends Component {
@@ -26,7 +38,22 @@ export class BoardLayerBinder extends Component {
   private tileClickHandler: ((tileId: string) => void) | null = null;
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
   private readonly pendingSpriteKeys = new WeakMap<Node, string>();
-  private readonly tileTouchHandlers = new WeakMap<Node, () => void>();
+  private readonly currentTiles: Array<{ node: Node; model: HulebuBoardNodeModel }> = [];
+  private readonly canvasPointerEndHandler = (event: Event): void => this.handleCanvasPointerEnd(event as CanvasPointerEvent);
+  private lastAcceptedPointerAt = 0;
+
+  onLoad(): void {
+    this.ensureBoardHitArea();
+    this.node.on(Node.EventType.TOUCH_END, this.handleBoardPointerEnd, this);
+    this.node.on(Node.EventType.MOUSE_UP, this.handleBoardPointerEnd, this);
+    this.bindCanvasPointerEvents();
+  }
+
+  onDestroy(): void {
+    this.node.off(Node.EventType.TOUCH_END, this.handleBoardPointerEnd, this);
+    this.node.off(Node.EventType.MOUSE_UP, this.handleBoardPointerEnd, this);
+    this.unbindCanvasPointerEvents();
+  }
 
   setTileClickHandler(handler: ((tileId: string) => void) | null): void {
     this.tileClickHandler = handler;
@@ -35,7 +62,9 @@ export class BoardLayerBinder extends Component {
   applyBoardNodes(nodes: HulebuBoardNodeModel[]): void {
     const layout = resolveHulebuRuntimeLayout();
     const root = this.tilePool ?? this.node.getChildByName("TilePool") ?? this.node;
+    this.ensureBoardHitArea();
     root.active = true;
+    this.currentTiles.length = 0;
     root.children.forEach((child) => {
       child.active = false;
     });
@@ -49,8 +78,8 @@ export class BoardLayerBinder extends Component {
       );
       child.setSiblingIndex(index);
       this.applyTileVisual(child, model, layout.scale);
-      this.bindTileClick(child, model);
-      this.setOpacity(child, model.dimmed ? 110 : 255);
+      this.bindTileClick(child);
+      this.currentTiles.push({ node: child, model });
     });
   }
 
@@ -60,7 +89,6 @@ export class BoardLayerBinder extends Component {
     parent.addChild(tile);
     tile.addComponent(UITransform).setContentSize(scaleLayoutValue(TILE_WIDTH, scale), scaleLayoutValue(TILE_HEIGHT, scale));
     tile.addComponent(Graphics);
-    tile.addComponent(Button);
 
     const labelNode = new Node("Label");
     labelNode.layer = parent.layer;
@@ -77,8 +105,11 @@ export class BoardLayerBinder extends Component {
   }
 
   private applyTileVisual(node: Node, model: HulebuBoardNodeModel, scale: number): void {
-    const width = scaleLayoutValue(TILE_WIDTH, scale);
-    const height = scaleLayoutValue(TILE_HEIGHT, scale);
+    const isTopLayer = model.interactable && model.zIndex >= TILE_TOP_LAYER_THRESHOLD;
+    const isLowLayer = model.zIndex === 0 && model.stackDepth && model.stackDepth > 1;
+    const layerScale = isTopLayer ? scale * TILE_TOP_SCALE_BOOST : scale;
+    const width = scaleLayoutValue(TILE_WIDTH, layerScale);
+    const height = scaleLayoutValue(TILE_HEIGHT, layerScale);
     let uiTransform = node.getComponent(UITransform);
     if (!uiTransform) {
       uiTransform = node.addComponent(UITransform);
@@ -86,21 +117,25 @@ export class BoardLayerBinder extends Component {
     uiTransform.setContentSize(width, height);
 
     const graphics = node.getComponent(Graphics) ?? node.addComponent(Graphics);
-    this.drawTileFace(graphics, width, height, model.interactable, scale);
+    this.drawTileFace(graphics, width, height, model.interactable, scale, isTopLayer);
 
     const label = node.getComponentInChildren(Label) ?? this.createTileLabel(node, scale);
-    label.string = model.label;
-    label.node.getComponent(UITransform)?.setContentSize(width, height);
-    label.fontSize = scaleLayoutValue(18, scale);
-    label.lineHeight = scaleLayoutValue(22, scale);
-    label.color = model.interactable ? new Color(42, 32, 24, 255) : new Color(88, 88, 82, 255);
-    label.node.active = true;
+    label.string = "";
+    label.node.active = false;
 
-    this.applyTileSprite(node, model, scale, label);
-    this.drawStackDepthHint(node, model.stackDepth ?? 1, scale);
+    this.applyTileSprite(node, model, layerScale, label);
 
-    const button = node.getComponent(Button) ?? node.addComponent(Button);
-    button.interactable = model.interactable;
+    const existingBtn = node.getComponent(Button);
+    if (existingBtn) {
+      node.removeComponent(existingBtn);
+    }
+    this.configureTileInputBlocker(node);
+
+    if (model.interactable) {
+      this.setOpacity(node, 255);
+    } else {
+      this.setOpacity(node, TILE_LOW_LAYER_OPACITY);
+    }
   }
 
   private applyTileSprite(node: Node, model: HulebuBoardNodeModel, scale: number, label: Label): void {
@@ -108,6 +143,7 @@ export class BoardLayerBinder extends Component {
     const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
     sprite.spriteFrame = null;
+    sprite.color = model.interactable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
     artNode.active = false;
     label.node.active = true;
 
@@ -118,7 +154,10 @@ export class BoardLayerBinder extends Component {
         return;
       }
 
-      sprite.spriteFrame = spriteFrame;
+      if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      sprite.color = model.interactable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
       artNode.active = true;
       label.node.active = false;
     });
@@ -145,28 +184,32 @@ export class BoardLayerBinder extends Component {
   private drawStackDepthHint(parent: Node, stackDepth: number, scale: number): void {
     const hintNode = this.ensureStackDepthHintNode(parent, scale);
     const graphics = hintNode.getComponent(Graphics) ?? hintNode.addComponent(Graphics);
-    const width = scaleLayoutValue(TILE_WIDTH, scale);
-    const height = scaleLayoutValue(TILE_HEIGHT, scale);
-    const hiddenLayers = Math.max(0, Math.min(4, stackDepth - 1));
+    const hiddenLayers = Math.max(0, stackDepth - 1);
     graphics.clear();
-    hintNode.active = hiddenLayers > 0;
 
     if (hiddenLayers <= 0) {
+      hintNode.active = false;
       return;
     }
 
-    const stripWidth = width * 0.72;
-    const stripHeight = scaleLayoutValue(3, scale);
-    const startY = height / 2 - scaleLayoutValue(8, scale);
-    graphics.fillColor = TILE_STACK_HINT_COLOR;
-    graphics.strokeColor = TILE_STACK_HINT_STROKE;
-    graphics.lineWidth = scaleLayoutValue(1, scale);
+    hintNode.active = true;
+    const badgeSize = scaleLayoutValue(16, scale);
+    const badgeX = scaleLayoutValue(TILE_WIDTH, scale) / 2 - scaleLayoutValue(2, scale);
+    const badgeY = scaleLayoutValue(TILE_HEIGHT, scale) / 2 - scaleLayoutValue(2, scale);
 
-    for (let index = 0; index < hiddenLayers; index += 1) {
-      const y = startY - index * scaleLayoutValue(6, scale);
-      graphics.roundRect(-stripWidth / 2, y, stripWidth, stripHeight, scaleLayoutValue(2, scale));
-      graphics.fill();
-      graphics.stroke();
+    graphics.fillColor = new Color(244, 192, 74, 255);
+    graphics.strokeColor = new Color(120, 72, 29, 255);
+    graphics.lineWidth = scaleLayoutValue(1, scale);
+    graphics.circle(badgeX - badgeSize / 2, badgeY - badgeSize / 2, badgeSize / 2);
+    graphics.fill();
+    graphics.stroke();
+
+    const labelNode = hintNode.getChildByName("StackDepthLabel");
+    if (labelNode) {
+      const label = labelNode.getComponent(Label);
+      if (label) {
+        label.string = String(hiddenLayers);
+      }
     }
   }
 
@@ -179,6 +222,18 @@ export class BoardLayerBinder extends Component {
       hintNode.layer = parent.layer;
       parent.addChild(hintNode);
       hintNode.addComponent(Graphics);
+
+      const labelNode = new Node("StackDepthLabel");
+      labelNode.layer = parent.layer;
+      hintNode.addChild(labelNode);
+      const labelTransform = labelNode.addComponent(UITransform);
+      labelTransform.setContentSize(width, height);
+      const label = labelNode.addComponent(Label);
+      label.fontSize = scaleLayoutValue(10, scale);
+      label.lineHeight = scaleLayoutValue(12, scale);
+      label.horizontalAlign = Label.HorizontalAlign.CENTER;
+      label.verticalAlign = Label.VerticalAlign.CENTER;
+      label.color = new Color(42, 32, 24, 255);
     }
 
     let uiTransform = hintNode.getComponent(UITransform);
@@ -186,44 +241,201 @@ export class BoardLayerBinder extends Component {
       uiTransform = hintNode.addComponent(UITransform);
     }
     uiTransform.setContentSize(width, height);
-    hintNode.setSiblingIndex(parent.children.length - 1);
+    const badgeSize = scaleLayoutValue(16, scale);
+    const labelNode = hintNode.getChildByName("StackDepthLabel");
+    if (labelNode) {
+      labelNode.setPosition(
+        new Vec3(width / 2 - scaleLayoutValue(2, scale) - badgeSize / 2, height / 2 - scaleLayoutValue(2, scale) - badgeSize / 2, 0),
+      );
+      const label = labelNode.getComponent(Label);
+      if (label) {
+        label.fontSize = scaleLayoutValue(10, scale);
+        label.lineHeight = scaleLayoutValue(12, scale);
+      }
+    }
     return hintNode;
   }
 
-  private bindTileClick(node: Node, model: HulebuBoardNodeModel): void {
-    const existing = this.tileTouchHandlers.get(node);
-    if (existing) {
-      node.off(Node.EventType.TOUCH_END, existing, this);
-      node.off(Button.EventType.CLICK, existing, this);
-    }
-
-    const handler = (): void => {
-      if (!model.interactable) {
-        return;
-      }
-
-      this.tileClickHandler?.(model.tileId);
-    };
-
-    node.on(Node.EventType.TOUCH_END, handler, this);
-    node.on(Button.EventType.CLICK, handler, this);
-    this.tileTouchHandlers.set(node, handler);
+  private bindTileClick(node: Node): void {
+    node.targetOff(this);
   }
 
-  private drawTileFace(graphics: Graphics, width: number, height: number, interactable: boolean, scale: number): void {
+  private isTileCurrentlySelectable(node: Node, model: HulebuBoardNodeModel, uiPoint: Vec2): boolean {
+    if (!model.interactable || model.dimmed || !node.activeInHierarchy) {
+      return false;
+    }
+
+    const tileRect = this.getTileEventRect(model);
+    if (!tileRect || !tileRect.contains(uiPoint)) {
+      return false;
+    }
+
+    return !this.currentTiles.some(({ node: candidateNode, model: candidateModel }) => {
+      if (candidateNode === node || !candidateNode.activeInHierarchy || candidateModel.zIndex <= model.zIndex) {
+        return false;
+      }
+      const candidateRect = this.getTileEventRect(candidateModel);
+      return Boolean(candidateRect && this.getOverlapRatio(tileRect, candidateRect) > TILE_LOCK_OVERLAP_THRESHOLD);
+    });
+  }
+
+  private handleBoardPointerEnd(event: BoardPointerEvent): void {
+    const uiPoint = this.getBoardPointerUiLocation(event);
+    if (!this.selectTileAtUiPoint(uiPoint)) {
+      return;
+    }
+
+    event.propagationStopped = true;
+  }
+
+  private handleCanvasPointerEnd(event: CanvasPointerEvent): void {
+    const uiPoint = this.getCanvasPointerLayoutLocation(event);
+    if (!uiPoint || !this.selectTileAtUiPoint(uiPoint)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  private selectTileAtUiPoint(uiPoint: Vec2): boolean {
+    const hitTile = this.currentTiles
+      .filter(({ node, model }) => this.isTileCurrentlySelectable(node, model, uiPoint))
+      .sort((left, right) => {
+        const layerDelta = right.model.zIndex - left.model.zIndex;
+        return layerDelta !== 0 ? layerDelta : right.node.getSiblingIndex() - left.node.getSiblingIndex();
+      })[0];
+
+    if (!hitTile) {
+      return false;
+    }
+
+    if (!this.acceptPointerSelection()) {
+      return true;
+    }
+
+    this.tileClickHandler?.(hitTile.model.tileId);
+    return true;
+  }
+
+  private getBoardPointerUiLocation(event: BoardPointerEvent): Vec2 {
+    const pointerEvent = event as BoardPointerEvent & {
+      getUILocation?: () => Vec2;
+      getLocation?: () => Vec2;
+    };
+    return pointerEvent.getUILocation?.() ?? pointerEvent.getLocation?.() ?? new Vec2();
+  }
+
+  private bindCanvasPointerEvents(): void {
+    game.canvas?.addEventListener("pointerup", this.canvasPointerEndHandler);
+    game.canvas?.addEventListener("mouseup", this.canvasPointerEndHandler);
+    game.canvas?.addEventListener("touchend", this.canvasPointerEndHandler);
+  }
+
+  private unbindCanvasPointerEvents(): void {
+    game.canvas?.removeEventListener("pointerup", this.canvasPointerEndHandler);
+    game.canvas?.removeEventListener("mouseup", this.canvasPointerEndHandler);
+    game.canvas?.removeEventListener("touchend", this.canvasPointerEndHandler);
+  }
+
+  private getCanvasPointerLayoutLocation(event: CanvasPointerEvent): Vec2 | null {
+    const canvas = game.canvas;
+    if (!canvas) {
+      return null;
+    }
+
+    const pointer = this.getCanvasPointerClientPosition(event);
+    if (!pointer) {
+      return null;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const layout = resolveHulebuRuntimeLayout();
+    const scale = rect.width / layout.width;
+    if (!Number.isFinite(scale) || scale <= 0) {
+      return null;
+    }
+
+    return new Vec2(
+      (pointer.x - rect.left - rect.width / 2) / scale + layout.width / 2,
+      (pointer.y - rect.top - rect.height / 2) / scale + layout.height / 2,
+    );
+  }
+
+  private getCanvasPointerClientPosition(event: CanvasPointerEvent): Vec2 | null {
+    if ("changedTouches" in event && event.changedTouches.length > 0) {
+      const touch = event.changedTouches[0];
+      return new Vec2(touch.clientX, touch.clientY);
+    }
+
+    if ("clientX" in event && "clientY" in event) {
+      return new Vec2(event.clientX, event.clientY);
+    }
+
+    return null;
+  }
+
+  private acceptPointerSelection(): boolean {
+    const now = Date.now();
+    if (now - this.lastAcceptedPointerAt < 80) {
+      return false;
+    }
+
+    this.lastAcceptedPointerAt = now;
+    return true;
+  }
+
+  private ensureBoardHitArea(): void {
+    const layout = resolveHulebuRuntimeLayout();
+    const transform = this.node.getComponent(UITransform) ?? this.node.addComponent(UITransform);
+    transform.setContentSize(layout.width, layout.height);
+  }
+
+  private getTileEventRect(model: HulebuBoardNodeModel): Rect {
+    const layout = resolveHulebuRuntimeLayout();
+    const isTopLayer = model.interactable && model.zIndex >= TILE_TOP_LAYER_THRESHOLD;
+    const layerScale = isTopLayer ? layout.scale * TILE_TOP_SCALE_BOOST : layout.scale;
+    const width = scaleLayoutValue(TILE_WIDTH, layerScale);
+    const height = scaleLayoutValue(TILE_HEIGHT, layerScale);
+    const centerX = model.position.x;
+    const centerY = layout.height - model.position.y;
+    return new Rect(centerX - width / 2, centerY - height / 2, width, height);
+  }
+
+  private getOverlapRatio(target: Rect, blocker: Rect): number {
+    const left = Math.max(target.xMin, blocker.xMin);
+    const right = Math.min(target.xMax, blocker.xMax);
+    const bottom = Math.max(target.yMin, blocker.yMin);
+    const top = Math.min(target.yMax, blocker.yMax);
+    const width = Math.max(0, right - left);
+    const height = Math.max(0, top - bottom);
+    const targetArea = Math.max(1, target.width * target.height);
+    return (width * height) / targetArea;
+  }
+
+  private configureTileInputBlocker(node: Node): void {
+    const blocker = node.getComponent(BlockInputEvents) ?? node.addComponent(BlockInputEvents);
+    blocker.enabled = false;
+  }
+
+  private drawTileFace(graphics: Graphics, width: number, height: number, interactable: boolean, scale: number, isTopLayer = false): void {
     const sideOffset = scaleLayoutValue(6, scale);
     const radius = scaleLayoutValue(8, scale);
     graphics.clear();
-    graphics.fillColor = TILE_SIDE_COLOR;
+    graphics.fillColor = isTopLayer ? TILE_TOP_SIDE_COLOR : TILE_SIDE_COLOR;
     graphics.strokeColor = new Color(19, 82, 61, 255);
     graphics.lineWidth = scaleLayoutValue(2, scale);
     graphics.roundRect(-width / 2, -height / 2 - sideOffset, width, height, radius);
     graphics.fill();
     graphics.stroke();
 
-    graphics.fillColor = interactable ? TILE_FACE_COLOR : TILE_LOCKED_FACE_COLOR;
-    graphics.strokeColor = interactable ? TILE_STROKE_COLOR : new Color(114, 122, 112, 255);
-    graphics.lineWidth = scaleLayoutValue(4, scale);
+    graphics.fillColor = interactable
+      ? (isTopLayer ? TILE_TOP_FACE_COLOR : TILE_FACE_COLOR)
+      : TILE_LOCKED_FACE_COLOR;
+    graphics.strokeColor = isTopLayer
+      ? TILE_TOP_STROKE_GLOW
+      : (interactable ? TILE_STROKE_COLOR : new Color(114, 122, 112, 255));
+    graphics.lineWidth = scaleLayoutValue(isTopLayer ? 5 : 4, scale);
     graphics.roundRect(-width / 2, -height / 2, width, height, radius);
     graphics.fill();
     graphics.stroke();

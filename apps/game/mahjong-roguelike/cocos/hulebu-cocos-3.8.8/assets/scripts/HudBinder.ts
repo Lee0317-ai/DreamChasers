@@ -1,10 +1,11 @@
-import { _decorator, Color, Component, Label, Node, UITransform, Vec3 } from "cc";
+import { _decorator, Color, Component, Label, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from "cc";
 import {
   centerLayoutX,
   centerLayoutY,
   resolveHulebuRuntimeLayout,
   scaleLayoutValue,
 } from "./bootstrap/HulebuSampleSceneModel";
+import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import type { HulebuHudModel } from "./contracts/HulebuSceneModel";
 
 const { ccclass, property } = _decorator;
@@ -18,6 +19,13 @@ const HUD_LABEL_NAMES = [
 const HUD_START_X = 18;
 const HUD_LABEL_WIDTHS = [72, 62, 46, 58, 118] as const;
 const HUD_LABEL_HEIGHT = 26;
+const HUD_BADGE_SPRITES = [
+  "ui/v6/hud/tile_counter_wide/spriteFrame",
+  "ui/v6/hud/level_badge/spriteFrame",
+  "ui/v6/hud/score_badge/spriteFrame",
+  "ui/v6/hud/score_badge/spriteFrame",
+  "ui/v6/hud/tile_counter_wide/spriteFrame",
+] as const;
 
 @ccclass("HudBinder")
 export class HudBinder extends Component {
@@ -53,7 +61,7 @@ export class HudBinder extends Component {
     this.setLabel(this.slotStatusLabel, hud.slotStatusText);
     this.setLabel(this.scoreLabel, hud.scoreText);
     this.setLabel(this.coinsLabel, hud.coinsText);
-    this.setLabel(this.toolLabel, hud.toolText);
+    this.setLabel(this.toolLabel, hud.bossText ? `${hud.toolText} · ${hud.bossText}` : hud.toolText);
   }
 
   private setLabel(label: Label | null, value: string): void {
@@ -66,6 +74,7 @@ export class HudBinder extends Component {
     if (label) {
       this.configureLabel(label);
       this.positionLabelNode(label.node, index);
+      this.applyBadgeSprite(label.node, index);
     }
   }
 
@@ -92,6 +101,39 @@ export class HudBinder extends Component {
     label.horizontalAlign = Label.HorizontalAlign.LEFT;
     label.verticalAlign = Label.VerticalAlign.CENTER;
     label.color = new Color(255, 249, 236, 255);
+  }
+
+  private applyBadgeSprite(labelNode: Node, index: number): void {
+    const badgeNode = this.ensureBadgeNode(labelNode, index);
+    const sprite = badgeNode.getComponent(Sprite) ?? badgeNode.addComponent(Sprite);
+    const path = HUD_BADGE_SPRITES[index];
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    resources.load(path, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame) {
+        badgeNode.active = false;
+        return;
+      }
+
+      if (!safeApplySpriteFrame(badgeNode, sprite, spriteFrame)) {
+        return;
+      }
+      badgeNode.active = true;
+    });
+  }
+
+  private ensureBadgeNode(labelNode: Node, index: number): Node {
+    let badgeNode = labelNode.getChildByName("HudBadgeArt");
+    if (!badgeNode) {
+      badgeNode = new Node("HudBadgeArt");
+      badgeNode.layer = labelNode.layer;
+      labelNode.addChild(badgeNode);
+    }
+
+    const uiTransform = badgeNode.getComponent(UITransform) ?? badgeNode.addComponent(UITransform);
+    uiTransform.setContentSize(this.getLabelWidth(index), this.getLabelHeight());
+    badgeNode.setPosition(new Vec3(0, 0, -1));
+    badgeNode.setSiblingIndex(0);
+    return badgeNode;
   }
 
   private createLabelNode(nodeName: string, index: number): Node {

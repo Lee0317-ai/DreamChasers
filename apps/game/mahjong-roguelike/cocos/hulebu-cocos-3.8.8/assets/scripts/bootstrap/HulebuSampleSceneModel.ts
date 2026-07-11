@@ -49,11 +49,13 @@ export function resolveHulebuRuntimeLayout(): Required<HulebuLayoutSize> {
   const canvas = game.canvas;
   const cssWidth = Math.max(320, canvas?.clientWidth ?? frameSize.width / screen.devicePixelRatio);
   const cssHeight = Math.max(568, canvas?.clientHeight ?? frameSize.height / screen.devicePixelRatio);
-  const scale = Math.max(1, screen.devicePixelRatio, visibleSize.width / cssWidth, visibleSize.height / cssHeight);
+  const width = Math.max(320, Math.round(visibleSize.width));
+  const height = Math.max(568, Math.round(visibleSize.height));
+  const scale = Math.min(1, width / 390, height / 844);
 
   return {
-    width: Math.round(cssWidth * scale),
-    height: Math.round(cssHeight * scale),
+    width,
+    height,
     cssWidth: Math.round(cssWidth),
     cssHeight: Math.round(cssHeight),
     scale,
@@ -61,9 +63,9 @@ export function resolveHulebuRuntimeLayout(): Required<HulebuLayoutSize> {
 }
 
 export function createHulebuSampleSceneModelForLayout(layout: HulebuLayoutSize): HulebuCocosSceneModel {
-  const layoutScale = Math.max(1, layout.scale ?? 1);
-  const screenWidth = Math.max(320, Math.round(layout.cssWidth ?? layout.width / layoutScale));
-  const screenHeight = Math.max(568, Math.round(layout.cssHeight ?? layout.height / layoutScale));
+  const layoutScale = Math.max(0.72, Math.min(1, layout.scale ?? 1));
+  const screenWidth = Math.max(320, Math.round(layout.width / layoutScale));
+  const screenHeight = Math.max(568, Math.round(layout.height / layoutScale));
   const boardCenterX = scaleLayoutValue(screenWidth / 2, layoutScale);
   const boardCenterY = scaleLayoutValue(screenHeight * 0.58, layoutScale);
   const tileGapX = scaleLayoutValue(Math.max(40, Math.min(48, screenWidth * 0.12)), layoutScale);
@@ -96,6 +98,15 @@ export function createHulebuSampleSceneModelForLayout(layout: HulebuLayoutSize):
       prefabKey: null,
     })),
     reserveNodes: [],
+    openMeldNodes: [],
+    riverNodes: Array.from({ length: 3 }, (_, index) => ({
+      name: `River_${index}`,
+      index,
+      tileId: null,
+      label: null,
+      occupied: false,
+      prefabKey: null,
+    })),
     comboControls: [
       {
         name: "Combo_Hu",
@@ -125,13 +136,65 @@ export function createHulebuSampleSceneModelForLayout(layout: HulebuLayoutSize):
         badgeText: "0",
         candidateKey: null,
       },
+      {
+        name: "Combo_Bugang",
+        combo: "bugang",
+        interactable: false,
+        badgeText: "0",
+        candidateKey: null,
+      },
     ],
     hud: {
       boardRemainingText: "余牌 15",
       slotStatusText: "可继续",
       scoreText: "分 0",
       coinsText: "铜钱 0",
-      toolText: "洗 1 / 撤 1 / 透 1",
+      toolText: "洗 1 / 撤 1 / 打 1",
+      tileCounter: {
+        total: 15,
+        suits: [
+          {
+            suit: "wan",
+            label: "万",
+            total: 5,
+            tiles: Array.from({ length: 9 }, (_, index) => ({
+              label: `${index + 1}万`,
+              prefabKey: `tile.wan.${index + 1}`,
+              count: index < 5 ? 1 : 0,
+            })),
+          },
+          {
+            suit: "tiao",
+            label: "条",
+            total: 5,
+            tiles: Array.from({ length: 9 }, (_, index) => ({
+              label: `${index + 1}条`,
+              prefabKey: `tile.tiao.${index + 1}`,
+              count: index < 5 ? 1 : 0,
+            })),
+          },
+          {
+            suit: "tong",
+            label: "筒",
+            total: 5,
+            tiles: Array.from({ length: 9 }, (_, index) => ({
+              label: `${index + 1}筒`,
+              prefabKey: `tile.tong.${index + 1}`,
+              count: index < 5 ? 1 : 0,
+            })),
+          },
+          {
+            suit: "honor",
+            label: "字",
+            total: 0,
+            tiles: Array.from({ length: 7 }, (_, index) => ({
+              label: `字${index + 1}`,
+              prefabKey: `tile.honor.${index + 1}`,
+              count: 0,
+            })),
+          },
+        ],
+      },
     },
   };
 }
