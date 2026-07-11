@@ -1734,3 +1734,60 @@ describe("Hulebu Cocos production build CLI", () => {
     expect(exitCodes).toEqual([1]);
   });
 });
+
+describe("Hulebu formal runtime documentation", () => {
+  const cocosReadmePath = join(
+    repositoryRoot,
+    "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/README.md",
+  );
+  const legacyPaths = [
+    "apps/game/mahjong-roguelike/prototypes/config-playable/LEGACY.md",
+    "apps/web/public/games/hulebu-demo/LEGACY.md",
+  ];
+
+  it("documents the only formal runtime and its release operations", () => {
+    const readme = readFileSync(cocosReadmePath, "utf8");
+
+    for (const required of [
+      "唯一正式运行时",
+      "Cocos Creator 3.8.8",
+      "/Applications/Cocos/Creator/3.8.8/CocosCreator.app",
+      "Cocos Dashboard",
+      "assets/scripts/GameSceneController.ts",
+      "npm run game:hulebu:build",
+      "npm run game:hulebu:verify-build",
+      "build/production/web-mobile/",
+      "build/production/hulebu-cocos-build.log",
+      "build/production/web-mobile/hulebu-build.json",
+      "build Task (web-mobile) Finished",
+      "退出码 36",
+      "HTTP smoke",
+      "build/**",
+    ]) {
+      expect(readme).toContain(required);
+    }
+    for (const generated of ["library/", "temp/", "local/", "profiles/"]) {
+      expect(readme).toContain(generated);
+    }
+    expect(readme).not.toContain("工程壳");
+  });
+
+  it.each(legacyPaths)("freezes legacy reference %s", (relativePath) => {
+    const absolutePath = join(repositoryRoot, relativePath);
+    expect(existsSync(absolutePath)).toBe(true);
+    const marker = existsSync(absolutePath)
+      ? readFileSync(absolutePath, "utf8")
+      : "";
+
+    expect(marker).toMatch(/^# .*Legacy Reference/m);
+    expect(marker).toContain("只读的行为与视觉参考");
+    expect(marker).toContain("不是生产运行时");
+    expect(marker).toContain("不得从正式发布入口链接");
+    expect(marker).toContain("不得继续扩展玩法");
+    for (const frozenArea of ["平衡", "模式", "存档", "UI"]) {
+      expect(marker).toContain(frozenArea);
+    }
+    expect(marker).toContain("编号任务");
+    expect(marker).toContain("Cocos Creator 3.8.8");
+  });
+});
