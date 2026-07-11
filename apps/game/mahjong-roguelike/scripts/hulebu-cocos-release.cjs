@@ -1,6 +1,7 @@
 "use strict";
 
 const fs = require("node:fs");
+const http = require("node:http");
 const path = require("node:path");
 
 class HulebuReleaseError extends Error {
@@ -15,7 +16,9 @@ function loadReleaseConfig(configPath) {
   try {
     config = JSON.parse(fs.readFileSync(configPath, "utf8"));
   } catch (error) {
-    throw new HulebuReleaseError(`Unable to read release config: ${error.message}`);
+    throw new HulebuReleaseError(
+      `Unable to read release config: ${error.message}`,
+    );
   }
   validateReleaseConfig(config);
   return config;
@@ -119,7 +122,9 @@ function validateSmokePath(value, label) {
 
 function validateDecodedSmokePath(value, label) {
   if (!value.startsWith("/") || value.startsWith("//")) {
-    throw new HulebuReleaseError(`${label} must be an origin-relative HTTP path`);
+    throw new HulebuReleaseError(
+      `${label} must be an origin-relative HTTP path`,
+    );
   }
   if (value.includes("\\")) {
     throw new HulebuReleaseError(`${label} must not contain backslashes`);
@@ -249,7 +254,9 @@ function evaluateCreatorBuild({ exitCode, logText, artifactErrors, config }) {
     );
   }
   if (!logText.includes(config.finishedMarker)) {
-    throw new HulebuReleaseError("Creator build log is missing the finished marker");
+    throw new HulebuReleaseError(
+      "Creator build log is missing the finished marker",
+    );
   }
   if (exitCode === 0) {
     return { accepted: true, normalized: false, originalExitCode: 0 };
@@ -257,13 +264,367 @@ function evaluateCreatorBuild({ exitCode, logText, artifactErrors, config }) {
   if (config.allowedNonZeroExitCodes.includes(exitCode)) {
     return { accepted: true, normalized: true, originalExitCode: exitCode };
   }
-  throw new HulebuReleaseError(`Creator exited with unsupported code ${exitCode}`);
+  throw new HulebuReleaseError(
+    `Creator exited with unsupported code ${exitCode}`,
+  );
+}
+
+function collectBuildStats(buildRoot) {
+  const absoluteBuildRoot = resolveBuildDirectory(buildRoot);
+  const excludedRootFiles = new Set([
+    "hulebu-build.json",
+    "hulebu-build.json.tmp",
+  ]);
+  let fileCount = 0;
+  let totalBytes = 0;
+
+  function visit(directoryPath, isRoot) {
+    let entries;
+    try {
+      entries = fs.readdirSync(directoryPath, { withFileTypes: true });
+    } catch (error) {
+      throw new HulebuReleaseError(
+        `Unable to inspect build directory: ${error.message}`,
+      );
+    }
+
+    for (const entry of entries) {
+      if (isRoot && excludedRootFiles.has(entry.name)) continue;
+
+      const entryPath = path.join(directoryPath, entry.name);
+      let status;
+      try {
+        status = fs.lstatSync(entryPath);
+      } catch (error) {
+        throw new HulebuReleaseError(
+          `Unable to inspect build entry: ${error.message}`,
+        );
+      }
+      if (status.isSymbolicLink()) {
+        throw new HulebuReleaseError(
+          `Build output must not contain symlinks: ${entryPath}`,
+        );
+      }
+      if (status.isDirectory()) {
+        visit(entryPath, false);
+        continue;
+      }
+      if (!status.isFile()) {
+        throw new HulebuReleaseError(
+          `Build output contains an unsupported filesystem entry: ${entryPath}`,
+        );
+      }
+      fileCount += 1;
+      totalBytes += status.size;
+    }
+  }
+
+  visit(absoluteBuildRoot, true);
+  return { fileCount, totalBytes };
+}
+
+function resolveBuildDirectory(buildRoot) {
+  if (typeof buildRoot !== "string" || buildRoot.length === 0) {
+    throw new HulebuReleaseError("Build root must be a directory");
+  }
+  const absoluteBuildRoot = path.resolve(buildRoot);
+  let status;
+  try {
+    status = fs.lstatSync(absoluteBuildRoot);
+    fs.accessSync(absoluteBuildRoot, fs.constants.R_OK);
+  } catch (error) {
+    throw new HulebuReleaseError(
+      `Unable to inspect build root: ${error.message}`,
+    );
+  }
+  if (status.isSymbolicLink() || !status.isDirectory()) {
+    throw new HulebuReleaseError("Build root must be a directory");
+  }
+  return absoluteBuildRoot;
+}
+
+function writeBuildManifest(
+  buildRoot,
+  { buildId, commit, config, creatorDecision, createdAt, smokeResults },
+) {
+  const absoluteBuildRoot = resolveBuildDirectory(buildRoot);
+  const stats = collectBuildStats(absoluteBuildRoot);
+  const data = {
+    schemaVersion: 1,
+    buildId,
+    gameId: config.gameId,
+    displayName: config.displayName,
+    creatorVersion: config.creatorVersion,
+    platform: config.platform,
+    debug: config.debug,
+    contentVersion: config.contentVersion,
+    saveSchemaVersion: config.saveSchemaVersion,
+    commit,
+    createdAt,
+    creatorExitCode: creatorDecision.originalExitCode,
+    creatorExitNormalized: creatorDecision.normalized,
+    smokeResults,
+    ...stats,
+  };
+  const manifestPath = path.join(absoluteBuildRoot, "hulebu-build.json");
+  const temporaryPath = path.join(absoluteBuildRoot, "hulebu-build.json.tmp");
+
+  try {
+    fs.writeFileSync(
+      temporaryPath,
+      `${JSON.stringify(data, null, 2)}\n`,
+      "utf8",
+    );
+    fs.renameSync(temporaryPath, manifestPath);
+  } finally {
+    try {
+      fs.rmSync(temporaryPath, { force: true });
+    } catch {
+      // Preserve the original write or rename error when cleanup also fails.
+    }
+  }
+
+  return { path: manifestPath, data };
+}
+
+function resolveRequestPath(buildRoot, rawPathname) {
+  if (
+    typeof rawPathname !== "string" ||
+    !rawPathname.startsWith("/") ||
+    rawPathname.startsWith("//") ||
+    rawPathname.includes("?") ||
+    rawPathname.includes("#")
+  ) {
+    throw new HulebuReleaseError("request path is invalid");
+  }
+
+  let decodedPathname;
+  try {
+    decodedPathname = decodeURIComponent(rawPathname);
+  } catch {
+    throw new HulebuReleaseError("request path is invalid");
+  }
+  if (
+    !decodedPathname.startsWith("/") ||
+    decodedPathname.startsWith("//") ||
+    decodedPathname.includes("\0") ||
+    decodedPathname.includes("\\")
+  ) {
+    throw new HulebuReleaseError("request path is invalid");
+  }
+  if (decodedPathname.split("/").includes("..")) {
+    throw new HulebuReleaseError("request path escapes the build root");
+  }
+
+  const absoluteBuildRoot = path.resolve(buildRoot);
+  const requestPath = decodedPathname === "/" ? "/index.html" : decodedPathname;
+  const candidatePath = path.resolve(absoluteBuildRoot, `.${requestPath}`);
+  if (
+    !isPathInside(absoluteBuildRoot, candidatePath) ||
+    candidatePath === absoluteBuildRoot
+  ) {
+    throw new HulebuReleaseError("request path escapes the build root");
+  }
+  return candidatePath;
+}
+
+const CONTENT_TYPES = new Map([
+  [".html", "text/html; charset=utf-8"],
+  [".js", "application/javascript; charset=utf-8"],
+  [".css", "text/css; charset=utf-8"],
+  [".json", "application/json; charset=utf-8"],
+  [".wasm", "application/wasm"],
+  [".bin", "application/octet-stream"],
+  [".png", "image/png"],
+]);
+
+async function startStaticServer(buildRoot) {
+  const absoluteBuildRoot = resolveBuildDirectory(buildRoot);
+  const server = http.createServer((request, response) => {
+    response.setHeader("Connection", "close");
+    if (request.method !== "GET" && request.method !== "HEAD") {
+      sendStatus(response, 405);
+      return;
+    }
+
+    const rawPathname = (request.url || "/").split("?", 1)[0];
+    let filePath;
+    try {
+      filePath = resolveRequestPath(absoluteBuildRoot, rawPathname);
+    } catch (error) {
+      if (error instanceof HulebuReleaseError) {
+        sendStatus(response, 403);
+        return;
+      }
+      sendStatus(response, 500);
+      return;
+    }
+
+    const status = inspectServedFile(absoluteBuildRoot, filePath);
+    if (!status) {
+      sendStatus(response, 404);
+      return;
+    }
+
+    response.writeHead(200, {
+      "Content-Type":
+        CONTENT_TYPES.get(path.extname(filePath).toLowerCase()) ||
+        "application/octet-stream",
+      "Content-Length": status.size,
+    });
+    if (request.method === "HEAD") {
+      response.end();
+      return;
+    }
+
+    const stream = fs.createReadStream(filePath);
+    stream.on("error", () => response.destroy());
+    stream.pipe(response);
+  });
+
+  await new Promise((resolveListening, rejectListening) => {
+    const handleError = (error) => {
+      server.off("listening", handleListening);
+      rejectListening(
+        new HulebuReleaseError(
+          `Unable to start build server: ${error.message}`,
+        ),
+      );
+    };
+    const handleListening = () => {
+      server.off("error", handleError);
+      resolveListening();
+    };
+    server.once("error", handleError);
+    server.once("listening", handleListening);
+    server.listen(0, "127.0.0.1");
+  });
+
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    await closeHttpServer(server);
+    throw new HulebuReleaseError("Unable to determine build server address");
+  }
+
+  let closePromise;
+  return {
+    origin: `http://127.0.0.1:${address.port}`,
+    close() {
+      if (!closePromise) closePromise = closeHttpServer(server);
+      return closePromise;
+    },
+  };
+}
+
+function inspectServedFile(buildRoot, filePath) {
+  const relativePath = path.relative(buildRoot, filePath);
+  let currentPath = buildRoot;
+  try {
+    for (const segment of relativePath.split(path.sep)) {
+      currentPath = path.join(currentPath, segment);
+      const status = fs.lstatSync(currentPath);
+      if (status.isSymbolicLink()) return null;
+      if (currentPath !== filePath && !status.isDirectory()) return null;
+      if (currentPath === filePath && !status.isFile()) return null;
+    }
+    const realFilePath = fs.realpathSync(filePath);
+    if (!isPathInside(fs.realpathSync(buildRoot), realFilePath)) return null;
+    return fs.statSync(realFilePath);
+  } catch {
+    return null;
+  }
+}
+
+function sendStatus(response, statusCode) {
+  const body = Buffer.from(http.STATUS_CODES[statusCode] || "Error", "utf8");
+  response.writeHead(statusCode, {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Content-Length": body.byteLength,
+  });
+  response.end(body);
+}
+
+function closeHttpServer(server) {
+  if (!server.listening) return Promise.resolve();
+  return new Promise((resolveClose, rejectClose) => {
+    server.close((error) => {
+      if (error) {
+        rejectClose(
+          new HulebuReleaseError(
+            `Unable to close build server: ${error.message}`,
+          ),
+        );
+        return;
+      }
+      resolveClose();
+    });
+  });
+}
+
+async function smokeBuild(buildRoot, smokePaths) {
+  for (const pathname of smokePaths) {
+    try {
+      resolveRequestPath(buildRoot, pathname);
+    } catch (error) {
+      throw new HulebuReleaseError(
+        `Smoke check failed for ${String(pathname)}: ${error.message}`,
+      );
+    }
+  }
+
+  const server = await startStaticServer(buildRoot);
+  const results = [];
+  try {
+    for (const pathname of smokePaths) {
+      let response;
+      try {
+        response = await fetch(`${server.origin}${pathname}`);
+      } catch (error) {
+        throw new HulebuReleaseError(
+          `Smoke check failed for ${pathname}: ${error.message}`,
+        );
+      }
+      const body = Buffer.from(await response.arrayBuffer());
+      if (response.status !== 200) {
+        throw new HulebuReleaseError(
+          `Smoke check failed for ${pathname}: HTTP ${response.status}`,
+        );
+      }
+      if (body.byteLength === 0) {
+        throw new HulebuReleaseError(
+          `Smoke check failed for ${pathname}: empty response body`,
+        );
+      }
+      if (pathname.endsWith(".json")) {
+        try {
+          JSON.parse(body.toString("utf8"));
+        } catch {
+          throw new HulebuReleaseError(
+            `Smoke check failed for ${pathname}: invalid JSON`,
+          );
+        }
+      }
+      results.push({
+        pathname,
+        status: response.status,
+        bytes: body.byteLength,
+      });
+    }
+    return results;
+  } finally {
+    await server.close();
+  }
 }
 
 module.exports = {
   HulebuReleaseError,
+  collectBuildStats,
   evaluateCreatorBuild,
   loadReleaseConfig,
+  resolveRequestPath,
+  smokeBuild,
+  startStaticServer,
   validateBuildArtifacts,
   validateReleaseConfig,
+  writeBuildManifest,
 };

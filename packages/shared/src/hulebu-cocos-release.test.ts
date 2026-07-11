@@ -1,10 +1,13 @@
 import {
+  existsSync,
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
 } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -35,11 +38,27 @@ type CreatorBuildInput = {
   config: HulebuReleaseConfig;
 };
 
+type CreatorBuildDecision = {
+  accepted: boolean;
+  normalized: boolean;
+  originalExitCode: number;
+};
+
+type SmokeResult = {
+  pathname: string;
+  status: number;
+  bytes: number;
+};
+
 const require = createRequire(import.meta.url);
 const mutableFs = require("node:fs") as {
   readFileSync: (...args: unknown[]) => unknown;
+  renameSync: (...args: unknown[]) => unknown;
 };
-const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const repositoryRoot = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../..",
+);
 const realConfigPath = join(
   repositoryRoot,
   "apps/game/mahjong-roguelike/release/hulebu-v1.release.json",
@@ -50,23 +69,52 @@ const releaseLibraryPath = join(
 );
 const {
   HulebuReleaseError,
+  collectBuildStats,
   evaluateCreatorBuild,
   loadReleaseConfig,
+  resolveRequestPath,
+  smokeBuild,
+  startStaticServer,
   validateBuildArtifacts,
   validateReleaseConfig,
+  writeBuildManifest,
 } = require(releaseLibraryPath) as {
   HulebuReleaseError: new (message: string) => Error;
+  collectBuildStats: (buildRoot: string) => {
+    fileCount: number;
+    totalBytes: number;
+  };
   evaluateCreatorBuild: (input: CreatorBuildInput) => {
     accepted: boolean;
     normalized: boolean;
     originalExitCode: number;
   };
   loadReleaseConfig: (configPath: string) => HulebuReleaseConfig;
+  resolveRequestPath: (buildRoot: string, rawPathname: string) => string;
+  smokeBuild: (
+    buildRoot: string,
+    smokePaths: string[],
+  ) => Promise<SmokeResult[]>;
+  startStaticServer: (buildRoot: string) => Promise<{
+    origin: string;
+    close: () => Promise<void>;
+  }>;
   validateBuildArtifacts: (
     buildRoot: string,
     config: HulebuReleaseConfig,
   ) => { ok: boolean; errors: string[] };
   validateReleaseConfig: (config: unknown) => void;
+  writeBuildManifest: (
+    buildRoot: string,
+    input: {
+      buildId: string;
+      commit: string;
+      config: HulebuReleaseConfig;
+      creatorDecision: CreatorBuildDecision;
+      createdAt: string;
+      smokeResults: SmokeResult[];
+    },
+  ) => { path: string; data: Record<string, unknown> };
 };
 
 const temporaryRoots: string[] = [];
@@ -115,6 +163,44 @@ function tryCreateSymlink(
   }
 }
 
+function requestRaw(
+  origin: string,
+  rawPath: string,
+  method = "GET",
+): Promise<{
+  status: number;
+  body: Buffer;
+  contentType: string | undefined;
+  contentLength: string | undefined;
+}> {
+  const target = new URL(origin);
+
+  return new Promise((resolveRequest, rejectRequest) => {
+    const request = httpRequest(
+      {
+        hostname: target.hostname,
+        port: target.port,
+        path: rawPath,
+        method,
+      },
+      (response) => {
+        const chunks: Buffer[] = [];
+        response.on("data", (chunk: Buffer) => chunks.push(chunk));
+        response.on("end", () => {
+          resolveRequest({
+            status: response.statusCode ?? 0,
+            body: Buffer.concat(chunks),
+            contentType: response.headers["content-type"],
+            contentLength: response.headers["content-length"],
+          });
+        });
+      },
+    );
+    request.on("error", rejectRequest);
+    request.end();
+  });
+}
+
 afterEach(() => {
   for (const root of temporaryRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
@@ -156,12 +242,19 @@ describe("Hulebu Cocos production release contract", () => {
   ])("rejects an invalid %s field", (key, value, message) => {
     const config = loadReleaseConfig(realConfigPath);
 
-    expect(() => validateReleaseConfig({ ...config, [key]: value })).toThrow(message);
+    expect(() => validateReleaseConfig({ ...config, [key]: value })).toThrow(
+      message,
+    );
   });
 
   it.each(
     (["requiredFiles", "requiredJsonFiles"] as const).flatMap((key) => [
-      { key, label: "non-string", value: 42, message: "must be a non-empty string" },
+      {
+        key,
+        label: "non-string",
+        value: 42,
+        message: "must be a non-empty string",
+      },
       { key, label: "empty", value: "", message: "must be a non-empty string" },
       {
         key,
@@ -299,7 +392,9 @@ describe("Hulebu Cocos production release contract", () => {
     expect(() =>
       validateReleaseConfig({
         ...config,
-        requiredFiles: config.requiredFiles.filter((entry) => entry !== "index.html"),
+        requiredFiles: config.requiredFiles.filter(
+          (entry) => entry !== "index.html",
+        ),
       }),
     ).toThrow("requiredFiles must include index.html");
   });
@@ -331,10 +426,15 @@ describe("Hulebu Cocos production release contract", () => {
   });
 
   it("wraps unreadable config failures in the release error", () => {
-    const invalidConfigPath = join(createTemporaryRoot("config"), "release.json");
+    const invalidConfigPath = join(
+      createTemporaryRoot("config"),
+      "release.json",
+    );
     writeFileSync(invalidConfigPath, "not-json", "utf8");
 
-    expect(() => loadReleaseConfig(invalidConfigPath)).toThrow(HulebuReleaseError);
+    expect(() => loadReleaseConfig(invalidConfigPath)).toThrow(
+      HulebuReleaseError,
+    );
     expect(() => loadReleaseConfig(invalidConfigPath)).toThrow(
       "Unable to read release config",
     );
@@ -364,7 +464,11 @@ describe("Hulebu Cocos build artifact validation", () => {
 
   it("reports invalid required JSON", () => {
     const invalidJsonRoot = createValidBuild(config);
-    writeFileSync(join(invalidJsonRoot, "src/settings.json"), "not-json", "utf8");
+    writeFileSync(
+      join(invalidJsonRoot, "src/settings.json"),
+      "not-json",
+      "utf8",
+    );
 
     expect(validateBuildArtifacts(invalidJsonRoot, config).errors).toContain(
       "invalid JSON: src/settings.json",
@@ -382,7 +486,11 @@ describe("Hulebu Cocos build artifact validation", () => {
 
   it("requires the Cocos canvas and SystemJS bootstrap", () => {
     const invalidIndexRoot = createValidBuild(config);
-    writeFileSync(join(invalidIndexRoot, "index.html"), "<html></html>", "utf8");
+    writeFileSync(
+      join(invalidIndexRoot, "index.html"),
+      "<html></html>",
+      "utf8",
+    );
 
     expect(validateBuildArtifacts(invalidIndexRoot, config).errors).toEqual(
       expect.arrayContaining([
@@ -398,10 +506,12 @@ describe("Hulebu Cocos build artifact validation", () => {
     rmSync(artifactPath);
     mkdirSync(artifactPath);
 
-    expect(() => validateBuildArtifacts(directoryArtifactRoot, config)).not.toThrow();
-    expect(validateBuildArtifacts(directoryArtifactRoot, config).errors).toContain(
-      "required artifact is not a regular file: index.html",
-    );
+    expect(() =>
+      validateBuildArtifacts(directoryArtifactRoot, config),
+    ).not.toThrow();
+    expect(
+      validateBuildArtifacts(directoryArtifactRoot, config).errors,
+    ).toContain("required artifact is not a regular file: index.html");
   });
 
   it("rejects a direct artifact symlink when symlinks are supported", () => {
@@ -422,7 +532,10 @@ describe("Hulebu Cocos build artifact validation", () => {
   it("rejects an artifact escaping through a parent symlink when supported", () => {
     const symlinkBuildRoot = createValidBuild(config);
     const externalRoot = createTemporaryRoot("parent-symlink-target");
-    writeFileSync(join(externalRoot, "config.json"), JSON.stringify({ valid: true }));
+    writeFileSync(
+      join(externalRoot, "config.json"),
+      JSON.stringify({ valid: true }),
+    );
     const parentLinkPath = join(symlinkBuildRoot, "assets/main");
     rmSync(parentLinkPath, { recursive: true });
 
@@ -444,7 +557,8 @@ describe("Hulebu Cocos build artifact validation", () => {
       validateBuildArtifacts(invalidHierarchyRoot, invalidHierarchyConfig),
     ).not.toThrow();
     expect(
-      validateBuildArtifacts(invalidHierarchyRoot, invalidHierarchyConfig).errors,
+      validateBuildArtifacts(invalidHierarchyRoot, invalidHierarchyConfig)
+        .errors,
     ).toContain("unable to inspect required file: index.html/child.js");
   });
 
@@ -454,13 +568,17 @@ describe("Hulebu Cocos build artifact validation", () => {
     const originalReadFileSync = mutableFs.readFileSync;
     mutableFs.readFileSync = (...args: unknown[]) => {
       if (args[0] === failingPath) {
-        throw Object.assign(new Error("simulated read failure"), { code: "EIO" });
+        throw Object.assign(new Error("simulated read failure"), {
+          code: "EIO",
+        });
       }
       return originalReadFileSync(...args);
     };
 
     try {
-      expect(() => validateBuildArtifacts(readFailureRoot, config)).not.toThrow();
+      expect(() =>
+        validateBuildArtifacts(readFailureRoot, config),
+      ).not.toThrow();
       expect(validateBuildArtifacts(readFailureRoot, config).errors).toContain(
         "unable to read required file: src/settings.json",
       );
@@ -526,5 +644,329 @@ describe("Hulebu Cocos Creator build decision", () => {
         config,
       }),
     ).toThrow("Creator exited with unsupported code 9");
+  });
+});
+
+describe("Hulebu Cocos build manifest", () => {
+  const config = loadReleaseConfig(realConfigPath);
+
+  it("counts regular files exactly while excluding only root manifest files", () => {
+    const buildRoot = createTemporaryRoot("stats");
+    mkdirSync(join(buildRoot, "nested"));
+    writeFileSync(join(buildRoot, "index.html"), "abc", "utf8");
+    writeFileSync(join(buildRoot, "nested/data.json"), "世界", "utf8");
+    writeFileSync(
+      join(buildRoot, "nested/hulebu-build.json"),
+      "nested",
+      "utf8",
+    );
+    writeFileSync(join(buildRoot, "hulebu-build.json"), "old manifest", "utf8");
+    writeFileSync(join(buildRoot, "hulebu-build.json.tmp"), "stale", "utf8");
+
+    expect(collectBuildStats(buildRoot)).toEqual({
+      fileCount: 3,
+      totalBytes:
+        Buffer.byteLength("abc") +
+        Buffer.byteLength("世界") +
+        Buffer.byteLength("nested"),
+    });
+  });
+
+  it("wraps missing and non-directory build roots in the release error", () => {
+    const root = createTemporaryRoot("invalid-stats");
+    const filePath = join(root, "file.txt");
+    writeFileSync(filePath, "file", "utf8");
+
+    expect(() => collectBuildStats(join(root, "missing"))).toThrow(
+      HulebuReleaseError,
+    );
+    expect(() => collectBuildStats(filePath)).toThrow(HulebuReleaseError);
+  });
+
+  it("rejects symlinks instead of following them when supported", () => {
+    const buildRoot = createTemporaryRoot("stats-symlink");
+    const externalRoot = createTemporaryRoot("stats-symlink-target");
+    const targetPath = join(externalRoot, "outside.txt");
+    writeFileSync(targetPath, "outside", "utf8");
+
+    if (!tryCreateSymlink(targetPath, join(buildRoot, "linked.txt"), "file"))
+      return;
+
+    expect(() => collectBuildStats(buildRoot)).toThrow(HulebuReleaseError);
+  });
+
+  it("atomically writes the complete manifest with stable build statistics", () => {
+    const validBuildRoot = createValidBuild(config);
+    const expectedStats = collectBuildStats(validBuildRoot);
+    const smokeResults = config.smokePaths.map((pathname) => ({
+      pathname,
+      status: 200,
+      bytes: 42,
+    }));
+    const input = {
+      buildId: "abc1234-20260711T010203Z",
+      commit: "abc1234",
+      config,
+      creatorDecision: {
+        accepted: true,
+        normalized: true,
+        originalExitCode: 36,
+      },
+      createdAt: "2026-07-11T01:02:03.000Z",
+      smokeResults,
+    };
+
+    const manifest = writeBuildManifest(validBuildRoot, input);
+    const expectedData = {
+      schemaVersion: 1,
+      buildId: input.buildId,
+      gameId: config.gameId,
+      displayName: config.displayName,
+      creatorVersion: config.creatorVersion,
+      platform: config.platform,
+      debug: config.debug,
+      contentVersion: config.contentVersion,
+      saveSchemaVersion: config.saveSchemaVersion,
+      commit: input.commit,
+      createdAt: input.createdAt,
+      creatorExitCode: 36,
+      creatorExitNormalized: true,
+      smokeResults,
+      ...expectedStats,
+    };
+
+    expect(manifest).toEqual({
+      path: join(validBuildRoot, "hulebu-build.json"),
+      data: expectedData,
+    });
+    expect(JSON.parse(readFileSync(manifest.path, "utf8"))).toEqual(
+      expectedData,
+    );
+    expect(readFileSync(manifest.path, "utf8").endsWith("\n")).toBe(true);
+    expect(existsSync(join(validBuildRoot, "hulebu-build.json.tmp"))).toBe(
+      false,
+    );
+
+    const replacement = writeBuildManifest(validBuildRoot, {
+      ...input,
+      buildId: "def5678-20260711T020304Z",
+      createdAt: "2026-07-11T02:03:04.000Z",
+    });
+    expect(replacement.data).toMatchObject({
+      buildId: "def5678-20260711T020304Z",
+      createdAt: "2026-07-11T02:03:04.000Z",
+      ...expectedStats,
+    });
+  });
+
+  it("removes the temporary manifest when atomic replacement fails", () => {
+    const validBuildRoot = createValidBuild(config);
+    const originalRenameSync = mutableFs.renameSync;
+    mutableFs.renameSync = () => {
+      throw new Error("simulated rename failure");
+    };
+
+    try {
+      expect(() =>
+        writeBuildManifest(validBuildRoot, {
+          buildId: "failure-build",
+          commit: "abc1234",
+          config,
+          creatorDecision: {
+            accepted: true,
+            normalized: false,
+            originalExitCode: 0,
+          },
+          createdAt: "2026-07-11T01:02:03.000Z",
+          smokeResults: [],
+        }),
+      ).toThrow("simulated rename failure");
+      expect(existsSync(join(validBuildRoot, "hulebu-build.json.tmp"))).toBe(
+        false,
+      );
+    } finally {
+      mutableFs.renameSync = originalRenameSync;
+    }
+  });
+});
+
+describe("Hulebu Cocos build HTTP server", () => {
+  it("maps safe encoded paths and rejects unsafe request paths", () => {
+    const buildRoot = createTemporaryRoot("resolve");
+
+    expect(resolveRequestPath(buildRoot, "/")).toBe(
+      join(buildRoot, "index.html"),
+    );
+    expect(resolveRequestPath(buildRoot, "/assets/My%20File.bin")).toBe(
+      join(buildRoot, "assets/My File.bin"),
+    );
+    expect(() => resolveRequestPath(buildRoot, "/%2e%2e/package.json")).toThrow(
+      "request path escapes the build root",
+    );
+    expect(() => resolveRequestPath(buildRoot, "/%2E%2E/package.json")).toThrow(
+      "request path escapes the build root",
+    );
+    expect(() => resolveRequestPath(buildRoot, "/..%2fpackage.json")).toThrow(
+      "request path escapes the build root",
+    );
+    expect(() => resolveRequestPath(buildRoot, "/..%5cpackage.json")).toThrow(
+      HulebuReleaseError,
+    );
+    expect(() => resolveRequestPath(buildRoot, "/bad%escape")).toThrow(
+      HulebuReleaseError,
+    );
+    expect(() => resolveRequestPath(buildRoot, "/bad%00path")).toThrow(
+      HulebuReleaseError,
+    );
+    expect(() => resolveRequestPath(buildRoot, "//example.com/file")).toThrow(
+      HulebuReleaseError,
+    );
+  });
+
+  it("serves required content types from an ephemeral loopback origin", async () => {
+    const buildRoot = createTemporaryRoot("mime");
+    const fixtures = [
+      ["index.html", "text/html; charset=utf-8"],
+      ["bundle.js", "application/javascript; charset=utf-8"],
+      ["style.css", "text/css; charset=utf-8"],
+      ["config.json", "application/json; charset=utf-8"],
+      ["module.wasm", "application/wasm"],
+      ["data.bin", "application/octet-stream"],
+      ["image.png", "image/png"],
+      ["unknown.dat", "application/octet-stream"],
+    ] as const;
+    for (const [relativePath] of fixtures) {
+      writeFileSync(
+        join(buildRoot, relativePath),
+        `content:${relativePath}`,
+        "utf8",
+      );
+    }
+
+    const server = await startStaticServer(buildRoot);
+    try {
+      expect(server.origin).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+      expect(Number(new URL(server.origin).port)).toBeGreaterThan(0);
+
+      for (const [relativePath, contentType] of fixtures) {
+        const response = await requestRaw(server.origin, `/${relativePath}`);
+        expect(response.status).toBe(200);
+        expect(response.contentType).toBe(contentType);
+        expect(response.contentLength).toBe(String(response.body.byteLength));
+      }
+    } finally {
+      await server.close();
+      await server.close();
+    }
+  });
+
+  it("rejects raw encoded traversal before URL normalization", async () => {
+    const buildRoot = createTemporaryRoot("raw-traversal");
+    writeFileSync(join(buildRoot, "index.html"), "index", "utf8");
+    const server = await startStaticServer(buildRoot);
+
+    try {
+      expect(
+        (await requestRaw(server.origin, "/%2e%2e/package.json")).status,
+      ).toBe(403);
+      expect((await requestRaw(server.origin, "/bad%escape")).status).toBe(403);
+      expect((await requestRaw(server.origin, "/missing.txt")).status).toBe(
+        404,
+      );
+      expect((await requestRaw(server.origin, "/", "POST")).status).toBe(405);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("does not serve directories or symlinks", async () => {
+    const buildRoot = createTemporaryRoot("server-symlink");
+    const externalRoot = createTemporaryRoot("server-symlink-target");
+    mkdirSync(join(buildRoot, "directory"));
+    writeFileSync(join(externalRoot, "outside.txt"), "outside", "utf8");
+    const hasSymlink = tryCreateSymlink(
+      join(externalRoot, "outside.txt"),
+      join(buildRoot, "linked.txt"),
+      "file",
+    );
+    const server = await startStaticServer(buildRoot);
+
+    try {
+      expect((await requestRaw(server.origin, "/directory")).status).toBe(404);
+      if (hasSymlink) {
+        expect((await requestRaw(server.origin, "/linked.txt")).status).toBe(
+          404,
+        );
+      }
+    } finally {
+      await server.close();
+    }
+  });
+});
+
+describe("Hulebu Cocos build smoke", () => {
+  const config = loadReleaseConfig(realConfigPath);
+
+  it("smokes every configured path over real HTTP in input order", async () => {
+    const validBuildRoot = createValidBuild(config);
+
+    const results = await smokeBuild(validBuildRoot, config.smokePaths);
+
+    expect(
+      results.map(({ pathname, status }) => ({ pathname, status })),
+    ).toEqual(config.smokePaths.map((pathname) => ({ pathname, status: 200 })));
+    expect(results.every(({ bytes }) => bytes > 0)).toBe(true);
+  });
+
+  it("reports actual response bytes and parses JSON payloads", async () => {
+    const buildRoot = createTemporaryRoot("smoke-bytes");
+    const jsonText = JSON.stringify({ title: "胡了卜" });
+    writeFileSync(join(buildRoot, "unicode.json"), jsonText, "utf8");
+
+    await expect(smokeBuild(buildRoot, ["/unicode.json"])).resolves.toEqual([
+      {
+        pathname: "/unicode.json",
+        status: 200,
+        bytes: Buffer.byteLength(jsonText),
+      },
+    ]);
+  });
+
+  it.each([
+    ["missing response", "/missing.json", undefined, "HTTP 404"],
+    ["empty response", "/empty.txt", "", "empty"],
+    ["malformed JSON", "/invalid.json", "not-json", "invalid JSON"],
+  ])(
+    "rejects a path-specific %s and closes its server",
+    async (_label, pathname, content, expectedMessage) => {
+      const buildRoot = createTemporaryRoot("smoke-failure");
+      if (content !== undefined) {
+        writeFileSync(join(buildRoot, pathname.slice(1)), content, "utf8");
+      }
+
+      await expect(smokeBuild(buildRoot, [pathname])).rejects.toThrow(pathname);
+      await expect(smokeBuild(buildRoot, [pathname])).rejects.toThrow(
+        expectedMessage,
+      );
+      writeFileSync(
+        join(buildRoot, "healthy.json"),
+        '{"healthy":true}',
+        "utf8",
+      );
+      await expect(smokeBuild(buildRoot, ["/healthy.json"])).resolves.toEqual([
+        expect.objectContaining({ pathname: "/healthy.json", status: 200 }),
+      ]);
+    },
+  );
+
+  it("rejects full and protocol-relative smoke URLs", async () => {
+    const buildRoot = createTemporaryRoot("smoke-url");
+
+    await expect(
+      smokeBuild(buildRoot, ["https://example.com/"]),
+    ).rejects.toThrow(HulebuReleaseError);
+    await expect(smokeBuild(buildRoot, ["//example.com/"])).rejects.toThrow(
+      HulebuReleaseError,
+    );
   });
 });
