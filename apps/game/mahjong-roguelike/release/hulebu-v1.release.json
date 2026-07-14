@@ -1,10 +1,11 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "gameId": "hulebu",
   "displayName": "胡了卜",
   "creatorVersion": "3.8.8",
   "creatorExecutableRealPath": "/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator",
   "creatorExecutableSha256": "3a8452496c03e85f2784e64679a1fd203701b0b245125efee02c7923f2bd3464",
+  "creatorBuildResourcesSha256": "4b8943014e6355466294f68e9cd753eb1bf685ee6d6628f03d0e572297f24b56",
   "creatorBundleIdentifier": "com.cocos.creator",
   "platform": "web-mobile",
   "debug": false,

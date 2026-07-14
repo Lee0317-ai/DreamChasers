@@ -26,8 +26,8 @@ function loadReleaseConfig(configPath) {
 }
 
 function validateReleaseConfig(config) {
-  if (config?.schemaVersion !== 3) {
-    throw new HulebuReleaseError("release schemaVersion must be 3");
+  if (config?.schemaVersion !== 4) {
+    throw new HulebuReleaseError("release schemaVersion must be 4");
   }
   if (config.gameId !== "hulebu") {
     throw new HulebuReleaseError("gameId must be hulebu");
@@ -53,6 +53,11 @@ function validateReleaseConfig(config) {
   if (!/^[0-9a-f]{64}$/i.test(config.creatorExecutableSha256)) {
     throw new HulebuReleaseError(
       "creatorExecutableSha256 must be a SHA-256 digest",
+    );
+  }
+  if (!/^[0-9a-f]{64}$/i.test(config.creatorBuildResourcesSha256)) {
+    throw new HulebuReleaseError(
+      "creatorBuildResourcesSha256 must be a SHA-256 digest",
     );
   }
   if (config.creatorBundleIdentifier !== "com.cocos.creator") {
@@ -531,6 +536,7 @@ function writeBuildManifest(
   for (const [key, expected] of [
     ["creatorExecutableRealPath", config.creatorExecutableRealPath],
     ["creatorExecutableSha256", config.creatorExecutableSha256],
+    ["creatorBuildResourcesSha256", config.creatorBuildResourcesSha256],
     ["creatorBundleIdentifier", config.creatorBundleIdentifier],
     ["creatorBundleVersion", config.creatorVersion],
   ]) {
@@ -551,12 +557,20 @@ function writeBuildManifest(
   }
   const stats = collectBuildStats(absoluteBuildRoot);
   const data = {
-    schemaVersion: 5,
+    schemaVersion: 6,
     buildId,
     gameId: config.gameId,
     displayName: config.displayName,
     creatorVersion: creatorDecision.actualCreatorVersion,
-    ...creatorExecutableEvidence,
+    creatorBundleIdentifier:
+      creatorExecutableEvidence.creatorBundleIdentifier,
+    creatorBundleVersion: creatorExecutableEvidence.creatorBundleVersion,
+    creatorBuildResourcesSha256:
+      creatorExecutableEvidence.creatorBuildResourcesSha256,
+    creatorExecutableRealPath:
+      creatorExecutableEvidence.creatorExecutableRealPath,
+    creatorExecutableSha256:
+      creatorExecutableEvidence.creatorExecutableSha256,
     platform: config.platform,
     debug: config.debug,
     contentVersion: config.contentVersion,
@@ -697,8 +711,8 @@ function readBuildManifest(
   if (!data || typeof data !== "object" || Array.isArray(data)) {
     throw new HulebuReleaseError("build manifest must be an object");
   }
-  if (data.schemaVersion !== 5) {
-    throw new HulebuReleaseError("build manifest schemaVersion must be 5");
+  if (data.schemaVersion !== 6) {
+    throw new HulebuReleaseError("build manifest schemaVersion must be 6");
   }
   for (const [key, expected] of [
     ["gameId", config.gameId],
@@ -706,6 +720,7 @@ function readBuildManifest(
     ["creatorVersion", config.creatorVersion],
     ["creatorExecutableRealPath", config.creatorExecutableRealPath],
     ["creatorExecutableSha256", config.creatorExecutableSha256],
+    ["creatorBuildResourcesSha256", config.creatorBuildResourcesSha256],
     ["creatorBundleIdentifier", config.creatorBundleIdentifier],
     ["creatorBundleVersion", config.creatorVersion],
     ["platform", config.platform],

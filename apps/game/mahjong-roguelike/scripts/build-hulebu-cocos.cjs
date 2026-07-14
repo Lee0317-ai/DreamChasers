@@ -20,6 +20,11 @@ const DEFAULT_CREATOR_EXECUTABLE =
   "/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator";
 const PROMOTION_JOURNAL_NAME = ".hulebu-cocos-promotion.json";
 const PROMOTION_JOURNAL_TEMP_NAME = `${PROMOTION_JOURNAL_NAME}.tmp`;
+const ATTEMPT_PREFIX = ".hulebu-attempt-";
+const ATTEMPT_OWNER_NAME = ".hulebu-attempt-owner.json";
+const OUTPUT_OWNERSHIP_ERROR_CODE = "HULEBU_OUTPUT_OWNERSHIP_LOST";
+const SNAPSHOT_INFORMATION_PATH =
+  "settings/v2/packages/information.json";
 const SCRIPT_DIRECTORY = __dirname;
 const RELEASE_SOURCE_INPUTS = Object.freeze([
   "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/.creator",
@@ -187,6 +192,43 @@ function buildCreatorArguments({ config, outputRoot, projectRoot }) {
   ];
 }
 
+function protectSnapshotInformationFile(projectRoot) {
+  const informationPath = path.join(projectRoot, SNAPSHOT_INFORMATION_PATH);
+  let status;
+  try {
+    status = fs.lstatSync(informationPath, { bigint: true });
+  } catch (error) {
+    throw new HulebuReleaseError(
+      `snapshot information config is unavailable: ${sanitizeErrorMessage(error)}`,
+    );
+  }
+  if (status.isSymbolicLink() || !status.isFile()) {
+    throw new HulebuReleaseError(
+      "snapshot information config must be a regular non-symlink file",
+    );
+  }
+  const identity = fileIdentity(status);
+  const originalMode = Number(status.mode & 0o777n);
+  const protectedMode = originalMode & ~0o222;
+  fs.chmodSync(informationPath, protectedMode);
+  let restored = false;
+  return () => {
+    if (restored) return;
+    const current = fs.lstatSync(informationPath, { bigint: true });
+    if (
+      current.isSymbolicLink() ||
+      !current.isFile() ||
+      fileIdentity(current) !== identity
+    ) {
+      throw new HulebuReleaseError(
+        "snapshot information config changed while protected",
+      );
+    }
+    fs.chmodSync(informationPath, originalMode);
+    restored = true;
+  };
+}
+
 function createExactCommitProjectSnapshot({
   commit,
   projectRoot,
@@ -217,6 +259,7 @@ function createExactCommitProjectSnapshot({
   );
   const checkoutRoot = path.join(containerRoot, "checkout");
   let added = false;
+  let restoreProtectedInformation = () => {};
   try {
     childProcess.execFileSync(
       "git",
@@ -235,12 +278,16 @@ function createExactCommitProjectSnapshot({
         "snapshot project root must be a real directory",
       );
     }
+    restoreProtectedInformation = protectSnapshotInformationFile(
+      snapshotProjectRoot,
+    );
     let worktreeRemoved = false;
     let containerRemoved = false;
     return {
       checkoutRoot,
       projectRoot: snapshotProjectRoot,
       release() {
+        restoreProtectedInformation();
         if (!worktreeRemoved) {
           childProcess.execFileSync(
             "git",
@@ -260,6 +307,11 @@ function createExactCommitProjectSnapshot({
       },
     };
   } catch (error) {
+    try {
+      restoreProtectedInformation();
+    } catch {
+      // Preserve the snapshot creation failure and leave cleanup evidence.
+    }
     if (added) {
       try {
         childProcess.execFileSync(
@@ -294,24 +346,199 @@ function ensureRealOutputRoot(outputRoot) {
   return resolvedOutputRoot;
 }
 
-function createBuildAttempt({ outputName, outputRoot }) {
+function isValidAttemptOwnerRecord(record) {
+  if (
+    !record ||
+    typeof record !== "object" ||
+    Array.isArray(record) ||
+    record.schemaVersion !== 1 ||
+    typeof record.attemptName !== "string" ||
+    !/^\.hulebu-attempt-[A-Za-z0-9_-]+$/.test(record.attemptName) ||
+    !/^[0-9a-f]{64}$/i.test(record.token) ||
+    !Number.isInteger(record.pid) ||
+    record.pid <= 0 ||
+    (record.creatorPid !== null &&
+      (!Number.isInteger(record.creatorPid) || record.creatorPid <= 0)) ||
+    typeof record.hostname !== "string" ||
+    record.hostname.length === 0 ||
+    typeof record.createdAt !== "string" ||
+    new Date(record.createdAt).toISOString() !== record.createdAt ||
+    typeof record.outputRootIdentity !== "string" ||
+    record.outputRootIdentity.length === 0
+  ) {
+    return false;
+  }
+  return true;
+}
+
+function createAttemptOwnerMarker(markerPath, record) {
+  let descriptor;
+  try {
+    descriptor = openExclusiveNoFollow(markerPath, fs.constants.O_WRONLY);
+    fs.writeFileSync(descriptor, `${JSON.stringify(record)}\n`, "utf8");
+    fs.fsyncSync(descriptor);
+    return fileIdentity(fs.fstatSync(descriptor, { bigint: true }));
+  } finally {
+    if (descriptor !== undefined) fs.closeSync(descriptor);
+  }
+}
+
+function readAttemptOwnerMarker(markerPath) {
+  const noFollowFlag =
+    typeof fs.constants.O_NOFOLLOW === "number" ? fs.constants.O_NOFOLLOW : 0;
+  const pathStatus = fs.lstatSync(markerPath, { bigint: true });
+  if (
+    pathStatus.isSymbolicLink() ||
+    !pathStatus.isFile() ||
+    pathStatus.size > 4096n
+  ) {
+    throw new HulebuReleaseError(
+      "attempt owner marker must be a small regular non-symlink file",
+    );
+  }
+  const descriptor = fs.openSync(
+    markerPath,
+    fs.constants.O_RDONLY | noFollowFlag,
+  );
+  try {
+    const descriptorStatus = fs.fstatSync(descriptor, { bigint: true });
+    if (fileIdentity(descriptorStatus) !== fileIdentity(pathStatus)) {
+      throw new HulebuReleaseError(
+        "attempt owner marker changed during inspection",
+      );
+    }
+    let record;
+    try {
+      record = JSON.parse(fs.readFileSync(descriptor, "utf8"));
+    } catch {
+      record = undefined;
+    }
+    if (!isValidAttemptOwnerRecord(record)) {
+      throw new HulebuReleaseError("attempt owner marker is invalid");
+    }
+    return {
+      identity: fileIdentity(descriptorStatus),
+      record,
+    };
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function updateAttemptOwnerMarker(markerPath, expectedIdentity, record) {
+  const noFollowFlag =
+    typeof fs.constants.O_NOFOLLOW === "number" ? fs.constants.O_NOFOLLOW : 0;
+  const before = readAttemptOwnerMarker(markerPath);
+  if (
+    before.identity !== expectedIdentity ||
+    before.record.token !== record.token
+  ) {
+    throw new HulebuReleaseError("attempt owner marker changed");
+  }
+  const descriptor = fs.openSync(
+    markerPath,
+    fs.constants.O_WRONLY | fs.constants.O_TRUNC | noFollowFlag,
+  );
+  try {
+    if (
+      fileIdentity(fs.fstatSync(descriptor, { bigint: true })) !==
+      expectedIdentity
+    ) {
+      throw new HulebuReleaseError("attempt owner marker changed");
+    }
+    fs.writeFileSync(descriptor, `${JSON.stringify(record)}\n`, "utf8");
+    fs.fsyncSync(descriptor);
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function createBuildAttempt({
+  hostname = os.hostname(),
+  now = () => new Date(),
+  outputName,
+  outputRoot,
+  pid = process.pid,
+  tokenFactory = () => crypto.randomBytes(32).toString("hex"),
+}) {
   if (outputName !== "web-mobile") {
     throw new HulebuReleaseError("attempt outputName must be web-mobile");
+  }
+  const createdAt = now();
+  const token = tokenFactory();
+  if (
+    typeof hostname !== "string" ||
+    hostname.length === 0 ||
+    !Number.isInteger(pid) ||
+    pid <= 0 ||
+    !Number.isFinite(createdAt.getTime()) ||
+    !/^[0-9a-f]{64}$/i.test(token)
+  ) {
+    throw new HulebuReleaseError("build attempt owner options are invalid");
   }
   const resolvedOutputRoot = ensureRealOutputRoot(outputRoot);
   const outputRootIdentity = inspectOutputRootIdentity(resolvedOutputRoot);
   const attemptRoot = fs.mkdtempSync(
-    path.join(resolvedOutputRoot, ".hulebu-attempt-"),
+    path.join(resolvedOutputRoot, ATTEMPT_PREFIX),
   );
   assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
   const attemptIdentity = fileIdentity(
     fs.lstatSync(attemptRoot, { bigint: true }),
   );
+  const ownerRecord = {
+    schemaVersion: 1,
+    attemptName: path.basename(attemptRoot),
+    token,
+    pid,
+    creatorPid: null,
+    hostname,
+    createdAt: createdAt.toISOString(),
+    outputRootIdentity,
+  };
+  const ownerMarkerPath = path.join(attemptRoot, ATTEMPT_OWNER_NAME);
+  let ownerMarkerIdentity;
+  try {
+    ownerMarkerIdentity = createAttemptOwnerMarker(
+      ownerMarkerPath,
+      ownerRecord,
+    );
+  } catch (error) {
+    assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
+    if (
+      fileIdentity(fs.lstatSync(attemptRoot, { bigint: true })) ===
+      attemptIdentity
+    ) {
+      fs.rmSync(attemptRoot, { recursive: true, force: true });
+    }
+    throw error;
+  }
   let cleaned = false;
   return {
     outputRoot: attemptRoot,
     buildRoot: path.join(attemptRoot, outputName),
     logPath: path.join(attemptRoot, "hulebu-cocos-build.log"),
+    recordCreatorPid(creatorPid) {
+      if (!Number.isInteger(creatorPid) || creatorPid <= 0) {
+        throw new HulebuReleaseError("Creator pid is invalid");
+      }
+      if (ownerRecord.creatorPid !== null) {
+        if (ownerRecord.creatorPid === creatorPid) return;
+        throw new HulebuReleaseError("Creator pid is already recorded");
+      }
+      assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
+      if (
+        fileIdentity(fs.lstatSync(attemptRoot, { bigint: true })) !==
+        attemptIdentity
+      ) {
+        throw new HulebuReleaseError("build attempt identity changed");
+      }
+      ownerRecord.creatorPid = creatorPid;
+      updateAttemptOwnerMarker(
+        ownerMarkerPath,
+        ownerMarkerIdentity,
+        ownerRecord,
+      );
+    },
     cleanup() {
       if (cleaned) return;
       assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
@@ -332,6 +559,141 @@ function createBuildAttempt({ outputName, outputRoot }) {
       cleaned = true;
     },
   };
+}
+
+function reapOrphanBuildAttempts(outputRoot, options = {}) {
+  const resolvedOutputRoot = ensureRealOutputRoot(outputRoot);
+  const outputRootIdentity = inspectOutputRootIdentity(resolvedOutputRoot);
+  const now = options.now || (() => new Date());
+  const hostname = options.hostname || os.hostname();
+  const probePid = options.probePid || probeLocalPid;
+  const staleGraceMs = options.staleGraceMs ?? 5 * 60 * 1000;
+  const inspectedAt = now();
+  if (
+    typeof hostname !== "string" ||
+    hostname.length === 0 ||
+    !Number.isFinite(inspectedAt.getTime()) ||
+    !Number.isFinite(staleGraceMs) ||
+    staleGraceMs < 0
+  ) {
+    throw new HulebuReleaseError("orphan attempt reaper options are invalid");
+  }
+
+  const cleanupWarnings = [];
+  const reapedAttempts = [];
+  const journalPath = path.join(resolvedOutputRoot, PROMOTION_JOURNAL_NAME);
+  let protectedAttemptName;
+  if (pathExistsNoFollow(journalPath, "promotion journal")) {
+    try {
+      protectedAttemptName = readPromotionJournal(resolvedOutputRoot).attemptName;
+    } catch (error) {
+      cleanupWarnings.push(
+        `orphan attempt reaper skipped: ${sanitizeErrorMessage(error)}`,
+      );
+      return { cleanupWarnings, reapedAttempts };
+    }
+  }
+
+  const entries = fs
+    .readdirSync(resolvedOutputRoot)
+    .filter((entry) => entry.startsWith(ATTEMPT_PREFIX))
+    .sort(comparePortableText);
+  for (const entry of entries) {
+    if (entry === protectedAttemptName) continue;
+    if (!/^\.hulebu-attempt-[A-Za-z0-9_-]+$/.test(entry)) {
+      cleanupWarnings.push(`orphan attempt ${entry}: invalid attempt name`);
+      continue;
+    }
+    const attemptRoot = path.join(resolvedOutputRoot, entry);
+    let attemptStatus;
+    try {
+      attemptStatus = fs.lstatSync(attemptRoot, { bigint: true });
+    } catch (error) {
+      if (error?.code === "ENOENT") continue;
+      cleanupWarnings.push(
+        `orphan attempt ${entry}: ${sanitizeErrorMessage(error)}`,
+      );
+      continue;
+    }
+    if (attemptStatus.isSymbolicLink() || !attemptStatus.isDirectory()) {
+      cleanupWarnings.push(
+        `orphan attempt ${entry}: entry must be a real directory, not a symlink`,
+      );
+      continue;
+    }
+    const attemptIdentity = fileIdentity(attemptStatus);
+    let owner;
+    try {
+      owner = readAttemptOwnerMarker(path.join(attemptRoot, ATTEMPT_OWNER_NAME));
+    } catch (error) {
+      let children = [];
+      try {
+        children = fs.readdirSync(attemptRoot);
+      } catch {
+        // Keep the diagnostic from the owner marker inspection.
+      }
+      if (error?.code === "ENOENT" && children.length === 0) {
+        try {
+          assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
+          fs.rmdirSync(attemptRoot);
+          reapedAttempts.push(entry);
+          continue;
+        } catch {
+          // Preserve the directory and report the marker problem below.
+        }
+      }
+      cleanupWarnings.push(
+        `orphan attempt ${entry}: ${sanitizeErrorMessage(error)}`,
+      );
+      continue;
+    }
+    const record = owner.record;
+    if (
+      record.attemptName !== entry ||
+      record.outputRootIdentity !== outputRootIdentity ||
+      record.hostname !== hostname
+    ) {
+      continue;
+    }
+    const ageMs = inspectedAt.getTime() - new Date(record.createdAt).getTime();
+    if (ageMs < staleGraceMs) continue;
+    const ownerPids = [...new Set([record.pid, record.creatorPid].filter(Boolean))];
+    if (ownerPids.some((ownerPid) => probePid(ownerPid) !== "dead")) continue;
+
+    assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
+    const currentStatus = fs.lstatSync(attemptRoot, { bigint: true });
+    if (
+      currentStatus.isSymbolicLink() ||
+      !currentStatus.isDirectory() ||
+      fileIdentity(currentStatus) !== attemptIdentity
+    ) {
+      cleanupWarnings.push(`orphan attempt ${entry}: identity changed`);
+      continue;
+    }
+    const tombstonePath = path.join(
+      resolvedOutputRoot,
+      `.hulebu-reaped-${record.token}-${crypto.randomBytes(8).toString("hex")}`,
+    );
+    try {
+      fs.renameSync(attemptRoot, tombstonePath);
+      assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
+      const movedStatus = fs.lstatSync(tombstonePath, { bigint: true });
+      if (
+        movedStatus.isSymbolicLink() ||
+        !movedStatus.isDirectory() ||
+        fileIdentity(movedStatus) !== attemptIdentity
+      ) {
+        throw new HulebuReleaseError("identity changed after quarantine");
+      }
+      fs.rmSync(tombstonePath, { recursive: true, force: true });
+      reapedAttempts.push(entry);
+    } catch (error) {
+      cleanupWarnings.push(
+        `orphan attempt ${entry}: ${sanitizeErrorMessage(error)}`,
+      );
+    }
+  }
+  return { cleanupWarnings, reapedAttempts };
 }
 
 function beginBuildPromotion({
@@ -855,6 +1217,7 @@ async function runCreatorProcess({
   creatorExecutable,
   environment,
   outputRoot,
+  onSpawn = () => {},
   projectRoot,
   spawn = childProcess.spawn,
 }) {
@@ -874,6 +1237,18 @@ async function runCreatorProcess({
         windowsHide: true,
         stdio: ["ignore", fileDescriptor, fileDescriptor],
       });
+      if (Number.isInteger(child.pid) && child.pid > 0) {
+        try {
+          onSpawn(child.pid);
+        } catch (error) {
+          try {
+            child.kill("SIGTERM");
+          } catch {
+            // Preserve the attempt ownership failure.
+          }
+          throw error;
+        }
+      }
       outcome = await new Promise((resolveOutcome) => {
         let settled = false;
         let asynchronousSpawnError;
@@ -1101,7 +1476,7 @@ function acquireOutputLock(outputRoot, options = {}) {
         anchor = inspectLockFile(anchorPath);
         diagnostic = inspectLockFile(lockPath);
       } catch (error) {
-        throw new HulebuReleaseError(
+        throw createOutputOwnershipError(
           `build lock ownership changed: ${sanitizeErrorMessage(error)}`,
         );
       }
@@ -1111,7 +1486,7 @@ function acquireOutputLock(outputRoot, options = {}) {
         anchor.record?.token !== token ||
         diagnostic.record?.token !== token
       ) {
-        throw new HulebuReleaseError("build lock ownership changed");
+        throw createOutputOwnershipError("build lock ownership changed");
       }
     };
     return {
@@ -1153,16 +1528,32 @@ function acquireOutputLock(outputRoot, options = {}) {
   );
 }
 
+function createOutputOwnershipError(message) {
+  const error = new HulebuReleaseError(message);
+  error.code = OUTPUT_OWNERSHIP_ERROR_CODE;
+  return error;
+}
+
+function isOutputOwnershipError(error) {
+  return error?.code === OUTPUT_OWNERSHIP_ERROR_CODE;
+}
+
+function committedPublicationOwnershipError(error) {
+  return createOutputOwnershipError(
+    `publication committed but canonical output cannot be verified: ${sanitizeErrorMessage(error)}`,
+  );
+}
+
 function inspectOutputRootIdentity(outputRoot) {
   try {
     const status = fs.lstatSync(outputRoot, { bigint: true });
     if (status.isSymbolicLink() || !status.isDirectory()) {
-      throw new HulebuReleaseError("output root identity changed");
+      throw createOutputOwnershipError("output root identity changed");
     }
     return fileIdentity(status);
   } catch (error) {
     if (error instanceof HulebuReleaseError) throw error;
-    throw new HulebuReleaseError(
+    throw createOutputOwnershipError(
       `output root identity changed: ${sanitizeErrorMessage(error)}`,
     );
   }
@@ -1170,7 +1561,7 @@ function inspectOutputRootIdentity(outputRoot) {
 
 function assertOutputRootIdentity(outputRoot, expectedIdentity) {
   if (inspectOutputRootIdentity(outputRoot) !== expectedIdentity) {
-    throw new HulebuReleaseError("output root identity changed");
+    throw createOutputOwnershipError("output root identity changed");
   }
 }
 
@@ -1784,6 +2175,193 @@ function hashFileSha256(filePath) {
   }
 }
 
+function hashDescriptorSha256(descriptor) {
+  const digest = crypto.createHash("sha256");
+  const buffer = Buffer.allocUnsafe(1024 * 1024);
+  let bytesRead;
+  do {
+    bytesRead = fs.readSync(descriptor, buffer, 0, buffer.length, null);
+    if (bytesRead > 0) digest.update(buffer.subarray(0, bytesRead));
+  } while (bytesRead > 0);
+  return digest.digest("hex");
+}
+
+function executableInspectionIdentity(status) {
+  return {
+    dev: String(status.dev),
+    ino: String(status.ino),
+    size: String(status.size),
+    mtimeNs: String(status.mtimeNs),
+    ctimeNs: String(status.ctimeNs),
+  };
+}
+
+function hashRegularCreatorResource(filePath, label) {
+  const noFollowFlag = fs.constants.O_NOFOLLOW;
+  if (typeof noFollowFlag !== "number") {
+    throw new HulebuReleaseError("Filesystem no-follow opens are unavailable");
+  }
+  const before = fs.lstatSync(filePath, { bigint: true });
+  if (before.isSymbolicLink() || !before.isFile()) {
+    throw new HulebuReleaseError(
+      `${label} must be a regular non-symlink file`,
+    );
+  }
+  const descriptor = fs.openSync(
+    filePath,
+    fs.constants.O_RDONLY | noFollowFlag,
+  );
+  try {
+    const opened = fs.fstatSync(descriptor, { bigint: true });
+    if (
+      !opened.isFile() ||
+      executableInspectionIdentity(opened).dev !== String(before.dev) ||
+      executableInspectionIdentity(opened).ino !== String(before.ino)
+    ) {
+      throw new HulebuReleaseError(`${label} changed during inspection`);
+    }
+    const sha256 = hashDescriptorSha256(descriptor);
+    const after = fs.lstatSync(filePath, { bigint: true });
+    if (
+      JSON.stringify(executableInspectionIdentity(opened)) !==
+      JSON.stringify(executableInspectionIdentity(after))
+    ) {
+      throw new HulebuReleaseError(`${label} changed during inspection`);
+    }
+    return {
+      mode: Number(opened.mode & 0o777n),
+      sha256,
+      size: String(opened.size),
+    };
+  } finally {
+    fs.closeSync(descriptor);
+  }
+}
+
+function hashCreatorDirectoryTree(rootPath, label, excludedPrefixes = []) {
+  const rootStatus = fs.lstatSync(rootPath, { bigint: true });
+  if (rootStatus.isSymbolicLink() || !rootStatus.isDirectory()) {
+    throw new HulebuReleaseError(`${label} must be a real directory`);
+  }
+  const rootIdentity = fileIdentity(rootStatus);
+  const digest = crypto.createHash("sha256");
+  digest.update("hulebu-creator-resource-tree-v1\0");
+  const normalizedExclusions = excludedPrefixes.map((entry) =>
+    entry.split(path.sep).join("/"),
+  );
+  const isExcluded = (relativePath) =>
+    normalizedExclusions.some(
+      (entry) => relativePath === entry || relativePath.startsWith(`${entry}/`),
+    );
+
+  const walk = (directoryPath, relativeDirectory) => {
+    const before = fs.lstatSync(directoryPath, { bigint: true });
+    if (before.isSymbolicLink() || !before.isDirectory()) {
+      throw new HulebuReleaseError(`${label} directory changed during inspection`);
+    }
+    const directoryIdentity = fileIdentity(before);
+    const names = fs.readdirSync(directoryPath).sort(comparePortableText);
+    for (const name of names) {
+      const relativePath = relativeDirectory
+        ? `${relativeDirectory}/${name}`
+        : name;
+      if (isExcluded(relativePath)) continue;
+      const absolutePath = path.join(directoryPath, name);
+      const status = fs.lstatSync(absolutePath, { bigint: true });
+      if (status.isDirectory()) {
+        digest.update(`D\0${relativePath}\0${Number(status.mode & 0o777n)}\0`);
+        walk(absolutePath, relativePath);
+        continue;
+      }
+      if (status.isFile()) {
+        const evidence = hashRegularCreatorResource(
+          absolutePath,
+          `${label} ${relativePath}`,
+        );
+        digest.update(
+          `F\0${relativePath}\0${evidence.mode}\0${evidence.size}\0${evidence.sha256}\0`,
+        );
+        continue;
+      }
+      if (status.isSymbolicLink()) {
+        const target = fs.readlinkSync(absolutePath);
+        const resolvedTarget = path.resolve(path.dirname(absolutePath), target);
+        if (
+          resolvedTarget !== rootPath &&
+          !isPathInside(rootPath, resolvedTarget)
+        ) {
+          throw new HulebuReleaseError(
+            `${label} symlink escapes resource tree: ${relativePath}`,
+          );
+        }
+        digest.update(`L\0${relativePath}\0${target}\0`);
+        continue;
+      }
+      throw new HulebuReleaseError(
+        `${label} contains unsupported entry: ${relativePath}`,
+      );
+    }
+    const after = fs.lstatSync(directoryPath, { bigint: true });
+    if (
+      after.isSymbolicLink() ||
+      !after.isDirectory() ||
+      fileIdentity(after) !== directoryIdentity
+    ) {
+      throw new HulebuReleaseError(`${label} directory changed during inspection`);
+    }
+  };
+  walk(rootPath, "");
+  const afterRoot = fs.lstatSync(rootPath, { bigint: true });
+  if (
+    afterRoot.isSymbolicLink() ||
+    !afterRoot.isDirectory() ||
+    fileIdentity(afterRoot) !== rootIdentity
+  ) {
+    throw new HulebuReleaseError(`${label} root changed during inspection`);
+  }
+  return digest.digest("hex");
+}
+
+function creatorBundleRootFromExecutable(executableRealPath) {
+  const marker = `${path.sep}Contents${path.sep}MacOS${path.sep}`;
+  const markerIndex = executableRealPath.lastIndexOf(marker);
+  if (markerIndex <= 0) {
+    throw new HulebuReleaseError(
+      "Creator executable is not inside a macOS application bundle",
+    );
+  }
+  const bundleRoot = executableRealPath.slice(0, markerIndex);
+  const status = fs.lstatSync(bundleRoot);
+  if (status.isSymbolicLink() || !status.isDirectory()) {
+    throw new HulebuReleaseError("Creator application bundle must be a real directory");
+  }
+  return bundleRoot;
+}
+
+function hashCreatorBuildResources(executableRealPath) {
+  const bundleRoot = creatorBundleRootFromExecutable(executableRealPath);
+  const appAsar = hashRegularCreatorResource(
+    path.join(bundleRoot, "Contents/Resources/app.asar"),
+    "Creator app.asar",
+  );
+  const unpackedSha256 = hashCreatorDirectoryTree(
+    path.join(bundleRoot, "Contents/Resources/app.asar.unpacked"),
+    "Creator app.asar.unpacked",
+  );
+  const engineSha256 = hashCreatorDirectoryTree(
+    path.join(bundleRoot, "Contents/Resources/resources/3d/engine"),
+    "Creator engine",
+    ["bin/.cache"],
+  );
+  return crypto
+    .createHash("sha256")
+    .update("hulebu-creator-build-resources-v1\0")
+    .update(`app.asar\0${appAsar.size}\0${appAsar.sha256}\0`)
+    .update(`app.asar.unpacked\0${unpackedSha256}\0`)
+    .update(`engine-without-bin-cache\0${engineSha256}\0`)
+    .digest("hex");
+}
+
 function inspectCreatorExecutable(executablePath, config, options = {}) {
   if (typeof executablePath !== "string" || executablePath.length === 0) {
     throw new HulebuReleaseError("Creator executable path is invalid");
@@ -1792,6 +2370,7 @@ function inspectCreatorExecutable(executablePath, config, options = {}) {
   let descriptor;
   let realPath;
   let sha256;
+  let inspectionIdentity;
   try {
     const requestedStatus = fs.lstatSync(requestedPath, { bigint: true });
     if (requestedStatus.isSymbolicLink() || !requestedStatus.isFile()) {
@@ -1826,12 +2405,13 @@ function inspectCreatorExecutable(executablePath, config, options = {}) {
         "Creator executable changed during inspection",
       );
     }
-    sha256 = crypto
-      .createHash("sha256")
-      .update(fs.readFileSync(descriptor))
-      .digest("hex");
+    inspectionIdentity = executableInspectionIdentity(descriptorStatus);
+    sha256 = hashDescriptorSha256(descriptor);
     const pathStatusAfter = fs.lstatSync(requestedPath, { bigint: true });
-    if (fileIdentity(descriptorStatus) !== fileIdentity(pathStatusAfter)) {
+    if (
+      JSON.stringify(inspectionIdentity) !==
+      JSON.stringify(executableInspectionIdentity(pathStatusAfter))
+    ) {
       throw new HulebuReleaseError(
         "Creator executable changed during inspection",
       );
@@ -1855,6 +2435,16 @@ function inspectCreatorExecutable(executablePath, config, options = {}) {
       "Creator executable SHA-256 does not match release config",
     );
   }
+  const hashBuildResources =
+    options.hashCreatorBuildResources || hashCreatorBuildResources;
+  const creatorBuildResourcesSha256 = hashBuildResources(realPath);
+  if (
+    creatorBuildResourcesSha256 !== config.creatorBuildResourcesSha256
+  ) {
+    throw new HulebuReleaseError(
+      "Creator build resources SHA-256 does not match release config",
+    );
+  }
   const readBundleMetadata =
     options.readBundleMetadata || readCreatorBundleMetadata;
   const bundleMetadata = readBundleMetadata(realPath);
@@ -1871,6 +2461,8 @@ function inspectCreatorExecutable(executablePath, config, options = {}) {
   return {
     creatorBundleIdentifier: bundleMetadata.bundleIdentifier,
     creatorBundleVersion: bundleMetadata.version,
+    creatorBuildResourcesSha256,
+    creatorExecutableIdentity: inspectionIdentity,
     creatorExecutableRealPath: realPath,
     creatorExecutableSha256: sha256,
   };
@@ -2055,6 +2647,7 @@ async function runRelease(argv, effects = {}) {
   let result;
   let failure;
   let preserveAttempt = false;
+  let publicationCommitted = false;
   const startupCleanupWarnings = [];
   try {
     assertOutputOwnership();
@@ -2062,6 +2655,11 @@ async function runRelease(argv, effects = {}) {
       effects.recoverPendingBuildPromotion || recoverPendingBuildPromotion;
     const recoveryResult = recoverPromotion(outputPaths.outputRoot);
     startupCleanupWarnings.push(...(recoveryResult.cleanupWarnings || []));
+    assertOutputOwnership();
+    const reapAttempts =
+      effects.reapOrphanBuildAttempts || reapOrphanBuildAttempts;
+    const reaperResult = reapAttempts(outputPaths.outputRoot);
+    startupCleanupWarnings.push(...(reaperResult.cleanupWarnings || []));
     assertOutputOwnership();
     const preflight = captureSourceState({
       assertInputsClean,
@@ -2143,9 +2741,20 @@ async function runRelease(argv, effects = {}) {
       assertOutputOwnership();
       const createAttempt = effects.createBuildAttempt || createBuildAttempt;
       attempt = createAttempt({
+        now,
         outputName: config.outputName,
         outputRoot: outputPaths.outputRoot,
       });
+      assertOutputOwnership();
+      const preSpawnCreatorEvidence = inspectCreator(
+        creatorExecutableEvidence.creatorExecutableRealPath,
+        config,
+      );
+      assertMatchingCreatorEvidence(
+        creatorExecutableEvidence,
+        preSpawnCreatorEvidence,
+        "immediately before execution",
+      );
       assertOutputOwnership();
       const creatorArguments = buildCreatorArguments({
         config,
@@ -2155,12 +2764,52 @@ async function runRelease(argv, effects = {}) {
       const executeCreator = effects.runCreatorProcess || runCreatorProcess;
       const creatorResult = await executeCreator({
         creatorArguments,
-        creatorExecutable: parsed.creatorExecutable,
+        creatorExecutable: creatorExecutableEvidence.creatorExecutableRealPath,
         environment,
+        onSpawn:
+          typeof attempt.recordCreatorPid === "function"
+            ? (pid) => attempt.recordCreatorPid(pid)
+            : undefined,
         outputRoot: attempt.outputRoot,
         projectRoot: projectSnapshot.projectRoot,
         spawn: effects.spawn || childProcess.spawn,
       });
+      assertOutputOwnership();
+      const postSpawnCreatorEvidence = inspectCreator(
+        creatorExecutableEvidence.creatorExecutableRealPath,
+        config,
+      );
+      assertMatchingCreatorEvidence(
+        creatorExecutableEvidence,
+        postSpawnCreatorEvidence,
+        "after execution",
+      );
+      assertOutputOwnership();
+      const captureSnapshotSourceState =
+        effects.captureSnapshotReleaseSourceState ||
+        (({ checkoutRoot, sourceInputs: snapshotInputs }) => {
+          try {
+            return captureReleaseSourceState({
+              assertInputsClean: assertReleaseInputsClean,
+              getCommit: () => readGitCommit(checkoutRoot),
+              repositoryRoot: checkoutRoot,
+              sourceInputs: snapshotInputs,
+            });
+          } catch (error) {
+            throw new HulebuReleaseError(
+              `exact Creator snapshot ${sanitizeErrorMessage(error)}`,
+            );
+          }
+        });
+      const snapshotFlight = captureSnapshotSourceState({
+        checkoutRoot: projectSnapshot.checkoutRoot,
+        sourceInputs,
+      });
+      assertMatchingSourceEvidence(
+        preflight,
+        snapshotFlight,
+        "inside exact Creator snapshot",
+      );
       assertOutputOwnership();
       const artifactResult = validateArtifacts(attempt.buildRoot, config);
       assertOutputOwnership();
@@ -2320,6 +2969,7 @@ async function runRelease(argv, effects = {}) {
       }
 
       const { cleanupWarnings: promotionCleanupWarnings } = promotion.finalize();
+      publicationCommitted = true;
       const cleanupWarnings = [
         ...startupCleanupWarnings,
         ...promotionCleanupWarnings,
@@ -2330,10 +2980,28 @@ async function runRelease(argv, effects = {}) {
         attempt.cleanup();
         attempt = undefined;
       } catch (error) {
+        if (isOutputOwnershipError(error)) {
+          outputOwnershipLost = true;
+          attempt = undefined;
+          throw committedPublicationOwnershipError(error);
+        }
         cleanupWarnings.push(
           `build attempt cleanup: ${sanitizeErrorMessage(error)}`,
         );
         attempt = undefined;
+      }
+      try {
+        assertOutputOwnership();
+        manifestEvidence = readManifest(
+          outputPaths.buildRoot,
+          manifestExpectation,
+        );
+        assertOutputOwnership();
+      } catch (error) {
+        if (isOutputOwnershipError(error)) {
+          throw committedPublicationOwnershipError(error);
+        }
+        throw error;
       }
       result = {
         ok: true,
@@ -2404,6 +3072,10 @@ async function runRelease(argv, effects = {}) {
   try {
     outputLock.release();
   } catch (error) {
+    if (publicationCommitted && isOutputOwnershipError(error)) {
+      const ownershipFailure = committedPublicationOwnershipError(error);
+      failure = failure || ownershipFailure;
+    } else
     if (!failure && result?.ok) {
       if (!Array.isArray(result.cleanupWarnings)) {
         result.cleanupWarnings = [];
@@ -2425,6 +3097,26 @@ function assertMatchingSourceEvidence(expected, actual, period) {
   }
   if (expected.sourceTreeSha256 !== actual.sourceTreeSha256) {
     throw new HulebuReleaseError(`formal build source tree changed ${period}`);
+  }
+}
+
+function assertMatchingCreatorEvidence(expected, actual, period) {
+  for (const key of [
+    "creatorBundleIdentifier",
+    "creatorBundleVersion",
+    "creatorBuildResourcesSha256",
+    "creatorExecutableRealPath",
+    "creatorExecutableSha256",
+  ]) {
+    if (expected?.[key] !== actual?.[key]) {
+      throw new HulebuReleaseError(`Creator provenance changed ${period}`);
+    }
+  }
+  if (
+    JSON.stringify(expected?.creatorExecutableIdentity) !==
+    JSON.stringify(actual?.creatorExecutableIdentity)
+  ) {
+    throw new HulebuReleaseError(`Creator provenance changed ${period}`);
   }
 }
 
@@ -2480,11 +3172,13 @@ module.exports = {
   createBuildAttempt,
   createBuildId,
   createExactCommitProjectSnapshot,
+  hashCreatorBuildResources,
   inspectCreatorExecutable,
   main,
   parseArguments,
   hashFileSha256,
   readGitCommit,
+  reapOrphanBuildAttempts,
   recoverPendingBuildPromotion,
   resolveOutputPaths,
   runCocosTypeCheck,
