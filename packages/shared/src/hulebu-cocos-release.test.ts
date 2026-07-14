@@ -129,7 +129,7 @@ const CREATOR_EXECUTABLE_EVIDENCE: CreatorExecutableEvidence = {
   creatorExecutableSha256:
     "3a8452496c03e85f2784e64679a1fd203701b0b245125efee02c7923f2bd3464",
   creatorBuildResourcesSha256:
-    "4b8943014e6355466294f68e9cd753eb1bf685ee6d6628f03d0e572297f24b56",
+    "4541ea999da1939e513e7115b6a1d19e7c3602f717fe08169ca655a6f2330ebe",
 };
 const {
   HulebuReleaseError,
@@ -276,7 +276,9 @@ function createMockReleaseLifecycle(
         buildRoot: attemptBuildRoot,
         logPath: attemptLogPath,
         outputRoot: attemptRoot,
+        markCreatorSpawning: () => undefined,
         recordCreatorPid: () => undefined,
+        recordCreatorExited: () => undefined,
         cleanup: () => {
           events?.push("attempt-cleanup");
           rmSync(attemptRoot, { force: true, recursive: true });
@@ -470,7 +472,9 @@ type BuildCli = {
     buildRoot: string;
     logPath: string;
     outputRoot: string;
+    markCreatorSpawning: () => void;
     recordCreatorPid: (pid: number) => void;
+    recordCreatorExited: () => void;
     cleanup: () => void;
   };
   beginBuildPromotion: (input: {
@@ -614,7 +618,7 @@ describe("Hulebu Cocos production release contract", () => {
     ).toThrow("Creator executable SHA-256 does not match release config");
   });
 
-  it("binds Creator provenance to app.asar and the stable engine tree", () => {
+  it("binds Creator provenance to the complete executed application bundle", () => {
     const cli = loadBuildCli();
     const bundleRoot = createTemporaryRoot("creator-build-resources");
     const executablePath = join(
@@ -633,18 +637,25 @@ describe("Hulebu Cocos production release contract", () => {
       bundleRoot,
       "CocosCreator.app/Contents/Resources/app.asar.unpacked",
     );
+    const frameworkPath = join(
+      bundleRoot,
+      "CocosCreator.app/Contents/Frameworks/Electron Framework.framework/Electron Framework",
+    );
     mkdirSync(dirname(executablePath), { recursive: true });
     mkdirSync(join(engineRoot, "bin/.cache"), { recursive: true });
     mkdirSync(unpackedRoot, { recursive: true });
+    mkdirSync(dirname(frameworkPath), { recursive: true });
     writeFileSync(executablePath, "launcher", { mode: 0o755 });
     writeFileSync(appAsarPath, "asar-a", "utf8");
     writeFileSync(join(engineRoot, "core.js"), "engine-a", "utf8");
     writeFileSync(join(unpackedRoot, "native.node"), "native-a", "utf8");
+    writeFileSync(frameworkPath, "electron-a", "utf8");
     writeFileSync(join(engineRoot, "bin/.cache/generated.js"), "cache-a", "utf8");
 
     const initial = cli.hashCreatorBuildResources(executablePath);
     writeFileSync(join(engineRoot, "bin/.cache/generated.js"), "cache-b", "utf8");
-    expect(cli.hashCreatorBuildResources(executablePath)).toBe(initial);
+    expect(cli.hashCreatorBuildResources(executablePath)).not.toBe(initial);
+    writeFileSync(join(engineRoot, "bin/.cache/generated.js"), "cache-a", "utf8");
 
     writeFileSync(appAsarPath, "asar-b", "utf8");
     expect(cli.hashCreatorBuildResources(executablePath)).not.toBe(initial);
@@ -653,6 +664,9 @@ describe("Hulebu Cocos production release contract", () => {
     expect(cli.hashCreatorBuildResources(executablePath)).not.toBe(initial);
     writeFileSync(join(engineRoot, "core.js"), "engine-a", "utf8");
     writeFileSync(join(unpackedRoot, "native.node"), "native-b", "utf8");
+    expect(cli.hashCreatorBuildResources(executablePath)).not.toBe(initial);
+    writeFileSync(join(unpackedRoot, "native.node"), "native-a", "utf8");
+    writeFileSync(frameworkPath, "electron-b", "utf8");
     expect(cli.hashCreatorBuildResources(executablePath)).not.toBe(initial);
   });
 
@@ -2693,6 +2707,7 @@ describe("Hulebu Cocos production build CLI", () => {
     });
     mkdirSync(attempt.buildRoot);
     writeFileSync(join(attempt.buildRoot, "large-output.bin"), "orphan", "utf8");
+    attempt.markCreatorSpawning();
     attempt.recordCreatorPid(4343);
 
     expect(
@@ -2707,6 +2722,93 @@ describe("Hulebu Cocos production build CLI", () => {
       reapedAttempts: [basename(attempt.outputRoot)],
     });
     expect(existsSync(attempt.outputRoot)).toBe(false);
+  });
+
+  it("never reaps an indeterminate spawning attempt", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-attempt-spawning");
+    const attempt = cli.createBuildAttempt({
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:00:00.000Z"),
+      outputName: "web-mobile",
+      outputRoot,
+      pid: 4242,
+      tokenFactory: () => "c".repeat(64),
+    });
+    attempt.markCreatorSpawning();
+
+    const result = cli.reapOrphanBuildAttempts(outputRoot, {
+      hostname: "test-host",
+      now: () => new Date("2026-07-12T03:00:00.000Z"),
+      probePid: () => "dead",
+      staleGraceMs: 30_000,
+    });
+
+    expect(result.reapedAttempts).toEqual([]);
+    expect(result.cleanupWarnings).toEqual([
+      expect.stringContaining("indeterminate Creator spawn"),
+    ]);
+    expect(existsSync(attempt.outputRoot)).toBe(true);
+  });
+
+  it("retries a quarantined orphan tombstone after deletion is interrupted", () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-attempt-tombstone-retry");
+    const attempt = cli.createBuildAttempt({
+      hostname: "test-host",
+      now: () => new Date("2026-07-11T01:00:00.000Z"),
+      outputName: "web-mobile",
+      outputRoot,
+      pid: 4242,
+      tokenFactory: () => "d".repeat(64),
+    });
+    mkdirSync(attempt.buildRoot);
+    writeFileSync(join(attempt.buildRoot, "large-output.bin"), "orphan", "utf8");
+    const originalRmSync = mutableFs.rmSync;
+    let interrupted = false;
+    mutableFs.rmSync = (...args: unknown[]) => {
+      if (
+        !interrupted &&
+        typeof args[0] === "string" &&
+        basename(args[0]).startsWith(".hulebu-reaped-")
+      ) {
+        interrupted = true;
+        throw new Error("simulated tombstone deletion interruption");
+      }
+      return originalRmSync(...args);
+    };
+
+    try {
+      const first = cli.reapOrphanBuildAttempts(outputRoot, {
+        hostname: "test-host",
+        now: () => new Date("2026-07-11T03:00:00.000Z"),
+        probePid: () => "dead",
+        staleGraceMs: 30_000,
+      });
+      expect(first.reapedAttempts).toEqual([]);
+      expect(first.cleanupWarnings).toEqual([
+        expect.stringContaining("simulated tombstone deletion interruption"),
+      ]);
+    } finally {
+      mutableFs.rmSync = originalRmSync;
+    }
+
+    const tombstone = readdirSync(outputRoot).find((entry) =>
+      entry.startsWith(".hulebu-reaped-"),
+    );
+    expect(tombstone).toBeDefined();
+    expect(
+      cli.reapOrphanBuildAttempts(outputRoot, {
+        hostname: "test-host",
+        now: () => new Date("2026-07-11T03:01:00.000Z"),
+        probePid: () => "dead",
+        staleGraceMs: 30_000,
+      }),
+    ).toEqual({
+      cleanupWarnings: [],
+      reapedAttempts: [basename(attempt.outputRoot)],
+    });
+    expect(existsSync(join(outputRoot, tombstone!))).toBe(false);
   });
 
   it("preserves live, unknown, fresh, malformed, and symlink attempt entries", () => {
