@@ -238,3 +238,5 @@ T179 已完成成就图鉴第二版第一轮扩容。当前 `/games/hulebu` 的�
 T180 已完成无尽和每日深度化。当前 HTML 原型已新增 `getEndlessChapterProfile()` 和 `getDailyMutatorProfile()`：无尽第 21 层后按每 5 层一个章节推进，并在章节尾部挂 `章节 Boss` 压力；每日牌局第二版新增 `今日词缀 / 今日奖励 / 连续参与` 三个长期信号。`/games/hulebu` 外层局外页现在会显示 `当前章节 / 章节 Boss / 无尽最高` 与 `今日词缀 / 今日奖励 / 连续参与 / 今日最佳`，结算页也会显示对应摘要。站内静态 Demo 已同步保持 `/games/hulebu-demo/config/*.json` 绝对资源路径。
 
 后续建议顺序改为：T181 路线奖励和局外能力深化；T182 Web 数值平衡和内容冻结。Cocos 正式表现层、音乐、美术、动效和发布资源等 Web 内容冻结后再接。
+
+T243 已完成正式 Cocos 源码 checkpoint 与 production 构建溯源门禁。后续不要从根脏工作区绕过包装器直接发布，也不要把 `profiles/**`、`temp/**`、`library/**`、`build/**` 或本机 `information.json` 当正式源码；使用 `npm run game:hulebu:build`，让包装器保护并复核精确提交快照，三次核对完整 `CocosCreator.app/Contents` 摘要，并生成 schema 6 manifest。普通目录 promotion 提供隔离 attempt、同步回滚、持久 journal、原子 Creator owner 状态和可重试 tombstone，但不承诺跨平台零间隙目录交换。T244 应恢复既定 M1 边界：拆出 `GameSession / RunStateMachine / ContentRepository / SaveService`，逐步削薄 `GameSceneController`；不要重新扩 Web Demo 或同时重写 UI、音效。

@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 依赖：T242
 - 主要文件范围：Cocos `assets/scripts/**` 中当前正式运行时增量、`assets/resources/ui/v6.meta`、`assets/resources/ui/v6/**`、`apps/game/mahjong-roguelike/release/hulebu-v1.release.json`、`apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs`、`apps/game/mahjong-roguelike/scripts/hulebu-cocos-release.cjs`、`packages/shared/src/hulebu-cocos-release.test.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、本任务计划/领取/进展/完成与模块交接文档
 - 禁止修改范围：Cocos `settings/v2/packages/information.json`、`profiles/**`、`temp/**`、`library/**`、`build/**`，Web 版与 `hulebu-demo`、prototype、数据库、账号、共享山体生成器、非 Cocos 配置测试及其他模块
@@ -39,3 +39,10 @@ T242 建立了 production 构建、产物清单和 HTTP smoke，但随后从干�
 - 任一正式构建输入被修改、删除或新增未跟踪文件时，构建在启动 Creator 前失败并列出路径；构建期间发生变化也必须在写 manifest 前失败。
 - Web、prototype、数据库、`information.json` 和共享山体生成器的现有工作区改动不进入提交。
 - 最终 production 清单对应一个包含全部正式构建输入的可复现提交。
+
+## 完成摘要
+
+- 已用 `64824e47` 收口正式 Cocos 运行时、绑定器、工程内山体生成器、安全工具和 v6 UI 资源；干净 checkout 不再依赖 `profiles/**`。
+- 已用 `569ef4d9` 与 `03455a1c` 建立正式输入清洁门禁、精确提交源码快照、全产物禁用符号扫描、隔离 attempt、持久 promotion journal 和 schema 5 基线；`2297f5d8`、`0725f31d`、`f2f69913` 继续补齐 snapshot 防写/复核、完整 Creator bundle provenance、原子 PID 状态、孤儿 attempt/tombstone 恢复和 post-commit 所有权失败语义，manifest 升为 schema 6。
+- 干净 worktree 通过发布测试 `189/189`、Cocos 工程测试 `32/32`、Creator 快照内 TypeScript、真实 Creator 3.8.8 production build、verify-only 和 5 条 HTTP smoke；manifest 记录 `566` 个文件、`135263593` 字节。
+- 最终构建证据绑定源码提交 `f2f69913b8aa749590461bb3a11f815491ec83e3`，该提交包含全部正式构建输入。GameSession、玩法架构迁移、UI/音效与站点上线继续由 T244 及后续里程碑承接。

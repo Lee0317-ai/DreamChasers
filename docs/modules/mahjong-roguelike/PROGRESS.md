@@ -658,3 +658,4 @@
 - `applyStackBlockers` 已修正为任意更高层牌只要覆盖低层牌超过 5% 就写入 blocker，同列所有上层牌都会阻挡下层牌。
 - `HulebuRuntimeState` 已做测试环境可加载的轻量解耦，新增回归测试验证被盖住的下层牌不可入槽，移走 blocker 后才恢复可选。
 - 已通过 `npm run test -w packages/shared -- mahjong-cocos-project`，当前 1 个测试文件、11 个测试通过；已通过 Cocos `tsc`；已通过 Cocos Web Preview 手机视口目检，顶层牌可入槽，被同列完全覆盖的下层牌连点不入槽。
+- T243 已建立正式 Cocos 源码与 production 构建溯源基线。正式运行时和 v6 UI 已进入可复现提交；构建会拒绝脏/未跟踪/索引异常输入，从受保护的精确提交快照调用固定 Creator 3.8.8，并把源码、完整 Creator bundle、TypeScript、产物和 HTTP smoke 证据写入 schema 6 manifest。原子 owner marker、promotion journal 与可重试 tombstone 覆盖失败/崩溃恢复；干净 worktree 已通过发布测试 `189/189`、工程测试 `32/32` 和真实 build/verify-only。下一步 T244 回到 `GameSession / RunStateMachine / ContentRepository / SaveService` 的产品架构迁移。
