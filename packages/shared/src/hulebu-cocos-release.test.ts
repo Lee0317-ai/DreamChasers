@@ -515,9 +515,12 @@ type BuildCli = {
     creatorArguments: string[];
     creatorExecutable: string;
     environment: NodeJS.ProcessEnv;
+    onExit?: () => void;
+    onSpawn?: (pid: number) => void;
     outputRoot: string;
     projectRoot: string;
     spawn: (...args: unknown[]) => EventEmitter;
+    terminationGraceMs?: number;
   }) => Promise<{
     logPath: string;
     logText: string;
@@ -2773,6 +2776,9 @@ describe("Hulebu Cocos production build CLI", () => {
         basename(args[0]).startsWith(".hulebu-reaped-")
       ) {
         interrupted = true;
+        originalRmSync(join(args[0], ".hulebu-attempt-owner.json"), {
+          force: true,
+        });
         throw new Error("simulated tombstone deletion interruption");
       }
       return originalRmSync(...args);
@@ -3381,6 +3387,49 @@ describe("Hulebu Cocos production build CLI", () => {
     expect(result.logText).toContain("async ENOENT");
   });
 
+  it("does not mark Creator exited when failed PID publication cannot close the child", async () => {
+    const cli = loadBuildCli();
+    const outputRoot = createTemporaryRoot("cli-spawn-marker-failure");
+    const projectRoot = createTemporaryRoot(
+      "cli-spawn-marker-failure-project",
+    );
+    const signals: string[] = [];
+    let exited = false;
+    const spawn = () => {
+      const child = new EventEmitter() as EventEmitter & {
+        kill: (signal: string) => boolean;
+        pid: number;
+      };
+      child.pid = 4242;
+      child.kill = (signal: string) => {
+        signals.push(signal);
+        return true;
+      };
+      return child;
+    };
+
+    await expect(
+      cli.runCreatorProcess({
+        creatorArguments: [],
+        creatorExecutable: "/fake/creator",
+        environment: {},
+        onExit: () => {
+          exited = true;
+        },
+        onSpawn: () => {
+          throw new Error("simulated PID marker failure");
+        },
+        outputRoot,
+        projectRoot,
+        spawn,
+        terminationGraceMs: 5,
+      }),
+    ).rejects.toThrow("Creator child did not close");
+
+    expect(signals).toEqual(["SIGTERM", "SIGKILL"]);
+    expect(exited).toBe(false);
+  });
+
   it("rejects a Creator log replaced between publication and reading", async () => {
     const cli = loadBuildCli();
     const outputRoot = createTemporaryRoot("cli-log-replacement");
@@ -3613,6 +3662,7 @@ describe("Hulebu Cocos production build CLI", () => {
       "validate",
       "evaluate",
       "typecheck",
+      "snapshot-source-clean",
       "smoke",
       "commit",
       "source-clean",

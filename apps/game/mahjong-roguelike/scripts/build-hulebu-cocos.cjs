@@ -679,9 +679,10 @@ function reapOrphanBuildAttempts(outputRoot, options = {}) {
   for (const entry of outputEntries.filter((candidate) =>
     candidate.startsWith(".hulebu-reaped-"),
   )) {
-    const match = /^\.hulebu-reaped-([0-9a-f]{64})-([0-9a-f]{16})$/i.exec(
-      entry,
-    );
+    const match =
+      /^\.hulebu-reaped-([0-9a-f]{64})-([0-9a-f]{16})(?:-([A-Za-z0-9_-]+))?$/i.exec(
+        entry,
+      );
     if (!match) {
       cleanupWarnings.push(`orphan tombstone ${entry}: invalid tombstone name`);
       continue;
@@ -694,9 +695,19 @@ function reapOrphanBuildAttempts(outputRoot, options = {}) {
           "tombstone must be a real directory, not a symlink",
         );
       }
-      const owner = readAttemptOwnerMarker(
-        path.join(tombstonePath, ATTEMPT_OWNER_NAME),
-      );
+      let owner;
+      try {
+        owner = readAttemptOwnerMarker(
+          path.join(tombstonePath, ATTEMPT_OWNER_NAME),
+        );
+      } catch (error) {
+        assertOutputRootIdentity(resolvedOutputRoot, outputRootIdentity);
+        fs.rmSync(tombstonePath, { recursive: true, force: true });
+        reapedAttempts.push(
+          match[3] ? `${ATTEMPT_PREFIX}${match[3]}` : entry,
+        );
+        continue;
+      }
       if (
         owner.record.token !== match[1] ||
         owner.record.outputRootIdentity !== outputRootIdentity ||
@@ -798,7 +809,9 @@ function reapOrphanBuildAttempts(outputRoot, options = {}) {
     }
     const tombstonePath = path.join(
       resolvedOutputRoot,
-      `.hulebu-reaped-${record.token}-${crypto.randomBytes(8).toString("hex")}`,
+      `.hulebu-reaped-${record.token}-${crypto
+        .randomBytes(8)
+        .toString("hex")}-${entry.slice(ATTEMPT_PREFIX.length)}`,
     );
     try {
       fs.renameSync(attemptRoot, tombstonePath);
@@ -1338,6 +1351,33 @@ function createExclusiveTemporaryFile(finalPath) {
   throw new HulebuReleaseError("Unable to reserve a temporary Creator log");
 }
 
+async function waitForChildOutcome(outcomePromise, timeoutMs) {
+  let timeout;
+  try {
+    return await Promise.race([
+      outcomePromise.then((outcome) => ({ outcome, settled: true })),
+      new Promise((resolve) => {
+        timeout = setTimeout(() => resolve({ settled: false }), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout);
+  }
+}
+
+async function terminateCreatorChild(child, outcomePromise, graceMs) {
+  for (const signal of ["SIGTERM", "SIGKILL"]) {
+    try {
+      child.kill(signal);
+    } catch {
+      // The close outcome remains the source of truth.
+    }
+    const result = await waitForChildOutcome(outcomePromise, graceMs);
+    if (result.settled) return result.outcome;
+  }
+  return undefined;
+}
+
 async function runCreatorProcess({
   creatorArguments,
   creatorExecutable,
@@ -1347,7 +1387,15 @@ async function runCreatorProcess({
   onSpawn = () => {},
   projectRoot,
   spawn = childProcess.spawn,
+  terminationGraceMs = 5_000,
 }) {
+  if (
+    !Number.isFinite(terminationGraceMs) ||
+    terminationGraceMs <= 0 ||
+    terminationGraceMs > 30_000
+  ) {
+    throw new HulebuReleaseError("Creator termination grace is invalid");
+  }
   fs.mkdirSync(outputRoot, { recursive: true });
   const logPath = path.join(outputRoot, "hulebu-cocos-build.log");
   const { fileDescriptor, temporaryPath } =
@@ -1356,6 +1404,8 @@ async function runCreatorProcess({
 
   try {
     let outcome;
+    let childCreated = false;
+    let childClosed = false;
     try {
       const child = spawn(creatorExecutable, creatorArguments, {
         cwd: projectRoot,
@@ -1364,24 +1414,14 @@ async function runCreatorProcess({
         windowsHide: true,
         stdio: ["ignore", fileDescriptor, fileDescriptor],
       });
-      if (Number.isInteger(child.pid) && child.pid > 0) {
-        try {
-          onSpawn(child.pid);
-        } catch (error) {
-          try {
-            child.kill("SIGTERM");
-          } catch {
-            // Preserve the attempt ownership failure.
-          }
-          throw error;
-        }
-      }
-      outcome = await new Promise((resolveOutcome) => {
+      childCreated = true;
+      const childOutcome = new Promise((resolveOutcome) => {
         let settled = false;
         let asynchronousSpawnError;
         const settle = (value) => {
           if (settled) return;
           settled = true;
+          childClosed = true;
           resolveOutcome(value);
         };
         child.once("error", (error) => {
@@ -1399,13 +1439,40 @@ async function runCreatorProcess({
           settle({ kind: "exit", exitCode });
         });
       });
+      if (Number.isInteger(child.pid) && child.pid > 0) {
+        try {
+          onSpawn(child.pid);
+        } catch (error) {
+          const terminatedOutcome = await terminateCreatorChild(
+            child,
+            childOutcome,
+            terminationGraceMs,
+          );
+          if (!terminatedOutcome) {
+            const terminationError = new HulebuReleaseError(
+              `Creator child did not close after attempt ownership failure; preserved project ${projectRoot} and output ${outputRoot}`,
+            );
+            terminationError.preserveBuildAttempt = true;
+            terminationError.preserveProjectSnapshot = true;
+            throw terminationError;
+          }
+          outcome = {
+            kind: "spawn-error",
+            error: error instanceof Error ? error : new Error(String(error)),
+          };
+        }
+      }
+      if (!outcome) outcome = await childOutcome;
     } catch (error) {
+      if (error?.preserveBuildAttempt || error?.preserveProjectSnapshot) {
+        throw error;
+      }
       outcome = {
         kind: "spawn-error",
         error: error instanceof Error ? error : new Error(String(error)),
       };
     }
-    onExit();
+    if (!childCreated || childClosed) onExit();
 
     if (outcome.kind === "spawn-error") {
       fs.writeSync(
@@ -2759,6 +2826,7 @@ async function runRelease(argv, effects = {}) {
   let result;
   let failure;
   let preserveAttempt = false;
+  let preserveProjectSnapshot = false;
   let publicationCommitted = false;
   const startupCleanupWarnings = [];
   try {
@@ -2963,6 +3031,15 @@ async function runRelease(argv, effects = {}) {
           "Cocos TypeScript validation did not report success",
         );
       }
+      const snapshotValidationFlight = captureSnapshotSourceState({
+        checkoutRoot: projectSnapshot.checkoutRoot,
+        sourceInputs,
+      });
+      assertMatchingSourceEvidence(
+        preflight,
+        snapshotValidationFlight,
+        "during exact snapshot validation",
+      );
       assertOutputOwnership();
       const smokeResults = await runSmoke(
         attempt.buildRoot,
@@ -3151,6 +3228,7 @@ async function runRelease(argv, effects = {}) {
   } catch (error) {
     failure = error;
     preserveAttempt = error?.preserveBuildAttempt === true;
+    preserveProjectSnapshot = error?.preserveProjectSnapshot === true;
   }
 
   if (promotion && !outputOwnershipLost) {
@@ -3166,7 +3244,7 @@ async function runRelease(argv, effects = {}) {
       );
     }
   }
-  if (projectSnapshot) {
+  if (projectSnapshot && !preserveProjectSnapshot) {
     try {
       projectSnapshot.release();
     } catch (error) {
