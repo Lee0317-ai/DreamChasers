@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "lib": [
+      "DOM",
+      "ES2022"
+    ],
+    "types": []
+  },
+  "include": [
+    "assets/scripts/contracts/**/*.ts",
+    "assets/scripts/config/**/*.ts",
+    "assets/scripts/runtime/**/*.ts",
+    "assets/scripts/domain/**/*.ts",
+    "assets/scripts/application/**/*.ts",
+    "assets/scripts/content/**/*.ts",
+    "assets/scripts/persistence/**/*.ts"
+  ]
+}

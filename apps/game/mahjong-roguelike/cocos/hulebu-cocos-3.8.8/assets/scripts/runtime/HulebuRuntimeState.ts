@@ -4,7 +4,6 @@ import type {
   HulebuComboType,
   HulebuTileCounterModel,
 } from "../contracts/HulebuSceneModel";
-import type { HulebuLayoutSize } from "../bootstrap/HulebuSampleSceneModel";
 import {
   getHulebuRunArchetypeConfig,
   getHulebuSpecialEventConfig,
@@ -34,6 +33,14 @@ export interface HulebuRuntimeComboCandidateOption {
   prefabKeys: string[];
 }
 
+export interface HulebuLayoutSize {
+  width: number;
+  height: number;
+  cssWidth?: number;
+  cssHeight?: number;
+  scale?: number;
+}
+
 interface HulebuRuntimeOpenMeld {
   type: "peng" | "gang" | "bugang";
   tileKey: string;
@@ -42,7 +49,7 @@ interface HulebuRuntimeOpenMeld {
   count: number;
 }
 
-export interface HulebuRuntimeSnapshot {
+export interface HulebuRuntimeCoreSnapshot {
   tiles: HulebuRuntimeTile[];
   slot: string[];
   reserve: string[];
@@ -54,6 +61,14 @@ export interface HulebuRuntimeSnapshot {
   score: number;
   coins: number;
   tools: HulebuRuntimeTools;
+}
+
+export interface HulebuRuntimeSnapshot extends HulebuRuntimeCoreSnapshot {
+  history: HulebuRuntimeCoreSnapshot[];
+}
+
+export interface HulebuRuntimeLegacySnapshot extends HulebuRuntimeCoreSnapshot {
+  history?: never;
 }
 
 interface HulebuRuntimeTools {
@@ -124,6 +139,7 @@ const LOOSE_TILE_START_X = 210;
 const LOOSE_TILE_START_Y = 64;
 const LOOSE_TILE_GAP_X = 58;
 const LOOSE_TILE_GAP_Y = 76;
+const MAX_HISTORY_LENGTH = 12;
 
 export function createHulebuRunRewardState(): HulebuRunRewardState {
   return {
@@ -344,7 +360,7 @@ export class HulebuRuntimeState {
   private riverLimit = DEFAULT_RIVER_LIMIT;
   private looseMountainDropIndex = 0;
   private tools: HulebuRuntimeTools;
-  private history: HulebuRuntimeSnapshot[] = [];
+  private history: HulebuRuntimeCoreSnapshot[] = [];
   private score = 0;
   private coins = 0;
 
@@ -376,7 +392,7 @@ export class HulebuRuntimeState {
 
   static fromSnapshot(
     level: HulebuRuntimeLevelConfig,
-    snapshot: HulebuRuntimeSnapshot,
+    snapshot: HulebuRuntimeSnapshot | HulebuRuntimeLegacySnapshot,
     runRewards: HulebuRunRewardState = createHulebuRunRewardState(),
     levelModifiers: HulebuLevelModifierState = createHulebuLevelModifierState(),
     metaUpgrades: HulebuMetaUpgradeState = createHulebuMetaUpgradeState(),
@@ -384,7 +400,14 @@ export class HulebuRuntimeState {
   ): HulebuRuntimeState {
     const runtimeState = new HulebuRuntimeState(level, runRewards, levelModifiers, metaUpgrades, runArchetype);
     runtimeState.restoreSnapshot(snapshot);
-    runtimeState.history = [];
+    if (Array.isArray(snapshot.history)) {
+      runtimeState.history = snapshot.history
+        .slice(-MAX_HISTORY_LENGTH)
+        .map((historySnapshot) => cloneRuntimeCoreSnapshot(historySnapshot));
+    } else {
+      runtimeState.history = [];
+      runtimeState.tools.undo = 0;
+    }
     return runtimeState;
   }
 
@@ -448,7 +471,7 @@ export class HulebuRuntimeState {
   }
 
   discardSlotTile(slotIndex: number): boolean {
-    if (this.isBoardCleared() || this.river.length >= this.riverLimit) {
+    if (!this.canUseRiverDiscard()) {
       return false;
     }
 
@@ -464,6 +487,10 @@ export class HulebuRuntimeState {
     this.river.push(tileId);
     this.tools.discard = Math.max(0, this.tools.discard - 1);
     return true;
+  }
+
+  canUseDiscardTool(): boolean {
+    return this.canUseRiverDiscard();
   }
 
   useShuffleTool(): boolean {
@@ -524,17 +551,8 @@ export class HulebuRuntimeState {
 
   exportSnapshot(): HulebuRuntimeSnapshot {
     return {
-      tiles: this.tiles.map((tile) => ({ ...tile, blockedBy: [...tile.blockedBy] })),
-      slot: [...this.slot],
-      reserve: [...this.reserve],
-      river: [...this.river],
-      openMelds: this.openMelds.map((meld) => ({ ...meld, tileIds: [...meld.tileIds] })),
-      comboCounts: { ...this.comboCounts },
-      suitComboCounts: { ...this.suitComboCounts },
-      looseMountainDropIndex: this.looseMountainDropIndex,
-      score: this.score,
-      coins: this.coins,
-      tools: { ...this.tools },
+      ...this.createCoreSnapshot(),
+      history: this.history.map((historySnapshot) => cloneRuntimeCoreSnapshot(historySnapshot)),
     };
   }
 
@@ -788,7 +806,10 @@ export class HulebuRuntimeState {
   }
 
   private canUseRiverDiscard(): boolean {
-    return this.river.length < this.riverLimit && this.tools.discard > 0;
+    return !this.isBoardCleared()
+      && this.tools.discard > 0
+      && this.river.length < this.riverLimit
+      && this.slot.some((tileId) => this.findTile(tileId)?.location === "slot");
   }
 
   private getReserveLimit(): number {
@@ -935,14 +956,30 @@ export class HulebuRuntimeState {
   }
 
   private pushHistory(): void {
-    this.history.push(this.exportSnapshot());
+    this.history.push(this.createCoreSnapshot());
 
-    if (this.history.length > 12) {
+    if (this.history.length > MAX_HISTORY_LENGTH) {
       this.history.shift();
     }
   }
 
-  private restoreSnapshot(snapshot: HulebuRuntimeSnapshot): void {
+  private createCoreSnapshot(): HulebuRuntimeCoreSnapshot {
+    return cloneRuntimeCoreSnapshot({
+      tiles: this.tiles,
+      slot: this.slot,
+      reserve: this.reserve,
+      river: this.river,
+      openMelds: this.openMelds,
+      comboCounts: this.comboCounts,
+      suitComboCounts: this.suitComboCounts,
+      looseMountainDropIndex: this.looseMountainDropIndex,
+      score: this.score,
+      coins: this.coins,
+      tools: this.tools,
+    });
+  }
+
+  private restoreSnapshot(snapshot: HulebuRuntimeCoreSnapshot): void {
     this.tiles = snapshot.tiles.map((tile) => ({ ...tile, blockedBy: [...tile.blockedBy] }));
     this.slot = [...snapshot.slot];
     this.reserve = [...snapshot.reserve];
@@ -1109,4 +1146,20 @@ function createEmptySuitCounts(): Record<HulebuTileSuit, number> {
     counts[suit] = 0;
     return counts;
   }, {} as Record<HulebuTileSuit, number>);
+}
+
+function cloneRuntimeCoreSnapshot(snapshot: HulebuRuntimeCoreSnapshot): HulebuRuntimeCoreSnapshot {
+  return {
+    tiles: snapshot.tiles.map((tile) => ({ ...tile, blockedBy: [...tile.blockedBy] })),
+    slot: [...snapshot.slot],
+    reserve: [...snapshot.reserve],
+    river: [...snapshot.river],
+    openMelds: snapshot.openMelds.map((meld) => ({ ...meld, tileIds: [...meld.tileIds] })),
+    comboCounts: { ...snapshot.comboCounts },
+    suitComboCounts: { ...snapshot.suitComboCounts },
+    looseMountainDropIndex: snapshot.looseMountainDropIndex,
+    score: snapshot.score,
+    coins: snapshot.coins,
+    tools: { ...snapshot.tools },
+  };
 }
