@@ -30,6 +30,7 @@
 - Create: `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain/GameSession.ts`
 - Create: `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain/GameSession.ts.meta`
 - Modify: `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+- Create: `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 - Create: `packages/shared/src/hulebu-cocos-domain.test.ts`
 
 **Interfaces:**
@@ -38,7 +39,7 @@
 
 - [ ] **Step 1: 写 GameSession RED 测试**
 
-覆盖以下固定行为：相同 level + 相同命令序列得到完全相同 snapshot/events；非法或被压 tile 返回 `accepted: false` 且 revision 不变；多候选 `combo.execute` 只发 `combo.choice.required`，不改 runtime；`combo.choose` 按 exact candidate ID 才结算；`tool.use: discard` 在次数为 0 时拒绝，否则只要求选择、不扣次数；返回 snapshot 被外部修改后不污染下一次 snapshot；序列化/恢复后 undo history 与恢复前行为一致，旧 snapshot 缺 history 时显式迁移为空 history。
+覆盖以下固定行为：相同 level + 相同命令序列得到完全相同 snapshot/events；非法或被压 tile 返回 `accepted: false` 且 revision 不变；多候选 `combo.execute` 只发 `combo.choice.required`，不改 runtime；`combo.choose` 按 exact candidate ID 才结算；`tool.use: discard` 在次数为 0 时拒绝，否则只要求选择、不扣次数；返回 snapshot 被外部修改后不污染下一次 snapshot；序列化/恢复后 undo history 与恢复前行为一致，旧 snapshot 缺 history 时显式迁移为空 history；domain/runtime import graph 不得到达 `cc`、`cc/env` 或含运行时 `cc` import 的 bootstrap 模块。
 
 核心测试形状：
 
@@ -116,6 +117,8 @@ export interface CommandResult {
 
 `HulebuRuntimeSnapshot` 同批增加有界 history payload，`pushHistory()` 记录不含嵌套 history 的核心快照，`exportSnapshot()` 返回深拷贝 history，`fromSnapshot()` 恢复它。兼容旧快照时缺失 history 等价于空数组；不采用“恢复后仍显示 undo 次数但实际不可撤回”的隐式降级。
 
+同时移除 `HulebuRuntimeState.ts -> bootstrap/HulebuSampleSceneModel.ts` 的类型依赖：布局结构在纯 runtime/contract 侧声明，bootstrap 只以结构类型调用。新增 `tsconfig.domain.json`，strict 检查 runtime、domain、application、content、persistence 及其纯依赖，不依赖 Creator 生成的 `temp/tsconfig.cocos.json`；完整 `cc` 类型检查留给 Task 6 的真实 Creator build。
+
 ```ts
 export class GameSession {
   constructor(private readonly runtime: HulebuRuntimeState, private revision = 0) {}
@@ -142,7 +145,7 @@ Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: PASS，GameSession 测试全部通过。
 
-Run: `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 
 Expected: exit 0。
 
@@ -153,6 +156,7 @@ git add -- \
   apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain.meta \
   apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain \
   apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts \
+  apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json \
   packages/shared/src/hulebu-cocos-domain.test.ts
 git commit -m "feat(hulebu): add deterministic game session"
 ```
@@ -255,7 +259,7 @@ Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: PASS。
 
-Run: `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 
 Expected: exit 0。
 
@@ -333,7 +337,7 @@ Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: PASS。
 
-Run: `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 
 Expected: exit 0。
 
@@ -415,7 +419,7 @@ Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: PASS。
 
-Run: `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 
 Expected: exit 0。
 
@@ -500,7 +504,7 @@ Run: `npm run test -w packages/shared -- hulebu-cocos-domain mahjong-cocos-proje
 
 Expected: 两个测试文件全部通过。
 
-Run: `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 
 Expected: exit 0。
 
@@ -535,7 +539,7 @@ Run: `npm run test -w packages/shared -- hulebu-cocos-domain mahjong-cocos-proje
 
 Expected: PASS。
 
-Run: `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`
 
 Expected: exit 0。
 
