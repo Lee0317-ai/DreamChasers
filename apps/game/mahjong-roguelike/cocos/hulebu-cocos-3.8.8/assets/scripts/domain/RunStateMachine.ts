@@ -1,4 +1,4 @@
-import type { GameSnapshot } from "./GameContracts";
+import type { GameCombo, GameSnapshot } from "./GameContracts";
 
 export type RunPhase =
   | "encounterIntro"
@@ -37,10 +37,24 @@ export type PauseReturnPhase =
   | "playing.comboChoosing"
   | "playing.discardChoosing";
 
+export interface RunComboCandidateSnapshot {
+  readonly type: GameCombo;
+  readonly key: string;
+  readonly tileIds: readonly string[];
+  readonly labels: readonly string[];
+  readonly prefabKeys: readonly string[];
+}
+
+export interface PendingComboContext {
+  readonly combo: GameCombo;
+  readonly candidates: readonly RunComboCandidateSnapshot[];
+}
+
 export interface RunPhaseContext {
   readonly targetLevelOrder: number | null;
   readonly rewardCandidateIds: readonly string[];
   readonly eventOptionIds: readonly string[];
+  readonly pendingCombo: PendingComboContext | null;
   readonly pauseReturnPhase: PauseReturnPhase | null;
 }
 
@@ -55,7 +69,14 @@ export const TRANSITIONS: Readonly<Record<RunPhase, readonly RunPhase[]>> = {
   encounterIntro: ["playing.tileEntering"],
   "playing.tileEntering": ["playing.idle", "failed"],
   "playing.idle": ["playing.resolving", "playing.discardChoosing", "paused", "failed"],
-  "playing.resolving": ["playing.idle", "playing.comboChoosing", "playing.dangerCheck", "encounterCleared", "failed"],
+  "playing.resolving": [
+    "playing.idle",
+    "playing.comboChoosing",
+    "playing.discardChoosing",
+    "playing.dangerCheck",
+    "encounterCleared",
+    "failed",
+  ],
   "playing.comboChoosing": ["playing.resolving", "playing.idle", "paused"],
   "playing.discardChoosing": ["playing.resolving", "playing.idle", "paused"],
   "playing.dangerCheck": ["playing.idle", "encounterCleared", "failed"],

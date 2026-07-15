@@ -1,6 +1,7 @@
 import type {
   CommandResult,
   DomainEvent,
+  GameCombo,
   GameCommand,
   GameSnapshot,
 } from "../domain/GameContracts";
@@ -11,6 +12,7 @@ import {
   isRunPhase,
   type RunPhase,
   type RunPhaseContext,
+  type PendingComboContext,
   type RunSnapshot,
 } from "../domain/RunStateMachine";
 
@@ -26,13 +28,23 @@ export interface RunContextUpdate {
   readonly targetLevelOrder?: number | null;
   readonly rewardCandidateIds?: readonly string[];
   readonly eventOptionIds?: readonly string[];
+  readonly pendingCombo?: PendingComboContext | null;
 }
 
 interface MutableRunContext {
   targetLevelOrder: number | null;
   rewardCandidateIds: string[];
   eventOptionIds: string[];
+  pendingCombo: PendingComboContext | null;
 }
+
+const GAME_COMBOS: ReadonlySet<GameCombo> = new Set([
+  "chi",
+  "peng",
+  "gang",
+  "bugang",
+  "hu",
+]);
 
 const PLAYING_PHASES: ReadonlySet<RunPhase> = new Set([
   "playing.tileEntering",
@@ -49,6 +61,7 @@ export class GameCoordinator {
     targetLevelOrder: null,
     rewardCandidateIds: [],
     eventOptionIds: [],
+    pendingCombo: null,
   };
 
   constructor(
@@ -83,6 +96,7 @@ export class GameCoordinator {
       targetLevelOrder: snapshot.context.targetLevelOrder,
       rewardCandidateIds: snapshot.context.rewardCandidateIds,
       eventOptionIds: snapshot.context.eventOptionIds,
+      pendingCombo: snapshot.context.pendingCombo,
     });
     return coordinator;
   }
@@ -108,6 +122,9 @@ export class GameCoordinator {
     }
     if (update.eventOptionIds !== undefined) {
       this.context.eventOptionIds = validateIds(update.eventOptionIds, "event option");
+    }
+    if (update.pendingCombo !== undefined) {
+      this.context.pendingCombo = validatePendingCombo(update.pendingCombo);
     }
   }
 
@@ -171,27 +188,32 @@ export class GameCoordinator {
   }
 
   private dispatchToSession(command: GameCommand, session: GameSession): CoordinatorResult {
+    const before = this.snapshot();
     if (command.type === "tool.use" && command.tool === "discard") {
       const result = session.dispatch(command);
       if (result.accepted
         && result.events.some((event) => event.type === "discard.choice.required")) {
         this.requireTransition("playing.discardChoosing");
       }
-      return this.fromSessionResult(result);
+      return this.fromSessionResult(result, before);
     }
 
     const originPhase = this.run.phase;
     this.requireTransition("playing.resolving");
     const result = session.dispatch(command);
-    const comboChoiceRequired = result.events.some(
-      (event) => event.type === "combo.choice.required",
+    const comboChoice = result.events.find(
+      (event): event is Extract<DomainEvent, { type: "combo.choice.required" }> =>
+        event.type === "combo.choice.required",
     );
 
-    if (comboChoiceRequired) {
+    if (comboChoice) {
       this.requireTransition("playing.comboChoosing");
+      this.context.pendingCombo = clonePendingCombo(comboChoice);
     } else if (!result.accepted) {
       this.requireTransition(
-        originPhase === "playing.comboChoosing" ? "playing.comboChoosing" : "playing.idle",
+        originPhase === "playing.comboChoosing" || originPhase === "playing.discardChoosing"
+          ? originPhase
+          : "playing.idle",
       );
     } else if (result.changed) {
       this.requireTransition("playing.dangerCheck");
@@ -204,7 +226,10 @@ export class GameCoordinator {
       this.requireTransition("playing.idle");
     }
 
-    return this.fromSessionResult(result);
+    if (this.run.phase !== "playing.comboChoosing") {
+      this.context.pendingCombo = null;
+    }
+    return this.fromSessionResult(result, before);
   }
 
   private isSessionCommandAllowed(command: GameCommand): boolean {
@@ -234,7 +259,7 @@ export class GameCoordinator {
   private flowResult(event: DomainEvent): CoordinatorResult {
     return this.decorate({
       accepted: true,
-      changed: false,
+      changed: true,
       snapshot: this.session?.snapshot() ?? null,
       events: [event],
     });
@@ -249,8 +274,12 @@ export class GameCoordinator {
     });
   }
 
-  private fromSessionResult(result: CommandResult): CoordinatorResult {
-    return this.decorate(result);
+  private fromSessionResult(result: CommandResult, before: RunSnapshot): CoordinatorResult {
+    const after = this.snapshot();
+    return this.decorate({
+      ...result,
+      changed: result.changed || !valuesEqual(before, after),
+    }, after);
   }
 
   private decorate(result: {
@@ -258,13 +287,13 @@ export class GameCoordinator {
     readonly changed: boolean;
     readonly snapshot: GameSnapshot | null;
     readonly events: readonly DomainEvent[];
-  }): CoordinatorResult {
+  }, runSnapshot: RunSnapshot = this.snapshot()): CoordinatorResult {
     return {
       ...result,
       phase: this.run.phase,
       stable: this.run.isStable(),
       persistable: this.run.isPersistable(),
-      runSnapshot: this.snapshot(),
+      runSnapshot,
     };
   }
 
@@ -273,6 +302,7 @@ export class GameCoordinator {
       targetLevelOrder: this.context.targetLevelOrder,
       rewardCandidateIds: [...this.context.rewardCandidateIds],
       eventOptionIds: [...this.context.eventOptionIds],
+      pendingCombo: clonePendingCombo(this.context.pendingCombo),
       pauseReturnPhase: this.run.pauseReturnPhase,
     };
   }
@@ -288,6 +318,7 @@ function validateRunSnapshot(snapshot: RunSnapshot): void {
   validateTargetLevelOrder(snapshot.context.targetLevelOrder);
   validateIds(snapshot.context.rewardCandidateIds, "reward candidate");
   validateIds(snapshot.context.eventOptionIds, "event option");
+  validatePendingCombo(snapshot.context.pendingCombo);
   if (snapshot.context.pauseReturnPhase !== null
     && !isPauseReturnPhase(snapshot.context.pauseReturnPhase)) {
     throw new Error("Run snapshot has an invalid pause return phase.");
@@ -295,6 +326,7 @@ function validateRunSnapshot(snapshot: RunSnapshot): void {
   if (snapshot.sessionSnapshot !== null) {
     validateGameSnapshot(snapshot.sessionSnapshot);
   }
+  validateSnapshotSemantics(snapshot);
 }
 
 function validateTargetLevelOrder(value: number | null): void {
@@ -310,6 +342,128 @@ function validateIds(ids: readonly string[], label: string): string[] {
     throw new Error(`Run snapshot has invalid ${label} ids.`);
   }
   return [...ids];
+}
+
+function validatePendingCombo(
+  pendingCombo: PendingComboContext | null,
+): PendingComboContext | null {
+  if (pendingCombo === null) {
+    return null;
+  }
+  if (!pendingCombo
+    || typeof pendingCombo !== "object"
+    || !GAME_COMBOS.has(pendingCombo.combo)
+    || !Array.isArray(pendingCombo.candidates)
+    || pendingCombo.candidates.length < 2) {
+    throw new Error("Run snapshot has invalid pending combo context.");
+  }
+
+  const keys = new Set<string>();
+  const candidates = pendingCombo.candidates.map((candidate) => {
+    if (!candidate
+      || typeof candidate !== "object"
+      || candidate.type !== pendingCombo.combo
+      || typeof candidate.key !== "string"
+      || candidate.key.trim().length === 0
+      || keys.has(candidate.key)
+      || !isNonEmptyStringArray(candidate.tileIds)
+      || !isNonEmptyStringArray(candidate.labels)
+      || !isNonEmptyStringArray(candidate.prefabKeys)
+      || candidate.labels.length !== candidate.tileIds.length
+      || candidate.prefabKeys.length !== candidate.tileIds.length) {
+      throw new Error("Run snapshot has invalid pending combo candidates.");
+    }
+    keys.add(candidate.key);
+    return {
+      type: candidate.type,
+      key: candidate.key,
+      tileIds: [...candidate.tileIds],
+      labels: [...candidate.labels],
+      prefabKeys: [...candidate.prefabKeys],
+    };
+  });
+
+  return { combo: pendingCombo.combo, candidates };
+}
+
+function clonePendingCombo(
+  pendingCombo: PendingComboContext | null,
+): PendingComboContext | null {
+  if (pendingCombo === null) {
+    return null;
+  }
+  return {
+    combo: pendingCombo.combo,
+    candidates: pendingCombo.candidates.map((candidate) => ({
+      type: candidate.type,
+      key: candidate.key,
+      tileIds: [...candidate.tileIds],
+      labels: [...candidate.labels],
+      prefabKeys: [...candidate.prefabKeys],
+    })),
+  };
+}
+
+function isNonEmptyStringArray(value: readonly string[]): boolean {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every((entry) => typeof entry === "string" && entry.trim().length > 0);
+}
+
+function validateSnapshotSemantics(snapshot: RunSnapshot): void {
+  const { phase, sessionSnapshot, context } = snapshot;
+  if (PLAYING_PHASES.has(phase)) {
+    if (!sessionSnapshot) {
+      throw new Error("Playing run snapshot requires an attached session snapshot.");
+    }
+    if (sessionSnapshot.status === "cleared") {
+      throw new Error("Active playing phase cannot restore a cleared session.");
+    }
+  }
+  if (phase === "encounterCleared"
+    && sessionSnapshot?.status !== "cleared") {
+    throw new Error("encounterCleared requires a cleared session.");
+  }
+  if ((phase === "rewardChoice" || phase === "eventChoice") && sessionSnapshot !== null) {
+    throw new Error(`${phase} must restore without an attached session.`);
+  }
+
+  const needsPendingCombo = phase === "playing.comboChoosing"
+    || (phase === "paused" && context.pauseReturnPhase === "playing.comboChoosing");
+  if (needsPendingCombo && context.pendingCombo === null) {
+    throw new Error(`${phase} requires pending combo context.`);
+  }
+  if (!needsPendingCombo && context.pendingCombo !== null) {
+    throw new Error(`Pending combo context is not allowed during ${phase}.`);
+  }
+
+  if (phase === "rewardChoice") {
+    if (context.targetLevelOrder === null) {
+      throw new Error("Reward choice requires a target level.");
+    }
+    if (context.rewardCandidateIds.length === 0) {
+      throw new Error("Reward choice requires at least one reward candidate.");
+    }
+    if (context.eventOptionIds.length > 0) {
+      throw new Error("Event option ids are not allowed during rewardChoice.");
+    }
+  } else if (context.rewardCandidateIds.length > 0) {
+    throw new Error(`Reward candidate ids are not allowed during ${phase}.`);
+  }
+
+  if (phase === "eventChoice") {
+    if (context.targetLevelOrder === null) {
+      throw new Error("Event choice requires a target level.");
+    }
+    if (context.eventOptionIds.length === 0) {
+      throw new Error("Event choice requires at least one event option.");
+    }
+    if (context.rewardCandidateIds.length > 0) {
+      throw new Error("Reward candidate ids are not allowed during eventChoice.");
+    }
+  } else if (context.eventOptionIds.length > 0) {
+    throw new Error(`Event option ids are not allowed during ${phase}.`);
+  }
 }
 
 function validateGameSnapshot(snapshot: GameSnapshot): void {

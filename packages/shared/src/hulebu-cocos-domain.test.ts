@@ -4,6 +4,7 @@ import { rolldown } from "rolldown";
 import { beforeAll, describe, expect, test } from "vitest";
 import type { HulebuRuntimeLevelConfig, HulebuTileSuit } from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig";
 import type {
+  HulebuRuntimeComboCandidateOption,
   HulebuRuntimeState as HulebuRuntimeStateClass,
   HulebuRuntimeLegacySnapshot,
   HulebuRuntimeSnapshot,
@@ -609,12 +610,12 @@ describe("Hulebu Cocos run coordinator", () => {
     const coordinator = new GameCoordinator(run, session);
 
     const paused = coordinator.dispatch({ type: "flow.pause" });
-    expect(paused).toMatchObject({ accepted: true, changed: false, phase: "paused" });
+    expect(paused).toMatchObject({ accepted: true, changed: true, phase: "paused" });
     expect(paused.events).toEqual([{ type: "flow.paused" }]);
     expect(paused.runSnapshot.context.pauseReturnPhase).toBe(phase);
 
     const resumed = coordinator.dispatch({ type: "flow.resume" });
-    expect(resumed).toMatchObject({ accepted: true, changed: false, phase });
+    expect(resumed).toMatchObject({ accepted: true, changed: true, phase });
     expect(resumed.events).toEqual([{ type: "flow.resumed" }]);
     expect(resumed.runSnapshot.context.pauseReturnPhase).toBeNull();
     expect(dispatchCount()).toBe(0);
@@ -699,13 +700,20 @@ describe("Hulebu Cocos run coordinator", () => {
 
   test("keeps combo choice exact and rejects unrelated commands without duplicate execution", () => {
     const runtime = new HulebuRuntimeState(createMultiChiLevel());
-    const candidate = runtime.getComboCandidateOptions("chi")[1];
+    const candidates = runtime.getComboCandidateOptions("chi");
+    const candidate = candidates[1];
     const session = new GameSession(runtime);
     const dispatchCount = observeSessionDispatch(session);
     const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
 
     const prompted = coordinator.dispatch({ type: "combo.execute", combo: "chi" });
-    expect(prompted).toMatchObject({ accepted: true, changed: false, phase: "playing.comboChoosing" });
+    expect(prompted).toMatchObject({
+      accepted: true,
+      changed: true,
+      persistable: true,
+      phase: "playing.comboChoosing",
+    });
+    expect(prompted.changed && prompted.persistable).toBe(true);
     expect(prompted.events).toEqual([
       expect.objectContaining({ type: "combo.choice.required", combo: "chi" }),
     ]);
@@ -722,11 +730,47 @@ describe("Hulebu Cocos run coordinator", () => {
     expect(chosen.events).toEqual([
       { type: "combo.executed", combo: "chi", candidateId: candidate.key },
     ]);
+    expect(chosen.runSnapshot.context.pendingCombo).toBeNull();
 
     const repeated = coordinator.dispatch({ type: "combo.choose", candidateId: candidate.key });
     expect(repeated).toMatchObject({ accepted: false, changed: false, phase: "playing.idle" });
     expect(repeated.events.filter((event) => event.type === "combo.executed")).toHaveLength(0);
     expect(dispatchCount()).toBe(2);
+  });
+
+  test("round-trips and isolates the exact pending combo candidates", () => {
+    const runtime = new HulebuRuntimeState(createMultiChiLevel());
+    const expectedCandidates = JSON.parse(JSON.stringify(
+      runtime.getComboCandidateOptions("chi"),
+    )) as HulebuRuntimeComboCandidateOption[];
+    const session = new GameSession(runtime);
+    const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
+
+    const prompted = coordinator.dispatch({ type: "combo.execute", combo: "chi" });
+    expect(prompted.runSnapshot.context.pendingCombo).toEqual({
+      combo: "chi",
+      candidates: expectedCandidates,
+    });
+
+    const persisted = JSON.parse(JSON.stringify(coordinator.snapshot())) as RunSnapshot;
+    expect(GameCoordinator.restore(persisted, session).snapshot().context.pendingCombo)
+      .toEqual({ combo: "chi", candidates: expectedCandidates });
+
+    const exposedPending = prompted.runSnapshot.context.pendingCombo;
+    if (!exposedPending) throw new Error("Expected pending combo context.");
+    const exposedCandidates = exposedPending.candidates as HulebuRuntimeComboCandidateOption[];
+    exposedCandidates[0].tileIds.push("external-tile");
+    exposedCandidates.push({
+      ...expectedCandidates[0],
+      key: "external-candidate",
+      tileIds: [...expectedCandidates[0].tileIds],
+      labels: [...expectedCandidates[0].labels],
+      prefabKeys: [...expectedCandidates[0].prefabKeys],
+    });
+    expect(coordinator.snapshot().context.pendingCombo).toEqual({
+      combo: "chi",
+      candidates: expectedCandidates,
+    });
   });
 
   test("keeps discard selection exact and blocks unrelated tile and tool commands", () => {
@@ -739,7 +783,13 @@ describe("Hulebu Cocos run coordinator", () => {
     const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
 
     const prompted = coordinator.dispatch({ type: "tool.use", tool: "discard" });
-    expect(prompted).toMatchObject({ accepted: true, changed: false, phase: "playing.discardChoosing" });
+    expect(prompted).toMatchObject({
+      accepted: true,
+      changed: true,
+      persistable: true,
+      phase: "playing.discardChoosing",
+    });
+    expect(prompted.changed && prompted.persistable).toBe(true);
     expect(prompted.events).toEqual([{ type: "discard.choice.required" }]);
 
     expect(coordinator.dispatch({ type: "tile.select", tileId: "board-a" }))
@@ -748,10 +798,33 @@ describe("Hulebu Cocos run coordinator", () => {
       .toMatchObject({ accepted: false, changed: false, phase: "playing.discardChoosing" });
     expect(dispatchCount()).toBe(1);
 
+    const stale = coordinator.dispatch({ type: "slot.discard", slotIndex: 99 });
+    expect(stale).toMatchObject({
+      accepted: false,
+      changed: false,
+      phase: "playing.discardChoosing",
+    });
+    expect(dispatchCount()).toBe(2);
+
     const discarded = coordinator.dispatch({ type: "slot.discard", slotIndex: 0 });
     expect(discarded).toMatchObject({ accepted: true, changed: true, phase: "playing.idle" });
     expect(discarded.events).toEqual([{ type: "slot.discarded", slotIndex: 0 }]);
-    expect(dispatchCount()).toBe(2);
+    expect(dispatchCount()).toBe(3);
+  });
+
+  test("keeps discard choice active after a stale index so a valid choice can retry", () => {
+    const session = new GameSession(new HulebuRuntimeState(createLevel({
+      discard: 1,
+      initialSlotOrder: ["slot-a"],
+      tiles: [createTile("slot-a", "wan", 1, "slot"), createTile("board-a", "tong", 2)],
+    })));
+    const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
+    expect(coordinator.dispatch({ type: "tool.use", tool: "discard" }).accepted).toBe(true);
+
+    expect(coordinator.dispatch({ type: "slot.discard", slotIndex: 99 }))
+      .toMatchObject({ accepted: false, changed: false, phase: "playing.discardChoosing" });
+    expect(coordinator.dispatch({ type: "slot.discard", slotIndex: 0 }))
+      .toMatchObject({ accepted: true, changed: true, phase: "playing.idle" });
   });
 
   test("emits level clear once and never re-dispatches after encounter clear", () => {
@@ -849,25 +922,122 @@ describe("Hulebu Cocos run coordinator", () => {
   });
 
   test("round-trips paused context and validates that playing restores have a matching session", () => {
-    const session = new GameSession(new HulebuRuntimeState(createPengLevel()));
-    const coordinator = new GameCoordinator(new RunStateMachine("playing.comboChoosing"), session);
+    const session = new GameSession(new HulebuRuntimeState(createMultiChiLevel()));
+    const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
     coordinator.updateContext({ targetLevelOrder: 7 });
+    expect(coordinator.dispatch({ type: "combo.execute", combo: "chi" }).accepted).toBe(true);
     expect(coordinator.dispatch({ type: "flow.pause" }).accepted).toBe(true);
     const pausedSnapshot = JSON.parse(JSON.stringify(coordinator.snapshot())) as RunSnapshot;
 
     expect(GameCoordinator.restore(pausedSnapshot, session).snapshot()).toEqual(pausedSnapshot);
     expect(pausedSnapshot.context.pauseReturnPhase).toBe("playing.comboChoosing");
+    expect(pausedSnapshot.context.pendingCombo).toBeDefined();
+    expect(pausedSnapshot.context.pendingCombo?.candidates.length ?? 0).toBeGreaterThan(1);
 
     const playingSnapshot: RunSnapshot = {
       ...pausedSnapshot,
       phase: "playing.idle",
-      context: { ...pausedSnapshot.context, pauseReturnPhase: null },
+      context: {
+        ...pausedSnapshot.context,
+        pauseReturnPhase: null,
+        pendingCombo: null,
+      },
     };
     expect(() => GameCoordinator.restore({ ...playingSnapshot, sessionSnapshot: null }))
       .toThrow(/session/i);
     expect(() => GameCoordinator.restore(playingSnapshot))
       .toThrow(/session/i);
     expect(GameCoordinator.restore(playingSnapshot, session).snapshot()).toEqual(playingSnapshot);
+  });
+
+  test("rejects phase and session status mismatches during restore", () => {
+    const playingSession = new GameSession(new HulebuRuntimeState(createPengLevel()));
+    const playingSnapshot = new GameCoordinator(
+      new RunStateMachine("playing.idle"),
+      playingSession,
+    ).snapshot();
+    expect(() => GameCoordinator.restore({
+      ...playingSnapshot,
+      phase: "encounterCleared",
+    }, playingSession)).toThrow(/cleared session/i);
+
+    const clearedSession = new GameSession(new HulebuRuntimeState(createLevel({
+      tiles: [createTile("last", "wan", 1)],
+    })));
+    expect(clearedSession.dispatch({ type: "tile.select", tileId: "last" }).accepted).toBe(true);
+    const clearedSnapshot = new GameCoordinator(
+      new RunStateMachine("encounterCleared"),
+      clearedSession,
+    ).snapshot();
+    expect(() => GameCoordinator.restore({
+      ...clearedSnapshot,
+      phase: "playing.idle",
+    }, clearedSession)).toThrow(/active playing phase.*cleared/i);
+  });
+
+  test("requires complete reward and event choice context during restore", () => {
+    const rewardCoordinator = new GameCoordinator(new RunStateMachine("rewardChoice"));
+    rewardCoordinator.updateContext({ targetLevelOrder: 5, rewardCandidateIds: ["reward-a"] });
+    const rewardSnapshot = rewardCoordinator.snapshot();
+    expect(() => GameCoordinator.restore({
+      ...rewardSnapshot,
+      context: { ...rewardSnapshot.context, rewardCandidateIds: [] },
+    })).toThrow(/reward candidate/i);
+    expect(() => GameCoordinator.restore({
+      ...rewardSnapshot,
+      context: { ...rewardSnapshot.context, targetLevelOrder: null },
+    })).toThrow(/target level/i);
+    expect(() => GameCoordinator.restore({
+      ...rewardSnapshot,
+      context: { ...rewardSnapshot.context, eventOptionIds: ["stale-event"] },
+    })).toThrow(/event option.*rewardChoice/i);
+
+    const eventCoordinator = new GameCoordinator(new RunStateMachine("eventChoice"));
+    eventCoordinator.updateContext({ targetLevelOrder: 6, eventOptionIds: ["event-a"] });
+    const eventSnapshot = eventCoordinator.snapshot();
+    expect(() => GameCoordinator.restore({
+      ...eventSnapshot,
+      context: { ...eventSnapshot.context, eventOptionIds: [] },
+    })).toThrow(/event option/i);
+    expect(() => GameCoordinator.restore({
+      ...eventSnapshot,
+      context: { ...eventSnapshot.context, targetLevelOrder: null },
+    })).toThrow(/target level/i);
+    expect(() => GameCoordinator.restore({
+      ...eventSnapshot,
+      context: { ...eventSnapshot.context, rewardCandidateIds: ["stale-reward"] },
+    })).toThrow(/reward candidate.*eventChoice/i);
+  });
+
+  test.each([
+    ["rewardChoice", { targetLevelOrder: 5, rewardCandidateIds: ["reward-a"] }],
+    ["eventChoice", { targetLevelOrder: 6, eventOptionIds: ["event-a"] }],
+  ] as const)("restores %s only without an attached game session", (phase, context) => {
+    const session = new GameSession(new HulebuRuntimeState(createPengLevel()));
+    const coordinator = new GameCoordinator(new RunStateMachine(phase));
+    coordinator.updateContext(context);
+    const snapshot = coordinator.snapshot();
+
+    expect(() => GameCoordinator.restore({
+      ...snapshot,
+      sessionSnapshot: session.snapshot(),
+    }, session)).toThrow(new RegExp(`${phase}.*without.*session`, "i"));
+  });
+
+  test("requires pending combo context only while combo choice is active", () => {
+    const session = new GameSession(new HulebuRuntimeState(createMultiChiLevel()));
+    const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
+    const prompted = coordinator.dispatch({ type: "combo.execute", combo: "chi" });
+    const choosingSnapshot = prompted.runSnapshot;
+
+    expect(() => GameCoordinator.restore({
+      ...choosingSnapshot,
+      context: { ...choosingSnapshot.context, pendingCombo: null },
+    }, session)).toThrow(/pending combo/i);
+    expect(() => GameCoordinator.restore({
+      ...choosingSnapshot,
+      phase: "playing.idle",
+    }, session)).toThrow(/pending combo.*playing.idle/i);
   });
 
   test("matches restored session snapshots by value instead of object key order", () => {
