@@ -86,6 +86,7 @@ export class GameCoordinator {
       && !gameSnapshotsEqual(session.snapshot(), snapshot.sessionSnapshot)) {
       throw new Error("Attached session does not match the run snapshot.");
     }
+    validatePendingComboSession(snapshot, session);
 
     const run = RunStateMachine.restore(
       snapshot.phase,
@@ -102,38 +103,66 @@ export class GameCoordinator {
   }
 
   attachSession(session: GameSession): void {
+    const snapshot = this.createSnapshot(session, this.context);
+    validateRunSnapshot(snapshot);
+    validatePendingComboSession(snapshot, session);
     this.session = session;
   }
 
   detachSession(): void {
+    const snapshot = this.createSnapshot(null, this.context);
+    validateRunSnapshot(snapshot);
     this.session = null;
   }
 
   updateContext(update: RunContextUpdate): void {
+    const nextContext: MutableRunContext = {
+      targetLevelOrder: this.context.targetLevelOrder,
+      rewardCandidateIds: [...this.context.rewardCandidateIds],
+      eventOptionIds: [...this.context.eventOptionIds],
+      pendingCombo: clonePendingCombo(this.context.pendingCombo),
+    };
     if (update.targetLevelOrder !== undefined) {
       validateTargetLevelOrder(update.targetLevelOrder);
-      this.context.targetLevelOrder = update.targetLevelOrder;
+      nextContext.targetLevelOrder = update.targetLevelOrder;
     }
     if (update.rewardCandidateIds !== undefined) {
-      this.context.rewardCandidateIds = validateIds(
+      nextContext.rewardCandidateIds = validateIds(
         update.rewardCandidateIds,
         "reward candidate",
       );
     }
     if (update.eventOptionIds !== undefined) {
-      this.context.eventOptionIds = validateIds(update.eventOptionIds, "event option");
+      nextContext.eventOptionIds = validateIds(update.eventOptionIds, "event option");
     }
     if (update.pendingCombo !== undefined) {
-      this.context.pendingCombo = validatePendingCombo(update.pendingCombo);
+      nextContext.pendingCombo = validatePendingCombo(update.pendingCombo);
     }
+    const snapshot = this.createSnapshot(this.session, nextContext);
+    validateRunSnapshot(snapshot);
+    validatePendingComboSession(snapshot, this.session);
+    this.context.targetLevelOrder = nextContext.targetLevelOrder;
+    this.context.rewardCandidateIds = nextContext.rewardCandidateIds;
+    this.context.eventOptionIds = nextContext.eventOptionIds;
+    this.context.pendingCombo = nextContext.pendingCombo;
   }
 
   snapshot(): RunSnapshot {
+    const snapshot = this.createSnapshot(this.session, this.context);
+    validateRunSnapshot(snapshot);
+    validatePendingComboSession(snapshot, this.session);
+    return snapshot;
+  }
+
+  private createSnapshot(
+    session: GameSession | null,
+    context: MutableRunContext,
+  ): RunSnapshot {
     return {
       schemaVersion: 1,
       phase: this.run.phase,
-      sessionSnapshot: this.session?.snapshot() ?? null,
-      context: this.snapshotContext(),
+      sessionSnapshot: session?.snapshot() ?? null,
+      context: this.snapshotContext(context),
     };
   }
 
@@ -159,6 +188,12 @@ export class GameCoordinator {
     }
     if (!this.session) {
       return this.reject(command, "No game session is attached.");
+    }
+    if (command.type === "combo.choose"
+      && !this.context.pendingCombo?.candidates.some(
+        (candidate) => candidate.key === command.candidateId,
+      )) {
+      return this.reject(command, "Combo candidate is not part of the pending choice.");
     }
 
     return this.dispatchToSession(command, this.session);
@@ -297,12 +332,12 @@ export class GameCoordinator {
     };
   }
 
-  private snapshotContext(): RunPhaseContext {
+  private snapshotContext(context: MutableRunContext = this.context): RunPhaseContext {
     return {
-      targetLevelOrder: this.context.targetLevelOrder,
-      rewardCandidateIds: [...this.context.rewardCandidateIds],
-      eventOptionIds: [...this.context.eventOptionIds],
-      pendingCombo: clonePendingCombo(this.context.pendingCombo),
+      targetLevelOrder: context.targetLevelOrder,
+      rewardCandidateIds: [...context.rewardCandidateIds],
+      eventOptionIds: [...context.eventOptionIds],
+      pendingCombo: clonePendingCombo(context.pendingCombo),
       pauseReturnPhase: this.run.pauseReturnPhase,
     };
   }
@@ -421,7 +456,8 @@ function validateSnapshotSemantics(snapshot: RunSnapshot): void {
     }
   }
   if (phase === "encounterCleared"
-    && sessionSnapshot?.status !== "cleared") {
+    && sessionSnapshot !== null
+    && sessionSnapshot.status !== "cleared") {
     throw new Error("encounterCleared requires a cleared session.");
   }
   if ((phase === "rewardChoice" || phase === "eventChoice") && sessionSnapshot !== null) {
@@ -480,6 +516,31 @@ function validateGameSnapshot(snapshot: GameSnapshot): void {
 
 function gameSnapshotsEqual(left: GameSnapshot, right: GameSnapshot): boolean {
   return valuesEqual(left, right);
+}
+
+function getSessionComboCandidates(
+  session: GameSession,
+  combo: GameCombo,
+): PendingComboContext["candidates"] {
+  const runtime = (session as unknown as {
+    readonly runtime: {
+      getComboCandidateOptions(value: GameCombo): PendingComboContext["candidates"];
+    };
+  }).runtime;
+  return runtime.getComboCandidateOptions(combo);
+}
+
+function validatePendingComboSession(
+  snapshot: RunSnapshot,
+  session: GameSession | null,
+): void {
+  if (session && snapshot.context.pendingCombo
+    && !valuesEqual(
+      getSessionComboCandidates(session, snapshot.context.pendingCombo.combo),
+      snapshot.context.pendingCombo.candidates,
+    )) {
+    throw new Error("Pending combo context does not match the attached session.");
+  }
 }
 
 function valuesEqual(left: unknown, right: unknown): boolean {
