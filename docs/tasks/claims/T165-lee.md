@@ -1,14 +1,13 @@
-# T165：胡了卜 Demo 完整体验版推进方案
+# T165：AI 修图批量品牌填充和 AI 溶图实现
 
-- 任务编号：T165
 - 领取人：Lee
-- 领取时间：2026-06-13
-- 状态：待验收
-- 预计完成：2026-06-13
-- 允许修改文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T165-hulebu-complete-experience-roadmap.md`, `docs/tasks/claims/T165-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/superpowers/specs/2026-06-13-hulebu-complete-experience-roadmap-design.md`, `docs/superpowers/plans/2026-06-13-hulebu-complete-experience-roadmap.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-13-lee.md`, `docs/completion/**`
-- 禁止修改文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `apps/game/mahjong-roguelike/cocos/**`, `apps/game/mahjong-roguelike/config/**`, `packages/shared/**`, `apps/web/src/app/account/**`, `apps/web/src/lib/ai/**`, `apps/web/src/modules/tools/**`, `apps/web/prisma/**`, `/Users/lee/Desktop/Lee/TimePick/**`, `deploy/**`, `docker-compose.yml`, `docker-compose.prod.yml`
-- 验证命令：`npm run docs:sync`; `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T165-hulebu-complete-experience-roadmap.md docs/tasks/claims/T165-lee.md docs/superpowers/specs/2026-06-13-hulebu-complete-experience-roadmap-design.md docs/superpowers/plans/2026-06-13-hulebu-complete-experience-roadmap.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-13-lee.md docs/completion/2026-06-13-task-165-hulebu-complete-experience-roadmap.md`; `git diff --check`
-- 当前阻塞：无
-- 完成时间：2026-06-13
-- 完成说明：已完成胡了卜完整体验版推进方案，明确从当前 10 关朋友 Demo 先推进到 20 关主线、局外升级壳和第 20 关 Boss，再分阶段扩展奖励池、无尽、每日、成就、高阶周目和 Cocos 正式表现层。
-
+- 领取时间：2026-06-29
+- 状态：已完成
+- 预计完成：2026-06-29
+- 允许修改文件：`apps/web/src/components/tools/photo/**`, `apps/web/src/lib/tools/photo/**`, `apps/web/src/app/api/tools/photo/**`, `docs/modules/photo-editor/**`, `docs/tasks/items/T165-ai-photo-batch-branding-and-scene-blend.md`, `docs/tasks/claims/T165-lee.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-06-29-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`
+- 禁止修改文件：`packages/**`, `.env`, `apps/web/.env`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`, `package.json`, `package-lock.json`
+- 依赖任务：T154, T155, T156
+- 验证命令：`npm run test -w apps/web -- photo ai-gateway`; `npm run lint -w apps/web`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; `npm run docs:sync`; `git diff --check`
+- 当前状态：已完成批量品牌填充和 AI 溶图第一版实现。
+- 完成内容：批量品牌填充支持短字、Logo、批量预览、单张载入画布和 Canvas 批量导出；AI 溶图支持产品图、背景图、场景描述、Gateway 任务提交、轮询和结果替换。
+- 验证结果：`npm run test -w apps/web -- photo ai-gateway openai-compatible-provider` 通过；`npm run lint -w apps/web` 通过但有 generated Prisma warning；`git diff --check` 通过；`npm run typecheck -w apps/web` 受既有依赖/类型问题阻塞；`npm run build -w apps/web` 受 Prisma/zeptomatch ESM 兼容问题阻塞。

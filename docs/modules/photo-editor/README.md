@@ -1,9 +1,9 @@
 # AI 修图模块说明
 
-**最后更新**：2026-06-11  
-**对应任务**：T045、T074、T078、T154、T155  
+**最后更新**：2026-06-29
+**对应任务**：T045、T074、T078、T154、T155、T165、T166
 **负责人**：Lee  
-**状态**：本地修图工作台已完成，`AI 美颜` 已迁到平台 AI Gateway；第二条图片 AI 能力尚未开始
+**状态**：本地修图工作台已完成；`AI 美颜`、`AI 溶图`、`AI 细节修复`、`高清增强` 和 `AI 对话修图` 已接入平台 AI Gateway 图片编辑链路；批量品牌填充第一版已完成
 
 ## 1. 模块目标
 
@@ -29,6 +29,14 @@ AI 修图模块负责提供两层能力：
 - `AI 美颜`：自然人像增强。
 - 运行方式：`/api/tools/photo/beauty` + 进度轮询 + 结果替换当前画布。
 - 当前口径：已统一走平台 AI Gateway、provider readiness、统一积分和统一请求日志；迁移期允许读取现有 openai-compatible 图片 provider 配置作为兼容入口。
+- `AI 溶图`：产品图 + 背景图 + 场景描述，通过平台 AI Gateway `image_edit` 任务化生成并替换当前画布。
+- `AI 细节修复`：当前画布图片 + 修复描述，通过平台 AI Gateway `image_edit` 任务化生成并替换当前画布。
+- `高清增强`：当前画布图片通过平台 AI Gateway `image_edit` 任务化生成高清增强图并替换当前画布。
+- `AI 对话修图`：右侧对话框支持一句话修图，按当前画布图片和用户指令生成结果图。
+
+当前已完成的本地批量能力：
+
+- `批量品牌`：最多 12 张图片批量上传，统一添加左上角短字、前置 Logo 和右下角 Logo，支持批量预览、单张载入画布和 Canvas 批量导出。
 
 ## 3. 免费和 AI 边界
 
@@ -116,6 +124,24 @@ AI 修图模块负责提供两层能力：
 3. 下一条优先考虑智能擦除或换背景，但前提是先补资产临时存放、结果回看和更长异步任务处理。
 4. `image_understanding` 仍放在更后面，只作为辅助能力。
 
+## 6.1 T165 新增能力
+
+批量品牌填充：
+
+- 支持批量上传最多 12 张图片。
+- 在左上角添加 10 个以内短字。
+- 可把上传 logo 放在短字前，形成 `logo + 短字`。
+- 在右下角添加 LOGO。
+- 批量预览后可点击单张图片载入主画布单独调整。
+- 使用浏览器 Canvas 按原图尺寸批量导出品牌图。
+
+AI 溶图 / 场景融合：
+
+- 支持产品图和背景图输入，例如产品图 + 雪山背景图。
+- 通过 AI Gateway 图片编辑任务把产品自然融合到户外、雪山等场景。
+- Prompt 明确要求改善边缘、接触阴影、环境光、反光、色温和透视一致性，避免简单抠图贴背景的假感。
+- OpenAI-compatible provider 会把产品图和背景图都作为 image edit 表单图片提交；真实质量依赖 provider 的多图编辑能力。
+
 ## 7. 主要文件
 
 当前已存在的核心实现：
@@ -124,7 +150,9 @@ AI 修图模块负责提供两层能力：
 - `apps/web/src/components/tools/photo/PhotoEditorWorkspace.tsx`
 - `apps/web/src/lib/tools/photo/ai-image-provider.ts`
 - `apps/web/src/lib/tools/photo/beauty-task-store.ts`
+- `apps/web/src/lib/tools/photo/scene-blend-task-store.ts`
 - `apps/web/src/app/api/tools/photo/beauty/**`
+- `apps/web/src/app/api/tools/photo/scene-blend/**`
 
 本次新增的模块文档：
 
@@ -139,3 +167,5 @@ AI 修图模块负责提供两层能力：
 - 图片 AI 更依赖真实 provider，无法像文本能力那样长期依赖 mock。
 - 智能擦除、换背景、高清增强都更容易把任务推向异步和临时资产管理。
 - 如果继续在工具目录下扩写新的图片 provider 私有配置，后续仍会和平台 provider readiness、积分和日志发生双轨冲突。
+- 批量品牌填充会带来浏览器内存和批量导出压力，需要限制单次图片数量、尺寸和导出并发。
+- AI 溶图依赖 provider 多图编辑或参考图能力，实施前需要先验证平台 AI Gateway 的图片能力契约是否支持。

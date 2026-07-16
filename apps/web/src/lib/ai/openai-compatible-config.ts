@@ -2,6 +2,7 @@ type OpenAiCompatibleProviderRuntimeEnv = {
   AI_GATEWAY_OPENAI_COMPATIBLE_API_KEY?: string;
   AI_GATEWAY_OPENAI_COMPATIBLE_BASE_URL?: string;
   AI_GATEWAY_OPENAI_COMPATIBLE_ENABLED?: string;
+  AI_GATEWAY_OPENAI_COMPATIBLE_IMAGE_MODEL?: string;
   AI_IMAGE_ACTIVE_PROVIDER?: string;
   [key: string]: string | undefined;
 };
@@ -9,6 +10,7 @@ type OpenAiCompatibleProviderRuntimeEnv = {
 export type OpenAiCompatibleProviderConfig = {
   apiKey: string;
   baseUrl: string;
+  imageModelId?: string;
 };
 
 const fallbackBaseUrl = "http://localhost:9999/v1";
@@ -38,7 +40,8 @@ export function getOpenAiCompatibleProviderConfig(
   if (gatewayApiKey) {
     return {
       apiKey: gatewayApiKey,
-      baseUrl: env.AI_GATEWAY_OPENAI_COMPATIBLE_BASE_URL?.trim() || fallbackBaseUrl
+      baseUrl: env.AI_GATEWAY_OPENAI_COMPATIBLE_BASE_URL?.trim() || fallbackBaseUrl,
+      imageModelId: env.AI_GATEWAY_OPENAI_COMPATIBLE_IMAGE_MODEL?.trim() || undefined
     };
   }
 
@@ -52,6 +55,7 @@ export function getOpenAiCompatibleProviderConfig(
   const protocol = env[`AI_IMAGE_PROVIDER_${prefix}_PROTOCOL`]?.trim();
   const apiKey = env[`AI_IMAGE_PROVIDER_${prefix}_API_KEY`]?.trim();
   const baseUrl = env[`AI_IMAGE_PROVIDER_${prefix}_BASE_URL`]?.trim();
+  const imageModelId = env[`AI_IMAGE_PROVIDER_${prefix}_MODEL`]?.trim();
 
   if (protocol !== "openai-compatible" || !apiKey || !baseUrl) {
     return null;
@@ -59,6 +63,7 @@ export function getOpenAiCompatibleProviderConfig(
 
   return {
     apiKey,
-    baseUrl
+    baseUrl,
+    imageModelId: imageModelId || undefined
   };
 }

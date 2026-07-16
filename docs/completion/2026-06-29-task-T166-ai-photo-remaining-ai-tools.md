@@ -1,0 +1,35 @@
+# T166：AI 修图剩余 AI 功能补全完成记录
+
+- 任务编号：T166
+- 负责人：Lee
+- 修改文件：
+  - `apps/web/src/components/tools/photo/PhotoEditorWorkspace.tsx`
+  - `apps/web/src/lib/tools/photo/ai-image-provider.ts`
+  - `apps/web/src/lib/tools/photo/photo-edit-task-store.ts`
+  - `apps/web/src/lib/tools/photo/__tests__/photo-edit-task-store.test.ts`
+  - `apps/web/src/app/api/tools/photo/repair/**`
+  - `apps/web/src/app/api/tools/photo/enhance/**`
+  - `apps/web/src/app/api/tools/photo/prompt-edit/**`
+  - `docs/modules/photo-editor/**`
+  - `docs/tasks/items/T166-ai-photo-remaining-ai-tools.md`
+  - `docs/tasks/claims/T166-lee.md`
+  - `docs/progress/2026-06-29-lee.md`
+- 实现内容：
+  - 新增通用单图 AI 编辑任务 store，支持 `repair`、`enhance`、`prompt-edit`。
+  - 新增三组 photo API 路由，统一使用平台 AI Gateway `image_edit`。
+  - 页面开放 `AI 细节修复`、`高清增强` 和右侧 `AI 对话修图`，支持任务创建、轮询、结果替换和状态提示。
+- 验证命令：
+  - `npm run test -w apps/web -- photo-edit repair enhance prompt-edit openai-compatible`
+  - `npm run lint -w apps/web`
+  - `npm run typecheck -w apps/web`
+  - `git diff --check`
+  - 浏览器冒烟：`http://localhost:3029/tools/ai-photo-editor`
+- 验证结果：
+  - 定向测试通过，2 个测试文件、8 个用例通过。
+  - lint 通过，仍有既有 generated Prisma unused eslint-disable warning。
+  - `git diff --check` 通过。
+  - 浏览器冒烟通过：剩余 AI 工具入口可见且未禁用，页面无 `未开放/暂未开放` 文案。
+  - typecheck 受既有依赖缺失和认证类型问题阻塞。
+- 遗留问题：
+  - 右侧对话框的“选择区域”和“上传参考”仍为后续增强入口，本轮先实现一句话修图。
+  - 真实生成质量依赖当前 OpenAI-compatible provider 的图片编辑能力。

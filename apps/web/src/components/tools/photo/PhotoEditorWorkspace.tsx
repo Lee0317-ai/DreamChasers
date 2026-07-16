@@ -55,7 +55,7 @@ const initialSliders: SliderState = {
   detail: 90
 };
 
-const AI_UNAVAILABLE_MESSAGE = "AI 功能暂未开放，敬请期待！";
+const defaultRepairPrompt = "修复画面中的局部瑕疵、遮挡或不需要的元素，保持周围纹理和光影自然";
 const cropRatios: CropRatio[] = ["自由", "1:1", "4:3", "16:9", "3:4", "9:16"];
 const cropHandles: CropResizeHandle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 
@@ -66,6 +66,36 @@ type UploadedPhoto = {
   sizeLabel: string;
   dimensions: string;
   objectUrl: string;
+};
+
+type BatchBrandPhoto = UploadedPhoto & {
+  id: string;
+  watermarkError?: string;
+  watermarkObjectUrl?: string;
+  watermarkStatus?: "idle" | "processing" | "succeeded" | "failed";
+};
+
+type BrandFillState = {
+  logo: {
+    file: File;
+    objectUrl: string;
+    aspectRatio: number;
+    name: string;
+  } | null;
+  logoSize: number;
+  selectedPhotoId: string | null;
+};
+
+type SceneBlendAsset = {
+  file: File;
+  objectUrl: string;
+  name: string;
+} | null;
+
+type ChatMessage = {
+  content: string;
+  id: string;
+  role: "ai" | "user";
 };
 
 type TextElement = {
@@ -116,8 +146,11 @@ type PhotoFrameStyle = React.CSSProperties & {
 };
 
 type EditorSnapshot = {
+  aiComparePhoto: UploadedPhoto | null;
   appliedCrop: ReturnType<typeof useCropBox>["rect"] | null;
   borderColor: string;
+  isAiResultCompare: boolean;
+  isOriginalCompare: boolean;
   pan: { x: number; y: number };
   photo: UploadedPhoto | null;
   selectedBorderId: PhotoBorderId;
@@ -147,18 +180,32 @@ type ExportState = {
 
 type ToolParameterProps = {
   activeTool: PhotoTool;
+  brandBatchPhotos: BatchBrandPhoto[];
+  brandFill: BrandFillState;
   borderColor: string;
   cropRatio: CropRatio;
+  isBrandExporting: boolean;
   onAddSticker: (preset: PhotoStickerPreset) => void;
   onAddText: () => void;
   onApplyCrop: () => void;
   onBorderColorChange: (color: string) => void;
   onCropRatioChange: (ratio: CropRatio) => void;
   onDeleteSelectedText: () => void;
+  onExportBrandBatch: () => void;
+  onOpenBrandBatchPicker: () => void;
+  onOpenBrandLogoPicker: () => void;
+  onOpenSceneBackgroundPicker: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
+  onRunEnhance: () => void;
+  onRunRepair: () => void;
+  onRunSceneBlend: () => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
+  onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
+  onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+  onSetRepairPrompt: (prompt: string) => void;
+  onSetScenePrompt: (prompt: string) => void;
   onTextBoldChange: (isBold: boolean) => void;
   onTextColorChange: (color: string) => void;
   onTextContentChange: (content: string) => void;
@@ -171,8 +218,20 @@ type ToolParameterProps = {
   selectedText: TextElement | null;
   beautyError: string | null;
   beautyStatusMessage: string | null;
+  enhanceError: string | null;
+  enhanceStatusMessage: string | null;
   isBeautyRunning: boolean;
+  isEnhanceRunning: boolean;
+  isRepairRunning: boolean;
+  isSceneBlendRunning: boolean;
+  repairError: string | null;
+  repairPrompt: string;
+  repairStatusMessage: string | null;
   sliders: SliderState;
+  sceneBackground: SceneBlendAsset;
+  sceneBlendError: string | null;
+  sceneBlendStatusMessage: string | null;
+  scenePrompt: string;
   stickerCategories: StickerCategoryList;
   stickerPresets: PhotoStickerPreset[];
   textBold: boolean;
@@ -191,7 +250,9 @@ const maxStickerSize = 180;
 const customStickerAccept = "image/png,image/jpeg,image/webp,image/svg+xml";
 const photoFileInputId = "photo-editor-file-input";
 const customStickerInputId = "photo-editor-custom-sticker-input";
-
+const brandBatchInputId = "photo-editor-brand-batch-input";
+const brandLogoInputId = "photo-editor-brand-logo-input";
+const sceneBackgroundInputId = "photo-editor-scene-background-input";
 const textColors: TextOption[] = [
   { label: "黑", value: "#111111" },
   { label: "白", value: "#ffffff" },
@@ -230,11 +291,21 @@ type BeautyTaskResponse = {
   taskId?: string;
 };
 
+type AiImageTaskResponse = BeautyTaskResponse;
+
+const initialBrandFillState: BrandFillState = {
+  logo: null,
+  logoSize: 18,
+  selectedPhotoId: null
+};
+
 export function PhotoEditorWorkspace() {
   const [activeToolId, setActiveToolId] = useState<PhotoToolId | null>("adjust");
   const [sliders, setSliders] = useState<SliderState>(initialSliders);
-  const [aiCollapsed] = useState(true);
+  const [aiCollapsed, setAiCollapsed] = useState(false);
   const [appliedCrop, setAppliedCrop] = useState<ReturnType<typeof useCropBox>["rect"] | null>(null);
+  const [aiComparePhoto, setAiComparePhoto] = useState<UploadedPhoto | null>(null);
+  const [isAiResultCompare, setIsAiResultCompare] = useState(false);
   const [isOriginalCompare, setIsOriginalCompare] = useState(false);
   const [selectedFilterId, setSelectedFilterId] = useState<PhotoFilterId>("natural");
   const [selectedBorderId, setSelectedBorderId] = useState<PhotoBorderId>("none");
@@ -243,6 +314,32 @@ export function PhotoEditorWorkspace() {
   const [isBeautyRunning, setIsBeautyRunning] = useState(false);
   const [beautyError, setBeautyError] = useState<string | null>(null);
   const [beautyStatusMessage, setBeautyStatusMessage] = useState<string | null>(null);
+  const [brandFill, setBrandFill] = useState<BrandFillState>(initialBrandFillState);
+  const [brandBatchPhotos, setBrandBatchPhotos] = useState<BatchBrandPhoto[]>([]);
+  const [isBrandExporting, setIsBrandExporting] = useState(false);
+  const [sceneBackground, setSceneBackground] = useState<SceneBlendAsset>(null);
+  const [scenePrompt, setScenePrompt] = useState("户外雪山场景，自然摆放，边缘柔和，接触阴影真实，环境光一致");
+  const [sceneBlendError, setSceneBlendError] = useState<string | null>(null);
+  const [sceneBlendStatusMessage, setSceneBlendStatusMessage] = useState<string | null>(null);
+  const [isSceneBlendRunning, setIsSceneBlendRunning] = useState(false);
+  const [repairPrompt, setRepairPrompt] = useState(defaultRepairPrompt);
+  const [repairError, setRepairError] = useState<string | null>(null);
+  const [repairStatusMessage, setRepairStatusMessage] = useState<string | null>(null);
+  const [isRepairRunning, setIsRepairRunning] = useState(false);
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
+  const [enhanceStatusMessage, setEnhanceStatusMessage] = useState<string | null>(null);
+  const [isEnhanceRunning, setIsEnhanceRunning] = useState(false);
+  const [chatPrompt, setChatPrompt] = useState("");
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatStatusMessage, setChatStatusMessage] = useState<string | null>(null);
+  const [isChatRunning, setIsChatRunning] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      content: "输入一句修图指令，我会基于当前画布生成新图。",
+      id: "ai-welcome",
+      role: "ai"
+    }
+  ]);
   const [textDraft, setTextDraft] = useState(defaultTextContent);
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [selectedTextId, setSelectedTextId] = useState<string | null>(null);
@@ -256,9 +353,21 @@ export function PhotoEditorWorkspace() {
   const [redoStack, setRedoStack] = useState<EditorSnapshot[]>([]);
   const customStickerUrlsRef = useRef<string[]>([]);
   const photoObjectUrlsRef = useRef<string[]>([]);
+  const brandBatchObjectUrlsRef = useRef<string[]>([]);
+  const brandWatermarkObjectUrlsRef = useRef<string[]>([]);
+  const brandLogoObjectUrlsRef = useRef<string[]>([]);
+  const sceneBackgroundObjectUrlsRef = useRef<string[]>([]);
   const photoCanvasRef = useRef<HTMLDivElement>(null);
   const { isDragging, pan, panHandlers, resetPan, setCanvasPan } = useCanvasPan();
   const cropBox = useCropBox();
+
+  useEffect(() => {
+    document.body.classList.add("photo-editor-route");
+
+    return () => {
+      document.body.classList.remove("photo-editor-route");
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -266,6 +375,14 @@ export function PhotoEditorWorkspace() {
       customStickerUrlsRef.current = [];
       photoObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
       photoObjectUrlsRef.current = [];
+      brandBatchObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      brandBatchObjectUrlsRef.current = [];
+      brandWatermarkObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      brandWatermarkObjectUrlsRef.current = [];
+      brandLogoObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      brandLogoObjectUrlsRef.current = [];
+      sceneBackgroundObjectUrlsRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+      sceneBackgroundObjectUrlsRef.current = [];
     };
   }, []);
 
@@ -275,6 +392,7 @@ export function PhotoEditorWorkspace() {
   );
 
   const applyCrop = () => {
+    commitHistory();
     setAppliedCrop(cropBox.rect);
   };
 
@@ -283,12 +401,14 @@ export function PhotoEditorWorkspace() {
   };
 
   const resetCrop = () => {
+    commitHistory();
     setAppliedCrop(null);
     cropBox.reset();
     setSliders((current) => ({ ...current, rotate: 0 }));
   };
 
   const addSticker = (preset: PhotoStickerPreset) => {
+    commitHistory();
     const id = `sticker-${Date.now()}`;
     setStickerElements((current) => [
       ...current,
@@ -307,6 +427,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const selectFilter = (filterId: PhotoFilterId) => {
+    commitHistory();
     setSelectedFilterId(filterId);
   };
 
@@ -316,6 +437,7 @@ export function PhotoEditorWorkspace() {
     if (!content) {
       return;
     }
+    commitHistory();
     const id = `text-${Date.now()}`;
     setTextElements((current) => [
       ...current,
@@ -340,11 +462,13 @@ export function PhotoEditorWorkspace() {
     if (!selectedTextId) {
       return;
     }
+    commitHistory();
     setTextElements((current) => current.filter((element) => element.id !== selectedTextId));
     setSelectedTextId(null);
   };
 
   const changeTextColor = (color: string) => {
+    commitHistory();
     setTextColor(color);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -354,6 +478,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextBold = (isBold: boolean) => {
+    commitHistory();
     setTextBold(isBold);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -363,6 +488,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextFont = (fontFamily: string) => {
+    commitHistory();
     setTextFont(fontFamily);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -372,6 +498,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextItalic = (isItalic: boolean) => {
+    commitHistory();
     setTextItalic(isItalic);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -381,6 +508,7 @@ export function PhotoEditorWorkspace() {
   };
 
   const changeTextContent = (content: string) => {
+    commitHistory();
     setTextDraft(content);
     if (selectedTextId) {
       setTextElements((current) =>
@@ -390,8 +518,11 @@ export function PhotoEditorWorkspace() {
   };
 
   const createSnapshot = (): EditorSnapshot => ({
+    aiComparePhoto,
     appliedCrop,
     borderColor,
+    isAiResultCompare,
+    isOriginalCompare,
     pan,
     photo,
     selectedBorderId,
@@ -409,8 +540,11 @@ export function PhotoEditorWorkspace() {
   });
 
   const restoreSnapshot = (snapshot: EditorSnapshot) => {
+    setAiComparePhoto(snapshot.aiComparePhoto);
     setAppliedCrop(snapshot.appliedCrop);
     setBorderColor(snapshot.borderColor);
+    setIsAiResultCompare(snapshot.isAiResultCompare);
+    setIsOriginalCompare(snapshot.isOriginalCompare);
     setCanvasPan(snapshot.pan);
     setPhoto(snapshot.photo);
     setSelectedBorderId(snapshot.selectedBorderId);
@@ -499,6 +633,11 @@ export function PhotoEditorWorkspace() {
     }));
   };
 
+  const changeBorderColor = (color: string) => {
+    commitHistory();
+    setBorderColor(color);
+  };
+
   const openFilePicker = useCallback(() => {
     document.getElementById(photoFileInputId)?.click();
   }, []);
@@ -518,13 +657,20 @@ export function PhotoEditorWorkspace() {
   };
 
   const handleSelectTool = (tool: PhotoToolId) => {
-    if (photoTools.find((item) => item.id === tool)?.group === "ai" && tool !== "beauty") {
-      notifyAiUnavailable();
-      return;
-    }
-
     setActiveToolId((current) => (current === tool ? null : tool));
   };
+
+  const openBrandBatchPicker = useCallback(() => {
+    document.getElementById(brandBatchInputId)?.click();
+  }, []);
+
+  const openBrandLogoPicker = useCallback(() => {
+    document.getElementById(brandLogoInputId)?.click();
+  }, []);
+
+  const openSceneBackgroundPicker = useCallback(() => {
+    document.getElementById(sceneBackgroundInputId)?.click();
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -542,6 +688,14 @@ export function PhotoEditorWorkspace() {
       setPhoto(uploadedPhoto);
       setBeautyError(null);
       setBeautyStatusMessage(null);
+      setRepairError(null);
+      setRepairStatusMessage(null);
+      setEnhanceError(null);
+      setEnhanceStatusMessage(null);
+      setChatError(null);
+      setChatStatusMessage(null);
+      setAiComparePhoto(null);
+      setIsAiResultCompare(false);
       resetPan();
       setAppliedCrop(null);
       setIsOriginalCompare(false);
@@ -563,6 +717,235 @@ export function PhotoEditorWorkspace() {
         window.alert("图片加载失败，请重新选择。");
       });
     event.target.value = "";
+  };
+
+  const handleBrandBatchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []).filter((file) => file.type.startsWith("image/")).slice(0, 12);
+    event.target.value = "";
+
+    if (files.length === 0) {
+      return;
+    }
+
+    void Promise.all(
+      files.map(async (file) => {
+        const uploadedPhoto = await createUploadedPhoto(file);
+        brandBatchObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+        return {
+          ...uploadedPhoto,
+          id: `brand-photo-${Date.now()}-${Math.random().toString(36).slice(2)}`
+        };
+      })
+    )
+      .then((items) => {
+        setBrandBatchPhotos((current) => {
+          const next = [...current, ...items].slice(0, 12);
+          setBrandFill((state) => ({
+            ...state,
+            selectedPhotoId: state.selectedPhotoId ?? next[0]?.id ?? null
+          }));
+          return next;
+        });
+      })
+      .catch(() => {
+        window.alert("批量图片加载失败，请重新选择。");
+      });
+  };
+
+  const handleBrandLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      setBrandLogo(file, objectUrl, image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 1);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      window.alert("Logo 图片加载失败，请重新选择。");
+    };
+    image.src = objectUrl;
+  };
+
+  const setBrandLogo = (file: File, objectUrl: string, aspectRatio: number) => {
+    brandLogoObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    brandLogoObjectUrlsRef.current = [objectUrl];
+    setBrandFill((current) => ({
+      ...current,
+      logo: {
+        aspectRatio,
+        file,
+        name: file.name.replace(/\.[^.]+$/, "") || "Logo",
+        objectUrl
+      }
+    }));
+  };
+
+  const handleSelectBrandPhoto = async (item: BatchBrandPhoto) => {
+    try {
+      if (!item.watermarkObjectUrl) {
+        window.alert("请先生成 AI Logo 图，再载入画布单独修改。");
+        return;
+      }
+
+      commitHistory();
+      const watermarkBlob = await (await fetch(item.watermarkObjectUrl)).blob();
+      const watermarkFile = new File([watermarkBlob], `${item.name.replace(/\.[^.]+$/, "") || "dreamchasers-photo"}-ai-logo.png`, {
+        type: watermarkBlob.type || "image/png"
+      });
+      const uploadedPhoto = await createUploadedPhoto(watermarkFile);
+      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+      setPhoto(uploadedPhoto);
+      setBrandFill((current) => ({ ...current, selectedPhotoId: item.id }));
+      resetPan();
+      setAppliedCrop(null);
+      setIsOriginalCompare(false);
+      cropBox.reset();
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "品牌图载入失败，请稍后再试。");
+    }
+  };
+
+  const handleGenerateBrandWatermarkBatch = async () => {
+    if (brandBatchPhotos.length === 0 || !brandFill.logo || isBrandExporting) {
+      return;
+    }
+
+    const logo = brandFill.logo;
+    setIsBrandExporting(true);
+    setBrandBatchPhotos((current) =>
+      current.map((item) => ({
+        ...item,
+        watermarkError: undefined,
+        watermarkStatus: "idle"
+      }))
+    );
+
+    try {
+      const queue = [...brandBatchPhotos];
+      const runWatermarkItem = async (item: BatchBrandPhoto) => {
+        setBrandBatchPhotos((current) =>
+          current.map((currentItem) =>
+            currentItem.id === item.id
+              ? {
+                  ...currentItem,
+                  watermarkError: undefined,
+                  watermarkStatus: "processing"
+                }
+              : currentItem
+          )
+        );
+
+        try {
+          const formData = new FormData();
+          formData.set("image", item.file, item.file.name || item.name);
+          formData.set("logo", logo.file, logo.file.name || "logo.png");
+          formData.set("logoSize", String(brandFill.logoSize));
+
+          const response = await fetch("/api/tools/photo/brand-watermark", {
+            body: formData,
+            method: "POST"
+          });
+          const task = (await response.json()) as AiImageTaskResponse;
+
+          if (!response.ok || !task.taskId) {
+            throw new Error(task.error || "AI Logo 水印任务创建失败，请稍后再试。");
+          }
+
+          const completedTask = await waitForImageTask(`/api/tools/photo/brand-watermark/tasks/${task.taskId}`, (message) => {
+            setBrandBatchPhotos((current) =>
+              current.map((currentItem) =>
+                currentItem.id === item.id
+                  ? {
+                      ...currentItem,
+                      watermarkError: message,
+                      watermarkStatus: "processing"
+                    }
+                  : currentItem
+              )
+            );
+          });
+
+          if (completedTask.status === "failed") {
+            throw new Error(completedTask.error || "AI Logo 水印生成失败，请稍后再试。");
+          }
+
+          const resultResponse = await fetch(`/api/tools/photo/brand-watermark/tasks/${task.taskId}/result`, {
+            method: "GET"
+          });
+
+          if (!resultResponse.ok) {
+            throw new Error(await readBeautyError(resultResponse));
+          }
+
+          const resultBlob = await resultResponse.blob();
+          const resultObjectUrl = URL.createObjectURL(resultBlob);
+          brandWatermarkObjectUrlsRef.current.push(resultObjectUrl);
+          setBrandBatchPhotos((current) =>
+            current.map((currentItem) =>
+              currentItem.id === item.id
+                ? {
+                    ...currentItem,
+                    watermarkError: undefined,
+                    watermarkObjectUrl: resultObjectUrl,
+                    watermarkStatus: "succeeded"
+                  }
+                : currentItem
+            )
+          );
+        } catch (error) {
+          setBrandBatchPhotos((current) =>
+            current.map((currentItem) =>
+              currentItem.id === item.id
+                ? {
+                    ...currentItem,
+                    watermarkError: error instanceof Error ? error.message : "AI Logo 水印生成失败，请稍后再试。",
+                    watermarkStatus: "failed"
+                  }
+                : currentItem
+            )
+          );
+        }
+      };
+
+      const workers = Array.from({ length: Math.min(3, queue.length) }, async () => {
+        while (queue.length > 0) {
+          const item = queue.shift();
+
+          if (item) {
+            await runWatermarkItem(item);
+          }
+        }
+      });
+
+      await Promise.all(workers);
+    } finally {
+      setIsBrandExporting(false);
+    }
+  };
+
+  const handleSceneBackgroundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    sceneBackgroundObjectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    sceneBackgroundObjectUrlsRef.current = [objectUrl];
+    setSceneBackground({
+      file,
+      name: file.name,
+      objectUrl
+    });
+    setSceneBlendError(null);
   };
 
   const handleRunBeauty = async () => {
@@ -604,35 +987,252 @@ export function PhotoEditorWorkspace() {
         throw new Error(await readBeautyError(resultResponse));
       }
 
-      const resultBlob = await resultResponse.blob();
-      const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || "portrait"}-beauty.png`, {
-        type: resultBlob.type || "image/png"
-      });
-      const uploadedPhoto = await createUploadedPhoto(resultFile);
-      photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
-      commitHistory();
-      setPhoto(uploadedPhoto);
-      resetPan();
-      setAppliedCrop(null);
-      setIsOriginalCompare(false);
-      setSelectedFilterId("natural");
-      setSliders((current) => ({
-        ...current,
-        brightness: 0,
-        contrast: 0,
-        filterStrength: 0,
-        rotate: 0,
-        saturation: 0,
-        temperature: 0,
-        zoom: 100
-      }));
-      cropBox.reset();
+      await applyAiResultToPhoto(await resultResponse.blob(), "beauty", "portrait");
     } catch (error) {
       setBeautyError(error instanceof Error ? error.message : "AI 美颜生成失败，请稍后再试。");
     } finally {
       setIsBeautyRunning(false);
       setBeautyStatusMessage(null);
     }
+  };
+
+  const handleRunSceneBlend = async () => {
+    if (!photo || !sceneBackground || isSceneBlendRunning) {
+      return;
+    }
+
+    setIsSceneBlendRunning(true);
+    setSceneBlendError(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("productImage", photo.file, photo.file.name || photo.name);
+      formData.set("backgroundImage", sceneBackground.file, sceneBackground.file.name || sceneBackground.name);
+      formData.set("prompt", scenePrompt.trim());
+
+      const response = await fetch("/api/tools/photo/scene-blend", {
+        body: formData,
+        method: "POST"
+      });
+
+      const task = (await response.json()) as AiImageTaskResponse;
+
+      if (!response.ok || !task.taskId) {
+        throw new Error(task.error || "AI 溶图任务创建失败，请稍后再试。");
+      }
+
+      setSceneBlendStatusMessage(task.message || "AI 溶图任务已提交。");
+      const completedTask = await waitForImageTask(
+        `/api/tools/photo/scene-blend/tasks/${task.taskId}`,
+        setSceneBlendStatusMessage
+      );
+
+      if (completedTask.status === "failed") {
+        throw new Error(completedTask.error || "AI 溶图生成失败，请稍后再试。");
+      }
+
+      const resultResponse = await fetch(`/api/tools/photo/scene-blend/tasks/${task.taskId}/result`, {
+        method: "GET"
+      });
+
+      if (!resultResponse.ok) {
+        throw new Error(await readBeautyError(resultResponse));
+      }
+
+      await applyAiResultToPhoto(await resultResponse.blob(), "scene-blend", "product");
+    } catch (error) {
+      setSceneBlendError(error instanceof Error ? error.message : "AI 溶图生成失败，请稍后再试。");
+    } finally {
+      setIsSceneBlendRunning(false);
+      setSceneBlendStatusMessage(null);
+    }
+  };
+
+  const applyAiResultToPhoto = async (resultBlob: Blob, suffix: string, fallbackName: string) => {
+    if (!photo) {
+      return;
+    }
+
+    const resultFile = new File([resultBlob], `${photo.name.replace(/\.[^.]+$/, "") || fallbackName}-${suffix}.png`, {
+      type: resultBlob.type || "image/png"
+    });
+    const uploadedPhoto = await createUploadedPhoto(resultFile);
+    photoObjectUrlsRef.current.push(uploadedPhoto.objectUrl);
+    commitHistory();
+    setAiComparePhoto(photo);
+    setPhoto(uploadedPhoto);
+    resetPan();
+    setAppliedCrop(null);
+    setIsAiResultCompare(false);
+    setIsOriginalCompare(false);
+    setSelectedFilterId("natural");
+    setSliders((current) => ({
+      ...current,
+      brightness: 0,
+      contrast: 0,
+      filterStrength: 0,
+      rotate: 0,
+      saturation: 0,
+      temperature: 0,
+      zoom: 100
+    }));
+    cropBox.reset();
+  };
+
+  const runSingleImageAiEdit = async ({
+    endpoint,
+    fallbackError,
+    fallbackName,
+    prompt,
+    setError,
+    setIsRunning,
+    setStatusMessage,
+    suffix
+  }: {
+    endpoint: string;
+    fallbackError: string;
+    fallbackName: string;
+    prompt?: string;
+    setError: (value: string | null) => void;
+    setIsRunning: (value: boolean) => void;
+    setStatusMessage: (value: string | null) => void;
+    suffix: string;
+  }) => {
+    if (!photo) {
+      return;
+    }
+
+    setIsRunning(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.set("image", photo.file, photo.file.name || photo.name);
+
+      if (prompt !== undefined) {
+        formData.set("prompt", prompt.trim());
+      }
+
+      const response = await fetch(endpoint, {
+        body: formData,
+        method: "POST"
+      });
+      const task = (await response.json()) as AiImageTaskResponse;
+
+      if (!response.ok || !task.taskId) {
+        throw new Error(task.error || fallbackError);
+      }
+
+      setStatusMessage(task.message || "AI 图片任务已提交。");
+      const completedTask = await waitForImageTask(`${endpoint}/tasks/${task.taskId}`, setStatusMessage);
+
+      if (completedTask.status === "failed") {
+        throw new Error(completedTask.error || fallbackError);
+      }
+
+      const resultResponse = await fetch(`${endpoint}/tasks/${task.taskId}/result`, {
+        method: "GET"
+      });
+
+      if (!resultResponse.ok) {
+        throw new Error(await readBeautyError(resultResponse, fallbackError));
+      }
+
+      await applyAiResultToPhoto(await resultResponse.blob(), suffix, fallbackName);
+      return true;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : fallbackError);
+      return false;
+    } finally {
+      setIsRunning(false);
+      setStatusMessage(null);
+    }
+  };
+
+  const handleRunRepair = () => {
+    if (!photo || isRepairRunning || !repairPrompt.trim()) {
+      return;
+    }
+
+    void runSingleImageAiEdit({
+      endpoint: "/api/tools/photo/repair",
+      fallbackError: "AI 细节修复生成失败，请稍后再试。",
+      fallbackName: "image",
+      prompt: repairPrompt,
+      setError: setRepairError,
+      setIsRunning: setIsRepairRunning,
+      setStatusMessage: setRepairStatusMessage,
+      suffix: "repair"
+    });
+  };
+
+  const handleRunEnhance = () => {
+    if (!photo || isEnhanceRunning) {
+      return;
+    }
+
+    void runSingleImageAiEdit({
+      endpoint: "/api/tools/photo/enhance",
+      fallbackError: "高清增强生成失败，请稍后再试。",
+      fallbackName: "image",
+      setError: setEnhanceError,
+      setIsRunning: setIsEnhanceRunning,
+      setStatusMessage: setEnhanceStatusMessage,
+      suffix: "enhance"
+    });
+  };
+
+  const handleRunPromptEdit = () => {
+    const prompt = chatPrompt.trim();
+
+    if (!photo || isChatRunning || !prompt) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      content: prompt,
+      id: `user-${Date.now()}`,
+      role: "user"
+    };
+    setChatMessages((current) => [...current, userMessage]);
+    setChatPrompt("");
+
+    void runSingleImageAiEdit({
+      endpoint: "/api/tools/photo/prompt-edit",
+      fallbackError: "AI 对话修图生成失败，请稍后再试。",
+      fallbackName: "image",
+      prompt,
+      setError: setChatError,
+      setIsRunning: setIsChatRunning,
+      setStatusMessage: (message) => {
+        setChatStatusMessage(message);
+
+        if (message) {
+          setChatMessages((current) => [
+            ...current.filter((item) => item.id !== "ai-status"),
+            {
+              content: message,
+              id: "ai-status",
+              role: "ai"
+            }
+          ]);
+        }
+      },
+      suffix: "ai-edit"
+    }).then((succeeded) => {
+      if (succeeded) {
+        setChatMessages((current) => [
+          ...current.filter((item) => item.id !== "ai-status"),
+          {
+            content: "已根据指令生成新图，并替换到当前画布。",
+            id: `ai-done-${Date.now()}`,
+            role: "ai"
+          }
+        ]);
+      } else {
+        setChatMessages((current) => current.filter((item) => item.id !== "ai-status"));
+      }
+    });
   };
 
   const handleCustomStickerChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -696,40 +1296,80 @@ export function PhotoEditorWorkspace() {
         onChange={handleCustomStickerChange}
         type="file"
       />
+      <input
+        accept="image/*"
+        className={styles.fileInput}
+        id={brandBatchInputId}
+        multiple
+        onChange={handleBrandBatchChange}
+        type="file"
+      />
+      <input
+        accept="image/*"
+        className={styles.fileInput}
+        id={brandLogoInputId}
+        onChange={handleBrandLogoChange}
+        type="file"
+      />
+      <input
+        accept="image/*"
+        className={styles.fileInput}
+        id={sceneBackgroundInputId}
+        onChange={handleSceneBackgroundChange}
+        type="file"
+      />
       <div className={styles.workspace} onClick={() => setSelectedTextId(null)}>
-        <TopBar
-          canRedo={redoStack.length > 0}
-          canUndo={undoStack.length > 0}
-          onRedo={handleRedo}
-          onExport={() => {
-            void handleExportImage();
-          }}
-          onUndo={handleUndo}
-          photo={photo}
-        />
         <ToolRail
           activeToolId={activeToolId}
+          brandBatchPhotos={brandBatchPhotos}
+          brandFill={brandFill}
+          canRedo={redoStack.length > 0}
+          canUndo={undoStack.length > 0}
+          isBrandExporting={isBrandExporting}
           beautyError={beautyError}
-          beautyStatusMessage={beautyStatusMessage}
+          beautyStatusMessage={sceneBlendStatusMessage ?? repairStatusMessage ?? enhanceStatusMessage ?? chatStatusMessage ?? beautyStatusMessage}
           borderColor={borderColor}
           cropRatio={cropBox.ratio}
+          enhanceError={enhanceError}
+          enhanceStatusMessage={enhanceStatusMessage}
           isBeautyRunning={isBeautyRunning}
+          isEnhanceRunning={isEnhanceRunning}
+          isRepairRunning={isRepairRunning}
+          isSceneBlendRunning={isSceneBlendRunning}
           onAddSticker={addSticker}
           onAddText={addText}
           onApplyCrop={applyCrop}
-          onBorderColorChange={setBorderColor}
+          onBorderColorChange={changeBorderColor}
           onCropRatioChange={changeCropRatio}
           onDeleteSelectedText={deleteSelectedText}
+          onExportImage={() => {
+            void handleExportImage();
+          }}
+          onExportBrandBatch={handleGenerateBrandWatermarkBatch}
+          onOpenBrandBatchPicker={openBrandBatchPicker}
+          onOpenBrandLogoPicker={openBrandLogoPicker}
+          onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
+          onRedo={handleRedo}
           onResetCrop={resetCrop}
           onRunBeauty={handleRunBeauty}
+          onRunEnhance={handleRunEnhance}
+          onRunRepair={handleRunRepair}
+          onRunSceneBlend={handleRunSceneBlend}
           onSelectBorder={handleSelectBorder}
+          onSelectBrandPhoto={(item) => {
+            void handleSelectBrandPhoto(item);
+          }}
           onSelectFilter={selectFilter}
           onSelectTool={handleSelectTool}
+          onSetBrandFill={setBrandFill}
+          onSetRepairPrompt={setRepairPrompt}
+          onSetScenePrompt={setScenePrompt}
           onTextBoldChange={changeTextBold}
           onTextColorChange={changeTextColor}
           onTextContentChange={changeTextContent}
           onTextFontChange={changeTextFont}
           onTextItalicChange={changeTextItalic}
+          onUndo={handleUndo}
           onUploadClick={openFilePicker}
           onUploadCustomSticker={openCustomStickerPicker}
           photo={photo}
@@ -737,6 +1377,13 @@ export function PhotoEditorWorkspace() {
           selectedFilterId={selectedFilterId}
           selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
           selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
+          sceneBackground={sceneBackground}
+          sceneBlendError={sceneBlendError}
+          sceneBlendStatusMessage={sceneBlendStatusMessage}
+          scenePrompt={scenePrompt}
+          repairError={repairError}
+          repairPrompt={repairPrompt}
+          repairStatusMessage={repairStatusMessage}
           sliders={sliders}
           textBold={textBold}
           textColor={textColor}
@@ -748,21 +1395,42 @@ export function PhotoEditorWorkspace() {
         {activeTool ? (
           <ParameterPanel
             activeTool={activeTool}
+            brandBatchPhotos={brandBatchPhotos}
+            brandFill={brandFill}
+            isBrandExporting={isBrandExporting}
             beautyError={beautyError}
             beautyStatusMessage={beautyStatusMessage}
             borderColor={borderColor}
             cropRatio={cropBox.ratio}
+            enhanceError={enhanceError}
+            enhanceStatusMessage={enhanceStatusMessage}
             isBeautyRunning={isBeautyRunning}
+            isEnhanceRunning={isEnhanceRunning}
+            isRepairRunning={isRepairRunning}
+            isSceneBlendRunning={isSceneBlendRunning}
             onAddSticker={addSticker}
             onAddText={addText}
             onApplyCrop={applyCrop}
-            onBorderColorChange={setBorderColor}
+            onBorderColorChange={changeBorderColor}
             onCropRatioChange={changeCropRatio}
             onDeleteSelectedText={deleteSelectedText}
+            onExportBrandBatch={handleGenerateBrandWatermarkBatch}
+            onOpenBrandBatchPicker={openBrandBatchPicker}
+            onOpenBrandLogoPicker={openBrandLogoPicker}
+            onOpenSceneBackgroundPicker={openSceneBackgroundPicker}
             onResetCrop={resetCrop}
             onRunBeauty={handleRunBeauty}
+            onRunEnhance={handleRunEnhance}
+            onRunRepair={handleRunRepair}
+            onRunSceneBlend={handleRunSceneBlend}
             onSelectBorder={handleSelectBorder}
+            onSelectBrandPhoto={(item) => {
+              void handleSelectBrandPhoto(item);
+            }}
             onSelectFilter={selectFilter}
+            onSetBrandFill={setBrandFill}
+            onSetRepairPrompt={setRepairPrompt}
+            onSetScenePrompt={setScenePrompt}
             onTextBoldChange={changeTextBold}
             onTextColorChange={changeTextColor}
             onTextContentChange={changeTextContent}
@@ -773,6 +1441,13 @@ export function PhotoEditorWorkspace() {
             selectedFilterId={selectedFilterId}
             selectedSticker={stickerElements.find((element) => element.id === selectedStickerId) ?? null}
             selectedText={textElements.find((element) => element.id === selectedTextId) ?? null}
+            sceneBackground={sceneBackground}
+            sceneBlendError={sceneBlendError}
+            sceneBlendStatusMessage={sceneBlendStatusMessage}
+            scenePrompt={scenePrompt}
+            repairError={repairError}
+            repairPrompt={repairPrompt}
+            repairStatusMessage={repairStatusMessage}
             sliders={sliders}
             stickerCategories={photoStickerCategories}
             stickerPresets={photoStickerPresets}
@@ -797,14 +1472,23 @@ export function PhotoEditorWorkspace() {
         <Stage
           activeTool={activeTool}
           appliedCrop={appliedCrop}
-          beautyStatusMessage={beautyStatusMessage}
+          beautyStatusMessage={sceneBlendStatusMessage ?? repairStatusMessage ?? enhanceStatusMessage ?? chatStatusMessage ?? beautyStatusMessage}
           cropBox={cropBox}
           cropRatio={cropBox.ratio}
-          isBeautyRunning={isBeautyRunning}
+          isBeautyRunning={isBeautyRunning || isSceneBlendRunning || isRepairRunning || isEnhanceRunning || isChatRunning}
+          aiComparePhoto={aiComparePhoto}
+          isAiResultCompare={isAiResultCompare}
           isOriginalCompare={isOriginalCompare}
           isDragging={isDragging}
+          onToggleAiResultCompare={() => {
+            if (aiComparePhoto) {
+              setIsAiResultCompare((current) => !current);
+              setIsOriginalCompare(false);
+            }
+          }}
           onToggleOriginalCompare={() => setIsOriginalCompare((current) => !current)}
           onUploadClick={openFilePicker}
+          onCommitHistory={commitHistory}
           pan={pan}
           panHandlers={panHandlers}
           photo={photo}
@@ -818,10 +1502,12 @@ export function PhotoEditorWorkspace() {
           stickerElements={stickerElements}
           textElements={textElements}
           onDeleteStickerElement={(id) => {
+            commitHistory();
             setStickerElements((current) => current.filter((element) => element.id !== id));
             setSelectedStickerId((current) => (current === id ? null : current));
           }}
           onDeleteTextElement={(id) => {
+            commitHistory();
             setTextElements((current) => current.filter((element) => element.id !== id));
             setSelectedTextId((current) => (current === id ? null : current));
           }}
@@ -869,25 +1555,30 @@ export function PhotoEditorWorkspace() {
             }));
           }}
         />
+        {!aiCollapsed ? (
+          <AiChatPanel
+            chatError={chatError}
+            chatMessages={chatMessages}
+            chatPrompt={chatPrompt}
+            chatStatusMessage={chatStatusMessage}
+            isChatRunning={isChatRunning}
+            onPromptChange={setChatPrompt}
+            onRunPromptEdit={handleRunPromptEdit}
+            onSuggestion={(prompt) => setChatPrompt(prompt)}
+            onToggleCollapsed={() => setAiCollapsed(true)}
+            photo={photo}
+          />
+        ) : null}
       </div>
 
       {aiCollapsed ? (
-        <button
-          className={`${styles.floatingAiButton} ${styles.aiUnavailable}`}
-          onClick={notifyAiUnavailable}
-          title={AI_UNAVAILABLE_MESSAGE}
-          type="button"
-        >
+        <button className={styles.floatingAiButton} onClick={() => setAiCollapsed(false)} type="button">
           <span className={styles.floatingAiMark}>AI</span>
-          <span className={styles.floatingAiQuota}>0</span>
+          <span className={styles.floatingAiQuota}>1</span>
         </button>
       ) : null}
     </div>
   );
-}
-
-function notifyAiUnavailable() {
-  window.alert(AI_UNAVAILABLE_MESSAGE);
 }
 
 function formatFileSize(size: number) {
@@ -930,7 +1621,7 @@ function createUploadedPhoto(file: File) {
   });
 }
 
-async function readBeautyError(response: Response) {
+async function readBeautyError(response: Response, fallback = "AI 美颜生成失败，请稍后再试。") {
   try {
     const payload = (await response.json()) as unknown;
 
@@ -938,10 +1629,10 @@ async function readBeautyError(response: Response) {
       return payload.error;
     }
   } catch {
-    return "AI 美颜生成失败，请稍后再试。";
+    return fallback;
   }
 
-  return "AI 美颜生成失败，请稍后再试。";
+  return fallback;
 }
 
 async function waitForBeautyTask(taskId: string, onStatus: (message: string) => void) {
@@ -955,6 +1646,29 @@ async function waitForBeautyTask(taskId: string, onStatus: (message: string) => 
 
     if (!response.ok) {
       throw new Error(task.error || "AI 美颜任务查询失败，请稍后再试。");
+    }
+
+    if (task.message) {
+      onStatus(task.message);
+    }
+
+    if (task.status === "succeeded" || task.status === "failed") {
+      return task;
+    }
+  }
+}
+
+async function waitForImageTask(statusUrl: string, onStatus: (message: string) => void) {
+  while (true) {
+    await delay(beautyPollingIntervalMs);
+
+    const response = await fetch(statusUrl, {
+      method: "GET"
+    });
+    const task = (await response.json()) as AiImageTaskResponse;
+
+    if (!response.ok) {
+      throw new Error(task.error || "AI 图片任务查询失败，请稍后再试。");
     }
 
     if (task.message) {
@@ -1243,79 +1957,62 @@ async function exportPreviewElement(element: HTMLElement, fileName: string, stat
   URL.revokeObjectURL(objectUrl);
 }
 
-function TopBar({
-  canRedo,
-  canUndo,
-  onRedo,
-  onExport,
-  onUndo,
-  photo
-}: {
-  canRedo: boolean;
-  canUndo: boolean;
-  onRedo: () => void;
-  onExport: () => void;
-  onUndo: () => void;
-  photo: UploadedPhoto | null;
-}) {
-  return (
-    <header className={styles.topbar}>
-      <div className={styles.brand}>
-        <div className={styles.mark} aria-hidden="true" />
-        <div>
-          <div className={styles.brandTitle}>DreamChasers</div>
-          <div className={styles.brandSub}>单图 AI 修图</div>
-        </div>
-      </div>
-
-      <div className={styles.filePill}>
-        <span>当前图片</span>
-        <strong>{photo?.name ?? "portrait-042.jpg"}</strong>
-        <span>{photo ? `${photo.dimensions} · ${photo.sizeLabel}` : "单张上传"}</span>
-      </div>
-
-      <div className={styles.topActions}>
-        <div className={styles.usageChip}>
-          <span className={styles.usageDot} />
-          AI 免费额度 0 / 0
-        </div>
-        <button className={styles.ghostButton} disabled={!canUndo} onClick={onUndo} type="button">
-          撤销
-        </button>
-        <button className={styles.ghostButton} disabled={!canRedo} onClick={onRedo} type="button">
-          重做
-        </button>
-        <button className={styles.primaryButton} disabled={!photo} onClick={onExport} type="button">
-          导出图片
-        </button>
-      </div>
-    </header>
-  );
+function downloadBlob(blob: Blob, fileName: string) {
+  const link = document.createElement("a");
+  const objectUrl = URL.createObjectURL(blob);
+  link.href = objectUrl;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(objectUrl);
 }
 
 function ToolRail({
   activeToolId,
+  brandBatchPhotos,
+  brandFill,
+  canRedo,
+  canUndo,
+  isBrandExporting,
   beautyError,
   beautyStatusMessage,
   borderColor,
   cropRatio,
+  enhanceError,
+  enhanceStatusMessage,
   isBeautyRunning,
+  isEnhanceRunning,
+  isRepairRunning,
+  isSceneBlendRunning,
   onAddSticker,
   onAddText,
   onApplyCrop,
   onBorderColorChange,
   onCropRatioChange,
   onDeleteSelectedText,
+  onExportImage,
+  onExportBrandBatch,
+  onOpenBrandBatchPicker,
+  onOpenBrandLogoPicker,
+  onOpenSceneBackgroundPicker,
+  onRedo,
   onResetCrop,
   onRunBeauty,
+  onRunEnhance,
+  onRunRepair,
+  onRunSceneBlend,
   onSelectBorder,
+  onSelectBrandPhoto,
   onSelectFilter,
   onSelectTool,
+  onSetBrandFill,
+  onSetRepairPrompt,
+  onSetScenePrompt,
   onTextBoldChange,
   onTextColorChange,
   onTextContentChange,
   onTextFontChange,
   onTextItalicChange,
+  onUndo,
   onUploadClick,
   onUploadCustomSticker,
   photo,
@@ -1323,6 +2020,13 @@ function ToolRail({
   selectedFilterId,
   selectedSticker,
   selectedText,
+  sceneBackground,
+  sceneBlendError,
+  sceneBlendStatusMessage,
+  scenePrompt,
+  repairError,
+  repairPrompt,
+  repairStatusMessage,
   sliders,
   textBold,
   textColor,
@@ -1332,27 +2036,47 @@ function ToolRail({
   updateSlider
 }: {
   activeToolId: PhotoToolId | null;
+  brandBatchPhotos: BatchBrandPhoto[];
+  brandFill: BrandFillState;
+  canRedo: boolean;
+  canUndo: boolean;
+  isBrandExporting: boolean;
   beautyError: string | null;
   beautyStatusMessage: string | null;
   borderColor: string;
   cropRatio: CropRatio;
   isBeautyRunning: boolean;
+  isSceneBlendRunning: boolean;
   onAddSticker: (preset: PhotoStickerPreset) => void;
   onAddText: () => void;
   onApplyCrop: () => void;
   onBorderColorChange: (color: string) => void;
   onCropRatioChange: (ratio: CropRatio) => void;
   onDeleteSelectedText: () => void;
+  onExportImage: () => void;
+  onExportBrandBatch: () => void;
+  onOpenBrandBatchPicker: () => void;
+  onOpenBrandLogoPicker: () => void;
+  onOpenSceneBackgroundPicker: () => void;
+  onRedo: () => void;
   onResetCrop: () => void;
   onRunBeauty: () => void;
+  onRunEnhance: () => void;
+  onRunRepair: () => void;
+  onRunSceneBlend: () => void;
   onSelectBorder: (preset: PhotoBorderPreset) => void;
+  onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
   onSelectFilter: (filterId: PhotoFilterId) => void;
   onSelectTool: (tool: PhotoToolId) => void;
+  onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+  onSetRepairPrompt: (prompt: string) => void;
+  onSetScenePrompt: (prompt: string) => void;
   onTextBoldChange: (isBold: boolean) => void;
   onTextColorChange: (color: string) => void;
   onTextContentChange: (content: string) => void;
   onTextFontChange: (fontFamily: string) => void;
   onTextItalicChange: (isItalic: boolean) => void;
+  onUndo: () => void;
   onUploadClick: () => void;
   onUploadCustomSticker: () => void;
   photo: UploadedPhoto | null;
@@ -1360,6 +2084,17 @@ function ToolRail({
   selectedFilterId: PhotoFilterId;
   selectedSticker: StickerElement | null;
   selectedText: TextElement | null;
+  sceneBackground: SceneBlendAsset;
+  sceneBlendError: string | null;
+  sceneBlendStatusMessage: string | null;
+  scenePrompt: string;
+  enhanceError: string | null;
+  enhanceStatusMessage: string | null;
+  isEnhanceRunning: boolean;
+  isRepairRunning: boolean;
+  repairError: string | null;
+  repairPrompt: string;
+  repairStatusMessage: string | null;
   sliders: SliderState;
   textBold: boolean;
   textColor: string;
@@ -1370,22 +2105,44 @@ function ToolRail({
 }) {
   return (
     <aside className={styles.toolsPanel} aria-label="修图工具">
-      {photo ? (
-        <div className={styles.uploadCard}>
-          <div className={styles.uploadTop}>
+      <div className={styles.uploadCard}>
+        <div className={styles.uploadTop}>
+          {photo ? (
             <img alt="" className={styles.fileAvatarImage} src={photo.objectUrl} />
-            <div className={styles.uploadCopy}>
-              <strong>{photo.name}</strong>
-              <small>{`${photo.dimensions} · ${photo.sizeLabel}`}</small>
-            </div>
+          ) : (
+            <span className={styles.fileAvatar}>IMG</span>
+          )}
+          <div className={styles.uploadCopy}>
+            {photo ? (
+              <>
+                <strong>{photo.name}</strong>
+                <small>{`${photo.dimensions} · ${photo.sizeLabel}`}</small>
+              </>
+            ) : (
+              <>
+                <strong>还未上传图片</strong>
+                <small>支持 JPG、PNG、WebP</small>
+              </>
+            )}
           </div>
-          <div className={styles.uploadActions}>
-            <button onClick={onUploadClick} type="button">
-              替换
+        </div>
+        <div className={styles.uploadActions}>
+          <button className={styles.uploadPrimary} disabled={!photo} onClick={onExportImage} type="button">
+            导出图片
+          </button>
+          <button onClick={onUploadClick} type="button">
+            {photo ? "替换图片" : "上传图片"}
+          </button>
+          <div className={styles.historyActions}>
+            <button disabled={!canUndo} onClick={onUndo} type="button">
+              撤销
+            </button>
+            <button disabled={!canRedo} onClick={onRedo} type="button">
+              重做
             </button>
           </div>
         </div>
-      ) : null}
+      </div>
 
       <div className={styles.toolScroll}>
         {toolGroups.map((group) => (
@@ -1399,13 +2156,11 @@ function ToolRail({
                 .filter((tool) => tool.group === group.id)
                 .map((tool) => {
                   const isActive = activeToolId === tool.id;
-                  const isUnavailableAiTool = tool.group === "ai" && tool.id !== "beauty";
                   return (
                     <div className={styles.toolItem} key={tool.id}>
                       <button
-                        className={`${styles.navTool} ${isActive ? styles.active : ""} ${isUnavailableAiTool ? styles.disabledTool : ""}`}
-                        aria-disabled={isUnavailableAiTool}
-                        aria-expanded={isUnavailableAiTool ? undefined : isActive}
+                        className={`${styles.navTool} ${isActive ? styles.active : ""}`}
+                        aria-expanded={isActive}
                         onClick={() => onSelectTool(tool.id)}
                         type="button"
                       >
@@ -1414,26 +2169,45 @@ function ToolRail({
                           <strong>{tool.name}</strong>
                           <small>{tool.description}</small>
                         </span>
-                        {tool.cost ? <span className={styles.aiCost}>{tool.id === "beauty" ? "1 次" : "未开放"}</span> : <span className={styles.chev}>›</span>}
+                        {tool.cost ? <span className={styles.aiCost}>{tool.cost} 次</span> : <span className={styles.chev}>›</span>}
                       </button>
                       {isActive ? (
                         <ParameterInlinePanel
                           activeTool={tool}
+                          brandBatchPhotos={brandBatchPhotos}
+                          brandFill={brandFill}
+                          isBrandExporting={isBrandExporting}
                           beautyError={beautyError}
                           beautyStatusMessage={beautyStatusMessage}
                           borderColor={borderColor}
                           cropRatio={cropRatio}
+                          enhanceError={enhanceError}
+                          enhanceStatusMessage={enhanceStatusMessage}
                           isBeautyRunning={isBeautyRunning}
+                          isEnhanceRunning={isEnhanceRunning}
+                          isRepairRunning={isRepairRunning}
+                          isSceneBlendRunning={isSceneBlendRunning}
                           onAddSticker={onAddSticker}
                           onAddText={onAddText}
                           onApplyCrop={onApplyCrop}
                           onBorderColorChange={onBorderColorChange}
                           onCropRatioChange={onCropRatioChange}
                           onDeleteSelectedText={onDeleteSelectedText}
+                          onExportBrandBatch={onExportBrandBatch}
+                          onOpenBrandBatchPicker={onOpenBrandBatchPicker}
+                          onOpenBrandLogoPicker={onOpenBrandLogoPicker}
+                          onOpenSceneBackgroundPicker={onOpenSceneBackgroundPicker}
                           onResetCrop={onResetCrop}
                           onRunBeauty={onRunBeauty}
+                          onRunEnhance={onRunEnhance}
+                          onRunRepair={onRunRepair}
+                          onRunSceneBlend={onRunSceneBlend}
                           onSelectBorder={onSelectBorder}
+                          onSelectBrandPhoto={onSelectBrandPhoto}
                           onSelectFilter={onSelectFilter}
+                          onSetBrandFill={onSetBrandFill}
+                          onSetRepairPrompt={onSetRepairPrompt}
+                          onSetScenePrompt={onSetScenePrompt}
                           onTextBoldChange={onTextBoldChange}
                           onTextColorChange={onTextColorChange}
                           onTextContentChange={onTextContentChange}
@@ -1444,6 +2218,13 @@ function ToolRail({
                           selectedFilterId={selectedFilterId}
                           selectedSticker={selectedSticker}
                           selectedText={selectedText}
+                          sceneBackground={sceneBackground}
+                          sceneBlendError={sceneBlendError}
+                          sceneBlendStatusMessage={sceneBlendStatusMessage}
+                          scenePrompt={scenePrompt}
+                          repairError={repairError}
+                          repairPrompt={repairPrompt}
+                          repairStatusMessage={repairStatusMessage}
                           sliders={sliders}
                           stickerCategories={photoStickerCategories}
                           stickerPresets={photoStickerPresets}
@@ -1482,78 +2263,10 @@ function ParameterInlinePanel(props: ToolParameterProps) {
 
 function ParameterPanel({
   activeTool,
-  cropRatio,
-  onAddSticker,
-  onAddText,
-  onApplyCrop,
-  onCropRatioChange,
-  onDeleteSelectedText,
-  onResetCrop,
-  onRunBeauty,
-  onBorderColorChange,
-  onSelectBorder,
-  onSelectFilter,
-  onTextColorChange,
-  onTextBoldChange,
-  onTextContentChange,
-  onTextItalicChange,
-  onTextFontChange,
-  onUploadCustomSticker,
-  selectedFilterId,
-  selectedBorderId,
-  selectedSticker,
-  selectedText,
-  beautyError,
-  beautyStatusMessage,
-  isBeautyRunning,
-  stickerCategories,
-  stickerPresets,
-  textColor,
-  textBold,
-  textFont,
-  textItalic,
-  textValue,
-  borderColor,
-  sliders,
-  updateSlider,
   onClick,
-  onPointerDown
-}: {
-  activeTool: PhotoTool;
-  cropRatio: CropRatio;
-  onAddSticker: (preset: PhotoStickerPreset) => void;
-  onAddText: () => void;
-  onApplyCrop: () => void;
-  onCropRatioChange: (ratio: CropRatio) => void;
-  onDeleteSelectedText: () => void;
-  onResetCrop: () => void;
-  onRunBeauty: () => void;
-  onBorderColorChange: (color: string) => void;
-  onSelectBorder: (preset: PhotoBorderPreset) => void;
-  onSelectFilter: (filterId: PhotoFilterId) => void;
-  onTextColorChange: (color: string) => void;
-  onTextBoldChange: (isBold: boolean) => void;
-  onTextContentChange: (content: string) => void;
-  onTextItalicChange: (isItalic: boolean) => void;
-  onTextFontChange: (fontFamily: string) => void;
-  onUploadCustomSticker: () => void;
-  selectedFilterId: PhotoFilterId;
-  selectedBorderId: PhotoBorderId;
-  selectedSticker: StickerElement | null;
-  selectedText: TextElement | null;
-  beautyError: string | null;
-  beautyStatusMessage: string | null;
-  isBeautyRunning: boolean;
-  stickerCategories: StickerCategoryList;
-  stickerPresets: PhotoStickerPreset[];
-  textColor: string;
-  textBold: boolean;
-  textFont: string;
-  textItalic: boolean;
-  textValue: string;
-  borderColor: string;
-  sliders: SliderState;
-  updateSlider: (key: keyof SliderState, value: number) => void;
+  onPointerDown,
+  ...contentProps
+}: ToolParameterProps & {
   onClick?: React.MouseEventHandler<HTMLElement>;
   onPointerDown?: React.PointerEventHandler<HTMLElement>;
 }) {
@@ -1566,43 +2279,7 @@ function ParameterPanel({
       </div>
 
       <div className={styles.paramBody}>
-        <ToolParameterContent
-          activeTool={activeTool}
-          borderColor={borderColor}
-          cropRatio={cropRatio}
-          onAddSticker={onAddSticker}
-          onAddText={onAddText}
-          onApplyCrop={onApplyCrop}
-          onBorderColorChange={onBorderColorChange}
-          onCropRatioChange={onCropRatioChange}
-          onDeleteSelectedText={onDeleteSelectedText}
-          onResetCrop={onResetCrop}
-          onRunBeauty={onRunBeauty}
-          onSelectBorder={onSelectBorder}
-          onSelectFilter={onSelectFilter}
-          onTextBoldChange={onTextBoldChange}
-          onTextColorChange={onTextColorChange}
-          onTextContentChange={onTextContentChange}
-          onTextFontChange={onTextFontChange}
-          onTextItalicChange={onTextItalicChange}
-          onUploadCustomSticker={onUploadCustomSticker}
-          selectedBorderId={selectedBorderId}
-          selectedFilterId={selectedFilterId}
-          selectedSticker={selectedSticker}
-          selectedText={selectedText}
-          beautyError={beautyError}
-          beautyStatusMessage={beautyStatusMessage}
-          isBeautyRunning={isBeautyRunning}
-          sliders={sliders}
-          stickerCategories={stickerCategories}
-          stickerPresets={stickerPresets}
-          textBold={textBold}
-          textColor={textColor}
-          textFont={textFont}
-          textItalic={textItalic}
-          textValue={textValue}
-          updateSlider={updateSlider}
-        />
+        <ToolParameterContent activeTool={activeTool} {...contentProps} />
       </div>
     </aside>
   );
@@ -1610,18 +2287,32 @@ function ParameterPanel({
 
 function ToolParameterContent({
   activeTool,
+  brandBatchPhotos,
+  brandFill,
   borderColor,
   cropRatio,
+  isBrandExporting,
   onAddSticker,
   onAddText,
   onApplyCrop,
   onBorderColorChange,
   onCropRatioChange,
   onDeleteSelectedText,
+  onExportBrandBatch,
+  onOpenBrandBatchPicker,
+  onOpenBrandLogoPicker,
+  onOpenSceneBackgroundPicker,
   onResetCrop,
   onRunBeauty,
+  onRunEnhance,
+  onRunRepair,
+  onRunSceneBlend,
   onSelectBorder,
+  onSelectBrandPhoto,
   onSelectFilter,
+  onSetBrandFill,
+  onSetRepairPrompt,
+  onSetScenePrompt,
   onTextBoldChange,
   onTextColorChange,
   onTextContentChange,
@@ -1634,8 +2325,20 @@ function ToolParameterContent({
   selectedText,
   beautyError,
   beautyStatusMessage,
+  enhanceError,
+  enhanceStatusMessage,
   isBeautyRunning,
+  isEnhanceRunning,
+  isRepairRunning,
+  isSceneBlendRunning,
   sliders,
+  sceneBackground,
+  sceneBlendError,
+  sceneBlendStatusMessage,
+  scenePrompt,
+  repairError,
+  repairPrompt,
+  repairStatusMessage,
   stickerCategories,
   stickerPresets,
   textBold,
@@ -1715,9 +2418,48 @@ function ToolParameterContent({
           onRunBeauty={onRunBeauty}
         />
       ) : null}
-      {activeTool.id === "background" ? <BackgroundPanel /> : null}
-      {activeTool.id === "repair" ? <RepairPanel /> : null}
-      {activeTool.id === "enhance" ? <EnhancePanel /> : null}
+      {activeTool.id === "branding" ? (
+        <BrandingPanel
+          brandBatchPhotos={brandBatchPhotos}
+          brandFill={brandFill}
+          isBrandExporting={isBrandExporting}
+          onExportBrandBatch={onExportBrandBatch}
+          onOpenBrandBatchPicker={onOpenBrandBatchPicker}
+          onOpenBrandLogoPicker={onOpenBrandLogoPicker}
+          onSelectBrandPhoto={onSelectBrandPhoto}
+          onSetBrandFill={onSetBrandFill}
+        />
+      ) : null}
+      {activeTool.id === "background" ? (
+        <BackgroundPanel
+          isSceneBlendRunning={isSceneBlendRunning}
+          onOpenSceneBackgroundPicker={onOpenSceneBackgroundPicker}
+          onRunSceneBlend={onRunSceneBlend}
+          onSetScenePrompt={onSetScenePrompt}
+          sceneBackground={sceneBackground}
+          sceneBlendError={sceneBlendError}
+          sceneBlendStatusMessage={sceneBlendStatusMessage}
+          scenePrompt={scenePrompt}
+        />
+      ) : null}
+      {activeTool.id === "repair" ? (
+        <RepairPanel
+          isRepairRunning={isRepairRunning}
+          onRunRepair={onRunRepair}
+          onSetRepairPrompt={onSetRepairPrompt}
+          repairError={repairError}
+          repairPrompt={repairPrompt}
+          repairStatusMessage={repairStatusMessage}
+        />
+      ) : null}
+      {activeTool.id === "enhance" ? (
+        <EnhancePanel
+          enhanceError={enhanceError}
+          enhanceStatusMessage={enhanceStatusMessage}
+          isEnhanceRunning={isEnhanceRunning}
+          onRunEnhance={onRunEnhance}
+        />
+      ) : null}
     </>
   );
 }
@@ -2114,36 +2856,228 @@ function BeautyPanel({
   );
 }
 
-function BackgroundPanel() {
+function BrandingPanel({
+  brandBatchPhotos,
+  brandFill,
+  isBrandExporting,
+  onExportBrandBatch,
+  onOpenBrandBatchPicker,
+  onOpenBrandLogoPicker,
+  onSelectBrandPhoto,
+  onSetBrandFill
+}: {
+  brandBatchPhotos: BatchBrandPhoto[];
+  brandFill: BrandFillState;
+  isBrandExporting: boolean;
+  onExportBrandBatch: () => void;
+  onOpenBrandBatchPicker: () => void;
+  onOpenBrandLogoPicker: () => void;
+  onSelectBrandPhoto: (photo: BatchBrandPhoto) => void;
+  onSetBrandFill: React.Dispatch<React.SetStateAction<BrandFillState>>;
+}) {
+  const hasBrandContent = Boolean(brandFill.logo);
+  const exportDisabledReason = !brandBatchPhotos.length
+    ? "请先上传批量图片。"
+    : !hasBrandContent
+      ? "请先上传 Logo。"
+      : "";
+
   return (
     <>
-      <AiPanelCard detail="描述你想替换成什么背景。系统会尽量保留主体边缘、光影和原始构图。" title="AI 换背景 · 消耗 1 次" />
-      <textarea className={styles.textareaInput} defaultValue="换成干净的浅灰色背景，保持自然光影" />
-      <button className={styles.runButton} type="button">
-        生成新背景
+      <p className={styles.sectionLabel}>素材</p>
+      <div className={styles.actionRow}>
+        <button className={styles.runButton} onClick={onOpenBrandBatchPicker} type="button">
+          上传批量图片
+        </button>
+        <button className={styles.secondaryButton} onClick={onOpenBrandLogoPicker} type="button">
+          上传 Logo
+        </button>
+      </div>
+      {brandFill.logo ? (
+        <div className={styles.logoPreviewCard}>
+          <span className={styles.logoPreviewFrame}>
+            <img alt={brandFill.logo.name} src={brandFill.logo.objectUrl} />
+          </span>
+          <span className={styles.logoPreviewMeta}>
+            <strong>{brandFill.logo.name}</strong>
+            <small>已上传 Logo，将用于右下角 AI 水印</small>
+          </span>
+        </div>
+      ) : null}
+
+      <p className={styles.sectionLabel}>AI 水印参数</p>
+      <div className={styles.controlCard}>
+        <Slider
+          label="Logo 大小"
+          max={30}
+          min={5}
+          suffix="%"
+          value={brandFill.logoSize}
+          onChange={(value) => onSetBrandFill((current) => ({ ...current, logoSize: value }))}
+        />
+      </div>
+
+      <div className={styles.fileSummary}>
+        <span>{brandBatchPhotos.length ? `已上传 ${brandBatchPhotos.length} 张` : "还未上传批量图片"}</span>
+        <span>{brandFill.logo ? `Logo: ${brandFill.logo.name}` : "未上传 Logo"}</span>
+      </div>
+
+      {brandBatchPhotos.length ? (
+        <>
+          <p className={styles.sectionLabel}>批量预览</p>
+          <div className={styles.brandPreviewGrid}>
+            {brandBatchPhotos.map((item) => (
+              <button
+                className={`${styles.brandPreviewCard} ${brandFill.selectedPhotoId === item.id ? styles.active : ""}`}
+                key={item.id}
+                onClick={() => onSelectBrandPhoto(item)}
+                type="button"
+              >
+                <span className={styles.brandPreviewFrame}>
+                  <img alt={item.name} className={styles.brandPreviewImage} src={item.watermarkObjectUrl ?? item.objectUrl} />
+                  {item.watermarkStatus ? (
+                    <span className={styles.brandStatusBadge} data-status={item.watermarkStatus}>
+                      {item.watermarkStatus === "processing"
+                        ? "生成中"
+                        : item.watermarkStatus === "succeeded"
+                          ? "已生成"
+                          : item.watermarkStatus === "failed"
+                            ? "失败"
+                            : "待生成"}
+                    </span>
+                  ) : null}
+                </span>
+                <span className={styles.brandPreviewMeta}>
+                  <strong>{item.name}</strong>
+                  <small>{item.watermarkError ?? (item.watermarkObjectUrl ? "AI 结果，可载入画布单独修改" : "等待 AI 生成 Logo 图")}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      {exportDisabledReason ? <p className={styles.statusText}>{exportDisabledReason}</p> : null}
+      <button
+        className={styles.runButton}
+        data-loading={isBrandExporting ? "true" : undefined}
+        disabled={!brandBatchPhotos.length || !hasBrandContent || isBrandExporting}
+        onClick={onExportBrandBatch}
+        type="button"
+      >
+        {isBrandExporting ? "AI 批量生成中..." : "AI 批量生成 Logo 图"}
       </button>
     </>
   );
 }
 
-function RepairPanel() {
+function BackgroundPanel({
+  isSceneBlendRunning,
+  onOpenSceneBackgroundPicker,
+  onRunSceneBlend,
+  onSetScenePrompt,
+  sceneBackground,
+  sceneBlendError,
+  sceneBlendStatusMessage,
+  scenePrompt
+}: {
+  isSceneBlendRunning: boolean;
+  onOpenSceneBackgroundPicker: () => void;
+  onRunSceneBlend: () => void;
+  onSetScenePrompt: (prompt: string) => void;
+  sceneBackground: SceneBlendAsset;
+  sceneBlendError: string | null;
+  sceneBlendStatusMessage: string | null;
+  scenePrompt: string;
+}) {
   return (
-    <AiPanelCard
-      action="选择区域并修复"
-      detail="适合处理自己图片中的遮挡、瑕疵、水印或不需要的局部元素。先在画布中框选区域，再生成。"
-      title="AI 细节修复 · 消耗 1 次"
-    />
+    <>
+      <AiPanelCard detail="上传产品图后，再上传一张环境背景图。AI 会按场景描述融合边缘、接触阴影和环境光。" title="AI 溶图 · 消耗 1 次" />
+      <button className={styles.customStickerButton} onClick={onOpenSceneBackgroundPicker} type="button">
+        <span className={styles.customStickerIcon}>BG</span>
+        <span>
+          <strong>{sceneBackground ? sceneBackground.name : "上传背景图"}</strong>
+          <small>雪山、户外、室内等环境参考图</small>
+        </span>
+      </button>
+      {sceneBackground ? (
+        <div className={styles.sceneAssetPreview}>
+          <img alt={sceneBackground.name} src={sceneBackground.objectUrl} />
+        </div>
+      ) : null}
+      <p className={styles.sectionLabel}>场景描述</p>
+      <textarea
+        className={styles.textareaInput}
+        maxLength={220}
+        onChange={(event) => onSetScenePrompt(event.target.value)}
+        value={scenePrompt}
+      />
+      <button className={styles.runButton} disabled={!sceneBackground || !scenePrompt.trim() || isSceneBlendRunning} onClick={onRunSceneBlend} type="button">
+        {isSceneBlendRunning ? "生成中..." : "生成溶图"}
+      </button>
+      {sceneBlendStatusMessage ? <p className={styles.statusText}>{sceneBlendStatusMessage}</p> : null}
+      {sceneBlendError ? <p className={styles.errorText}>{sceneBlendError}</p> : null}
+    </>
   );
 }
 
-function EnhancePanel() {
+function RepairPanel({
+  isRepairRunning,
+  onRunRepair,
+  onSetRepairPrompt,
+  repairError,
+  repairPrompt,
+  repairStatusMessage
+}: {
+  isRepairRunning: boolean;
+  onRunRepair: () => void;
+  onSetRepairPrompt: (prompt: string) => void;
+  repairError: string | null;
+  repairPrompt: string;
+  repairStatusMessage: string | null;
+}) {
+  return (
+    <>
+      <AiPanelCard
+        detail="适合处理自己图片中的遮挡、瑕疵或不需要的局部元素。当前版本按文字描述整体修复，尽量只改描述区域。"
+        title="AI 细节修复 · 消耗 1 次"
+      />
+      <p className={styles.sectionLabel}>修复描述</p>
+      <textarea
+        className={styles.textareaInput}
+        maxLength={220}
+        onChange={(event) => onSetRepairPrompt(event.target.value)}
+        value={repairPrompt}
+      />
+      <button className={styles.runButton} disabled={!repairPrompt.trim() || isRepairRunning} onClick={onRunRepair} type="button">
+        {isRepairRunning ? "修复中..." : "生成修复图"}
+      </button>
+      {repairStatusMessage ? <p className={styles.statusText}>{repairStatusMessage}</p> : null}
+      {repairError ? <p className={styles.errorText}>{repairError}</p> : null}
+    </>
+  );
+}
+
+function EnhancePanel({
+  enhanceError,
+  enhanceStatusMessage,
+  isEnhanceRunning,
+  onRunEnhance
+}: {
+  enhanceError: string | null;
+  enhanceStatusMessage: string | null;
+  isEnhanceRunning: boolean;
+  onRunEnhance: () => void;
+}) {
   return (
     <>
       <AiPanelCard detail="提升图片清晰度与细节，适合模糊、压缩或需要高清导出的单张图片。" title="高清增强 · 消耗 1 次" />
-      <OptionGrid options={["2x 增强", "4x 增强"]} />
-      <button className={styles.runButton} type="button">
-        开始高清增强
+      <OptionGrid activeOption="自然高清增强" options={["自然高清增强"]} />
+      <button className={styles.runButton} disabled={isEnhanceRunning} onClick={onRunEnhance} type="button">
+        {isEnhanceRunning ? "增强中..." : "开始高清增强"}
       </button>
+      {enhanceStatusMessage ? <p className={styles.statusText}>{enhanceStatusMessage}</p> : null}
+      {enhanceError ? <p className={styles.errorText}>{enhanceError}</p> : null}
     </>
   );
 }
@@ -2196,15 +3130,19 @@ function AiPanelCard({ action, detail, title }: { action?: string; detail: strin
 
 function Stage({
   activeTool,
+  aiComparePhoto,
   appliedCrop,
   beautyStatusMessage,
   cropBox,
   cropRatio,
   isBeautyRunning,
+  isAiResultCompare,
   isOriginalCompare,
   isDragging,
+  onToggleAiResultCompare,
   onToggleOriginalCompare,
   onUploadClick,
+  onCommitHistory,
   pan,
   panHandlers,
   photo,
@@ -2230,15 +3168,19 @@ function Stage({
   onSelectTextElement
 }: {
   activeTool: PhotoTool | null;
+  aiComparePhoto: UploadedPhoto | null;
   appliedCrop: ReturnType<typeof useCropBox>["rect"] | null;
   beautyStatusMessage: string | null;
   cropBox: ReturnType<typeof useCropBox>;
   cropRatio: CropRatio;
   isBeautyRunning: boolean;
+  isAiResultCompare: boolean;
   isOriginalCompare: boolean;
   isDragging: boolean;
+  onToggleAiResultCompare: () => void;
   onToggleOriginalCompare: () => void;
   onUploadClick: () => void;
+  onCommitHistory: () => void;
   pan: { x: number; y: number };
   panHandlers: {
     onPointerCancel: (event: React.PointerEvent<HTMLElement>) => void;
@@ -2273,8 +3215,11 @@ function Stage({
     id: selectedFilterId,
     strength: sliders.filterStrength
   });
-  const appliedCropStyle = buildAppliedCropStyle(isOriginalCompare ? null : appliedCrop);
-  const baseShellStyle = isOriginalCompare ? { transform: previewStyle.transform } : previewStyle;
+  const isCompareMode = isAiResultCompare || isOriginalCompare;
+  const displayedPhoto = isAiResultCompare && aiComparePhoto ? aiComparePhoto : photo;
+  const shouldShowRawPhoto = isCompareMode;
+  const appliedCropStyle = buildAppliedCropStyle(shouldShowRawPhoto ? null : appliedCrop);
+  const baseShellStyle = shouldShowRawPhoto ? { transform: previewStyle.transform } : previewStyle;
   const activeBorder = photoBorderPresets.find((preset) => preset.id === selectedBorderId) ?? photoBorderPresets[0];
   const borderWidth = activeBorder.id === "none" ? 0 : sliders.borderWidth;
   const borderBottomWidth = activeBorder.id === "polaroid" ? borderWidth * 2.65 : borderWidth;
@@ -2284,7 +3229,7 @@ function Stage({
     "--photo-frame-inner-radius": `${Math.max(sliders.radius - Math.min(borderWidth, sliders.radius), 0)}px`,
     "--photo-frame-radius": `${sliders.radius}px`,
     "--photo-frame-width": `${borderWidth}px`,
-    aspectRatio: photo?.aspectRatio,
+    aspectRatio: displayedPhoto?.aspectRatio,
     height: "min(100%, 82vh)",
     ...baseShellStyle,
     ...appliedCropStyle.shellStyle
@@ -2301,7 +3246,14 @@ function Stage({
           <button className={styles.active} type="button">
             {activeTool?.modeLabel ?? "画布预览"}
           </button>
-          <button type="button">AI 结果对比</button>
+          <button
+            className={isAiResultCompare ? styles.active : ""}
+            disabled={!aiComparePhoto}
+            onClick={onToggleAiResultCompare}
+            type="button"
+          >
+            {isAiResultCompare ? "退出 AI 对比" : "AI 结果对比"}
+          </button>
         </div>
         <div className={styles.canvasTools}>
           <button
@@ -2319,7 +3271,7 @@ function Stage({
         aria-label="图片画布"
         className={`${styles.canvasWrap} ${isBeautyRunning ? styles.lockedCanvas : ""}`}
       >
-        {photo ? (
+        {displayedPhoto ? (
           <div
             className={`${styles.photoShell} ${styles[`photoBorder${borderClassName}`]} ${isDragging ? styles.dragging : ""}`}
             data-photo-canvas
@@ -2334,37 +3286,43 @@ function Stage({
           >
             <div className={styles.photoImageFrame}>
               <img
-                alt={photo.name}
+                alt={displayedPhoto.name}
                 className={styles.photoPreview}
                 draggable={false}
                 onDragStart={(event) => event.preventDefault()}
-                src={photo.objectUrl}
+                src={displayedPhoto.objectUrl}
                 style={appliedCropStyle.imageStyle}
               />
             </div>
-            {textElements.map((element) => (
-              <DraggableText
-                element={element}
-                isActive={selectedTextId === element.id}
-                key={element.id}
-                onDelete={onDeleteTextElement}
-                onMove={onMoveTextElement}
-                onRotate={onRotateTextElement}
-                onSelect={onSelectTextElement}
-              />
-            ))}
-            {stickerElements.map((element) => (
-              <DraggableSticker
-                element={element}
-                isActive={selectedStickerId === element.id}
-                key={element.id}
-                onDelete={onDeleteStickerElement}
-                onMove={onMoveStickerElement}
-                onResize={onResizeStickerElement}
-                onRotate={onRotateStickerElement}
-                onSelect={onSelectStickerElement}
-              />
-            ))}
+            {!isCompareMode
+              ? textElements.map((element) => (
+                  <DraggableText
+                    element={element}
+                    isActive={selectedTextId === element.id}
+                    key={element.id}
+                    onDelete={onDeleteTextElement}
+                    onCommitHistory={onCommitHistory}
+                    onMove={onMoveTextElement}
+                    onRotate={onRotateTextElement}
+                    onSelect={onSelectTextElement}
+                  />
+                ))
+              : null}
+            {!isCompareMode
+              ? stickerElements.map((element) => (
+                  <DraggableSticker
+                    element={element}
+                    isActive={selectedStickerId === element.id}
+                    key={element.id}
+                    onDelete={onDeleteStickerElement}
+                    onCommitHistory={onCommitHistory}
+                    onMove={onMoveStickerElement}
+                    onResize={onResizeStickerElement}
+                    onRotate={onRotateStickerElement}
+                    onSelect={onSelectStickerElement}
+                  />
+                ))
+              : null}
             {showCropBox ? (
               <div
                 className={`${styles.cropBox} ${canResizeCrop ? styles.resizableCropBox : styles.lockedCropBox}`}
@@ -2388,7 +3346,7 @@ function Stage({
           </div>
         ) : (
           <button className={styles.canvasUpload} onClick={onUploadClick} type="button">
-            <span className={styles.canvasUploadIcon} />
+            <span className={styles.canvasUploadIcon}>+</span>
             <strong>上传图片</strong>
             <small>选择一张图片开始编辑</small>
           </button>
@@ -2409,6 +3367,7 @@ function Stage({
 function DraggableText({
   element,
   isActive,
+  onCommitHistory,
   onDelete,
   onMove,
   onRotate,
@@ -2416,6 +3375,7 @@ function DraggableText({
 }: {
   element: TextElement;
   isActive: boolean;
+  onCommitHistory: () => void;
   onDelete: (id: string) => void;
   onMove: (id: string, position: { x: number; y: number }) => void;
   onRotate: (id: string, rotation: number) => void;
@@ -2436,6 +3396,7 @@ function DraggableText({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       originX: event.clientX,
@@ -2483,6 +3444,7 @@ function DraggableText({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     const overlay = event.currentTarget.closest<HTMLElement>("[data-text-overlay]");
     const rect = overlay?.getBoundingClientRect();
 
@@ -2605,6 +3567,7 @@ function DraggableText({
 function DraggableSticker({
   element,
   isActive,
+  onCommitHistory,
   onDelete,
   onMove,
   onResize,
@@ -2613,6 +3576,7 @@ function DraggableSticker({
 }: {
   element: StickerElement;
   isActive: boolean;
+  onCommitHistory: () => void;
   onDelete: (id: string) => void;
   onMove: (id: string, position: { x: number; y: number }) => void;
   onResize: (id: string, size: number) => void;
@@ -2639,6 +3603,7 @@ function DraggableSticker({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = {
       originX: event.clientX,
@@ -2686,6 +3651,7 @@ function DraggableSticker({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     event.currentTarget.setPointerCapture(event.pointerId);
     resizeRef.current = {
       originX: event.clientX,
@@ -2726,6 +3692,7 @@ function DraggableSticker({
 
     event.preventDefault();
     event.stopPropagation();
+    onCommitHistory();
     const overlay = event.currentTarget.closest<HTMLElement>("[data-sticker-overlay]");
     const rect = overlay?.getBoundingClientRect();
 
@@ -2844,20 +3811,42 @@ function normalizeAngle(angle: number) {
   return ((angle + 540) % 360) - 180;
 }
 
-function AiChatPanel({ onToggleCollapsed }: { onToggleCollapsed: () => void }) {
+function AiChatPanel({
+  chatError,
+  chatMessages,
+  chatPrompt,
+  chatStatusMessage,
+  isChatRunning,
+  onPromptChange,
+  onRunPromptEdit,
+  onSuggestion,
+  onToggleCollapsed,
+  photo
+}: {
+  chatError: string | null;
+  chatMessages: ChatMessage[];
+  chatPrompt: string;
+  chatStatusMessage: string | null;
+  isChatRunning: boolean;
+  onPromptChange: (prompt: string) => void;
+  onRunPromptEdit: () => void;
+  onSuggestion: (prompt: string) => void;
+  onToggleCollapsed: () => void;
+  photo: UploadedPhoto | null;
+}) {
   return (
     <aside className={styles.aiChatPanel} aria-label="AI 对话修图">
       <div className={styles.aiHead}>
         <div className={styles.aiTitleRow}>
           <h2 className={styles.aiTitle}>AI 对话修图</h2>
           <div className={styles.aiHeadActions}>
-            <span className={styles.aiBadge}>剩余 0 次</span>
+            <span className={styles.aiBadge}>单次消耗 1 次</span>
             <button className={styles.panelToggleButton} onClick={onToggleCollapsed} type="button">
               收起
             </button>
           </div>
         </div>
-        <p className={styles.aiDesc}>AI 对话修图暂未开放。基础编辑、裁剪、滤镜、文字、贴纸和边框功能可以先使用。</p>
+        <p className={styles.aiDesc}>基于当前画布图片执行一句话修图指令，生成结果会直接替换当前画布。</p>
         <div className={styles.aiCapabilities}>
           {["AI 美颜", "换背景", "细节修复", "局部重绘", "高清增强"].map((capability) => (
             <span className={styles.capability} key={capability}>
@@ -2868,20 +3857,32 @@ function AiChatPanel({ onToggleCollapsed }: { onToggleCollapsed: () => void }) {
       </div>
 
       <div className={styles.chat}>
-        <div className={`${styles.message} ${styles.aiMessage}`}>AI 对话修图暂未开放，基础编辑工具可以先使用。</div>
+        {chatMessages.map((message) => (
+          <div className={`${styles.message} ${message.role === "ai" ? styles.aiMessage : styles.userMessage}`} key={message.id}>
+            {message.content}
+          </div>
+        ))}
         <div className={styles.suggestions}>
           {aiSuggestions.map((suggestion) => (
-            <button className={styles.suggestion} disabled key={suggestion.title} type="button">
+            <button className={styles.suggestion} disabled={isChatRunning} key={suggestion.title} onClick={() => onSuggestion(suggestion.title)} type="button">
               {suggestion.title}
               <small>{suggestion.detail}</small>
             </button>
           ))}
         </div>
+        {chatStatusMessage ? <p className={styles.statusText}>{chatStatusMessage}</p> : null}
+        {chatError ? <p className={styles.errorText}>{chatError}</p> : null}
       </div>
 
       <div className={styles.composer}>
         <div className={styles.composerBox}>
-          <textarea disabled placeholder="AI 功能暂未开放，敬请期待！" />
+          <textarea
+            disabled={!photo || isChatRunning}
+            maxLength={220}
+            onChange={(event) => onPromptChange(event.target.value)}
+            placeholder={photo ? "例如：修复右下角遮挡，让背景纹理自然延续" : "先上传一张图片"}
+            value={chatPrompt}
+          />
           <div className={styles.composerActions}>
             <button className={styles.miniButton} disabled type="button">
               选择区域
@@ -2889,8 +3890,8 @@ function AiChatPanel({ onToggleCollapsed }: { onToggleCollapsed: () => void }) {
             <button className={styles.miniButton} disabled type="button">
               上传参考
             </button>
-            <button className={styles.sendButton} disabled type="button">
-              生成
+            <button className={styles.sendButton} disabled={!photo || !chatPrompt.trim() || isChatRunning} onClick={onRunPromptEdit} type="button">
+              {isChatRunning ? "生成中" : "生成"}
             </button>
           </div>
         </div>

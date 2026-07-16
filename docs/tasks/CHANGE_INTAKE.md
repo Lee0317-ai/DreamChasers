@@ -1,6 +1,6 @@
 # 新想法与需求变更入口
 
-**最后更新**：2026-06-16
+**最后更新**：2026-06-29
 **用途**：当任意一方有新想法，或让 AI 帮忙规划新功能时，必须先走本流程，再进入实施。
 
 ## 1. 核心规则
@@ -47,6 +47,24 @@
 ```
 
 ## 4. 待评估想法
+
+### IDEA-20260629-01：AI 修图批量品牌填充和 AI 溶图
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：AI 修图已完成本地工作台，`AI 美颜` 已迁到平台 AI Gateway。Lee 新增电商/内容生产类需求：一是对单张或批量图片添加左上角短字、前置 logo 和右下角 LOGO；二是把产品图与雪山等背景图通过 AI 自然融合，解决简单抠图贴背景的假感。
+- 目标：新增 T165，先完成需求归档和后续实现拆分，明确批量品牌填充与 AI 溶图/场景融合的产品边界、实现顺序和验证口径。
+- 不做：本任务不直接实现代码；不接真实额度扣减；不新增真实 API key；不修改 PDF、游戏、TimePick、账号、Prisma、部署、package 或 env；不扩大到完整批量 AI 处理中心。
+- 用户价值：让用户能快速给多张图片统一加品牌标识，并能把产品图自然放入户外、雪山等营销场景中，提升电商图和内容图的生产效率与真实感。
+- 涉及模块：AI 修图工具。
+- 可能影响文件：`docs/modules/photo-editor/**`, `docs/tasks/items/T165-ai-photo-batch-branding-and-scene-blend.md`, `docs/tasks/claims/T165-lee.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/progress/2026-06-29-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`。
+- 是否影响另一方任务：否。本任务限定在 AI 修图模块文档和任务归档范围，不修改应用代码。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：T165 任务分片和领取分片存在；`NEXT_ID.md` 已递增；AI 修图模块文档记录两个新增需求及后续实现建议；`npm run docs:sync` 和 `git diff --check` 通过。
+- AI 初步方案：先做非 AI 批量品牌填充，复用 Canvas、本地文字、贴纸和导出能力；再做 AI 溶图/场景融合，继续走平台 AI Gateway 和任务化流程，输入产品图、背景图、可选主体位置和场景提示，并验证 provider 多图编辑能力。
+- 处理结论：已入任务池
+- 对应任务编号：T165
 
 ### IDEA-20260616-04：胡了卜特殊事件池扩容
 
