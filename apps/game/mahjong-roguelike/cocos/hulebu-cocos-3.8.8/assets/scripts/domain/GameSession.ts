@@ -61,6 +61,14 @@ export class GameSession {
     };
   }
 
+  getComboCandidateOptions(combo: GameCombo): readonly HulebuRuntimeComboCandidateOption[] {
+    return this.runtime.getComboCandidateOptions(combo);
+  }
+
+  canUseDiscardTool(): boolean {
+    return this.runtime.canUseDiscardTool();
+  }
+
   private executeCombo(command: Extract<GameCommand, { type: "combo.execute" }>): CommandResult {
     const candidates = this.runtime.getComboCandidateOptions(command.combo);
     if (candidates.length === 0) {

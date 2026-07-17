@@ -72,7 +72,6 @@ export const TRANSITIONS: Readonly<Record<RunPhase, readonly RunPhase[]>> = {
   "playing.resolving": [
     "playing.idle",
     "playing.comboChoosing",
-    "playing.discardChoosing",
     "playing.dangerCheck",
     "encounterCleared",
     "failed",
@@ -129,8 +128,8 @@ export class RunStateMachine {
       throw new Error("Run snapshot has an unknown phase.");
     }
     if (phase === "paused") {
-      if (!pauseReturnPhase || !isPauseReturnPhase(pauseReturnPhase)) {
-        throw new Error("Paused run snapshot requires a valid return phase.");
+      if (pauseReturnPhase !== null && !isPauseReturnPhase(pauseReturnPhase)) {
+        throw new Error("Paused run snapshot has an invalid return phase.");
       }
     } else if (pauseReturnPhase !== null) {
       throw new Error("Only a paused run snapshot may retain a return phase.");

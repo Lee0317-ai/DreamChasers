@@ -73,20 +73,7 @@ export class GameCoordinator {
     snapshot: RunSnapshot,
     session: GameSession | null = null,
   ): GameCoordinator {
-    validateRunSnapshot(snapshot);
-
-    const requiresSession = PLAYING_PHASES.has(snapshot.phase);
-    if (requiresSession && (!session || !snapshot.sessionSnapshot)) {
-      throw new Error("Playing run snapshot requires an attached session snapshot.");
-    }
-    if ((session === null) !== (snapshot.sessionSnapshot === null)) {
-      throw new Error("Run snapshot and attached session do not match.");
-    }
-    if (session && snapshot.sessionSnapshot
-      && !gameSnapshotsEqual(session.snapshot(), snapshot.sessionSnapshot)) {
-      throw new Error("Attached session does not match the run snapshot.");
-    }
-    validatePendingComboSession(snapshot, session);
+    validateRestorableState(snapshot, session);
 
     const run = RunStateMachine.restore(
       snapshot.phase,
@@ -104,14 +91,13 @@ export class GameCoordinator {
 
   attachSession(session: GameSession): void {
     const snapshot = this.createSnapshot(session, this.context);
-    validateRunSnapshot(snapshot);
-    validatePendingComboSession(snapshot, session);
+    validateRestorableState(snapshot, session);
     this.session = session;
   }
 
   detachSession(): void {
     const snapshot = this.createSnapshot(null, this.context);
-    validateRunSnapshot(snapshot);
+    validateRestorableState(snapshot, null);
     this.session = null;
   }
 
@@ -139,8 +125,7 @@ export class GameCoordinator {
       nextContext.pendingCombo = validatePendingCombo(update.pendingCombo);
     }
     const snapshot = this.createSnapshot(this.session, nextContext);
-    validateRunSnapshot(snapshot);
-    validatePendingComboSession(snapshot, this.session);
+    validateRestorableState(snapshot, this.session);
     this.context.targetLevelOrder = nextContext.targetLevelOrder;
     this.context.rewardCandidateIds = nextContext.rewardCandidateIds;
     this.context.eventOptionIds = nextContext.eventOptionIds;
@@ -149,8 +134,7 @@ export class GameCoordinator {
 
   snapshot(): RunSnapshot {
     const snapshot = this.createSnapshot(this.session, this.context);
-    validateRunSnapshot(snapshot);
-    validatePendingComboSession(snapshot, this.session);
+    validateRestorableState(snapshot, this.session);
     return snapshot;
   }
 
@@ -245,11 +229,14 @@ export class GameCoordinator {
       this.requireTransition("playing.comboChoosing");
       this.context.pendingCombo = clonePendingCombo(comboChoice);
     } else if (!result.accepted) {
-      this.requireTransition(
-        originPhase === "playing.comboChoosing" || originPhase === "playing.discardChoosing"
-          ? originPhase
-          : "playing.idle",
-      );
+      if (originPhase === "playing.comboChoosing") {
+        this.requireTransition("playing.comboChoosing");
+      } else {
+        this.requireTransition("playing.idle");
+        if (originPhase === "playing.discardChoosing") {
+          this.requireTransition("playing.discardChoosing");
+        }
+      }
     } else if (result.changed) {
       this.requireTransition("playing.dangerCheck");
       this.requireTransition(
@@ -362,6 +349,26 @@ function validateRunSnapshot(snapshot: RunSnapshot): void {
     validateGameSnapshot(snapshot.sessionSnapshot);
   }
   validateSnapshotSemantics(snapshot);
+}
+
+function validateRestorableState(
+  snapshot: RunSnapshot,
+  session: GameSession | null,
+): void {
+  validateRunSnapshot(snapshot);
+
+  const requiresSession = PLAYING_PHASES.has(snapshot.phase);
+  if (requiresSession && (!session || !snapshot.sessionSnapshot)) {
+    throw new Error("Playing run snapshot requires an attached session snapshot.");
+  }
+  if ((session === null) !== (snapshot.sessionSnapshot === null)) {
+    throw new Error("Run snapshot and attached session do not match.");
+  }
+  if (session && snapshot.sessionSnapshot
+    && !gameSnapshotsEqual(session.snapshot(), snapshot.sessionSnapshot)) {
+    throw new Error("Attached session does not match the run snapshot.");
+  }
+  validateSessionCapabilities(snapshot, session);
 }
 
 function validateTargetLevelOrder(value: number | null): void {
@@ -518,28 +525,23 @@ function gameSnapshotsEqual(left: GameSnapshot, right: GameSnapshot): boolean {
   return valuesEqual(left, right);
 }
 
-function getSessionComboCandidates(
-  session: GameSession,
-  combo: GameCombo,
-): PendingComboContext["candidates"] {
-  const runtime = (session as unknown as {
-    readonly runtime: {
-      getComboCandidateOptions(value: GameCombo): PendingComboContext["candidates"];
-    };
-  }).runtime;
-  return runtime.getComboCandidateOptions(combo);
-}
-
-function validatePendingComboSession(
+function validateSessionCapabilities(
   snapshot: RunSnapshot,
   session: GameSession | null,
 ): void {
   if (session && snapshot.context.pendingCombo
     && !valuesEqual(
-      getSessionComboCandidates(session, snapshot.context.pendingCombo.combo),
+      session.getComboCandidateOptions(snapshot.context.pendingCombo.combo),
       snapshot.context.pendingCombo.candidates,
     )) {
     throw new Error("Pending combo context does not match the attached session.");
+  }
+
+  const needsDiscard = snapshot.phase === "playing.discardChoosing"
+    || (snapshot.phase === "paused"
+      && snapshot.context.pauseReturnPhase === "playing.discardChoosing");
+  if (needsDiscard && session && !session.canUseDiscardTool()) {
+    throw new Error("Discard choice requires discard to be available in the attached session.");
   }
 }
 

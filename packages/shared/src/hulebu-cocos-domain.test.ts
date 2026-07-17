@@ -515,6 +515,25 @@ describe("Hulebu Cocos domain session", () => {
     expect(snapshot.runtime.history.every((entry) => !("history" in entry))).toBe(true);
   });
 
+  test("exposes read-only combo and discard capability queries to application flow", () => {
+    const runtime = new HulebuRuntimeState(createMultiChiLevel());
+    const session = new GameSession(runtime);
+
+    expect(session.getComboCandidateOptions("chi"))
+      .toEqual(runtime.getComboCandidateOptions("chi"));
+    expect(session.canUseDiscardTool()).toBe(true);
+
+    const unavailableDiscard = new GameSession(new HulebuRuntimeState(createLevel({
+      discard: 0,
+      initialSlotOrder: ["slot-a"],
+      tiles: [
+        createTile("slot-a", "wan", 1, "slot"),
+        createTile("board-a", "tong", 2),
+      ],
+    })));
+    expect(unavailableDiscard.canUseDiscardTool()).toBe(false);
+  });
+
   test("keeps the domain and runtime import graph free of Cocos runtime modules", () => {
     const entries = [
       "assets/scripts/domain/GameContracts.ts",
@@ -575,6 +594,12 @@ describe("Hulebu Cocos domain session", () => {
       expect(meta).toMatchObject({ importer: "typescript" });
       expect(meta.uuid).toMatch(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/);
     }
+
+    const coordinatorSource = fs.readFileSync(
+      path.join(cocosRoot, "assets/scripts/application/GameCoordinator.ts"),
+      "utf8",
+    );
+    expect(coordinatorSource).not.toContain("session as unknown");
   });
 });
 
@@ -624,6 +649,13 @@ describe("Hulebu Cocos run coordinator", () => {
     expect(new RunStateMachine("failed").isPersistable()).toBe(false);
   });
 
+  test("rejects the non-plan resolving to discard choice transition", () => {
+    const run = new RunStateMachine("playing.resolving");
+
+    expect(run.transition("playing.discardChoosing")).toBe(false);
+    expect(run.phase).toBe("playing.resolving");
+  });
+
   test.each([
     "playing.idle",
     "playing.comboChoosing",
@@ -631,7 +663,17 @@ describe("Hulebu Cocos run coordinator", () => {
   ] as const)("pauses and resumes exactly to %s without dispatching to the session", (phase) => {
     const run = new RunStateMachine(phase === "playing.comboChoosing" ? "playing.idle" : phase);
     const session = new GameSession(new HulebuRuntimeState(
-      phase === "playing.comboChoosing" ? createMultiChiLevel() : createPengLevel(),
+      phase === "playing.comboChoosing"
+        ? createMultiChiLevel()
+        : phase === "playing.discardChoosing"
+          ? createLevel({
+            initialSlotOrder: ["slot-a"],
+            tiles: [
+              createTile("slot-a", "wan", 1, "slot"),
+              createTile("board-a", "tong", 2),
+            ],
+          })
+          : createPengLevel(),
     ));
     const dispatchCount = observeSessionDispatch(session);
     const coordinator = new GameCoordinator(run, session);
@@ -659,7 +701,10 @@ describe("Hulebu Cocos run coordinator", () => {
     const coordinator = new GameCoordinator(run, session);
     const before = coordinator.snapshot();
 
-    const result = coordinator.dispatch({ type: "flow.resume" });
+    const restored = GameCoordinator.restore(before, session);
+    expect(restored.snapshot()).toEqual(before);
+
+    const result = restored.dispatch({ type: "flow.resume" });
 
     expect(result).toMatchObject({ accepted: false, changed: false, phase: "paused" });
     expect(result.events).toEqual([
@@ -667,6 +712,35 @@ describe("Hulebu Cocos run coordinator", () => {
     ]);
     expect(result.runSnapshot).toEqual(before);
     expect(dispatchCount()).toBe(0);
+  });
+
+  test.each([
+    ["playing.discardChoosing", null],
+    ["paused", "playing.discardChoosing"],
+  ] as const)("rejects %s restore when discard is unavailable", (phase, pauseReturnPhase) => {
+    const session = new GameSession(new HulebuRuntimeState(createLevel({
+      discard: 0,
+      initialSlotOrder: ["slot-a"],
+      tiles: [
+        createTile("slot-a", "wan", 1, "slot"),
+        createTile("board-a", "tong", 2),
+      ],
+    })));
+    const idleSnapshot = new GameCoordinator(
+      new RunStateMachine("playing.idle"),
+      session,
+    ).snapshot();
+    const invalidSnapshot: RunSnapshot = {
+      ...idleSnapshot,
+      phase,
+      context: {
+        ...idleSnapshot.context,
+        pauseReturnPhase,
+      },
+    };
+
+    expect(() => GameCoordinator.restore(invalidSnapshot, session))
+      .toThrow(/discard.*available/i);
   });
 
   test("runs ordinary mutations through resolving and danger check before returning idle", () => {
