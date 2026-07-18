@@ -188,7 +188,7 @@ export class SaveService<T> {
       throw new Error(`Unexpected temporary contentVersion: ${String(parsed.contentVersion)}.`);
     }
     requireSavedAt(parsed.savedAt);
-    return this.decodeAndValidate(parsed.value);
+    return this.decodePersistable(parsed.value);
   }
 
   private decodePayload(payload: unknown, sourceVersion: number): DecodedSave<T> {
@@ -203,10 +203,7 @@ export class SaveService<T> {
       version += 1;
     }
 
-    const value = this.decodeAndValidate(migratedPayload);
-    if (!this.options.canPersist(value)) {
-      throw new Error("Loaded payload is not in a persistable phase.");
-    }
+    const value = this.decodePersistable(migratedPayload);
     return {
       value,
       migrated: sourceVersion !== this.options.schemaVersion,
@@ -217,12 +214,23 @@ export class SaveService<T> {
     return this.options.validate(this.options.codec.decode(payload));
   }
 
+  private decodePersistable(payload: unknown): T {
+    const value = this.decodeAndValidate(payload);
+    if (!this.options.canPersist(value)) {
+      throw new Error("Decoded payload is not in a persistable phase.");
+    }
+    return value;
+  }
+
   private quarantine(raw: string, reason: string): LoadResult<T> {
     let quarantineKey: string;
     try {
-      const counter = this.quarantineCounter;
-      this.quarantineCounter += 1;
-      quarantineKey = `${this.options.key}.quarantine.${this.options.now()}.${counter}`;
+      const timestamp = this.options.now();
+      do {
+        const counter = this.quarantineCounter;
+        this.quarantineCounter += 1;
+        quarantineKey = `${this.options.key}.quarantine.${timestamp}.${counter}`;
+      } while (this.options.storage.getItem(quarantineKey) !== null);
       this.options.storage.setItem(quarantineKey, raw);
     } catch (error) {
       return { status: "error", stage: "quarantine-write", error };

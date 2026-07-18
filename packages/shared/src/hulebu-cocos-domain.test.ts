@@ -2029,6 +2029,7 @@ describe("Hulebu Cocos SaveService", () => {
       `get:${SAVE_TEMP_KEY}`,
       "decode",
       "validate",
+      "canPersist",
       `get:${SAVE_KEY}`,
       `set:${SAVE_KEY}`,
       `remove:${SAVE_TEMP_KEY}`,
@@ -2205,6 +2206,27 @@ describe("Hulebu Cocos SaveService", () => {
     expect(serializationStorage.values.get(SAVE_KEY)).toBe("old-primary-bytes");
   });
 
+  test("rejects a non-persistable codec readback before primary commit", () => {
+    const storage = new FaultInjectingStorage();
+    storage.values.set(SAVE_KEY, "old-primary-bytes");
+    const service = createSaveService(storage, {
+      codec: createSaveCodec({
+        decode: (value) => ({
+          ...requireSaveRecord(value, "decoded save"),
+          phase: "paused",
+        }),
+      }),
+    });
+
+    expect(service.save(createSaveFixture())).toMatchObject({
+      status: "error",
+      stage: "temp-readback",
+    });
+    expect(storage.values.get(SAVE_KEY)).toBe("old-primary-bytes");
+    expect(storage.operations.some((operation) =>
+      operation.type === "set" && operation.key === SAVE_KEY)).toBe(false);
+  });
+
   test.each([
     {
       name: "temp write",
@@ -2282,7 +2304,31 @@ describe("Hulebu Cocos SaveService", () => {
     });
   });
 
+  test("skips an existing quarantine key across SaveService instances", () => {
+    const storage = new FaultInjectingStorage();
+    const existingKey = `${SAVE_KEY}.quarantine.2026-07-18T08:00:00.000Z.0`;
+    const nextKey = `${SAVE_KEY}.quarantine.2026-07-18T08:00:00.000Z.1`;
+    storage.values.set(existingKey, "existing-quarantine-bytes");
+    storage.values.set(SAVE_KEY, "new-bad-json");
+
+    const result = createSaveService(storage).load();
+
+    expect(result).toMatchObject({ status: "quarantined", key: nextKey });
+    expect(storage.values.get(existingKey)).toBe("existing-quarantine-bytes");
+    expect(storage.values.get(nextKey)).toBe("new-bad-json");
+  });
+
   test.each([
+    {
+      name: "quarantine candidate probe",
+      stage: "quarantine-write",
+      configure(storage: FaultInjectingStorage) {
+        storage.onGet = (key, value) => {
+          if (key.includes(".quarantine.")) throw new Error("quarantine probe failed");
+          return value;
+        };
+      },
+    },
     {
       name: "quarantine write",
       stage: "quarantine-write",
@@ -2297,7 +2343,7 @@ describe("Hulebu Cocos SaveService", () => {
       stage: "quarantine-verify",
       configure(storage: FaultInjectingStorage) {
         storage.onGet = (key, value) =>
-          key.includes(".quarantine.") ? `${value}-corrupt` : value;
+          key.includes(".quarantine.") && value !== null ? `${value}-corrupt` : value;
       },
     },
     {
@@ -2305,7 +2351,10 @@ describe("Hulebu Cocos SaveService", () => {
       stage: "primary-remove",
       configure(storage: FaultInjectingStorage) {
         storage.onRemove = (key) => {
-          if (key === SAVE_KEY) throw new Error("primary remove failed");
+          if (key === SAVE_KEY) {
+            storage.values.delete(key);
+            throw new Error("primary remove failed after deletion");
+          }
         };
       },
     },
@@ -2331,8 +2380,10 @@ describe("Hulebu Cocos SaveService", () => {
     expect(result.status).toBe("quarantined");
     const quarantineSetIndex = storage.operations.findIndex((operation) =>
       operation.type === "set" && operation.key.includes(".quarantine."));
-    const quarantineVerifyIndex = storage.operations.findIndex((operation) =>
-      operation.type === "get" && operation.key.includes(".quarantine."));
+    const quarantineVerifyIndex = storage.operations.findIndex((operation, index) =>
+      index > quarantineSetIndex
+      && operation.type === "get"
+      && operation.key.includes(".quarantine."));
     const primaryRemoveIndex = storage.operations.findIndex((operation) =>
       operation.type === "remove" && operation.key === SAVE_KEY);
     expect(quarantineSetIndex).toBeGreaterThan(-1);
