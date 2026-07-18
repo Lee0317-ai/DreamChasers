@@ -25,6 +25,12 @@ import type {
   ContentRepository as ContentRepositoryClass,
   ContentSource,
 } from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/content/ContentRepository";
+import type {
+  SaveCodec,
+  SaveService as SaveServiceClass,
+  SaveServiceOptions,
+  StoragePort,
+} from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/persistence/SaveService";
 
 const workspaceRoot = path.resolve(__dirname, "../../..");
 const cocosRoot = path.join(
@@ -37,6 +43,7 @@ let GameSession: typeof GameSessionClass;
 let RunStateMachine: typeof RunStateMachineClass;
 let GameCoordinator: typeof GameCoordinatorClass;
 let ContentRepository: typeof ContentRepositoryClass;
+let SaveService: typeof SaveServiceClass;
 let HULEBU_LEGACY_CONTENT_SOURCE: ContentSource;
 
 beforeAll(async () => {
@@ -54,6 +61,7 @@ beforeAll(async () => {
           `export { RunStateMachine } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/domain/RunStateMachine.ts"))};`,
           `export { GameCoordinator } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/application/GameCoordinator.ts"))};`,
           `export { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/content/ContentRepository.ts"))};`,
+          `export { SaveService } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/persistence/SaveService.ts"))};`,
         ].join("\n")
         : null,
     }],
@@ -70,6 +78,7 @@ beforeAll(async () => {
     RunStateMachine: typeof RunStateMachineClass;
     GameCoordinator: typeof GameCoordinatorClass;
     ContentRepository: typeof ContentRepositoryClass;
+    SaveService: typeof SaveServiceClass;
     HULEBU_LEGACY_CONTENT_SOURCE: ContentSource;
   };
   HulebuRuntimeState = domainModule.HulebuRuntimeState;
@@ -77,6 +86,7 @@ beforeAll(async () => {
   RunStateMachine = domainModule.RunStateMachine;
   GameCoordinator = domainModule.GameCoordinator;
   ContentRepository = domainModule.ContentRepository;
+  SaveService = domainModule.SaveService;
   HULEBU_LEGACY_CONTENT_SOURCE = domainModule.HULEBU_LEGACY_CONTENT_SOURCE;
 });
 
@@ -1716,5 +1726,674 @@ describe("Hulebu Cocos run coordinator", () => {
 
     expect(coordinator.snapshot().context.rewardCandidateIds).toEqual(["reward-a", "reward-b"]);
     expect(coordinator.snapshot().context.eventOptionIds).toEqual([]);
+  });
+});
+
+interface SaveFixtureActiveRun {
+  readonly runProfile: {
+    readonly id: string;
+  };
+  readonly order: number;
+  readonly runtime: {
+    readonly tiles: readonly {
+      readonly id: string;
+    }[];
+    readonly slot: readonly string[];
+  };
+  readonly rewardIds: readonly string[];
+  readonly eventIds: readonly string[];
+  readonly abilityIds: readonly string[];
+}
+
+interface SaveFixture {
+  readonly boardRevision: string;
+  readonly phase: RunPhase;
+  readonly activeRun: SaveFixtureActiveRun | null;
+}
+
+interface LegacySaveFixtureV0 {
+  readonly boardRevision: string;
+  readonly resumablePhase: RunPhase;
+  readonly activeRun: SaveFixtureActiveRun | null;
+}
+
+type StorageOperation =
+  | { readonly type: "get"; readonly key: string }
+  | { readonly type: "set"; readonly key: string; readonly value: string }
+  | { readonly type: "remove"; readonly key: string };
+
+class FaultInjectingStorage implements StoragePort {
+  readonly values = new Map<string, string>();
+  readonly operations: StorageOperation[] = [];
+  onGet: ((key: string, value: string | null) => string | null) | null = null;
+  onSet: ((key: string, value: string) => void) | null = null;
+  onRemove: ((key: string) => void) | null = null;
+
+  getItem(key: string): string | null {
+    this.operations.push({ type: "get", key });
+    const value = this.values.get(key) ?? null;
+    return this.onGet ? this.onGet(key, value) : value;
+  }
+
+  setItem(key: string, value: string): void {
+    this.operations.push({ type: "set", key, value });
+    this.onSet?.(key, value);
+    this.values.set(key, value);
+  }
+
+  removeItem(key: string): void {
+    this.operations.push({ type: "remove", key });
+    this.onRemove?.(key);
+    this.values.delete(key);
+  }
+}
+
+const SAVE_KEY = "hulebu-save-test";
+const SAVE_TEMP_KEY = `${SAVE_KEY}.tmp`;
+const SAVE_SCHEMA_VERSION = 1;
+const SAVE_CONTENT_VERSION = "content-v1";
+const SAVE_BOARD_REVISION = "board-v1";
+const SAVE_RUN_PROFILE_ID = "mainline";
+const SAVE_REWARD_IDS = new Set(["reward-a"]);
+const SAVE_EVENT_IDS = new Set(["event-a"]);
+const SAVE_ABILITY_IDS = new Set(["ability-a"]);
+const SAVE_RUN_PHASES = new Set<RunPhase>([
+  "encounterIntro",
+  "playing.tileEntering",
+  "playing.idle",
+  "playing.resolving",
+  "playing.comboChoosing",
+  "playing.discardChoosing",
+  "playing.dangerCheck",
+  "encounterCleared",
+  "rewardChoice",
+  "eventChoice",
+  "bossIntro",
+  "settlement",
+  "failed",
+  "paused",
+]);
+const SAVE_PERSISTABLE_PHASES = new Set<RunPhase>([
+  "encounterIntro",
+  "playing.idle",
+  "playing.comboChoosing",
+  "playing.discardChoosing",
+  "encounterCleared",
+  "rewardChoice",
+  "eventChoice",
+  "bossIntro",
+  "settlement",
+]);
+
+function createSaveFixture(overrides: Partial<SaveFixture> = {}): SaveFixture {
+  return {
+    boardRevision: SAVE_BOARD_REVISION,
+    phase: "playing.idle",
+    activeRun: {
+      runProfile: { id: SAVE_RUN_PROFILE_ID },
+      order: 3,
+      runtime: {
+        tiles: [{ id: "tile-a" }, { id: "tile-b" }],
+        slot: ["tile-a"],
+      },
+      rewardIds: ["reward-a"],
+      eventIds: ["event-a"],
+      abilityIds: ["ability-a"],
+    },
+    ...overrides,
+  };
+}
+
+function requireSaveRecord(value: unknown, label: string): Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object.`);
+  }
+  return value as Record<string, unknown>;
+}
+
+function requireSaveIdList(
+  value: unknown,
+  allowed: ReadonlySet<string>,
+  label: string,
+): readonly string[] {
+  if (!Array.isArray(value) || value.some((id) => typeof id !== "string")) {
+    throw new Error(`${label} must be a string array.`);
+  }
+  for (const id of value) {
+    if (!allowed.has(id)) {
+      throw new Error(`${label} references unknown content id ${id}.`);
+    }
+  }
+  return value;
+}
+
+function validateSaveFixture(value: unknown): SaveFixture {
+  const root = requireSaveRecord(value, "save");
+  if (root.boardRevision !== SAVE_BOARD_REVISION) {
+    throw new Error(`Unsupported boardRevision: ${String(root.boardRevision)}.`);
+  }
+  if (typeof root.phase !== "string" || !SAVE_RUN_PHASES.has(root.phase as RunPhase)) {
+    throw new Error(`Unknown run phase: ${String(root.phase)}.`);
+  }
+  if (root.activeRun === null) {
+    return {
+      boardRevision: root.boardRevision,
+      phase: root.phase as RunPhase,
+      activeRun: null,
+    };
+  }
+
+  const activeRun = requireSaveRecord(root.activeRun, "active run");
+  const runProfile = requireSaveRecord(activeRun.runProfile, "run profile");
+  if (runProfile.id !== SAVE_RUN_PROFILE_ID) {
+    throw new Error(`Unknown run profile: ${String(runProfile.id)}.`);
+  }
+  if (!Number.isInteger(activeRun.order) || (activeRun.order as number) < 1) {
+    throw new Error("Active run order must be a positive integer.");
+  }
+
+  const runtime = requireSaveRecord(activeRun.runtime, "runtime");
+  if (!Array.isArray(runtime.tiles)) {
+    throw new Error("Runtime tiles must be an array.");
+  }
+  const tileIds = new Set<string>();
+  for (const tileValue of runtime.tiles) {
+    const tile = requireSaveRecord(tileValue, "runtime tile");
+    if (typeof tile.id !== "string" || tile.id.length === 0 || tileIds.has(tile.id)) {
+      throw new Error(`Invalid runtime tile id: ${String(tile.id)}.`);
+    }
+    tileIds.add(tile.id);
+  }
+  if (!Array.isArray(runtime.slot) || runtime.slot.some((id) => typeof id !== "string")) {
+    throw new Error("Runtime slot must be a string array.");
+  }
+  for (const tileId of runtime.slot) {
+    if (!tileIds.has(tileId)) {
+      throw new Error(`Runtime slot references unknown tile ${tileId}.`);
+    }
+  }
+
+  const rewardIds = requireSaveIdList(activeRun.rewardIds, SAVE_REWARD_IDS, "Reward");
+  const eventIds = requireSaveIdList(activeRun.eventIds, SAVE_EVENT_IDS, "Event");
+  const abilityIds = requireSaveIdList(activeRun.abilityIds, SAVE_ABILITY_IDS, "Ability");
+  return {
+    boardRevision: root.boardRevision,
+    phase: root.phase as RunPhase,
+    activeRun: {
+      runProfile: { id: runProfile.id },
+      order: activeRun.order as number,
+      runtime: {
+        tiles: runtime.tiles.map((tile) => {
+          const record = requireSaveRecord(tile, "runtime tile");
+          return { id: record.id as string };
+        }),
+        slot: [...runtime.slot],
+      },
+      rewardIds: [...rewardIds],
+      eventIds: [...eventIds],
+      abilityIds: [...abilityIds],
+    },
+  };
+}
+
+function createSaveCodec(overrides: Partial<SaveCodec<SaveFixture>> = {}): SaveCodec<SaveFixture> {
+  return {
+    encode: (value) => value,
+    decode: (value) => value,
+    ...overrides,
+  };
+}
+
+function createSaveService(
+  storage: FaultInjectingStorage,
+  overrides: Partial<SaveServiceOptions<SaveFixture>> = {},
+): InstanceType<typeof SaveService<SaveFixture>> {
+  return new SaveService<SaveFixture>({
+    key: SAVE_KEY,
+    storage,
+    codec: createSaveCodec(),
+    validate: validateSaveFixture,
+    canPersist: (value) => SAVE_PERSISTABLE_PHASES.has(value.phase),
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    contentVersion: SAVE_CONTENT_VERSION,
+    migrations: {
+      0: (value) => {
+        const legacy = requireSaveRecord(value, "legacy save") as unknown as LegacySaveFixtureV0;
+        return {
+          boardRevision: legacy.boardRevision,
+          phase: legacy.resumablePhase,
+          activeRun: legacy.activeRun,
+        };
+      },
+    },
+    now: () => "2026-07-18T08:00:00.000Z",
+    ...overrides,
+  });
+}
+
+function createEnvelope(
+  value: unknown,
+  overrides: Partial<{
+    schemaVersion: number;
+    contentVersion: string;
+    savedAt: string;
+  }> = {},
+): string {
+  return JSON.stringify({
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    contentVersion: SAVE_CONTENT_VERSION,
+    savedAt: "2026-07-18T07:00:00.000Z",
+    value,
+    ...overrides,
+  });
+}
+
+describe("Hulebu Cocos SaveService", () => {
+  test("round-trips the current schema and content version in the required save order", () => {
+    const storage = new FaultInjectingStorage();
+    const order: string[] = [];
+    const service = createSaveService(storage, {
+      codec: createSaveCodec({
+        encode: (value) => {
+          order.push("encode");
+          return value;
+        },
+        decode: (value) => {
+          order.push("decode");
+          return value;
+        },
+      }),
+      validate: (value) => {
+        order.push("validate");
+        return validateSaveFixture(value);
+      },
+      canPersist: (value) => {
+        order.push("canPersist");
+        return SAVE_PERSISTABLE_PHASES.has(value.phase);
+      },
+    });
+    storage.onSet = (key) => order.push(`set:${key}`);
+    storage.onGet = (key, value) => {
+      order.push(`get:${key}`);
+      return value;
+    };
+    storage.onRemove = (key) => order.push(`remove:${key}`);
+    const value = createSaveFixture();
+
+    expect(service.save(value)).toEqual({ status: "committed", warnings: [] });
+    expect(order).toEqual([
+      "validate",
+      "canPersist",
+      "encode",
+      `set:${SAVE_TEMP_KEY}`,
+      `get:${SAVE_TEMP_KEY}`,
+      "decode",
+      "validate",
+      `get:${SAVE_KEY}`,
+      `set:${SAVE_KEY}`,
+      `remove:${SAVE_TEMP_KEY}`,
+    ]);
+    expect(storage.values.has(SAVE_TEMP_KEY)).toBe(false);
+
+    const primaryBytes = storage.values.get(SAVE_KEY);
+    expect(primaryBytes).toBeDefined();
+    expect(JSON.parse(primaryBytes!)).toEqual({
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      contentVersion: SAVE_CONTENT_VERSION,
+      savedAt: "2026-07-18T08:00:00.000Z",
+      value,
+    });
+    expect(service.load()).toEqual({ status: "loaded", value, migrated: false });
+  });
+
+  test("migrates only an unwrapped v0 payload with a compatible boardRevision", () => {
+    const storage = new FaultInjectingStorage();
+    const legacy: LegacySaveFixtureV0 = {
+      boardRevision: SAVE_BOARD_REVISION,
+      resumablePhase: "rewardChoice",
+      activeRun: createSaveFixture().activeRun,
+    };
+    storage.values.set(SAVE_KEY, JSON.stringify(legacy));
+
+    expect(createSaveService(storage).load()).toEqual({
+      status: "loaded",
+      value: {
+        boardRevision: SAVE_BOARD_REVISION,
+        phase: "rewardChoice",
+        activeRun: legacy.activeRun,
+      },
+      migrated: true,
+    });
+    expect(storage.values.get(SAVE_KEY)).toBe(JSON.stringify(legacy));
+  });
+
+  test.each([
+    ["future schema", createEnvelope(createSaveFixture(), { schemaVersion: 2 }), /schema/i],
+    ["incompatible contentVersion", createEnvelope(createSaveFixture(), { contentVersion: "content-v2" }), /contentVersion/i],
+    ["unknown schema", createEnvelope(createSaveFixture(), { schemaVersion: -1 }), /schema/i],
+    [
+      "malformed savedAt",
+      JSON.stringify({
+        schemaVersion: SAVE_SCHEMA_VERSION,
+        contentVersion: SAVE_CONTENT_VERSION,
+        savedAt: 42,
+        value: createSaveFixture(),
+      }),
+      /savedAt/i,
+    ],
+    ["bad JSON", "{bad-json", /JSON/i],
+    [
+      "legacy boardRevision mismatch",
+      JSON.stringify({
+        boardRevision: "old-board",
+        resumablePhase: "playing.idle",
+        activeRun: createSaveFixture().activeRun,
+      }),
+      /boardRevision/i,
+    ],
+  ])("quarantines %s without repairing it", (_name, raw, reason) => {
+    const storage = new FaultInjectingStorage();
+    storage.values.set(SAVE_KEY, raw);
+
+    const result = createSaveService(storage).load();
+
+    expect(result).toMatchObject({
+      status: "quarantined",
+      key: `${SAVE_KEY}.quarantine.2026-07-18T08:00:00.000Z.0`,
+      reason: expect.stringMatching(reason),
+    });
+    if (result.status !== "quarantined") throw new Error("Expected quarantine result.");
+    expect(storage.values.get(result.key)).toBe(raw);
+    expect(storage.values.has(SAVE_KEY)).toBe(false);
+  });
+
+  test("quarantines codec decoder failures with the original bytes", () => {
+    const storage = new FaultInjectingStorage();
+    const raw = createEnvelope(createSaveFixture());
+    storage.values.set(SAVE_KEY, raw);
+    const service = createSaveService(storage, {
+      codec: createSaveCodec({
+        decode: () => {
+          throw new Error("decoder rejected payload");
+        },
+      }),
+    });
+
+    const result = service.load();
+
+    expect(result).toMatchObject({
+      status: "quarantined",
+      reason: "decoder rejected payload",
+    });
+    if (result.status !== "quarantined") throw new Error("Expected quarantine result.");
+    expect(storage.values.get(result.key)).toBe(raw);
+  });
+
+  test.each([
+    ["run profile", { runProfile: { id: "missing-profile" } }, /run profile/i],
+    ["positive order", { order: 0 }, /positive integer/i],
+    ["runtime tile", { runtime: { tiles: [{ id: "" }], slot: [] } }, /runtime tile/i],
+    ["runtime slot", { runtime: { tiles: [{ id: "tile-a" }], slot: ["missing-tile"] } }, /runtime slot/i],
+    ["reward content", { rewardIds: ["missing-reward"] }, /reward/i],
+    ["event content", { eventIds: ["missing-event"] }, /event/i],
+    ["ability content", { abilityIds: ["missing-ability"] }, /ability/i],
+  ])("quarantines active-run validation failure for %s", (_name, activeRunOverride, reason) => {
+    const storage = new FaultInjectingStorage();
+    const current = createSaveFixture();
+    const raw = createEnvelope({
+      ...current,
+      activeRun: {
+        ...current.activeRun,
+        ...activeRunOverride,
+      },
+    });
+    storage.values.set(SAVE_KEY, raw);
+
+    const result = createSaveService(storage).load();
+
+    expect(result).toMatchObject({
+      status: "quarantined",
+      reason: expect.stringMatching(reason),
+    });
+    expect(storage.values.has(SAVE_KEY)).toBe(false);
+  });
+
+  test.each([
+    "playing.resolving",
+    "paused",
+    "failed",
+  ] as const)("rejects non-persistable phase %s before writing temp", (phase) => {
+    const storage = new FaultInjectingStorage();
+    storage.values.set(SAVE_KEY, "old-primary-bytes");
+
+    expect(createSaveService(storage).save(createSaveFixture({ phase }))).toMatchObject({
+      status: "rejected",
+      reason: expect.stringMatching(/persist/i),
+    });
+    expect(storage.operations.some((operation) =>
+      operation.type === "set" && operation.key === SAVE_TEMP_KEY)).toBe(false);
+    expect(storage.values.get(SAVE_KEY)).toBe("old-primary-bytes");
+  });
+
+  test("rejects validator and serializer failures before writing temp", () => {
+    const validationStorage = new FaultInjectingStorage();
+    validationStorage.values.set(SAVE_KEY, "old-primary-bytes");
+    const validationResult = createSaveService(validationStorage).save(
+      createSaveFixture({ boardRevision: "wrong-board" }),
+    );
+    expect(validationResult).toMatchObject({
+      status: "rejected",
+      reason: expect.stringMatching(/boardRevision/i),
+    });
+    expect(validationStorage.values.has(SAVE_TEMP_KEY)).toBe(false);
+    expect(validationStorage.values.get(SAVE_KEY)).toBe("old-primary-bytes");
+
+    const serializationStorage = new FaultInjectingStorage();
+    serializationStorage.values.set(SAVE_KEY, "old-primary-bytes");
+    const serializationResult = createSaveService(serializationStorage, {
+      codec: createSaveCodec({
+        encode: () => {
+          throw new Error("encode failed");
+        },
+      }),
+    }).save(createSaveFixture());
+    expect(serializationResult).toMatchObject({
+      status: "rejected",
+      reason: "encode failed",
+    });
+    expect(serializationStorage.values.has(SAVE_TEMP_KEY)).toBe(false);
+    expect(serializationStorage.values.get(SAVE_KEY)).toBe("old-primary-bytes");
+  });
+
+  test.each([
+    {
+      name: "temp write",
+      stage: "temp-write",
+      configure(storage: FaultInjectingStorage) {
+        storage.onSet = (key) => {
+          if (key === SAVE_TEMP_KEY) throw new Error("temp write failed");
+        };
+      },
+    },
+    {
+      name: "temp byte readback",
+      stage: "temp-readback",
+      configure(storage: FaultInjectingStorage) {
+        storage.onGet = (key, value) => key === SAVE_TEMP_KEY ? `${value}-corrupt` : value;
+      },
+    },
+    {
+      name: "primary commit",
+      stage: "primary-write",
+      configure(storage: FaultInjectingStorage) {
+        let shouldFail = true;
+        storage.onSet = (key, value) => {
+          if (key === SAVE_KEY && shouldFail) {
+            shouldFail = false;
+            storage.values.set(key, value);
+            throw new Error("primary write failed after mutation");
+          }
+        };
+      },
+    },
+  ] as const)("preserves old primary bytes when $name fails", ({ stage, configure }) => {
+    const storage = new FaultInjectingStorage();
+    storage.values.set(SAVE_KEY, "old-primary-bytes");
+    configure(storage);
+
+    expect(createSaveService(storage).save(createSaveFixture())).toMatchObject({
+      status: "error",
+      stage,
+    });
+    expect(storage.values.get(SAVE_KEY)).toBe("old-primary-bytes");
+  });
+
+  test("commits with a warning when temp cleanup fails", () => {
+    const storage = new FaultInjectingStorage();
+    storage.onRemove = (key) => {
+      if (key === SAVE_TEMP_KEY) throw new Error("cleanup failed");
+    };
+
+    const result = createSaveService(storage).save(createSaveFixture());
+
+    expect(result).toMatchObject({
+      status: "committed",
+      warnings: [expect.stringMatching(/cleanup failed/i)],
+    });
+    expect(storage.values.has(SAVE_KEY)).toBe(true);
+    expect(storage.values.has(SAVE_TEMP_KEY)).toBe(true);
+  });
+
+  test("uses deterministic unique quarantine keys for repeated failures", () => {
+    const storage = new FaultInjectingStorage();
+    const service = createSaveService(storage);
+    storage.values.set(SAVE_KEY, "first-bad-json");
+    const first = service.load();
+    storage.values.set(SAVE_KEY, "second-bad-json");
+    const second = service.load();
+
+    expect(first).toMatchObject({
+      status: "quarantined",
+      key: `${SAVE_KEY}.quarantine.2026-07-18T08:00:00.000Z.0`,
+    });
+    expect(second).toMatchObject({
+      status: "quarantined",
+      key: `${SAVE_KEY}.quarantine.2026-07-18T08:00:00.000Z.1`,
+    });
+  });
+
+  test.each([
+    {
+      name: "quarantine write",
+      stage: "quarantine-write",
+      configure(storage: FaultInjectingStorage) {
+        storage.onSet = (key) => {
+          if (key.includes(".quarantine.")) throw new Error("quarantine write failed");
+        };
+      },
+    },
+    {
+      name: "quarantine verification read",
+      stage: "quarantine-verify",
+      configure(storage: FaultInjectingStorage) {
+        storage.onGet = (key, value) =>
+          key.includes(".quarantine.") ? `${value}-corrupt` : value;
+      },
+    },
+    {
+      name: "primary removal",
+      stage: "primary-remove",
+      configure(storage: FaultInjectingStorage) {
+        storage.onRemove = (key) => {
+          if (key === SAVE_KEY) throw new Error("primary remove failed");
+        };
+      },
+    },
+  ] as const)("retains primary when $name fails", ({ stage, configure }) => {
+    const storage = new FaultInjectingStorage();
+    const raw = "bad-json";
+    storage.values.set(SAVE_KEY, raw);
+    configure(storage);
+
+    expect(createSaveService(storage).load()).toMatchObject({
+      status: "error",
+      stage,
+    });
+    expect(storage.values.get(SAVE_KEY)).toBe(raw);
+  });
+
+  test("verifies quarantine bytes before removing primary", () => {
+    const storage = new FaultInjectingStorage();
+    storage.values.set(SAVE_KEY, "bad-json");
+
+    const result = createSaveService(storage).load();
+
+    expect(result.status).toBe("quarantined");
+    const quarantineSetIndex = storage.operations.findIndex((operation) =>
+      operation.type === "set" && operation.key.includes(".quarantine."));
+    const quarantineVerifyIndex = storage.operations.findIndex((operation) =>
+      operation.type === "get" && operation.key.includes(".quarantine."));
+    const primaryRemoveIndex = storage.operations.findIndex((operation) =>
+      operation.type === "remove" && operation.key === SAVE_KEY);
+    expect(quarantineSetIndex).toBeGreaterThan(-1);
+    expect(quarantineVerifyIndex).toBeGreaterThan(quarantineSetIndex);
+    expect(primaryRemoveIndex).toBeGreaterThan(quarantineVerifyIndex);
+  });
+
+  test("distinguishes empty, read failure, and clear failure", () => {
+    const emptyStorage = new FaultInjectingStorage();
+    expect(createSaveService(emptyStorage).load()).toEqual({ status: "empty" });
+
+    const readStorage = new FaultInjectingStorage();
+    readStorage.onGet = (key, value) => {
+      if (key === SAVE_KEY) throw new Error("read failed");
+      return value;
+    };
+    expect(createSaveService(readStorage).load()).toMatchObject({
+      status: "error",
+      stage: "read",
+      error: expect.any(Error),
+    });
+
+    const clearStorage = new FaultInjectingStorage();
+    clearStorage.values.set(SAVE_KEY, "primary");
+    clearStorage.onRemove = (key) => {
+      if (key === SAVE_KEY) throw new Error("clear failed");
+    };
+    expect(createSaveService(clearStorage).clear()).toMatchObject({
+      status: "error",
+      error: expect.any(Error),
+    });
+    expect(clearStorage.values.get(SAVE_KEY)).toBe("primary");
+  });
+
+  test("clears the primary save explicitly", () => {
+    const storage = new FaultInjectingStorage();
+    storage.values.set(SAVE_KEY, createEnvelope(createSaveFixture()));
+
+    expect(createSaveService(storage).clear()).toEqual({ status: "cleared" });
+    expect(storage.values.has(SAVE_KEY)).toBe(false);
+  });
+
+  test("keeps SaveService pure TypeScript and ships valid unique Cocos metadata", () => {
+    const sourcePath = path.join(
+      cocosRoot,
+      "assets/scripts/persistence/SaveService.ts",
+    );
+    const source = fs.readFileSync(sourcePath, "utf8");
+    expect(source).not.toMatch(/\b(?:from\s+|import\s*)["']cc(?:\/env)?["']/);
+    expect(source).not.toMatch(/\b(?:window|document|navigator|localStorage)\b/);
+
+    const directoryMeta = JSON.parse(
+      fs.readFileSync(path.join(cocosRoot, "assets/scripts/persistence.meta"), "utf8"),
+    ) as { importer?: string; uuid?: string };
+    const sourceMeta = JSON.parse(
+      fs.readFileSync(path.join(cocosRoot, "assets/scripts/persistence/SaveService.ts.meta"), "utf8"),
+    ) as { importer?: string; uuid?: string };
+    expect(directoryMeta).toMatchObject({ importer: "directory" });
+    expect(sourceMeta).toMatchObject({ importer: "typescript" });
+    expect(directoryMeta.uuid).toMatch(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/);
+    expect(sourceMeta.uuid).toMatch(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/);
+    expect(sourceMeta.uuid).not.toBe(directoryMeta.uuid);
   });
 });
