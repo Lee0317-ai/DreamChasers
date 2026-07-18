@@ -116,6 +116,11 @@ function validateContent(
       throw new Error(`Manifest reward id ${rewardId} is not loaded.`);
     }
   }
+  for (const rewardId of loadedRewardIds) {
+    if (!manifestRewardIds.has(rewardId)) {
+      throw new Error(`Loaded reward id ${rewardId} is absent from the manifest.`);
+    }
+  }
 
   const levelIndexes = new Map<string, number>();
   const levelOrders = new Set<number>();
@@ -162,7 +167,7 @@ function validateContent(
     }
 
     for (const rewardId of level.rewardPool) {
-      if (!loadedRewardIds.has(rewardId)) {
+      if (!manifestRewardIds.has(rewardId)) {
         throw new Error(`Level ${level.id} rewardPool references unknown reward id ${rewardId}.`);
       }
     }
@@ -177,6 +182,13 @@ function validateContent(
   for (const levelId of levelIndexes.keys()) {
     if (!manifestLevelIds.has(levelId)) {
       throw new Error(`Loaded level ${levelId} is absent from the manifest.`);
+    }
+  }
+  for (const [index, level] of levels.entries()) {
+    if (manifest.levelIds[index] !== level.id) {
+      throw new Error(
+        `Manifest level id ${manifest.levelIds[index]} at index ${index} does not match loaded level ${level.id}.`,
+      );
     }
   }
   return levelIndexes;

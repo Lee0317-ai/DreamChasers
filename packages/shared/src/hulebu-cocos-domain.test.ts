@@ -346,6 +346,22 @@ describe("Hulebu Cocos content repository", () => {
     )).toThrow(/manifest.*missing-level/i);
   });
 
+  test("rejects manifest level ids whose order diverges from loaded level indexes", () => {
+    const levels = [
+      createLevel({ id: "level-a", order: 1, tiles: [createTile("tile-a", "wan", 1)] }),
+      createLevel({ id: "level-b", order: 2, tiles: [createTile("tile-b", "wan", 2)] }),
+    ];
+
+    expect(() => new ContentRepository(
+      createContentSource({
+        levels,
+        manifestLevelIds: ["level-b", "level-a"],
+      }),
+      1,
+      ["test-v1"],
+    )).toThrow(/manifest level id.*index 0.*level-a/i);
+  });
+
   test.each([
     {
       name: "dangling blocker",
@@ -437,6 +453,25 @@ describe("Hulebu Cocos content repository", () => {
       1,
       ["test-v1"],
     )).toThrow(/rewardPool.*missing-reward/i);
+  });
+
+  test("rejects loaded reward ids omitted from the versioned manifest", () => {
+    const level = createLevel({
+      id: "level-a",
+      order: 1,
+      rewardPool: ["reward-b"],
+      tiles: [createTile("tile-a", "wan", 1)],
+    });
+
+    expect(() => new ContentRepository(
+      createContentSource({
+        levels: [level],
+        rewardIds: ["reward-a", "reward-b"],
+        manifestRewardIds: ["reward-a"],
+      }),
+      1,
+      ["test-v1"],
+    )).toThrow(/loaded reward id reward-b.*manifest/i);
   });
 
   test.each([
