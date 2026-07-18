@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { rolldown } from "rolldown";
 import { beforeAll, describe, expect, test } from "vitest";
-import type { HulebuRuntimeLevelConfig, HulebuTileSuit } from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig";
+import type {
+  HulebuRunProfile,
+  HulebuRuntimeLevelConfig,
+  HulebuTileSuit,
+} from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig";
 import type {
   HulebuRuntimeComboCandidateOption,
   HulebuRuntimeState as HulebuRuntimeStateClass,
@@ -17,6 +21,10 @@ import type {
   RunStateMachine as RunStateMachineClass,
 } from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain/RunStateMachine";
 import type { GameCoordinator as GameCoordinatorClass } from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/application/GameCoordinator";
+import type {
+  ContentRepository as ContentRepositoryClass,
+  ContentSource,
+} from "../../../apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/content/ContentRepository";
 
 const workspaceRoot = path.resolve(__dirname, "../../..");
 const cocosRoot = path.join(
@@ -28,6 +36,8 @@ let HulebuRuntimeState: typeof HulebuRuntimeStateClass;
 let GameSession: typeof GameSessionClass;
 let RunStateMachine: typeof RunStateMachineClass;
 let GameCoordinator: typeof GameCoordinatorClass;
+let ContentRepository: typeof ContentRepositoryClass;
+let HULEBU_LEGACY_CONTENT_SOURCE: ContentSource;
 
 beforeAll(async () => {
   const virtualEntryId = "\0hulebu-domain-test-entry";
@@ -43,6 +53,7 @@ beforeAll(async () => {
           `export { GameSession } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/domain/GameSession.ts"))};`,
           `export { RunStateMachine } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/domain/RunStateMachine.ts"))};`,
           `export { GameCoordinator } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/application/GameCoordinator.ts"))};`,
+          `export { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/content/ContentRepository.ts"))};`,
         ].join("\n")
         : null,
     }],
@@ -58,11 +69,15 @@ beforeAll(async () => {
     GameSession: typeof GameSessionClass;
     RunStateMachine: typeof RunStateMachineClass;
     GameCoordinator: typeof GameCoordinatorClass;
+    ContentRepository: typeof ContentRepositoryClass;
+    HULEBU_LEGACY_CONTENT_SOURCE: ContentSource;
   };
   HulebuRuntimeState = domainModule.HulebuRuntimeState;
   GameSession = domainModule.GameSession;
   RunStateMachine = domainModule.RunStateMachine;
   GameCoordinator = domainModule.GameCoordinator;
+  ContentRepository = domainModule.ContentRepository;
+  HULEBU_LEGACY_CONTENT_SOURCE = domainModule.HULEBU_LEGACY_CONTENT_SOURCE;
 });
 
 type LevelTile = HulebuRuntimeLevelConfig["tiles"][number];
@@ -88,7 +103,10 @@ function createTile(
 
 function createLevel(options: {
   tiles: LevelTile[];
+  id?: string;
   initialSlotOrder?: string[];
+  initialReserveOrder?: string[];
+  rewardPool?: string[];
   slotLimit?: number;
   shuffle?: number;
   undo?: number;
@@ -96,11 +114,11 @@ function createLevel(options: {
   order?: number;
 }): HulebuRuntimeLevelConfig {
   return {
-    id: "domain-test-level",
+    id: options.id ?? "domain-test-level",
     order: options.order ?? 7,
     name: "Domain test",
     subtitle: "Deterministic fixture",
-    rewardPool: [],
+    rewardPool: options.rewardPool ?? [],
     bossGoals: [],
     defaults: {
       slotLimit: options.slotLimit ?? 8,
@@ -115,8 +133,38 @@ function createLevel(options: {
       },
     },
     initialSlotOrder: options.initialSlotOrder ?? [],
-    initialReserveOrder: [],
+    initialReserveOrder: options.initialReserveOrder ?? [],
     tiles: options.tiles,
+  };
+}
+
+function createContentSource(options: {
+  contentVersion?: string;
+  saveSchemaVersion?: number;
+  manifestLevelIds?: string[];
+  manifestRewardIds?: string[];
+  levels?: HulebuRuntimeLevelConfig[];
+  rewardIds?: string[];
+  resolver?: ContentSource["resolveRuntimeLevel"];
+} = {}): ContentSource {
+  const levels = options.levels ?? [
+    createLevel({
+      id: "level-a",
+      order: 1,
+      tiles: [createTile("board-a", "wan", 1)],
+    }),
+  ];
+  const rewardIds = options.rewardIds ?? ["reward-a"];
+  return {
+    manifest: {
+      contentVersion: options.contentVersion ?? "test-v1",
+      saveSchemaVersion: options.saveSchemaVersion ?? 1,
+      levelIds: options.manifestLevelIds ?? levels.map((level) => level.id),
+      rewardIds: options.manifestRewardIds ?? rewardIds,
+    },
+    levels,
+    rewardIds,
+    resolveRuntimeLevel: options.resolver ?? ((index) => levels[index]),
   };
 }
 
@@ -203,6 +251,300 @@ function observeSessionDispatch(session: GameSessionClass): () => number {
   };
   return () => callCount;
 }
+
+describe("Hulebu Cocos content repository", () => {
+  test("accepts the current legacy level pack with a stable versioned manifest", () => {
+    const repository = new ContentRepository(
+      HULEBU_LEGACY_CONTENT_SOURCE,
+      1,
+      ["cocos-hardcoded-v1"],
+    );
+
+    expect(repository.manifest).toMatchObject({
+      contentVersion: "cocos-hardcoded-v1",
+      saveSchemaVersion: 1,
+    });
+    expect(repository.manifest.levelIds).toHaveLength(repository.getLevelCount());
+    expect(repository.getLevelByIndex(0).id).toBe(repository.manifest.levelIds[0]);
+  });
+
+  test.each([
+    {
+      name: "empty level id",
+      levels: [createLevel({
+        id: "",
+        order: 1,
+        tiles: [createTile("tile-a", "wan", 1)],
+      })],
+      levelIds: [""],
+      error: /level id/i,
+    },
+    {
+      name: "duplicate level id",
+      levels: [
+        createLevel({ id: "same", order: 1, tiles: [createTile("tile-a", "wan", 1)] }),
+        createLevel({ id: "same", order: 2, tiles: [createTile("tile-b", "wan", 2)] }),
+      ],
+      levelIds: ["same", "same"],
+      error: /duplicate level id/i,
+    },
+    {
+      name: "duplicate level order",
+      levels: [
+        createLevel({ id: "level-a", order: 1, tiles: [createTile("tile-a", "wan", 1)] }),
+        createLevel({ id: "level-b", order: 1, tiles: [createTile("tile-b", "wan", 2)] }),
+      ],
+      levelIds: ["level-a", "level-b"],
+      error: /duplicate level order/i,
+    },
+    {
+      name: "non-positive level order",
+      levels: [createLevel({
+        id: "level-a",
+        order: 0,
+        tiles: [createTile("tile-a", "wan", 1)],
+      })],
+      levelIds: ["level-a"],
+      error: /level.*order.*positive/i,
+    },
+    {
+      name: "empty tile id",
+      levels: [createLevel({
+        id: "level-a",
+        order: 1,
+        tiles: [createTile("", "wan", 1)],
+      })],
+      levelIds: ["level-a"],
+      error: /tile id/i,
+    },
+    {
+      name: "duplicate tile id",
+      levels: [createLevel({
+        id: "level-a",
+        order: 1,
+        tiles: [
+          createTile("same", "wan", 1),
+          createTile("same", "wan", 2),
+        ],
+      })],
+      levelIds: ["level-a"],
+      error: /duplicate tile id/i,
+    },
+  ])("rejects $name", ({ levels, levelIds, error }) => {
+    expect(() => new ContentRepository(
+      createContentSource({ levels, manifestLevelIds: levelIds }),
+      1,
+      ["test-v1"],
+    )).toThrow(error);
+  });
+
+  test("rejects a manifest that references a missing level", () => {
+    expect(() => new ContentRepository(
+      createContentSource({ manifestLevelIds: ["level-a", "missing-level"] }),
+      1,
+      ["test-v1"],
+    )).toThrow(/manifest.*missing-level/i);
+  });
+
+  test.each([
+    {
+      name: "dangling blocker",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        tiles: [createTile("tile-a", "wan", 1, "board", ["missing-tile"])],
+      }),
+      error: /blockedBy.*missing-tile/i,
+    },
+    {
+      name: "self blocker",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        tiles: [createTile("tile-a", "wan", 1, "board", ["tile-a"])],
+      }),
+      error: /blockedBy.*itself/i,
+    },
+    {
+      name: "dangling initial slot",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        initialSlotOrder: ["missing-tile"],
+        tiles: [createTile("tile-a", "wan", 1)],
+      }),
+      error: /initialSlotOrder.*missing-tile/i,
+    },
+    {
+      name: "duplicate initial slot reference",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        initialSlotOrder: ["tile-a", "tile-a"],
+        tiles: [createTile("tile-a", "wan", 1, "slot")],
+      }),
+      error: /initialSlotOrder.*duplicate/i,
+    },
+    {
+      name: "dangling initial reserve",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        initialReserveOrder: ["missing-tile"],
+        tiles: [createTile("tile-a", "wan", 1)],
+      }),
+      error: /initialReserveOrder.*missing-tile/i,
+    },
+    {
+      name: "duplicate initial reserve reference",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        initialReserveOrder: ["tile-a", "tile-a"],
+        tiles: [createTile("tile-a", "wan", 1, "reserve")],
+      }),
+      error: /initialReserveOrder.*duplicate/i,
+    },
+    {
+      name: "slot and reserve overlap",
+      level: createLevel({
+        id: "level-a",
+        order: 1,
+        initialSlotOrder: ["tile-a"],
+        initialReserveOrder: ["tile-a"],
+        tiles: [createTile("tile-a", "wan", 1, "slot")],
+      }),
+      error: /initial.*tile-a.*both/i,
+    },
+  ])("rejects $name references", ({ level, error }) => {
+    expect(() => new ContentRepository(
+      createContentSource({ levels: [level] }),
+      1,
+      ["test-v1"],
+    )).toThrow(error);
+  });
+
+  test("rejects a reward pool entry that is absent from loaded reward ids", () => {
+    const level = createLevel({
+      id: "level-a",
+      order: 1,
+      rewardPool: ["missing-reward"],
+      tiles: [createTile("tile-a", "wan", 1)],
+    });
+
+    expect(() => new ContentRepository(
+      createContentSource({ levels: [level], rewardIds: ["reward-a"] }),
+      1,
+      ["test-v1"],
+    )).toThrow(/rewardPool.*missing-reward/i);
+  });
+
+  test.each([
+    {
+      name: "empty content version",
+      source: createContentSource({ contentVersion: "" }),
+      supportedSaveSchemaVersion: 1,
+      supportedContentVersions: ["test-v1"],
+      error: /contentVersion.*empty/i,
+    },
+    {
+      name: "unsupported content version",
+      source: createContentSource({ contentVersion: "future-v2" }),
+      supportedSaveSchemaVersion: 1,
+      supportedContentVersions: ["test-v1"],
+      error: /unsupported contentVersion.*future-v2/i,
+    },
+    {
+      name: "future save schema",
+      source: createContentSource({ saveSchemaVersion: 2 }),
+      supportedSaveSchemaVersion: 1,
+      supportedContentVersions: ["test-v1"],
+      error: /saveSchemaVersion.*2.*supported.*1/i,
+    },
+  ])("rejects $name", ({
+    source,
+    supportedSaveSchemaVersion,
+    supportedContentVersions,
+    error,
+  }) => {
+    expect(() => new ContentRepository(
+      source,
+      supportedSaveSchemaVersion,
+      supportedContentVersions,
+    )).toThrow(error);
+  });
+
+  test("fails explicitly for out-of-range level indexes", () => {
+    const repository = new ContentRepository(
+      createContentSource(),
+      1,
+      ["test-v1"],
+    );
+    const profile: HulebuRunProfile = {
+      mode: "mainline",
+      displayName: "Test",
+      startOrder: 1,
+    };
+
+    expect(() => repository.getLevelByIndex(-1)).toThrow(/level index.*-1.*out of range/i);
+    expect(() => repository.getLevelByIndex(1)).toThrow(/level index.*1.*out of range/i);
+    expect(() => repository.createRuntimeLevel(1, profile)).toThrow(/level index.*1.*out of range/i);
+  });
+
+  test("defensive copies keep source and returned mutations out of repository state", () => {
+    const source = createContentSource();
+    const repository = new ContentRepository(source, 1, ["test-v1"]);
+
+    (source.manifest.levelIds as string[])[0] = "source-mutated";
+    source.levels[0].defaults.tools.shuffle = 99;
+    const manifest = repository.manifest as { levelIds: string[] };
+    const level = repository.getLevelByIndex(0);
+    manifest.levelIds[0] = "caller-mutated";
+    level.defaults.tools.shuffle = 88;
+    level.tiles[0].blockedBy.push("caller-mutated");
+
+    expect(repository.manifest.levelIds).toEqual(["level-a"]);
+    expect(repository.getLevelByIndex(0).defaults.tools.shuffle).toBe(1);
+    expect(repository.getLevelByIndex(0).tiles[0].blockedBy).toEqual([]);
+  });
+
+  test("uses only the injected resolver for runtime levels", () => {
+    const calls: Array<{
+      index: number;
+      profile: HulebuRunProfile;
+      displayOrder?: number;
+    }> = [];
+    const resolvedLevel = createLevel({
+      id: "resolved-custom-level",
+      order: 42,
+      tiles: [createTile("resolved-tile", "honor", 1)],
+    });
+    const source = createContentSource({
+      resolver: (index, profile, displayOrder) => {
+        calls.push({ index, profile, displayOrder });
+        return resolvedLevel;
+      },
+    });
+    const repository = new ContentRepository(source, 1, ["test-v1"]);
+    const profile: HulebuRunProfile = {
+      mode: "daily",
+      displayName: "Injected",
+      startOrder: 1,
+      dailySeed: "repository-test",
+    };
+
+    const first = repository.createRuntimeLevel(0, profile, 42);
+    first.tiles[0].id = "caller-mutated";
+    const second = repository.createRuntimeLevel(0, profile, 42);
+
+    expect(calls).toEqual([
+      { index: 0, profile, displayOrder: 42 },
+      { index: 0, profile, displayOrder: 42 },
+    ]);
+    expect(second.id).toBe("resolved-custom-level");
+    expect(second.tiles[0].id).toBe("resolved-tile");
+  });
+});
 
 describe("Hulebu Cocos domain session", () => {
   test("produces identical results for the same level and command sequence", () => {
