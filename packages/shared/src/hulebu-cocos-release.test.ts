@@ -2304,16 +2304,25 @@ describe("Hulebu Cocos production build CLI", () => {
     }).trim();
     writeFileSync(join(projectRoot, "a.txt"), "working-tree-b\n", "utf8");
     const snapshotContainer = createTemporaryRoot("cli-snapshot-container");
+    const snapshotContainerAlias = join(
+      createTemporaryRoot("cli-snapshot-container-alias"),
+      "snapshot-root",
+    );
+    symlinkSync(snapshotContainer, snapshotContainerAlias, "dir");
 
     const snapshot = cli.createExactCommitProjectSnapshot({
       commit,
       projectRoot,
       repositoryRoot: temporaryRepositoryRoot,
-      temporaryRoot: snapshotContainer,
+      temporaryRoot: snapshotContainerAlias,
     });
     expect(readFileSync(join(snapshot.projectRoot, "a.txt"), "utf8")).toBe(
       "tracked-a\n",
     );
+    expect(snapshot.checkoutRoot).toBe(realpathSync(snapshot.checkoutRoot));
+    expect(
+      snapshot.checkoutRoot.startsWith(`${realpathSync(snapshotContainer)}/`),
+    ).toBe(true);
     expect(realpathSync(snapshot.projectRoot)).not.toBe(realpathSync(projectRoot));
     const snapshotInformationPath = join(
       snapshot.projectRoot,

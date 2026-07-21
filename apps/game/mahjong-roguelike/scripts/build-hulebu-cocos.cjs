@@ -254,8 +254,9 @@ function createExactCommitProjectSnapshot({
       "snapshot project root must be inside the repository",
     );
   }
+  const absoluteTemporaryRoot = fs.realpathSync(path.resolve(temporaryRoot));
   const containerRoot = fs.mkdtempSync(
-    path.join(path.resolve(temporaryRoot), "hulebu-cocos-source-"),
+    path.join(absoluteTemporaryRoot, "hulebu-cocos-source-"),
   );
   const checkoutRoot = path.join(containerRoot, "checkout");
   let added = false;
