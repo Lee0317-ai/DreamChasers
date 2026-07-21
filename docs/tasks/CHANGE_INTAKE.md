@@ -48,6 +48,24 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260722-01：修复 Cocos 精确快照真实路径构建
+
+- 提出人：Lee
+- 提出时间：2026-07-22
+- 背景：T244 最终 production 浏览器验收发现黑屏。构建日志和两个隔离实验确认：`os.tmpdir()` 在 macOS 返回 `/var/...`，而 Cocos 编译器会把脚本路径规范化为 `/private/var/...`；资产库仍按前者登记，导致用户脚本未注入 `_RF.push(script UUID)`，场景中的五个组件被判定为 missing class。同一提交直接从 `/private/tmp` 构建即可正常注册组件并渲染画面。
+- 目标：新增 T245，让精确提交快照创建在 `temporaryRoot` 的真实路径下，消除 Cocos 资产库与脚本编译器的路径身份分裂，并用回归测试锁定该约束。
+- 不做：不修改玩法、Controller、Binder、场景、资源、正式内容数值、release 配置、Cocos settings/profiles/temp/library/build 产物或其他模块。
+- 用户价值：production 构建不再生成 HTTP 可访问但运行时黑屏的伪成功包，T244 可继续完成真实浏览器交互和存档恢复验收。
+- 涉及模块：胡了卜 Cocos production release 构建链路。
+- 可能影响文件：`apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs`、`packages/shared/src/hulebu-cocos-release.test.ts`、T245 任务/领取/进展/完成文档及麻将模块交接文档。
+- 是否影响另一方任务：否；修复限定在 Lee 负责的胡了卜发布链路，并作为 T244 最终验收的阻塞依赖处理。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：单元测试证明符号链接临时根会被规范化为 realpath；发布测试通过；干净 worktree 的真实 Creator production build 不再出现 missing class；verify-only、浏览器画面和 `git diff --check` 通过。
+- AI 初步方案：在创建精确提交快照前仅对 `temporaryRoot` 调用 `fs.realpathSync`，不改变 checkout 内容、提交绑定、清洁门禁或 promotion 语义；先写失败测试，再实现一行路径规范化。
+- 处理结论：已入任务池
+- 对应任务编号：T245
+
 ### IDEA-20260629-01：AI 修图批量品牌填充和 AI 溶图
 
 - 提出人：Lee
