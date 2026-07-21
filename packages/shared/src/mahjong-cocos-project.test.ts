@@ -209,6 +209,13 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(rewardFlow.indexOf("this.detachRuntimeState();")).toBeLessThan(rewardFlow.indexOf('this.requireRunTransition("rewardChoice")'));
     expect(eventFlow.indexOf("this.detachRuntimeState();")).toBeGreaterThanOrEqual(0);
     expect(eventFlow.indexOf("this.detachRuntimeState();")).toBeLessThan(eventFlow.indexOf('this.requireRunTransition("eventChoice")'));
+
+    const rewardRendering = controllerText.slice(
+      controllerText.indexOf("private drawRewardChoices(overlay: Node): void"),
+      controllerText.indexOf("private getCurrentRewardChoices(): string[]"),
+    );
+    expect(rewardRendering).toContain("this.gameCoordinator.snapshot().context.rewardCandidateIds");
+    expect(rewardRendering).not.toContain("this.getCurrentRewardChoices()");
   });
 
   test("blocks fresh-run writes when active-run storage cannot be read", () => {
@@ -226,6 +233,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(tutorialFlow).toContain("this.showLobbyOverlay()");
     expect(persistFlow).toContain("this.activeRunStorageBlocked");
     expect(persistFlow).toContain("return false");
+    expect(persistFlow).toContain('coordinatorSnapshot.phase === "bossIntro"');
   });
 
   test("deep-validates active runs and migrates reward or event context", () => {
@@ -234,6 +242,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).toContain("GameCoordinator.restore(snapshot.coordinatorSnapshot, session)");
     expect(controllerText).toContain("snapshot.eventSeenLevelOrders.some(");
     expect(controllerText).toContain("snapshot.coordinatorSnapshot.sessionSnapshot");
+    expect(controllerText).toContain("isResumableCoordinatorPhase(snapshot.resumablePhase, snapshot.coordinatorSnapshot.phase)");
     expect(controllerText).toContain("rewardCandidateIds: rewardChoices");
     expect(controllerText).toContain("eventOptionIds: eventChoices");
     expect(controllerText).not.toContain("context.pendingCombo === null || typeof context.pendingCombo === \"object\"");

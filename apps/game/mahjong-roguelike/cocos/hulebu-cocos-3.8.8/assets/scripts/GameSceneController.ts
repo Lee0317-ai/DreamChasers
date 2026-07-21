@@ -357,6 +357,9 @@ export class GameSceneController extends Component {
     if (!snapshot.coordinatorSnapshot || typeof snapshot.coordinatorSnapshot !== "object") {
       throw new Error("Active run snapshot has an invalid coordinator snapshot.");
     }
+    if (!isResumableCoordinatorPhase(snapshot.resumablePhase, snapshot.coordinatorSnapshot.phase)) {
+      throw new Error("Active run snapshot phases do not match.");
+    }
     let session: GameSession | null = null;
     if (snapshot.coordinatorSnapshot.sessionSnapshot) {
       if (!snapshot.runtimeSnapshot) {
@@ -1333,7 +1336,7 @@ export class GameSceneController extends Component {
   }
 
   private drawRewardChoices(overlay: Node): void {
-    const choices = this.getCurrentRewardChoices();
+    const choices = this.gameCoordinator.snapshot().context.rewardCandidateIds;
     const startX = -REWARD_CHOICE_CARD_GAP;
     choices.forEach((rewardId, index) => {
       const rewardName = HULEBU_REWARD_LABELS[rewardId] ?? rewardId;
@@ -1712,6 +1715,7 @@ export class GameSceneController extends Component {
       && !this.runtimeState
       && !this.pendingRunProfile
       && this.currentDisplayLevelOrder <= 1
+      && coordinatorSnapshot.phase === "bossIntro"
     ) {
       return false;
     }
@@ -3465,6 +3469,27 @@ function isResumableRunPhase(value: unknown): value is HulebuResumableRunPhase {
     || value === "advancedAbility"
     || value === "archetype"
     || value === "settlement";
+}
+
+function isResumableCoordinatorPhase(resumablePhase: HulebuResumableRunPhase, coordinatorPhase: RunPhase): boolean {
+  if (resumablePhase === "playing") {
+    return coordinatorPhase === "playing.idle"
+      || coordinatorPhase === "playing.comboChoosing"
+      || coordinatorPhase === "playing.discardChoosing";
+  }
+  if (resumablePhase === "cleared") {
+    return coordinatorPhase === "encounterCleared";
+  }
+  if (resumablePhase === "reward") {
+    return coordinatorPhase === "rewardChoice";
+  }
+  if (resumablePhase === "event") {
+    return coordinatorPhase === "eventChoice";
+  }
+  if (resumablePhase === "settlement") {
+    return coordinatorPhase === "settlement";
+  }
+  return coordinatorPhase === "bossIntro";
 }
 
 function isRuntimeSnapshot(value: unknown): value is HulebuRuntimeSnapshot {
