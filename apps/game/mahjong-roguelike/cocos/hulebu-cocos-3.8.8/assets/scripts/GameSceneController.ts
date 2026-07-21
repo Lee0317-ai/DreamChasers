@@ -7,7 +7,11 @@ import { MeldRiverLayerBinder } from "./MeldRiverLayerBinder";
 import { SlotLayerBinder } from "./SlotLayerBinder";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
-import { createHulebuConfiguredSceneModelForLayout } from "./bootstrap/HulebuConfiguredSceneModel";
+import { GameCoordinator, type CoordinatorResult } from "./application/GameCoordinator";
+import { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from "./content/ContentRepository";
+import { GameSession } from "./domain/GameSession";
+import { RunStateMachine, type RunPhase, type RunSnapshot } from "./domain/RunStateMachine";
+import { SaveService, type StoragePort } from "./persistence/SaveService";
 import {
   createHulebuAdvancedRunProfile,
   createHulebuDailyRunProfile,
@@ -20,7 +24,6 @@ import {
   HULEBU_EVENT_LEVEL_ORDERS,
   HULEBU_RUN_ARCHETYPES,
   HULEBU_MAINLINE_RUN_PROFILE,
-  HULEBU_LEVEL_CONFIGS,
   HULEBU_REWARD_LABELS,
   HULEBU_REWARD_LEVEL_ORDERS,
   HULEBU_SPECIAL_EVENT_DANGER_LABELS,
@@ -57,14 +60,10 @@ import {
 } from "./bootstrap/HulebuSampleSceneModel";
 import type { HulebuLayoutSize } from "./bootstrap/HulebuSampleSceneModel";
 import type {
-  HulebuBoardNodeModel,
-  HulebuCellNodeModel,
   HulebuCocosSceneModel,
-  HulebuComboControlModel,
   HulebuComboType,
   HulebuHudModel,
   HulebuTileCounterItemModel,
-  HulebuTileCounterModel,
 } from "./contracts/HulebuSceneModel";
 
 const { ccclass, property } = _decorator;
@@ -98,9 +97,6 @@ const WOOD_FILL = new Color(99, 59, 35, 255);
 const WOOD_STROKE = new Color(177, 116, 65, 255);
 const TOOL_FILL = new Color(49, 116, 87, 255);
 const OVERLAY_BACKDROP = new Color(10, 25, 22, 220);
-const HULEBU_TILE_WIDTH = 38;
-const HULEBU_TILE_HEIGHT = 51;
-const HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.001;
 const REWARD_CHOICE_CARD_WIDTH = 106;
 const REWARD_CHOICE_CARD_HEIGHT = 120;
 const REWARD_CHOICE_CARD_GAP = 112;
@@ -194,6 +190,7 @@ interface HulebuActiveRunSnapshot {
   selectedAdvancedAbilityId: string | null;
   eventSeenLevelOrders: number[];
   runtimeSnapshot: HulebuRuntimeSnapshot | null;
+  coordinatorSnapshot: RunSnapshot;
 }
 
 interface HulebuSettlementSnapshot {
@@ -261,6 +258,19 @@ export class GameSceneController extends Component {
   private latestSceneModel: HulebuCocosSceneModel | null = null;
   private latestLayout: RuntimeLayout | null = null;
   private runtimeState: HulebuRuntimeState | null = null;
+  private runStateMachine = new RunStateMachine("bossIntro");
+  private gameCoordinator = new GameCoordinator(this.runStateMachine);
+  private readonly contentRepository = new ContentRepository(
+    HULEBU_LEGACY_CONTENT_SOURCE,
+    1,
+    [HULEBU_LEGACY_CONTENT_SOURCE.manifest.contentVersion],
+  );
+  private readonly activeRunStorage: StoragePort = {
+    getItem: (key) => sys.localStorage.getItem(key),
+    setItem: (key, value) => sys.localStorage.setItem(key, value),
+    removeItem: (key) => sys.localStorage.removeItem(key),
+  };
+  private readonly activeRunSaveService: SaveService<HulebuActiveRunSnapshot> = this.createActiveRunSaveService(this.activeRunStorage);
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
   private counterExpanded = false;
   private currentLevelIndex = 0;
@@ -272,9 +282,6 @@ export class GameSceneController extends Component {
   private pendingRunProfile: HulebuRunProfile | null = null;
   private selectedAdvancedAbility: HulebuAdvancedAbilityConfig | null = null;
   private readonly eventSeenLevelOrders = new Set<number>();
-  private readonly selectedSlots: HulebuBoardNodeModel[] = [];
-  private score = 0;
-  private discardSelecting = false;
   private pendingComboChoice: { combo: HulebuComboType; options: HulebuRuntimeComboCandidateOption[] } | null = null;
   private runRewards: HulebuRunRewardState = createHulebuRunRewardState();
   private levelEventModifiers: HulebuLevelModifierState = createHulebuLevelModifierState();
@@ -290,6 +297,103 @@ export class GameSceneController extends Component {
   private accountSyncPromise: Promise<void> | null = null;
   private accountSyncTimer: ReturnType<typeof setTimeout> | null = null;
   private suppressAccountSyncPush = false;
+  private activeRunStorageBlocked = false;
+
+  private createActiveRunSaveService(storage: StoragePort): SaveService<HulebuActiveRunSnapshot> {
+    return new SaveService({
+      key: HULEBU_ACTIVE_RUN_STORAGE_KEY,
+      storage,
+      codec: {
+        encode: (value) => value,
+        decode: (value) => value,
+      },
+      validate: (value) => this.validateActiveRunSnapshot(value),
+      canPersist: (value) => isPersistableRunPhase(value.coordinatorSnapshot.phase),
+      schemaVersion: 1,
+      contentVersion: HULEBU_LEGACY_CONTENT_SOURCE.manifest.contentVersion,
+      migrations: {
+        0: (value) => this.migrateLegacyActiveRunSnapshot(value),
+      },
+      now: () => new Date().toISOString(),
+    });
+  }
+
+  private validateActiveRunSnapshot(value: unknown): HulebuActiveRunSnapshot {
+    if (!value || typeof value !== "object") {
+      throw new Error("Active run snapshot must be an object.");
+    }
+
+    const snapshot = value as Partial<HulebuActiveRunSnapshot>;
+    if (snapshot.boardRevision !== HULEBU_BOARD_REVISION) {
+      throw new Error("Active run snapshot has an incompatible board revision.");
+    }
+    if (!snapshot.runProfile || typeof snapshot.currentDisplayLevelOrder !== "number" || !Number.isInteger(snapshot.currentDisplayLevelOrder)) {
+      throw new Error("Active run snapshot is missing its run profile or level order.");
+    }
+    if (typeof snapshot.metaCoins !== "number" || !Number.isFinite(snapshot.metaCoins)) {
+      throw new Error("Active run snapshot has invalid meta coins.");
+    }
+    if (!isRunSnapshot(snapshot.coordinatorSnapshot)) {
+      throw new Error("Active run snapshot has an invalid coordinator snapshot.");
+    }
+    if (snapshot.runtimeSnapshot !== null && !isRuntimeSnapshot(snapshot.runtimeSnapshot)) {
+      throw new Error("Active run snapshot has an invalid runtime snapshot.");
+    }
+
+    return value as HulebuActiveRunSnapshot;
+  }
+
+  private migrateLegacyActiveRunSnapshot(value: unknown): unknown {
+    if (!value || typeof value !== "object") {
+      return value;
+    }
+
+    const legacy = value as Partial<HulebuActiveRunSnapshot>;
+    if (legacy.coordinatorSnapshot) {
+      return value;
+    }
+
+    const runtimeSnapshot = isRuntimeSnapshot(legacy.runtimeSnapshot) ? legacy.runtimeSnapshot : null;
+    const resumablePhase = legacy.resumablePhase ?? "playing";
+    const coordinatorPhase = resumablePhase === "cleared"
+      ? "encounterCleared"
+      : resumablePhase === "reward"
+        ? "rewardChoice"
+        : resumablePhase === "event"
+          ? "eventChoice"
+          : resumablePhase === "advancedAbility" || resumablePhase === "archetype"
+            ? "bossIntro"
+            : "playing.idle";
+    const currentDisplayLevelOrder = typeof legacy.currentDisplayLevelOrder === "number"
+      ? legacy.currentDisplayLevelOrder
+      : 1;
+
+    return {
+      ...legacy,
+      coordinatorSnapshot: {
+        schemaVersion: 1,
+        phase: coordinatorPhase,
+        sessionSnapshot: runtimeSnapshot
+          ? {
+              schemaVersion: 1,
+              revision: 0,
+              levelOrder: currentDisplayLevelOrder,
+              status: coordinatorPhase === "encounterCleared" ? "cleared" : "playing",
+              runtime: runtimeSnapshot,
+            }
+          : null,
+        context: {
+          targetLevelOrder: coordinatorPhase === "rewardChoice" || coordinatorPhase === "eventChoice"
+            ? currentDisplayLevelOrder + 1
+            : null,
+          rewardCandidateIds: [],
+          eventOptionIds: [],
+          pendingCombo: null,
+          pauseReturnPhase: null,
+        },
+      },
+    };
+  }
 
   start(): void {
     this.exposeBrowserDebugApi();
@@ -308,7 +412,7 @@ export class GameSceneController extends Component {
     }
 
     if (this.loadConfiguredLevelOnStart) {
-      this.activeRunSnapshot = this.readActiveRunSnapshot();
+      this.activeRunSnapshot = this.loadActiveRunSnapshot();
       this.lastSettlementSnapshot = this.readLastSettlementSnapshot();
       this.metaProgress = this.readMetaProgressSnapshot();
       const metaProfile = this.readMetaProfileSnapshot();
@@ -458,13 +562,12 @@ export class GameSceneController extends Component {
   }
 
   returnToLobby(): void {
-    this.runtimeState = null;
+    this.detachRuntimeState();
     this.pendingRunProfile = null;
     this.selectedAdvancedAbility = null;
     this.pendingRewardLevelIndex = null;
     this.pendingEventLevelIndex = null;
-    this.discardSelecting = false;
-    this.activeRunSnapshot = this.readActiveRunSnapshot();
+    this.activeRunSnapshot = this.loadActiveRunSnapshot();
     this.lastSettlementSnapshot = this.readLastSettlementSnapshot();
     this.metaProgress = this.readMetaProgressSnapshot();
     const metaProfile = this.readMetaProfileSnapshot();
@@ -486,7 +589,7 @@ export class GameSceneController extends Component {
   }
 
   resumeActiveRun(): void {
-    const snapshot = this.activeRunSnapshot ?? this.readActiveRunSnapshot();
+    const snapshot = this.activeRunSnapshot ?? this.loadActiveRunSnapshot();
     if (!snapshot) {
       this.showLobbyOverlay();
       return;
@@ -545,40 +648,11 @@ export class GameSceneController extends Component {
   }
 
   private handleTileClick(tileId: string): void {
-    if (this.gamePhase !== "playing") {
+    if (this.gamePhase !== "playing" || !this.runtimeState) {
       return;
     }
 
-    if (this.isLatestSceneTileBlocked(tileId)) {
-      return;
-    }
-
-    if (this.runtimeState) {
-      if (this.runtimeState.moveTileToSlot(tileId)) {
-        this.discardSelecting = false;
-        this.refreshRuntimeScene();
-      }
-      return;
-    }
-
-    const sceneModel = this.latestSceneModel;
-    if (!sceneModel || this.selectedSlots.length >= 8) {
-      return;
-    }
-
-    const tile = sceneModel.boardNodes.find((item) => item.tileId === tileId);
-    if (!tile?.interactable) {
-      return;
-    }
-
-    this.selectedSlots.push(tile);
-    sceneModel.boardNodes = sceneModel.boardNodes.filter((item) => item.tileId !== tileId);
-    this.refreshPlayableScene();
-  }
-
-  private isLatestSceneTileBlocked(tileId: string): boolean {
-    const tile = this.latestSceneModel?.boardNodes.find((item) => item.tileId === tileId);
-    return !tile || !tile.interactable;
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "tile.select", tileId }));
   }
 
   private handleComboClick(combo: HulebuComboType): void {
@@ -586,41 +660,19 @@ export class GameSceneController extends Component {
       return;
     }
 
-    if (this.runtimeState) {
-      const control = this.latestSceneModel?.comboControls.find((item) => item.combo === combo);
-      const options = this.runtimeState.getComboCandidateOptions(combo);
-      if (options.length > 1) {
-        this.showComboChoiceOverlay(combo, options);
-        return;
-      }
-      const candidateKey = options[0]?.key ?? control?.candidateKey ?? null;
-      if (this.runtimeState.executeComboByKey(candidateKey)) {
-        this.discardSelecting = false;
-        this.pendingComboChoice = null;
-        this.refreshRuntimeScene();
-      }
+    if (!this.runtimeState) {
       return;
     }
 
-    const selectedIndexes = this.findComboCandidate(combo);
-    if (!selectedIndexes) {
-      return;
-    }
-
-    this.removeSelectedSlots(selectedIndexes);
-    this.score += this.getComboScore(combo);
-    this.refreshPlayableScene();
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "combo.execute", combo }));
   }
 
   private handleSlotClick(slotIndex: number): void {
-    if (this.gamePhase !== "playing" || !this.discardSelecting || !this.runtimeState) {
+    if (this.gamePhase !== "playing" || !this.runtimeState) {
       return;
     }
 
-    if (this.runtimeState.discardSlotTile(slotIndex)) {
-      this.discardSelecting = false;
-      this.refreshRuntimeScene();
-    }
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "slot.discard", slotIndex }));
   }
 
   private startDiscardSelection(): void {
@@ -628,8 +680,7 @@ export class GameSceneController extends Component {
       return;
     }
 
-    this.discardSelecting = !this.discardSelecting;
-    this.refreshRuntimeScene();
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "tool.use", tool: "discard" }));
   }
 
   private useShuffleTool(): void {
@@ -637,10 +688,7 @@ export class GameSceneController extends Component {
       return;
     }
 
-    if (this.runtimeState.useShuffleTool()) {
-      this.discardSelecting = false;
-      this.refreshRuntimeScene();
-    }
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "tool.use", tool: "shuffle" }));
   }
 
   private useUndoTool(): void {
@@ -648,10 +696,7 @@ export class GameSceneController extends Component {
       return;
     }
 
-    if (this.runtimeState.useUndoTool()) {
-      this.discardSelecting = false;
-      this.refreshRuntimeScene();
-    }
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "tool.use", tool: "undo" }));
   }
 
   private refreshRuntimeScene(): void {
@@ -661,18 +706,103 @@ export class GameSceneController extends Component {
 
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     this.applySceneModel(this.runtimeState.toSceneModel(layout));
-    if (this.runtimeState.isLevelCleared()) {
-      this.gamePhase = "cleared";
-      this.showClearOverlay();
+  }
+
+  private attachRuntimeState(runtimeState: HulebuRuntimeState, revision = 0): void {
+    this.runtimeState = runtimeState;
+    this.gameCoordinator.attachSession(new GameSession(runtimeState, revision));
+  }
+
+  private restoreCoordinatorState(snapshot: RunSnapshot, runtimeState: HulebuRuntimeState | null): void {
+    this.runStateMachine = RunStateMachine.restore(snapshot.phase, snapshot.context.pauseReturnPhase);
+    const session = runtimeState && snapshot.sessionSnapshot
+      ? new GameSession(runtimeState, snapshot.sessionSnapshot.revision)
+      : null;
+    this.gameCoordinator = new GameCoordinator(this.runStateMachine, session);
+    this.gameCoordinator.updateContext({
+      targetLevelOrder: snapshot.context.targetLevelOrder,
+      rewardCandidateIds: snapshot.context.rewardCandidateIds,
+      eventOptionIds: snapshot.context.eventOptionIds,
+      pendingCombo: snapshot.context.pendingCombo,
+    });
+    this.runtimeState = runtimeState;
+  }
+
+  private detachRuntimeState(): void {
+    if (!this.runtimeState) {
       return;
     }
+    this.prepareCoordinatorForDetach();
+    this.gameCoordinator.detachSession();
+    this.runtimeState = null;
+  }
 
-    this.hideFlowOverlay();
+  private prepareCoordinatorForDetach(): void {
+    if (this.runStateMachine.phase === "playing.comboChoosing"
+      || this.runStateMachine.phase === "playing.discardChoosing") {
+      this.requireRunTransition("playing.idle");
+    }
+    if (this.runStateMachine.phase === "playing.idle") {
+      this.requireRunTransition("failed");
+    }
+  }
+
+  private prepareCoordinatorForLevel(): void {
+    if (this.runStateMachine.phase === "encounterCleared") {
+      this.requireRunTransition("bossIntro");
+    }
+    if (this.runStateMachine.phase === "bossIntro"
+      || this.runStateMachine.phase === "rewardChoice"
+      || this.runStateMachine.phase === "eventChoice"
+      || this.runStateMachine.phase === "settlement"
+      || this.runStateMachine.phase === "failed") {
+      if (this.runtimeState) {
+        this.gameCoordinator.detachSession();
+        this.runtimeState = null;
+      }
+      this.requireRunTransition("encounterIntro");
+    }
+    if (this.runStateMachine.phase === "encounterIntro") {
+      this.requireRunTransition("playing.tileEntering");
+      this.requireRunTransition("playing.idle");
+    }
+  }
+
+  private requireRunTransition(phase: RunPhase): void {
+    if (!this.runStateMachine.transition(phase)) {
+      throw new Error(`Invalid Controller run transition: ${this.runStateMachine.phase} -> ${phase}.`);
+    }
+  }
+
+  private applyCoordinatorResult(result: CoordinatorResult): void {
+    let openedFlowOverlay = false;
+    for (const event of result.events) {
+      if (event.type === "combo.choice.required") {
+        this.showComboChoiceOverlay(event.combo, [...event.candidates]);
+        openedFlowOverlay = true;
+      }
+      if (event.type === "level.cleared") {
+        this.gamePhase = "cleared";
+        this.showClearOverlay();
+        openedFlowOverlay = true;
+      }
+    }
+
+    if (result.changed && result.snapshot && this.runtimeState) {
+      this.refreshRuntimeScene();
+    }
+    if (!openedFlowOverlay && result.accepted && result.phase === "playing.idle") {
+      this.pendingComboChoice = null;
+      this.hideFlowOverlay();
+    }
+    if (result.changed && result.persistable) {
+      this.persistActiveRun();
+    }
   }
 
   private startLevel(displayLevelOrder: number): void {
     const nextLevelIndex = getHulebuLevelIndexForRunOrder(this.runProfile, displayLevelOrder);
-    const maxIndex = HULEBU_LEVEL_CONFIGS.length - 1;
+    const maxIndex = this.contentRepository.getLevelCount() - 1;
     this.currentLevelIndex = Math.min(Math.max(0, nextLevelIndex), maxIndex);
     this.currentDisplayLevelOrder = displayLevelOrder;
     this.gamePhase = "playing";
@@ -685,21 +815,22 @@ export class GameSceneController extends Component {
       this.createAdvancedRunLevelModifiers(),
       this.levelEventModifiers,
     );
-    const configured = createHulebuConfiguredSceneModelForLayout(
-      layout,
-      this.currentLevelIndex,
+    this.prepareCoordinatorForLevel();
+    const runtimeState = new HulebuRuntimeState(
+      this.contentRepository.createRuntimeLevel(
+        this.currentLevelIndex,
+        this.runProfile,
+        displayLevelOrder,
+      ),
       this.runRewards,
       levelModifiers,
       this.metaUpgrades,
       this.runArchetype,
-      this.runProfile,
-      displayLevelOrder,
     );
     this.levelEventModifiers = createHulebuLevelModifierState();
-    this.runtimeState = configured.runtimeState;
-    this.discardSelecting = false;
+    this.attachRuntimeState(runtimeState);
     this.ensureVisualShell(layout, this.runtimeState.getLevelOrder());
-    this.applySceneModel(configured.sceneModel);
+    this.applySceneModel(this.runtimeState.toSceneModel(layout));
     this.persistActiveRun();
   }
 
@@ -770,7 +901,6 @@ export class GameSceneController extends Component {
 
   private showClearOverlay(): void {
     this.gamePhase = "cleared";
-    this.persistActiveRun();
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const level = this.runtimeState?.getLevelConfig();
@@ -785,6 +915,14 @@ export class GameSceneController extends Component {
 
   private showRewardOverlay(): void {
     this.gamePhase = "reward";
+    if (this.runStateMachine.phase === "encounterCleared") {
+      this.requireRunTransition("rewardChoice");
+    }
+    this.gameCoordinator.updateContext({
+      targetLevelOrder: this.pendingRewardLevelIndex,
+      rewardCandidateIds: this.getCurrentRewardChoices(),
+      eventOptionIds: [],
+    });
     this.persistActiveRun();
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
@@ -796,11 +934,26 @@ export class GameSceneController extends Component {
 
   private showEventOverlay(): void {
     this.gamePhase = "event";
+    if (this.runStateMachine.phase === "encounterCleared") {
+      this.requireRunTransition("eventChoice");
+    }
+    const targetLevelOrder = this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder;
+    this.gameCoordinator.updateContext({
+      targetLevelOrder,
+      rewardCandidateIds: [],
+      eventOptionIds: getHulebuSpecialEventChoices(
+        this.getDisplayLevelOrderForFlow(targetLevelOrder),
+        this.runProfile,
+        this.runArchetype.archetypeId,
+      ).map((choice) => choice.id),
+    });
     this.persistActiveRun();
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const displayOrder = this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder;
-    const level = HULEBU_LEVEL_CONFIGS[getHulebuLevelIndexForRunOrder(this.runProfile, displayOrder)];
+    const level = this.contentRepository.getLevelByIndex(
+      getHulebuLevelIndexForRunOrder(this.runProfile, displayOrder),
+    );
     this.drawOverlayPanel(overlay, layout, 332, 266);
     this.writeOverlayLabel(overlay, "OverlayTitle", "关前事件", 20, new Color(255, 246, 216, 255), 94);
     this.writeOverlayLabel(
@@ -898,12 +1051,7 @@ export class GameSceneController extends Component {
       return;
     }
 
-    if (this.runtimeState.executeComboByKey(option.key)) {
-      this.discardSelecting = false;
-      this.pendingComboChoice = null;
-      this.hideFlowOverlay();
-      this.refreshRuntimeScene();
-    }
+    this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "combo.choose", candidateId: option.key }));
   }
 
   private closeComboChoiceOverlay(): void {
@@ -1310,6 +1458,9 @@ export class GameSceneController extends Component {
   }
 
   private startRunWithProfile(profile: HulebuRunProfile): void {
+    this.detachRuntimeState();
+    this.runStateMachine = new RunStateMachine("bossIntro");
+    this.gameCoordinator = new GameCoordinator(this.runStateMachine);
     this.pendingRunProfile = profile;
     this.selectedAdvancedAbility = null;
     if (profile.mode === "advanced" && getHulebuAdvancedAbilityChoices(profile).length > 0) {
@@ -1342,17 +1493,18 @@ export class GameSceneController extends Component {
 
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const levelIndex = getHulebuLevelIndexForRunOrder(snapshot.runProfile, snapshot.currentDisplayLevelOrder);
-    const boundedLevelIndex = Math.min(Math.max(0, levelIndex), HULEBU_LEVEL_CONFIGS.length - 1);
-    const levelConfig = {
-      ...HULEBU_LEVEL_CONFIGS[boundedLevelIndex],
-      order: snapshot.currentDisplayLevelOrder,
-    };
+    const boundedLevelIndex = Math.min(Math.max(0, levelIndex), this.contentRepository.getLevelCount() - 1);
+    const levelConfig = this.contentRepository.createRuntimeLevel(
+      boundedLevelIndex,
+      snapshot.runProfile,
+      snapshot.currentDisplayLevelOrder,
+    );
     const levelModifiers = mergeHulebuLevelModifierStates(
       this.createAdvancedRunLevelModifiers(),
       this.levelEventModifiers,
     );
 
-    this.runtimeState = HulebuRuntimeState.fromSnapshot(
+    const runtimeState = HulebuRuntimeState.fromSnapshot(
       levelConfig,
       snapshot.runtimeSnapshot,
       snapshot.runRewards,
@@ -1360,15 +1512,15 @@ export class GameSceneController extends Component {
       snapshot.metaUpgrades,
       this.runArchetype,
     );
+    this.restoreCoordinatorState(snapshot.coordinatorSnapshot, runtimeState);
     this.currentLevelIndex = boundedLevelIndex;
     this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
     this.gamePhase = "playing";
     this.pendingRewardLevelIndex = null;
     this.pendingEventLevelIndex = null;
-    this.discardSelecting = false;
     this.levelEventModifiers = createHulebuLevelModifierState();
-    this.ensureVisualShell(layout, this.runtimeState.getLevelOrder());
-    this.applySceneModel(this.runtimeState.toSceneModel(layout));
+    this.ensureVisualShell(layout, runtimeState.getLevelOrder());
+    this.applySceneModel(runtimeState.toSceneModel(layout));
     this.hideFlowOverlay();
   }
 
@@ -1392,19 +1544,17 @@ export class GameSceneController extends Component {
   }
 
   private resumeEventPhase(snapshot: HulebuActiveRunSnapshot): void {
+    this.resumeRuntimeSnapshot(snapshot);
     this.pendingEventLevelIndex = snapshot.currentDisplayLevelOrder;
     this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
     this.gamePhase = "event";
-    this.runtimeState = null;
-    this.discardSelecting = false;
     this.showEventOverlay();
   }
 
   private resumeAdvancedAbilityPhase(snapshot: HulebuActiveRunSnapshot): void {
     this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
     this.pendingRunProfile = snapshot.pendingRunProfile ? { ...snapshot.pendingRunProfile } : { ...snapshot.runProfile };
-    this.runtimeState = null;
-    this.discardSelecting = false;
+    this.restoreCoordinatorState(snapshot.coordinatorSnapshot, null);
     this.gamePhase = "advancedAbility";
     this.showAdvancedAbilityOverlay();
   }
@@ -1412,13 +1562,13 @@ export class GameSceneController extends Component {
   private resumeArchetypePhase(snapshot: HulebuActiveRunSnapshot): void {
     this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
     this.pendingRunProfile = snapshot.pendingRunProfile ? { ...snapshot.pendingRunProfile } : { ...snapshot.runProfile };
-    this.runtimeState = null;
-    this.discardSelecting = false;
+    this.restoreCoordinatorState(snapshot.coordinatorSnapshot, null);
     this.gamePhase = "archetype";
     this.showRunArchetypeOverlay();
   }
 
   private persistActiveRun(): void {
+    const coordinatorSnapshot = this.gameCoordinator.snapshot();
     if (
       this.runProfile.mode === "mainline"
       && !this.runtimeState
@@ -1443,9 +1593,14 @@ export class GameSceneController extends Component {
       selectedAdvancedAbilityId: this.selectedAdvancedAbility?.id ?? null,
       eventSeenLevelOrders: [...this.eventSeenLevelOrders],
       runtimeSnapshot: this.runtimeState?.exportSnapshot() ?? null,
+      coordinatorSnapshot,
     };
+    const saveResult = this.activeRunSaveService.save(snapshot);
+    if (saveResult.status !== "committed") {
+      console.warn("[Hulebu] active run save failed", saveResult);
+      return;
+    }
     this.activeRunSnapshot = snapshot;
-    sys.localStorage.setItem(HULEBU_ACTIVE_RUN_STORAGE_KEY, JSON.stringify(snapshot));
     this.queueAccountProgressPush();
   }
 
@@ -1469,8 +1624,12 @@ export class GameSceneController extends Component {
   }
 
   private clearActiveRun(): void {
+    const clearResult = this.activeRunSaveService.clear();
+    if (clearResult.status !== "cleared") {
+      console.warn("[Hulebu] active run clear failed", clearResult.error);
+      return;
+    }
     this.activeRunSnapshot = null;
-    sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
     this.queueAccountProgressPush();
   }
 
@@ -1533,39 +1692,23 @@ export class GameSceneController extends Component {
     this.queueAccountProgressPush();
   }
 
-  private readActiveRunSnapshot(): HulebuActiveRunSnapshot | null {
-    const raw = sys.localStorage.getItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
-    if (!raw) {
-      return null;
-    }
-
-    try {
-      const parsed = JSON.parse(raw) as Partial<HulebuActiveRunSnapshot>;
-      if (!parsed.runProfile || typeof parsed.currentDisplayLevelOrder !== "number" || typeof parsed.metaCoins !== "number") {
+  private loadActiveRunSnapshot(): HulebuActiveRunSnapshot | null {
+    const loadResult = this.activeRunSaveService.load();
+    switch (loadResult.status) {
+      case "loaded":
+        this.activeRunStorageBlocked = false;
+        return loadResult.value;
+      case "empty":
+        this.activeRunStorageBlocked = false;
         return null;
-      }
-      if (parsed.boardRevision !== HULEBU_BOARD_REVISION) {
-        sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
+      case "quarantined":
+        this.activeRunStorageBlocked = false;
+        console.warn("[Hulebu] invalid active run quarantined", loadResult.key, loadResult.reason);
         return null;
-      }
-
-      return {
-        boardRevision: parsed.boardRevision,
-        runProfile: parsed.runProfile,
-        pendingRunProfile: parsed.pendingRunProfile ? parsed.pendingRunProfile : null,
-        currentDisplayLevelOrder: parsed.currentDisplayLevelOrder,
-        resumablePhase: resolveResumableRunPhase(parsed.resumablePhase),
-        updatedAt: typeof parsed.updatedAt === "string" && parsed.updatedAt ? parsed.updatedAt : new Date().toISOString(),
-        runRewards: cloneRunRewardState(parsed.runRewards),
-        metaUpgrades: cloneMetaUpgradeState(parsed.metaUpgrades),
-        metaCoins: parsed.metaCoins,
-        runArchetypeId: parsed.runArchetypeId ?? "peng",
-        selectedAdvancedAbilityId: parsed.selectedAdvancedAbilityId ?? null,
-        eventSeenLevelOrders: Array.isArray(parsed.eventSeenLevelOrders) ? parsed.eventSeenLevelOrders : [],
-        runtimeSnapshot: isRuntimeSnapshot(parsed.runtimeSnapshot) ? parsed.runtimeSnapshot : null,
-      };
-    } catch {
-      return null;
+      case "error":
+        this.activeRunStorageBlocked = true;
+        console.warn("[Hulebu] active run load failed", loadResult.stage, loadResult.error);
+        return this.activeRunSnapshot;
     }
   }
 
@@ -1830,7 +1973,7 @@ export class GameSceneController extends Component {
       return displayOrder;
     }
 
-    return ((displayOrder - 1) % HULEBU_LEVEL_CONFIGS.length) + 1;
+    return ((displayOrder - 1) % this.contentRepository.getLevelCount()) + 1;
   }
 
   private getRunModeLabel(): string {
@@ -2066,7 +2209,19 @@ export class GameSceneController extends Component {
         ),
       };
       this.achievements = { ...progress.achievements };
-      this.activeRunSnapshot = readCocosActiveRunSnapshotFromProgress(progress.activeRun) ?? this.activeRunSnapshot;
+      const mergedActiveRun = this.decodeAccountActiveRunSnapshot(progress.activeRun);
+      if (mergedActiveRun) {
+        const snapshot = mergedActiveRun;
+        const saveResult = this.activeRunSaveService.save(snapshot);
+        if (saveResult.status === "committed") {
+          this.activeRunSnapshot = snapshot;
+        }
+      } else if (progress.activeRun === null) {
+        const clearResult = this.activeRunSaveService.clear();
+        if (clearResult.status === "cleared") {
+          this.activeRunSnapshot = null;
+        }
+      }
 
       sys.localStorage.setItem(HULEBU_META_PROFILE_STORAGE_KEY, JSON.stringify({
         metaCoins: this.metaCoins,
@@ -2074,14 +2229,25 @@ export class GameSceneController extends Component {
       } satisfies HulebuMetaProfileSnapshot));
       sys.localStorage.setItem(HULEBU_META_PROGRESS_STORAGE_KEY, JSON.stringify(this.metaProgress));
       sys.localStorage.setItem(HULEBU_ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(this.achievements));
-      if (this.activeRunSnapshot) {
-        sys.localStorage.setItem(HULEBU_ACTIVE_RUN_STORAGE_KEY, JSON.stringify(this.activeRunSnapshot));
-      } else {
-        sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY);
-      }
     } finally {
       this.suppressAccountSyncPush = false;
     }
+  }
+
+  private decodeAccountActiveRunSnapshot(activeRun: Record<string, unknown> | null): HulebuActiveRunSnapshot | null {
+    if (!activeRun || typeof activeRun.cocosSnapshot !== "object" || !activeRun.cocosSnapshot) {
+      return null;
+    }
+    const values = new Map<string, string>([
+      [HULEBU_ACTIVE_RUN_STORAGE_KEY, JSON.stringify(activeRun.cocosSnapshot)],
+    ]);
+    const service = this.createActiveRunSaveService({
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => values.set(key, value),
+      removeItem: (key) => { values.delete(key); },
+    });
+    const loadResult = service.load();
+    return loadResult.status === "loaded" ? loadResult.value : null;
   }
 
   private prepareFlowOverlay(): Node {
@@ -2207,278 +2373,6 @@ export class GameSceneController extends Component {
       this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), new Color(255, 246, 216, 255));
     }
     return node;
-  }
-
-  private refreshPlayableScene(): void {
-    const sceneModel = this.latestSceneModel;
-    if (!sceneModel) {
-      return;
-    }
-
-    this.refreshBoardInteractivity(sceneModel.boardNodes);
-    sceneModel.slotNodes = this.createSlotModels();
-    sceneModel.comboControls = this.createComboControls();
-    sceneModel.hud = {
-      boardRemainingText: `余牌 ${sceneModel.boardNodes.length}`,
-      slotStatusText: this.getSlotStatusText(sceneModel),
-      scoreText: `分 ${this.score}`,
-      coinsText: sceneModel.hud.coinsText,
-      toolText: sceneModel.hud.toolText,
-      tileCounter: this.createTileCounterFromBoardNodes(sceneModel.boardNodes),
-    };
-    this.applySceneModel(sceneModel);
-  }
-
-  private createTileCounterFromBoardNodes(boardNodes: HulebuBoardNodeModel[]): HulebuTileCounterModel {
-    const suitOrder: Array<HulebuTileCounterModel["suits"][number]["suit"]> = ["wan", "tiao", "tong", "honor"];
-    const suitLabels: Record<HulebuTileCounterModel["suits"][number]["suit"], string> = {
-      wan: "万",
-      tiao: "条",
-      tong: "筒",
-      honor: "字",
-    };
-    const tileCounts = new Map<string, number>();
-    const suitTotals = new Map<string, number>();
-
-    boardNodes.forEach((node) => {
-      const [, suit, rank] = node.prefabKey.split(".");
-      if (!suit || !rank) {
-        return;
-      }
-      tileCounts.set(node.prefabKey, (tileCounts.get(node.prefabKey) ?? 0) + 1);
-      suitTotals.set(suit, (suitTotals.get(suit) ?? 0) + 1);
-    });
-
-    return {
-      total: boardNodes.length,
-      suits: suitOrder.map((suit) => {
-        const maxRank = suit === "honor" ? 7 : 9;
-        return {
-          suit,
-          label: suitLabels[suit],
-          total: suitTotals.get(suit) ?? 0,
-          tiles: Array.from({ length: maxRank }, (_, index) => {
-            const rank = index + 1;
-            const prefabKey = `tile.${suit}.${rank}`;
-            return {
-              label: suit === "honor" ? `字${rank}` : `${rank}${suitLabels[suit]}`,
-              prefabKey,
-              count: tileCounts.get(prefabKey) ?? 0,
-            };
-          }),
-        };
-      }),
-    };
-  }
-
-  private createSlotModels(): HulebuCellNodeModel[] {
-    return Array.from({ length: 8 }, (_, index) => {
-      const tile = this.selectedSlots[index] ?? null;
-      return {
-        name: `Slot_${index}`,
-        index,
-        tileId: tile?.tileId ?? null,
-        label: tile?.label ?? null,
-        occupied: Boolean(tile),
-        prefabKey: tile?.prefabKey ?? null,
-      };
-    });
-  }
-
-  private createComboControls(): HulebuComboControlModel[] {
-    const combos: HulebuComboType[] = ["hu", "gang", "peng", "chi", "bugang"];
-    return combos.map((combo) => {
-      const candidate = this.findComboCandidate(combo);
-      return {
-        name: `Combo_${combo[0].toUpperCase()}${combo.slice(1)}`,
-        combo,
-        interactable: Boolean(candidate),
-        badgeText: candidate ? "1" : "0",
-        candidateKey: candidate ? `${combo}:${candidate.join(",")}` : null,
-      };
-    });
-  }
-
-  private getSlotStatusText(sceneModel: HulebuCocosSceneModel): string {
-    if (sceneModel.boardNodes.length === 0) {
-      return "牌山已清空";
-    }
-
-    if (this.selectedSlots.length >= 8) {
-      return this.createComboControls().some((control) => control.interactable) ? "可发动组合" : "槽位已满";
-    }
-
-    return `槽位 ${this.selectedSlots.length}/8`;
-  }
-
-  private findComboCandidate(combo: HulebuComboType): number[] | null {
-    if (combo === "hu") {
-      return this.findHuCandidate();
-    }
-
-    if (combo === "peng" || combo === "gang") {
-      const requiredCount = combo === "gang" ? 4 : 3;
-      const groups = this.groupSlotIndexesByLabel();
-      for (const indexes of groups.values()) {
-        if (indexes.length >= requiredCount) {
-          return indexes.slice(0, requiredCount);
-        }
-      }
-      return null;
-    }
-
-    if (combo === "bugang") {
-      return null;
-    }
-
-    return this.findChiCandidate();
-  }
-
-  private findHuCandidate(): number[] | null {
-    if (this.selectedSlots.length !== 8) {
-      return null;
-    }
-
-    return this.canHuLabels(this.selectedSlots.map((slot) => slot.label)) ? this.selectedSlots.map((_, index) => index) : null;
-  }
-
-  private findChiCandidate(): number[] | null {
-    const numberedTiles = this.selectedSlots
-      .map((tile, index) => ({ ...this.parseNumberedLabel(tile.label), index }))
-      .filter((tile): tile is { suit: string; rank: number; index: number } => Boolean(tile.suit));
-
-    for (const suit of ["万", "筒", "条"]) {
-      for (let rank = 1; rank <= 7; rank += 1) {
-        const first = numberedTiles.find((tile) => tile.suit === suit && tile.rank === rank);
-        const second = numberedTiles.find((tile) => tile.suit === suit && tile.rank === rank + 1);
-        const third = numberedTiles.find((tile) => tile.suit === suit && tile.rank === rank + 2);
-        if (first && second && third) {
-          return [first.index, second.index, third.index];
-        }
-      }
-    }
-
-    return null;
-  }
-
-  private removeSelectedSlots(indexes: number[]): void {
-    [...indexes].sort((a, b) => b - a).forEach((index) => {
-      this.selectedSlots.splice(index, 1);
-    });
-  }
-
-  private groupSlotIndexesByLabel(): Map<string, number[]> {
-    const groups = new Map<string, number[]>();
-    this.selectedSlots.forEach((tile, index) => {
-      const indexes = groups.get(tile.label) ?? [];
-      indexes.push(index);
-      groups.set(tile.label, indexes);
-    });
-    return groups;
-  }
-
-  private canHuLabels(labels: string[]): boolean {
-    const counts = new Map<string, number>();
-    labels.forEach((label) => counts.set(label, (counts.get(label) ?? 0) + 1));
-
-    for (const [label, count] of counts) {
-      if (count < 2) {
-        continue;
-      }
-
-      const nextCounts = new Map(counts);
-      nextCounts.set(label, count - 2);
-      if (this.canMakeMelds(nextCounts, 2)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  private canMakeMelds(counts: Map<string, number>, meldsRemaining: number): boolean {
-    if (meldsRemaining === 0) {
-      return [...counts.values()].every((count) => count === 0);
-    }
-
-    const label = [...counts.keys()].find((key) => (counts.get(key) ?? 0) > 0);
-    if (!label) {
-      return false;
-    }
-
-    const count = counts.get(label) ?? 0;
-    if (count >= 3) {
-      const nextCounts = new Map(counts);
-      nextCounts.set(label, count - 3);
-      if (this.canMakeMelds(nextCounts, meldsRemaining - 1)) {
-        return true;
-      }
-    }
-
-    const numbered = this.parseNumberedLabel(label);
-    if (numbered.suit && numbered.rank <= 7) {
-      const next = `${numbered.rank + 1}${numbered.suit}`;
-      const third = `${numbered.rank + 2}${numbered.suit}`;
-      if ((counts.get(next) ?? 0) > 0 && (counts.get(third) ?? 0) > 0) {
-        const nextCounts = new Map(counts);
-        nextCounts.set(label, count - 1);
-        nextCounts.set(next, (nextCounts.get(next) ?? 0) - 1);
-        nextCounts.set(third, (nextCounts.get(third) ?? 0) - 1);
-        if (this.canMakeMelds(nextCounts, meldsRemaining - 1)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  private parseNumberedLabel(label: string): { suit: string; rank: number } {
-    const match = /^([1-9])([万筒条])$/.exec(label);
-    return {
-      suit: match?.[2] ?? "",
-      rank: match ? Number(match[1]) : 0,
-    };
-  }
-
-  private getComboScore(combo: HulebuComboType): number {
-    if (combo === "hu") {
-      return 80;
-    }
-    if (combo === "gang" || combo === "bugang") {
-      return 40;
-    }
-    return combo === "peng" ? 30 : 20;
-  }
-
-  private refreshBoardInteractivity(boardNodes: HulebuBoardNodeModel[]): void {
-    boardNodes.forEach((tile) => {
-      const isBlocked = boardNodes.some((candidate) => this.isTileBlockedByRemainingTile(tile, candidate));
-      tile.interactable = !isBlocked;
-      tile.dimmed = isBlocked;
-    });
-  }
-
-  private isTileBlockedByRemainingTile(tile: HulebuBoardNodeModel, candidate: HulebuBoardNodeModel): boolean {
-    if (tile.tileId === candidate.tileId || candidate.zIndex <= tile.zIndex) {
-      return false;
-    }
-
-    const layout = resolveHulebuRuntimeLayout();
-    const tileWidth = scaleLayoutValue(HULEBU_TILE_WIDTH, layout.scale);
-    const tileHeight = scaleLayoutValue(HULEBU_TILE_HEIGHT, layout.scale);
-    const overlapWidth = Math.max(
-      0,
-      Math.min(tile.position.x + tileWidth / 2, candidate.position.x + tileWidth / 2) -
-        Math.max(tile.position.x - tileWidth / 2, candidate.position.x - tileWidth / 2),
-    );
-    const overlapHeight = Math.max(
-      0,
-      Math.min(tile.position.y + tileHeight / 2, candidate.position.y + tileHeight / 2) -
-        Math.max(tile.position.y - tileHeight / 2, candidate.position.y - tileHeight / 2),
-    );
-    const overlapRatio = (overlapWidth * overlapHeight) / (tileWidth * tileHeight);
-    return overlapRatio > HULEBU_UNLOCK_OVERLAP_THRESHOLD;
   }
 
   private ensureCanvasHost(): RuntimeLayout {
@@ -3389,36 +3283,6 @@ function createCocosAccountActiveRunPayload(snapshot: HulebuActiveRunSnapshot | 
   };
 }
 
-function readCocosActiveRunSnapshotFromProgress(activeRun: Record<string, unknown> | null): HulebuActiveRunSnapshot | null {
-  if (!activeRun || typeof activeRun.cocosSnapshot !== "object" || !activeRun.cocosSnapshot) {
-    return null;
-  }
-
-  const snapshot = activeRun.cocosSnapshot as Partial<HulebuActiveRunSnapshot>;
-  if (!snapshot.runProfile || typeof snapshot.currentDisplayLevelOrder !== "number" || typeof snapshot.metaCoins !== "number") {
-    return null;
-  }
-  if (snapshot.boardRevision !== HULEBU_BOARD_REVISION) {
-    return null;
-  }
-
-  return {
-    boardRevision: snapshot.boardRevision,
-    runProfile: snapshot.runProfile,
-    pendingRunProfile: snapshot.pendingRunProfile ? snapshot.pendingRunProfile : null,
-    currentDisplayLevelOrder: snapshot.currentDisplayLevelOrder,
-    resumablePhase: resolveResumableRunPhase(snapshot.resumablePhase),
-    updatedAt: typeof snapshot.updatedAt === "string" && snapshot.updatedAt ? snapshot.updatedAt : String(activeRun.updatedAt ?? new Date().toISOString()),
-    runRewards: cloneRunRewardState(snapshot.runRewards),
-    metaUpgrades: cloneMetaUpgradeState(snapshot.metaUpgrades),
-    metaCoins: snapshot.metaCoins,
-    runArchetypeId: snapshot.runArchetypeId ?? "peng",
-    selectedAdvancedAbilityId: snapshot.selectedAdvancedAbilityId ?? null,
-    eventSeenLevelOrders: Array.isArray(snapshot.eventSeenLevelOrders) ? snapshot.eventSeenLevelOrders : [],
-    runtimeSnapshot: isRuntimeSnapshot(snapshot.runtimeSnapshot) ? snapshot.runtimeSnapshot : null,
-  };
-}
-
 function isRuntimeSnapshot(value: unknown): value is HulebuRuntimeSnapshot {
   if (!value || typeof value !== "object") {
     return false;
@@ -3438,6 +3302,58 @@ function isRuntimeSnapshot(value: unknown): value is HulebuRuntimeSnapshot {
     && typeof snapshot.tools?.undo === "number"
     && typeof snapshot.tools?.discard === "number"
     && typeof snapshot.tools?.vision === "number";
+}
+
+function isRunSnapshot(value: unknown): value is RunSnapshot {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const snapshot = value as Partial<RunSnapshot>;
+  if (snapshot.schemaVersion !== 1 || !isRunPhase(snapshot.phase) || !snapshot.context || typeof snapshot.context !== "object") {
+    return false;
+  }
+
+  const context = snapshot.context as Partial<RunSnapshot["context"]>;
+  return (context.targetLevelOrder === null || typeof context.targetLevelOrder === "number")
+    && Array.isArray(context.rewardCandidateIds)
+    && context.rewardCandidateIds.every((id) => typeof id === "string")
+    && Array.isArray(context.eventOptionIds)
+    && context.eventOptionIds.every((id) => typeof id === "string")
+    && (context.pendingCombo === null || typeof context.pendingCombo === "object")
+    && (context.pauseReturnPhase === null
+      || context.pauseReturnPhase === "playing.idle"
+      || context.pauseReturnPhase === "playing.comboChoosing"
+      || context.pauseReturnPhase === "playing.discardChoosing");
+}
+
+function isRunPhase(value: unknown): value is RunPhase {
+  return value === "encounterIntro"
+    || value === "playing.tileEntering"
+    || value === "playing.idle"
+    || value === "playing.resolving"
+    || value === "playing.comboChoosing"
+    || value === "playing.discardChoosing"
+    || value === "playing.dangerCheck"
+    || value === "encounterCleared"
+    || value === "rewardChoice"
+    || value === "eventChoice"
+    || value === "bossIntro"
+    || value === "settlement"
+    || value === "failed"
+    || value === "paused";
+}
+
+function isPersistableRunPhase(value: RunPhase): boolean {
+  return value === "encounterIntro"
+    || value === "playing.idle"
+    || value === "playing.comboChoosing"
+    || value === "playing.discardChoosing"
+    || value === "encounterCleared"
+    || value === "rewardChoice"
+    || value === "eventChoice"
+    || value === "bossIntro"
+    || value === "settlement";
 }
 
 function resolveResumableRunPhase(value: unknown): HulebuResumableRunPhase {

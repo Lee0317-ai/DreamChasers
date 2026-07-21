@@ -152,6 +152,48 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     );
   });
 
+  test("routes migrated gameplay and active-run persistence through the M1 boundaries", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+
+    expect(controllerText).toContain("new GameCoordinator(");
+    expect(controllerText).toContain("new ContentRepository(");
+    expect(controllerText).toContain("new SaveService(");
+    expect(controllerText).toContain('dispatch({ type: "tile.select"');
+    expect(controllerText).toContain('dispatch({ type: "combo.execute"');
+    expect(controllerText).toContain('dispatch({ type: "combo.choose"');
+    expect(controllerText).toContain('dispatch({ type: "tool.use", tool: "discard" })');
+    expect(controllerText).toContain('dispatch({ type: "tool.use", tool: "shuffle" })');
+    expect(controllerText).toContain('dispatch({ type: "tool.use", tool: "undo" })');
+    expect(controllerText).toContain('dispatch({ type: "slot.discard"');
+    expect(controllerText).toContain("private applyCoordinatorResult(");
+    expect(controllerText).toContain("private attachRuntimeState(");
+    expect(controllerText).toContain("private detachRuntimeState(");
+    expect(controllerText).toContain('event.type === "combo.choice.required"');
+    expect(controllerText).toContain('event.type === "level.cleared"');
+    expect(controllerText).toContain("result.changed && result.persistable");
+    expect(controllerText).toContain('saveResult.status !== "committed"');
+    expect(controllerText).toContain("this.activeRunSnapshot = snapshot");
+    expect(controllerText).toContain("this.queueAccountProgressPush()");
+
+    expect(controllerText).not.toContain("this.runtimeState.moveTileToSlot(");
+    expect(controllerText).not.toContain("this.runtimeState.executeComboByKey(");
+    expect(controllerText).not.toContain("this.runtimeState.discardSlotTile(");
+    expect(controllerText).not.toContain("this.runtimeState.useShuffleTool(");
+    expect(controllerText).not.toContain("this.runtimeState.useUndoTool(");
+    expect(controllerText).not.toContain("private refreshPlayableScene(");
+    expect(controllerText).not.toContain("private createSlotModels(");
+    expect(controllerText).not.toContain("private createComboControls(");
+    expect(controllerText).not.toContain("private findComboCandidate(");
+    expect(controllerText).not.toContain("private findHuCandidate(");
+    expect(controllerText).not.toContain("private canHuLabels(");
+    expect(controllerText).not.toContain("private canMakeMelds(");
+    expect(controllerText).not.toContain("private removeSelectedSlots(");
+    expect(controllerText).not.toContain("private getSlotStatusText(");
+    expect(controllerText).not.toContain("private getComboScore(");
+    expect(controllerText).not.toContain("discardSelecting");
+    expect(controllerText).not.toMatch(/sys\.localStorage\.(?:getItem|setItem|removeItem)\(HULEBU_ACTIVE_RUN_STORAGE_KEY/);
+  });
+
   test("keeps Cocos runtime imports inside the Creator project", () => {
     const scriptsRoot = path.join(cocosRoot, "assets/scripts");
     const tsFiles: string[] = [];
@@ -236,28 +278,30 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
 
     expect(gameSceneController).toContain("resolveHulebuRuntimeLayout");
     expect(gameSceneController).toContain("createHulebuSampleSceneModelForLayout");
-    expect(gameSceneController).toContain("createHulebuConfiguredSceneModelForLayout");
+    expect(gameSceneController).toContain("new ContentRepository(");
+    expect(gameSceneController).toContain("new GameCoordinator(");
+    expect(gameSceneController).toContain("new SaveService(");
     expect(gameSceneController).toContain("MeldRiverLayerBinder");
     expect(gameSceneController).toContain("MeldRiverRoot");
     expect(gameSceneController).toContain("applyMeldRiverNodes");
     expect(gameSceneController).toContain("loadConfiguredLevelOnStart");
     expect(gameSceneController).toContain("this.runtimeState");
-    expect(gameSceneController).toContain("moveTileToSlot");
-    expect(gameSceneController).toContain("executeComboByKey");
+    expect(gameSceneController).toContain('dispatch({ type: "tile.select"');
+    expect(gameSceneController).toContain('dispatch({ type: "combo.execute"');
     expect(gameSceneController).toContain("uiTransform.setContentSize(width, height)");
     expect(gameSceneController).toContain("ensureRuntimeCamera");
     expect(gameSceneController).toContain("canvas.cameraComponent");
     expect(gameSceneController).toContain("RuntimeCamera");
     expect(gameSceneController).toContain("Camera.ProjectionType.ORTHO");
     expect(gameSceneController).toContain("Camera.ClearFlag.SOLID_COLOR");
-    expect(gameSceneController).toContain("private readonly selectedSlots");
+    expect(gameSceneController).not.toContain("private readonly selectedSlots");
     expect(gameSceneController).toContain("handleTileClick");
     expect(gameSceneController).toContain("handleSlotClick");
     expect(gameSceneController).toContain("startDiscardSelection");
     expect(gameSceneController).toContain("useShuffleTool");
     expect(gameSceneController).toContain("useUndoTool");
-    expect(gameSceneController).toContain("discardSelecting");
-    expect(gameSceneController).toContain("discardSlotTile");
+    expect(gameSceneController).not.toContain("discardSelecting");
+    expect(gameSceneController).toContain('dispatch({ type: "slot.discard"');
     expect(gameSceneController).toContain("ToolButton_Hint");
     expect(gameSceneController).toContain("ToolButton_Wash");
     expect(gameSceneController).toContain("ToolButton_Undo");
@@ -285,12 +329,12 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("combo-choice/panel_bg");
     expect(gameSceneController).toContain("打牌");
     expect(gameSceneController).toContain("handleComboClick");
-    expect(gameSceneController).toContain("findComboCandidate");
-    expect(gameSceneController).toContain("removeSelectedSlots");
-    expect(gameSceneController).toContain("refreshBoardInteractivity");
-    expect(gameSceneController).toContain("isTileBlockedByRemainingTile");
-    expect(gameSceneController).toContain("isLatestSceneTileBlocked");
-    expect(gameSceneController).toContain("HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.001");
+    expect(gameSceneController).not.toContain("findComboCandidate");
+    expect(gameSceneController).not.toContain("removeSelectedSlots");
+    expect(gameSceneController).not.toContain("refreshBoardInteractivity");
+    expect(gameSceneController).not.toContain("isTileBlockedByRemainingTile");
+    expect(gameSceneController).not.toContain("isLatestSceneTileBlocked");
+    expect(gameSceneController).not.toContain("HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.001");
     expect(gameSceneController).toContain("centerLayoutX");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).not.toContain("Math.max(1, layout.scale ?? 1)");
     expect(gameSceneController).toContain("centerLayoutY");
@@ -416,8 +460,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("ui/v6/buttons/tools/tool_hint/spriteFrame");
     expect(gameSceneController).toContain("applyToolButtonSprite");
     expect(gameSceneController).toContain("ToolArt");
-    expect(gameSceneController).toContain("if (this.isLatestSceneTileBlocked(tileId))");
-    expect(gameSceneController).toContain("private isLatestSceneTileBlocked(tileId: string): boolean");
+    expect(gameSceneController).not.toContain("if (this.isLatestSceneTileBlocked(tileId))");
+    expect(gameSceneController).not.toContain("private isLatestSceneTileBlocked(tileId: string): boolean");
 
     expect(boardLayerBinder).toContain("TILE_SIDE_COLOR");
     expect(boardLayerBinder).toContain("drawTileFace");
@@ -541,7 +585,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("private gamePhase: HulebuGamePhase = \"playing\"");
     expect(gameSceneController).toContain("private pendingRewardLevelIndex");
     expect(gameSceneController).toContain("private refreshRuntimeScene");
-    expect(gameSceneController).toContain("this.runtimeState.isLevelCleared()");
+    expect(gameSceneController).toContain('event.type === "level.cleared"');
     expect(gameSceneController).toContain("this.showClearOverlay()");
     expect(gameSceneController).toContain("continueAfterClear");
     expect(gameSceneController).toContain("startNextLevel");
@@ -993,7 +1037,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("private accountSyncMessage = \"账号：当前使用本地档案\"");
     expect(gameSceneController).toContain("selectRunArchetype(archetypeId: HulebuRunArchetypeId)");
     expect(gameSceneController).toContain("pickRunArchetype(archetypeId: HulebuRunArchetypeId)");
-    expect(gameSceneController).toContain("this.activeRunSnapshot = this.readActiveRunSnapshot()");
+    expect(gameSceneController).toContain("this.loadActiveRunSnapshot()");
     expect(gameSceneController).toContain("this.lastSettlementSnapshot = this.readLastSettlementSnapshot()");
     expect(gameSceneController).toContain("this.achievements = this.readAchievementSnapshot()");
     expect(gameSceneController).toContain("resumeActiveRun(): void");
@@ -1005,7 +1049,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("resumeArchetypePhase(snapshot: HulebuActiveRunSnapshot): void");
     expect(gameSceneController).toContain("persistActiveRun(): void");
     expect(gameSceneController).toContain("clearActiveRun(): void");
-    expect(gameSceneController).toContain("readActiveRunSnapshot(): HulebuActiveRunSnapshot | null");
+    expect(gameSceneController).toContain("loadActiveRunSnapshot(): HulebuActiveRunSnapshot | null");
     expect(gameSceneController).toContain("persistLastSettlement(): void");
     expect(gameSceneController).toContain("readLastSettlementSnapshot(): HulebuSettlementSnapshot | null");
     expect(gameSceneController).toContain("persistMetaProgress(): void");
@@ -1021,10 +1065,17 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("createAccountProgressPayload(): HulebuAccountProgressRecord");
     expect(gameSceneController).toContain("mergeLocalAndAccountProgress(accountProgress: HulebuAccountProgressRecord): HulebuAccountProgressRecord");
     expect(gameSceneController).toContain("applyMergedAccountProgress(progress: HulebuAccountProgressRecord): void");
-    expect(gameSceneController).toContain("sys.localStorage.setItem(HULEBU_ACTIVE_RUN_STORAGE_KEY, JSON.stringify(snapshot))");
-    expect(gameSceneController).toContain("sys.localStorage.removeItem(HULEBU_ACTIVE_RUN_STORAGE_KEY)");
+    expect(gameSceneController).not.toMatch(/sys\.localStorage\.(?:getItem|setItem|removeItem)\(HULEBU_ACTIVE_RUN_STORAGE_KEY/);
+    expect(gameSceneController).toContain("this.activeRunSaveService.save(snapshot)");
+    expect(gameSceneController).toContain("this.activeRunSaveService.clear()");
+    expect(gameSceneController).toContain("switch (loadResult.status)");
+    expect(gameSceneController).toContain('case "loaded"');
+    expect(gameSceneController).toContain('case "empty"');
+    expect(gameSceneController).toContain('case "quarantined"');
+    expect(gameSceneController).toContain('case "error"');
+    expect(gameSceneController).toContain("this.decodeAccountActiveRunSnapshot(progress.activeRun)");
+    expect(gameSceneController).not.toContain("readCocosActiveRunSnapshotFromProgress(");
     expect(gameSceneController).toContain("boardRevision: HULEBU_BOARD_REVISION");
-    expect(gameSceneController).toContain("parsed.boardRevision !== HULEBU_BOARD_REVISION");
     expect(gameSceneController).toContain("snapshot.boardRevision !== HULEBU_BOARD_REVISION");
     expect(gameSceneController).toContain("sys.localStorage.setItem(HULEBU_LAST_SETTLEMENT_STORAGE_KEY, JSON.stringify(snapshot))");
     expect(gameSceneController).toContain("sys.localStorage.setItem(HULEBU_META_PROGRESS_STORAGE_KEY, JSON.stringify(nextProgress))");
@@ -1035,7 +1086,6 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("const pendingRunProfile = this.pendingRunProfile ? { ...this.pendingRunProfile } : null");
     expect(gameSceneController).toContain("pendingRunProfile,");
     expect(gameSceneController).toContain("resumablePhase: this.getResumableRunPhase()");
-    expect(gameSceneController).toContain("resolveResumableRunPhase(parsed.resumablePhase)");
     expect(gameSceneController).toContain("if (snapshot.resumablePhase === \"advancedAbility\")");
     expect(gameSceneController).toContain("if (snapshot.resumablePhase === \"archetype\")");
     expect(gameSceneController).toContain("if (snapshot.resumablePhase === \"event\")");
@@ -1046,10 +1096,10 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("this.showEventOverlay()");
     expect(gameSceneController).toContain("this.showAdvancedAbilityOverlay()");
     expect(gameSceneController).toContain("this.showRunArchetypeOverlay()");
-    expect(gameSceneController).toContain("runtimeSnapshot: isRuntimeSnapshot(parsed.runtimeSnapshot) ? parsed.runtimeSnapshot : null");
+    expect(gameSceneController).toContain("snapshot.runtimeSnapshot !== null && !isRuntimeSnapshot(snapshot.runtimeSnapshot)");
     expect(gameSceneController).toContain("if (snapshot.runtimeSnapshot)");
     expect(gameSceneController).toContain("this.resumeRuntimeSnapshot(snapshot)");
-    expect(gameSceneController).toContain("this.runtimeState = HulebuRuntimeState.fromSnapshot(");
+    expect(gameSceneController).toContain("const runtimeState = HulebuRuntimeState.fromSnapshot(");
     expect(gameSceneController).toContain("this.metaCoins = metaProfile.metaCoins");
     expect(gameSceneController).toContain("this.metaUpgrades = cloneMetaUpgradeState(metaProfile.metaUpgrades)");
     expect(gameSceneController).toContain("createDefaultMetaProfileSnapshot(): HulebuMetaProfileSnapshot");
@@ -1120,7 +1170,6 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("this.runArchetype,");
     expect(gameSceneController).toContain("sanitizeAccountProgressRecord(");
     expect(gameSceneController).toContain("createCocosAccountActiveRunPayload(");
-    expect(gameSceneController).toContain("readCocosActiveRunSnapshotFromProgress(");
 
     const layout = { width: 390, height: 844, cssWidth: 390, cssHeight: 844, scale: 1 };
     const level = {
@@ -2210,7 +2259,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(runtimeText).toContain("bossText: this.getBossHudText()");
     expect(runtimeText).toContain("isLevelCleared()");
     expect(hudBinder).toContain("hud.bossText");
-    expect(gameSceneController).toContain("this.runtimeState.isLevelCleared()");
+    expect(gameSceneController).toContain('event.type === "level.cleared"');
 
     const levelModule = await import(pathToFileURL(path.join(cocosRoot, levelConfigPath)).href) as {
       HULEBU_LEVEL_CONFIGS: Array<{
@@ -2459,8 +2508,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("showComboChoiceOverlay");
     expect(gameSceneController).toContain("drawComboChoiceOptions");
     expect(gameSceneController).toContain("executeComboCandidateOption");
-    expect(gameSceneController).toContain("getComboCandidateOptions(combo)");
-    expect(gameSceneController).toContain("executeComboByKey(option.key)");
+    expect(gameSceneController).toContain('dispatch({ type: "combo.execute", combo })');
+    expect(gameSceneController).toContain('dispatch({ type: "combo.choose", candidateId: option.key })');
     expect(gameSceneController).toContain("ComboChoice_Back");
     expect(gameSceneController).toContain("ComboChoiceTileArt");
 

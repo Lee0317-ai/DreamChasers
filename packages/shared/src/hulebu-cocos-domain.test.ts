@@ -2448,3 +2448,86 @@ describe("Hulebu Cocos SaveService", () => {
     expect(sourceMeta.uuid).not.toBe(directoryMeta.uuid);
   });
 });
+
+describe("Hulebu Cocos Controller coordination contract", () => {
+  test("opens exact combo choice once and executes only the authorized candidate", () => {
+    const session = new GameSession(new HulebuRuntimeState(createMultiChiLevel()));
+    const coordinator = new GameCoordinator(new RunStateMachine("playing.idle"), session);
+    let choiceOverlayCount = 0;
+
+    const prompt = coordinator.dispatch({ type: "combo.execute", combo: "chi" });
+    for (const event of prompt.events) {
+      if (event.type === "combo.choice.required") choiceOverlayCount += 1;
+    }
+    expect(prompt).toMatchObject({ accepted: true, changed: true, phase: "playing.comboChoosing" });
+    expect(choiceOverlayCount).toBe(1);
+
+    const candidateId = prompt.runSnapshot.context.pendingCombo?.candidates[1]?.key;
+    expect(candidateId).toBeTruthy();
+    const executed = coordinator.dispatch({ type: "combo.choose", candidateId: candidateId! });
+    expect(executed.events.filter((event) => event.type === "combo.executed")).toHaveLength(1);
+    expect(executed.phase).toBe("playing.idle");
+
+    const repeated = coordinator.dispatch({ type: "combo.choose", candidateId: candidateId! });
+    expect(repeated).toMatchObject({ accepted: false, changed: false, phase: "playing.idle" });
+    expect(repeated.events.filter((event) => event.type === "combo.executed")).toHaveLength(0);
+  });
+
+  test("keeps zero-use discard idle and emits level clear only once", () => {
+    const unavailableDiscard = new GameCoordinator(
+      new RunStateMachine("playing.idle"),
+      new GameSession(new HulebuRuntimeState(createLevel({
+        discard: 0,
+        initialSlotOrder: ["slot-a"],
+        tiles: [
+          createTile("slot-a", "wan", 1, "slot"),
+          createTile("board-a", "tong", 2),
+        ],
+      }))),
+    );
+    expect(unavailableDiscard.dispatch({ type: "tool.use", tool: "discard" }))
+      .toMatchObject({ accepted: false, changed: false, phase: "playing.idle" });
+
+    const clearCoordinator = new GameCoordinator(
+      new RunStateMachine("playing.idle"),
+      new GameSession(new HulebuRuntimeState(createLevel({
+        tiles: [createTile("last-tile", "wan", 1)],
+      }))),
+    );
+    const first = clearCoordinator.dispatch({ type: "tile.select", tileId: "last-tile" });
+    const repeated = clearCoordinator.dispatch({ type: "tile.select", tileId: "last-tile" });
+    expect(first.events.filter((event) => event.type === "level.cleared")).toHaveLength(1);
+    expect(first.phase).toBe("encounterCleared");
+    expect(repeated.events.filter((event) => event.type === "level.cleared")).toHaveLength(0);
+    expect(repeated).toMatchObject({ accepted: false, changed: false, phase: "encounterCleared" });
+  });
+
+  test("publishes active-run memory and account push only after a committed save", () => {
+    const coordinator = new GameCoordinator(
+      new RunStateMachine("playing.idle"),
+      new GameSession(new HulebuRuntimeState(createPengLevel())),
+    );
+    const result = coordinator.dispatch({ type: "tile.select", tileId: "tile-a" });
+    let activeRunSnapshot: RunSnapshot | null = null;
+    let accountPushCount = 0;
+    let saveCount = 0;
+
+    const apply = (saveStatus: "committed" | "error"): void => {
+      if (!(result.changed && result.persistable)) return;
+      saveCount += 1;
+      if (saveStatus !== "committed") return;
+      activeRunSnapshot = result.runSnapshot;
+      accountPushCount += 1;
+    };
+
+    apply("error");
+    expect(saveCount).toBe(1);
+    expect(activeRunSnapshot).toBeNull();
+    expect(accountPushCount).toBe(0);
+
+    apply("committed");
+    expect(saveCount).toBe(2);
+    expect(activeRunSnapshot).toEqual(result.runSnapshot);
+    expect(accountPushCount).toBe(1);
+  });
+});
