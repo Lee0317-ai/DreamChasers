@@ -194,6 +194,80 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).not.toMatch(/sys\.localStorage\.(?:getItem|setItem|removeItem)\(HULEBU_ACTIVE_RUN_STORAGE_KEY/);
   });
 
+  test("detaches the cleared session before reward and event choice transitions", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+    const rewardFlow = controllerText.slice(
+      controllerText.indexOf("private showRewardOverlay(): void"),
+      controllerText.indexOf("private showEventOverlay(): void"),
+    );
+    const eventFlow = controllerText.slice(
+      controllerText.indexOf("private showEventOverlay(): void"),
+      controllerText.indexOf("private showComboChoiceOverlay("),
+    );
+
+    expect(rewardFlow.indexOf("this.detachRuntimeState();")).toBeGreaterThanOrEqual(0);
+    expect(rewardFlow.indexOf("this.detachRuntimeState();")).toBeLessThan(rewardFlow.indexOf('this.requireRunTransition("rewardChoice")'));
+    expect(eventFlow.indexOf("this.detachRuntimeState();")).toBeGreaterThanOrEqual(0);
+    expect(eventFlow.indexOf("this.detachRuntimeState();")).toBeLessThan(eventFlow.indexOf('this.requireRunTransition("eventChoice")'));
+  });
+
+  test("blocks fresh-run writes when active-run storage cannot be read", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+    const tutorialFlow = controllerText.slice(
+      controllerText.indexOf("private enterDefaultTutorialLevel(): void"),
+      controllerText.indexOf("resumeActiveRun(): void"),
+    );
+    const persistFlow = controllerText.slice(
+      controllerText.indexOf("private commitActiveRun(): boolean"),
+      controllerText.indexOf("private getResumableRunPhase(): HulebuResumableRunPhase"),
+    );
+
+    expect(tutorialFlow).toContain("this.activeRunStorageBlocked");
+    expect(tutorialFlow).toContain("this.showLobbyOverlay()");
+    expect(persistFlow).toContain("this.activeRunStorageBlocked");
+    expect(persistFlow).toContain("return false");
+  });
+
+  test("deep-validates active runs and migrates reward or event context", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+
+    expect(controllerText).toContain("GameCoordinator.restore(snapshot.coordinatorSnapshot, session)");
+    expect(controllerText).toContain("snapshot.eventSeenLevelOrders.some(");
+    expect(controllerText).toContain("snapshot.coordinatorSnapshot.sessionSnapshot");
+    expect(controllerText).toContain("rewardCandidateIds: rewardChoices");
+    expect(controllerText).toContain("eventOptionIds: eventChoices");
+    expect(controllerText).not.toContain("context.pendingCombo === null || typeof context.pendingCombo === \"object\"");
+  });
+
+  test("returns a canceled combo choice to idle before hiding it", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+    const cancelFlow = controllerText.slice(
+      controllerText.indexOf("private closeComboChoiceOverlay(): void"),
+      controllerText.indexOf("private getComboDisplayName("),
+    );
+
+    expect(cancelFlow).toContain('this.requireRunTransition("playing.idle")');
+    expect(cancelFlow).toContain("pendingCombo: null");
+    expect(cancelFlow).toContain("this.persistActiveRun()");
+  });
+
+  test("records settlement before side effects and resumes it without awarding twice", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+    const settlementFlow = controllerText.slice(
+      controllerText.indexOf("private showRunCompleteOverlay(): void"),
+      controllerText.indexOf("private restartRun(): void"),
+    );
+
+    expect(controllerText).toContain('type HulebuResumableRunPhase = "playing" | "cleared" | "reward" | "event" | "advancedAbility" | "archetype" | "settlement"');
+    expect(controllerText).toContain("private resumeSettlementPhase(snapshot: HulebuActiveRunSnapshot): void");
+    expect(settlementFlow).toContain('this.requireRunTransition("settlement")');
+    expect(settlementFlow).toContain("if (!this.commitActiveRun())");
+    expect(settlementFlow).toContain("this.awardMetaCoinsForRun()");
+    expect(settlementFlow.indexOf("if (!this.commitActiveRun())")).toBeLessThan(settlementFlow.indexOf("this.awardMetaCoinsForRun()"));
+    expect(settlementFlow).toContain("if (!isNewSettlement)");
+    expect(controllerText).toContain("this.createOverlayButton(overlay, \"ContinueButton\", \"回到局外\", 0, -54, () => this.returnToLobby())");
+  });
+
   test("keeps Cocos runtime imports inside the Creator project", () => {
     const scriptsRoot = path.join(cocosRoot, "assets/scripts");
     const tsFiles: string[] = [];
@@ -894,7 +968,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("upgradeMetaAxis(axis: HulebuMetaUpgradeAxis)");
     expect(gameSceneController).toContain("getMetaUpgradeValue(axis: HulebuMetaUpgradeAxis)");
     expect(gameSceneController).toContain("getMetaUpgradeCost(axis: HulebuMetaUpgradeAxis)");
-    expect(gameSceneController).toContain("returnToLobbyWithMetaReward()");
+    expect(gameSceneController).toContain("private showRunCompleteOverlay(): void");
     expect(gameSceneController).toContain("awardMetaCoinsForRun()");
     expect(gameSceneController).toContain("this.metaCoins < cost");
     expect(gameSceneController).toContain("this.metaCoins -= cost");
@@ -1082,7 +1156,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("sys.localStorage.setItem(HULEBU_META_PROFILE_STORAGE_KEY, JSON.stringify(snapshot))");
     expect(gameSceneController).toContain("sys.localStorage.setItem(HULEBU_ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(next))");
     expect(gameSceneController).toContain("const metaProfile = this.readMetaProfileSnapshot()");
-    expect(gameSceneController).toContain("runtimeSnapshot: this.runtimeState?.exportSnapshot() ?? null");
+    expect(gameSceneController).toContain("runtimeSnapshot: this.runtimeState?.exportSnapshot()");
+    expect(gameSceneController).toContain('coordinatorSnapshot.phase === "rewardChoice"');
     expect(gameSceneController).toContain("const pendingRunProfile = this.pendingRunProfile ? { ...this.pendingRunProfile } : null");
     expect(gameSceneController).toContain("pendingRunProfile,");
     expect(gameSceneController).toContain("resumablePhase: this.getResumableRunPhase()");
