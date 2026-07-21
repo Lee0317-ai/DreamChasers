@@ -174,6 +174,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).toContain('saveResult.status !== "committed"');
     expect(controllerText).toContain("this.activeRunSnapshot = snapshot");
     expect(controllerText).toContain("this.queueAccountProgressPush()");
+    expect(controllerText).toContain(
+      "eventSeenLevelOrders: Array.from(this.eventSeenLevelOrders)",
+    );
 
     expect(controllerText).not.toContain("this.runtimeState.moveTileToSlot(");
     expect(controllerText).not.toContain("this.runtimeState.executeComboByKey(");
@@ -191,6 +194,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).not.toContain("private getSlotStatusText(");
     expect(controllerText).not.toContain("private getComboScore(");
     expect(controllerText).not.toContain("discardSelecting");
+    expect(controllerText).not.toContain(
+      "eventSeenLevelOrders: [...this.eventSeenLevelOrders]",
+    );
     expect(controllerText).not.toMatch(/sys\.localStorage\.(?:getItem|setItem|removeItem)\(HULEBU_ACTIVE_RUN_STORAGE_KEY/);
   });
 

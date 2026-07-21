@@ -1738,7 +1738,7 @@ export class GameSceneController extends Component {
       metaCoins: this.metaCoins,
       runArchetypeId: this.runArchetype.archetypeId,
       selectedAdvancedAbilityId: this.selectedAdvancedAbility?.id ?? null,
-      eventSeenLevelOrders: [...this.eventSeenLevelOrders],
+      eventSeenLevelOrders: Array.from(this.eventSeenLevelOrders),
       runtimeSnapshot: this.runtimeState?.exportSnapshot()
         ?? (coordinatorSnapshot.phase === "rewardChoice"
           || coordinatorSnapshot.phase === "eventChoice"
