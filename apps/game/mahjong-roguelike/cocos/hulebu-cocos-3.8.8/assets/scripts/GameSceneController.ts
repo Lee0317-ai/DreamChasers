@@ -353,6 +353,10 @@ export class GameSceneController extends Component {
     if (snapshot.runtimeSnapshot !== null && !isRuntimeSnapshot(snapshot.runtimeSnapshot)) {
       throw new Error("Active run snapshot has an invalid runtime snapshot.");
     }
+    if ((snapshot.resumablePhase === "reward" || snapshot.resumablePhase === "event")
+      && !snapshot.runtimeSnapshot) {
+      throw new Error("Choice phase requires a retained runtime snapshot.");
+    }
 
     if (!snapshot.coordinatorSnapshot || typeof snapshot.coordinatorSnapshot !== "object") {
       throw new Error("Active run snapshot has an invalid coordinator snapshot.");

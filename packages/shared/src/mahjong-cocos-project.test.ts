@@ -243,6 +243,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).toContain("snapshot.eventSeenLevelOrders.some(");
     expect(controllerText).toContain("snapshot.coordinatorSnapshot.sessionSnapshot");
     expect(controllerText).toContain("isResumableCoordinatorPhase(snapshot.resumablePhase, snapshot.coordinatorSnapshot.phase)");
+    expect(controllerText).toContain('(snapshot.resumablePhase === "reward" || snapshot.resumablePhase === "event")');
+    expect(controllerText).toContain("Choice phase requires a retained runtime snapshot.");
     expect(controllerText).toContain("rewardCandidateIds: rewardChoices");
     expect(controllerText).toContain("eventOptionIds: eventChoices");
     expect(controllerText).not.toContain("context.pendingCombo === null || typeof context.pendingCombo === \"object\"");
