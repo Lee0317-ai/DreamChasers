@@ -1,5 +1,14 @@
 # 胡了卜进展
 
+## 2026-07-30
+
+- 创建 T246 胡了卜 Cocos v1 M2 三节点完整纵切设计，并完成对话式设计确认。
+- M2 主目标固定为新玩家无需外部说明，在 `8–12` 分钟内完成 `Boot → Title → 碰教学 → 吃/多候选教学 → 奖励三选一 → mini Boss → Result`。
+- 采用独立 `Boot / Title / Game / Result` 四 Scene；Game 内奖励、多候选、Boss 介绍、暂停和设置使用正式 Modal Prefab，不采用单场景多层或丰富局外首页。
+- mini Boss 强制 `完成一次杠 + 清空牌山`，胡保留为可选高价值操作；强制胡教学和完整十节点章节留到 M3。
+- M2 建立真实 AppFlowController、Prefab、checkpoint、AudioService 与 settings 边界；音频先使用 1 首有许可记录的临时 BGM 和 8 类关键 SFX，最终视听品质留到 M4。
+- 正式规格已写入 `docs/superpowers/specs/2026-07-30-hulebu-cocos-v1-m2-three-node-vertical-slice-design.md`，T246 当前等待 Lee 审阅书面版本；未开始实施代码。
+
 ## 2026-07-29
 
 - 完成 T245 胡了卜 Cocos 快照真实路径修复：正式构建在校验与物化 source snapshot 时统一使用 `realpath`，symlink worktree 不再产生错误根路径；发布回归测试通过 `189/189`。
@@ -7,7 +16,7 @@
 - T244 聚焦验证通过：`hulebu-cocos-domain + mahjong-cocos-project` 共 `158/158`，Cocos domain TypeScript 检查通过，最终评审为 `0 Critical / 0 Important`。
 - 精确提交 `1bc4867cf56919b1230307297d9d4600b4f6bb4f` 已完成 Creator 3.8.8 production build 和 verify-only；build id 为 `1bc4867cf569-20260729T150509Z`，源码树摘要为 `69077b638241d0213957351cd7954a09edefb3ac2f92449d6c1fe9f82e9e3194`，产物摘要为 `0124635db2711a0b752c05be796d1232593cc71385fb6e00ed15a2048d3dc5b6`，5 条 HTTP smoke 均为 `200`。
 - 正式包浏览器验证确认：桌面与 `390x844` 均非黑屏、无控制台 warning/error；点击牌后刷新可恢复相同局内状态，移动端 HUD、牌山、组合栏、卡槽和工具栏完整可见。
-- Lee 已确认正式发布方向按微信小程序常见竖屏体验验收，`1280x720` 横屏不再属于当前目标，不登记 T246，也不修改 Binder/UI/layout。
+- Lee 已确认正式发布方向按微信小程序常见竖屏体验验收，`1280x720` 横屏不再属于当前目标，不登记横屏适配任务，也不修改 Binder/UI/layout。
 - T244 转为待验收：既有 `390x844` production 证据覆盖完整 UI 可见、选牌与刷新恢复；组合、多候选 exact choice 和一次清关仍需在可访问本地正式包的浏览器会话中补做，本轮不提前标记完成。
 
 ## 2026-06-16

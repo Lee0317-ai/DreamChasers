@@ -367,3 +367,11 @@
 - 决策：T179 不为图鉴第二版新增后端字段、原型消息或奖励发放系统，而是继续只使用 Web 壳层现有的 `bestEndlessLayer / dailyBestLevels / bestAscensionLevel / upgrades / lastSettlement / bossReview / specialEventReview` 来补算新增成就。
 - 原因：当前图鉴扩容目标是把已有长期系统收束成更完整的展示层，而不是再次扩玩法协议。如果现在为了图鉴回头改原型 payload 或 Prisma，会把 T179 和 T180-T182 绑得过紧。
 - 影响：图鉴第二版可以快速补到 Boss / 事件 / 高阶 / 路线层级，但更细的事件词条库、Boss 档案页和奖励发放仍需后续单独开任务。
+
+## D047：M2 先交付三节点独立场景纵切
+
+- 日期：2026-07-30
+- 状态：已确认
+- 决策：M2 采用 `Boot → Title → Game → Result` 独立四 Scene，交付碰教学、吃/多候选教学、一次奖励和 mini Boss 的 `8–12` 分钟竖屏闭环；mini Boss 强制杠与清台，不强制胡。M2 建立第一版正式 Prefab、App Flow、奖励后检查点和真实 AudioService，但只使用临时完整素材。
+- 原因：先验证新玩家能否无说明玩通、场景和恢复边界是否可靠，避免用单场景动态拼页延续 Controller 耦合，也避免最终 UI、十节点内容和微信发布接入同时扩大范围。
+- 影响：完整十节点和强制胡教学进入 M3；最终 UI、3 首 BGM 和 18 类 SFX 进入 M4；微信小游戏构建、账号、分享、广告、审核和发布治理进入 M5。M2 implementation 必须沿用 M1 Coordinator 唯一写路径。
