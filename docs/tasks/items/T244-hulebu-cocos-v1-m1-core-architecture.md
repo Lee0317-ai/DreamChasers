@@ -2,8 +2,9 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：进行中
+- 状态：阻塞
 - 依赖：T243
+- 阻塞：正式包在 `1280×720` 横屏下仍把组合栏、主槽和 HUD 排在可见视口外，无法完成 production 组合/通关 smoke；该问题属于 T244 明确禁止的 UI/布局范围，等待 Lee 确认是否登记独立 T246 设计任务。
 - 主要文件范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain/**`、`assets/scripts/application/**`、`assets/scripts/content/**`、`assets/scripts/persistence/**`、`assets/scripts/GameSceneController.ts` 的最小 Coordinator 接线、必要的 `assets/scripts/runtime/HulebuRuntimeState.ts` 适配、`tsconfig.domain.json`、对应 `.meta`、`packages/shared/src/hulebu-cocos-domain.test.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、本任务计划/领取/进展/完成与模块交接文档
 - 禁止修改范围：`BoardLayerBinder.ts`、`HudBinder.ts`、`SlotLayerBinder.ts`、`ComboBarBinder.ts`、`MeldRiverLayerBinder.ts`、`assets/resources/**`、`HulebuMountainGenerator.ts`、Web/demo/prototype、正式内容数值、UI、音效、账号/数据库、production release 配置与构建脚本、Cocos `settings/**`、`profiles/**`、`temp/**`、`library/**`、`build/**` 和其他模块
 - 验证方式：`npm run test -w packages/shared -- hulebu-cocos-domain mahjong-cocos-project`; `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`; 干净 worktree 的 `npm run game:hulebu:build` 与 `npm run game:hulebu:verify-build`; `git diff --check`
@@ -42,3 +43,13 @@ T241 已批准采用绞杀式迁移：保留现有可玩行为，先建立不依
 - 刷新后恢复 exact combo choice、event/reward 目标关与 undo history；普通清关和整轮结算不重复提交。
 - Controller 的已迁移规则 fallback 被删除，工程扫描能防止重新引入。
 - 聚焦测试、Cocos TypeScript、真实 production build、verify-only 和 diff 校验通过。
+
+## 2026-07-29 进展
+
+- M1 纯 TypeScript 核心、Coordinator、ContentRepository、SaveService 和 Controller 最小接线均已完成；最后一轮恢复加固提交为 `1bc4867c`。
+- 修复连续撤回次数回滚、combo choice 恢复后弹层丢失、reward/event 恢复重算候选、v0 runtime 双份归一化不一致等问题。
+- active-run 校验已覆盖 exact level tile IDs、牌面多重集、牌山掉落几何、遮挡拓扑、区域容量、明牌面子一致性、history 深层快照，以及 reward/event 目标关和候选集合。
+- 双独立复审最终为 `0 Critical / 0 Important`；聚焦测试 `158/158`、领域 TypeScript、`git diff --check` 通过，发布测试 `189/189` 通过。
+- 精确提交 production build 和 verify-only 通过：build ID `1bc4867cf569-20260729T150509Z`，Creator `3.8.8`，source tree SHA-256 `69077b638241d0213957351cd7954a09edefb3ac2f92449d6c1fe9f82e9e3194`，artifact SHA-256 `0124635db2711a0b752c05be796d1232593cc71385fb6e00ed15a2048d3dc5b6`。
+- 内置浏览器确认正式包非黑屏、无 warn/error；全新 origin 选牌后刷新能恢复同一局面，`390×844` 可完整显示 HUD、组合栏和槽位。
+- 未完成项仅为 `1280×720` 横屏完整组合/通关 smoke；T244 不越界修改 Binder/UI/布局。

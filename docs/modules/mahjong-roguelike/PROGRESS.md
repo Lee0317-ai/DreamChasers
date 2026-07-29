@@ -1,5 +1,14 @@
 # 胡了卜进展
 
+## 2026-07-29
+
+- 完成 T245 胡了卜 Cocos 快照真实路径修复：正式构建在校验与物化 source snapshot 时统一使用 `realpath`，symlink worktree 不再产生错误根路径；发布回归测试通过 `189/189`。
+- T244 M1 核心架构实现和两轮独立评审已收口：恢复链路会深校验牌山、卡槽、备用槽、牌河、明牌区、道具、历史快照、奖励和事件上下文；v0 存档只迁移一次；奖励、事件、组合选择和多次撤回恢复保持精确状态。
+- T244 聚焦验证通过：`hulebu-cocos-domain + mahjong-cocos-project` 共 `158/158`，Cocos domain TypeScript 检查通过，最终评审为 `0 Critical / 0 Important`。
+- 精确提交 `1bc4867cf56919b1230307297d9d4600b4f6bb4f` 已完成 Creator 3.8.8 production build 和 verify-only；build id 为 `1bc4867cf569-20260729T150509Z`，源码树摘要为 `69077b638241d0213957351cd7954a09edefb3ac2f92449d6c1fe9f82e9e3194`，产物摘要为 `0124635db2711a0b752c05be796d1232593cc71385fb6e00ed15a2048d3dc5b6`，5 条 HTTP smoke 均为 `200`。
+- 正式包浏览器验证确认：桌面与 `390x844` 均非黑屏、无控制台 warning/error；点击牌后刷新可恢复相同局内状态，移动端 HUD、牌山、组合栏、卡槽和工具栏完整可见。
+- T244 当前阻塞在桌面横屏正式包交互 smoke：`1280x720` 下组合栏、卡槽和部分 HUD 位于可见区外。T244 禁止修改 Binder/UI/layout，需 Lee 批准独立 T246 设计后再修复并完成最终 smoke。
+
 ## 2026-06-16
 
 - 对 T176 高阶周目做了一轮后续加深补丁。

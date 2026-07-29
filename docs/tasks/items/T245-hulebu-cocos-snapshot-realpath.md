@@ -2,9 +2,9 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 依赖：T243
-- 阻塞：T244 production 浏览器验收
+- 阻塞：无
 - 主要文件范围：`apps/game/mahjong-roguelike/scripts/build-hulebu-cocos.cjs`、`packages/shared/src/hulebu-cocos-release.test.ts`、本任务/领取/进展/完成与麻将模块交接文档
 - 禁止修改范围：Cocos `assets/**`、`settings/**`、`profiles/**`、`temp/**`、`library/**`、`build/**`，release 配置、`hulebu-cocos-release.cjs`、玩法代码、Web/demo/prototype、数据库、账号、其他模块
 - 验证方式：`npm run test -w packages/shared -- hulebu-cocos-release`; 干净 worktree 的 `npm run game:hulebu:build` 与 `npm run game:hulebu:verify-build`; production 浏览器加载与控制台检查；`git diff --check`
@@ -34,3 +34,10 @@ T244 的真实 production 浏览器验收发现产物黑屏，场景中的 `Boar
 - `npm run game:hulebu:build` 与 verify-only 通过。
 - 构建日志无用户脚本 missing class；production 浏览器画面非黑屏，控制台无组件损坏错误。
 - 修改仅限任务允许文件，`git diff --check` 通过。
+
+## 完成结果
+
+- `build-hulebu-cocos.cjs` 通过 `fs.realpathSync()` 规范化 `temporaryRoot`，精确提交 checkout、Cocos 项目路径和清理路径保持同一真实路径身份。
+- 发布测试覆盖 `/var`/`/tmp` 符号链接临时根，最终 `189/189` 通过。
+- 修复提交 `c8ab1465` 已被后续精确构建 `1bc4867cf569-20260729T150509Z` 再次验证；build、verify-only 和 5 条 HTTP smoke 均通过。
+- production 浏览器无 missing class、组件损坏或黑屏；桌面与移动端均能加载正式场景，剩余横屏布局问题与路径身份无关，归 T244 后续阻塞处理。

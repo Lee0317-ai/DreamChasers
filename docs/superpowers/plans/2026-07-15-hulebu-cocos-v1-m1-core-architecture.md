@@ -37,7 +37,7 @@
 - Consumes: `HulebuRuntimeState`、`HulebuRuntimeSnapshot`、`HulebuRuntimeComboCandidateOption`。
 - Produces: `GameCommand`、`GameSnapshot`、`DomainEvent`、`CommandResult`、`GameSession.dispatch()`。
 
-- [ ] **Step 1: 写 GameSession RED 测试**
+- [x] **Step 1: 写 GameSession RED 测试**
 
 覆盖以下固定行为：相同 level + 相同命令序列得到完全相同 snapshot/events；非法或被压 tile 返回 `accepted: false` 且 revision 不变；多候选 `combo.execute` 只发 `combo.choice.required`，不改 runtime；`combo.choose` 按 exact candidate ID 才结算；`tool.use: discard` 在次数为 0 时拒绝，否则只要求选择、不扣次数；返回 snapshot 被外部修改后不污染下一次 snapshot；序列化/恢复后 undo history 与恢复前行为一致，旧 snapshot 缺 history 时显式迁移为空 history；domain/runtime import graph 不得到达 `cc`、`cc/env` 或含运行时 `cc` import 的 bootstrap 模块。
 
@@ -57,13 +57,13 @@ expect(commands.map((command) => first.dispatch(command)))
   .toEqual(commands.map((command) => second.dispatch(command)));
 ```
 
-- [ ] **Step 2: 运行 RED**
+- [x] **Step 2: 运行 RED**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: FAIL because `domain/GameContracts.ts` / `domain/GameSession.ts` do not exist.
 
-- [ ] **Step 3: 实现契约**
+- [x] **Step 3: 实现契约**
 
 `GameContracts.ts` 固定公开形状：
 
@@ -111,7 +111,7 @@ export interface CommandResult {
 }
 ```
 
-- [ ] **Step 4: 实现 GameSession 最小编排**
+- [x] **Step 4: 实现 GameSession 最小编排**
 
 `GameSession` 持有一个 `HulebuRuntimeState`，按玩法命令调用现有五个 mutation API；只有 mutation 成功才增加 revision。`combo.execute` 的候选数为 0/1/多时分别拒绝、直接执行、要求选择。`tool.use: discard` 通过 runtime capability 校验后只发 `discard.choice.required`，实际修改由 `slot.discard` 完成。`reward.choose`、`event.choose`、`flow.pause`、`flow.resume` 属于 Coordinator/App Flow 命令，GameSession 必须以 `command.rejected` 拒绝且不修改 runtime。每次返回前重新 `exportSnapshot()`，事件不携带时间戳或随机值。
 
@@ -139,7 +139,7 @@ export class GameSession {
 }
 ```
 
-- [ ] **Step 5: 运行 GREEN 与 Cocos typecheck**
+- [x] **Step 5: 运行 GREEN 与 Cocos typecheck**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
@@ -149,7 +149,7 @@ Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.d
 
 Expected: exit 0。
 
-- [ ] **Step 6: 精确提交**
+- [x] **Step 6: 精确提交**
 
 ```bash
 git add -- \
@@ -175,17 +175,17 @@ git commit -m "feat(hulebu): add deterministic game session"
 - Consumes: `GameSession.dispatch(command)` 和 Task 1 的契约。
 - Produces: `RunStateMachine.transition()`、`isStable()`、`isPersistable()`、`RunSnapshot`、长生命周期 `GameCoordinator.dispatch()`。
 
-- [ ] **Step 1: 写状态机与 Coordinator RED 测试**
+- [x] **Step 1: 写状态机与 Coordinator RED 测试**
 
 测试合法路径 `encounterIntro -> playing.tileEntering -> playing.idle -> playing.resolving -> playing.comboChoosing/playing.discardChoosing -> playing.resolving -> playing.dangerCheck -> playing.idle/encounterCleared`；拒绝 `rewardChoice -> playing.resolving`；三个 transient phase 不稳定且不可保存；在选择 phase 时不相关 tile/tool 命令被拒绝；一次 combo/清关只产生一次事件。暂停测试必须覆盖从 `playing.idle`、`playing.comboChoosing` 和 `playing.discardChoosing` 分别进入 `paused` 后精确恢复原 phase；无恢复目标的 `flow.resume` 必须拒绝且不触碰 session。再覆盖 Coordinator 跨换关不重建、无 session 的奖励/事件 phase、RunSnapshot context round-trip，以及 event/reward target level 与候选 ID 恢复。
 
-- [ ] **Step 2: 运行 RED**
+- [x] **Step 2: 运行 RED**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: FAIL because state machine and coordinator modules do not exist.
 
-- [ ] **Step 3: 实现显式 phase 表**
+- [x] **Step 3: 实现显式 phase 表**
 
 ```ts
 export type RunPhase =
@@ -224,7 +224,7 @@ const TRANSITIONS: Readonly<Record<RunPhase, readonly RunPhase[]>> = {
 
 `StableRunPhase` 排除 `playing.tileEntering`、`playing.resolving`、`playing.dangerCheck`。`PersistableRunPhase` 只包含 `encounterIntro`、`playing.idle`、`playing.comboChoosing`、`playing.discardChoosing`、`encounterCleared`、`rewardChoice`、`eventChoice`、`bossIntro`、`settlement`，明确排除三个 transient phase、`paused` 和 `failed`。`RunStateMachine.pause()` 保存来源 phase，`resume()` 只恢复该来源；公开 `isStable()` 与 `isPersistable()`，不混用两个概念。
 
-- [ ] **Step 4: 实现 Coordinator 同步事务**
+- [x] **Step 4: 实现 Coordinator 同步事务**
 
 Coordinator 生命周期绑定整轮 run，而不是绑定某个 `HulebuRuntimeState`。它持有可替换的 `GameSession | null` 和唯一 `RunStateMachine`，通过 `attachSession()` / `detachSession()` 换关；奖励、事件、清关等无 runtime phase 仍由同一状态机持有。玩法 mutation 前转入 `playing.resolving`，根据 `GameSession` 结果进入下一 phase。非法 phase 或缺 session 时不调用 GameSession。Coordinator 自行处理 `flow.pause` / `flow.resume` 并发出唯一一次对应事件；M1 尚未迁入选择效果时，`reward.choose` / `event.choose` 明确拒绝，不伪造成功。结果固定包含 phase flags 和可恢复 `RunSnapshot`，便于 Controller 只做渲染、消费事件和决定是否保存。
 
@@ -253,7 +253,7 @@ export class GameCoordinator {
 
 `RunSnapshot` 包含 schema、phase、可空 GameSnapshot 和只读 phase context。context 至少保存目标关 order、reward candidate IDs、event option IDs 与 pause return phase；Controller 现有 advanced ability/archetype 恢复态通过显式 legacy adapter 映射，不用隐式猜测当前关。Coordinator restore 必须验证 phase/context/session 组合，禁止把无 session 的 playing phase 当有效档。
 
-- [ ] **Step 5: 运行 GREEN、typecheck 与重复事件回归**
+- [x] **Step 5: 运行 GREEN、typecheck 与重复事件回归**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
@@ -263,7 +263,7 @@ Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.d
 
 Expected: exit 0。
 
-- [ ] **Step 6: 精确提交**
+- [x] **Step 6: 精确提交**
 
 ```bash
 git add -- \
@@ -287,17 +287,17 @@ git commit -m "feat(hulebu): coordinate session run phases"
 - Consumes: 注入的 `ContentSource`；legacy source 才委托 `HULEBU_LEVEL_CONFIGS` 与 `createHulebuRuntimeLevelForRun()`。
 - Produces: `ContentRepository.getLevelCount()`、`getLevelByIndex()`、`createRuntimeLevel()` 和只读 manifest。
 
-- [ ] **Step 1: 写内容契约 RED 测试**
+- [x] **Step 1: 写内容契约 RED 测试**
 
 覆盖有效现有 level pack；空/重复 level id、tile id 与 order；manifest 引用不存在 level；`blockedBy`、initial slot、initial reserve 的悬空/自引用；reward pool 引用未知 reward id；空或不支持的 contentVersion；`saveSchemaVersion` 高于支持版本；越界索引显式失败；返回 manifest/level 被调用者改动后不污染仓库；注入 resolver 确实被调用且不回读全局配置。
 
-- [ ] **Step 2: 运行 RED**
+- [x] **Step 2: 运行 RED**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: FAIL because `ContentRepository.ts` does not exist.
 
-- [ ] **Step 3: 实现校验和现有配置适配**
+- [x] **Step 3: 实现校验和现有配置适配**
 
 ```ts
 export interface ContentManifest {
@@ -331,7 +331,7 @@ export class ContentRepository {
 
 M1 manifest 使用稳定常量 `contentVersion: "cocos-hardcoded-v1"`、`saveSchemaVersion: 1`，levelIds 从当前 `HULEBU_LEVEL_CONFIGS` 派生。legacy source 的 resolver 只委托现有 `createHulebuRuntimeLevelForRun()`，不复制无尽/每日/高阶算法；仓库内部深拷贝并冻结，所有 getter 返回副本。此任务不创建十节点 resources JSON。
 
-- [ ] **Step 4: 运行 GREEN 与 Cocos typecheck**
+- [x] **Step 4: 运行 GREEN 与 Cocos typecheck**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
@@ -341,7 +341,7 @@ Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.d
 
 Expected: exit 0。
 
-- [ ] **Step 5: 精确提交**
+- [x] **Step 5: 精确提交**
 
 ```bash
 git add -- \
@@ -363,17 +363,17 @@ git commit -m "feat(hulebu): validate versioned game content"
 - Consumes: 注入的 codec/validator、`canPersist(value)`、schema/content version、确定性 `now()` 和 `StoragePort`。
 - Produces: `SaveService.save()`、`load()`、`clear()` 的判别联合结果。
 
-- [ ] **Step 1: 写 SaveService RED 测试**
+- [x] **Step 1: 写 SaveService RED 测试**
 
 用可注入故障的内存 `StoragePort` 覆盖：当前 schema/content round-trip；兼容 `boardRevision` 的 legacy unwrapped v0 迁移到 schema 1；future schema、contentVersion 不兼容和 decoder/active-run 引用校验失败；`playing.resolving`、`paused`、`failed` 保存被拒绝且不写 temp；temp 写入/读回和 primary commit 失败时旧 primary 字节不变；temp cleanup 失败返回 committed-with-warning；坏 JSON/未知 schema/decoder 失败时原始字节进入唯一 quarantine key，逐字节读回确认后才清除 primary；quarantine 写入、确认或 primary remove 任一步失败均保留 primary；成功后不遗留 temp。
 
-- [ ] **Step 2: 运行 RED**
+- [x] **Step 2: 运行 RED**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
 Expected: FAIL because `SaveService.ts` does not exist.
 
-- [ ] **Step 3: 实现存储端口与 envelope**
+- [x] **Step 3: 实现存储端口与 envelope**
 
 ```ts
 export interface StoragePort {
@@ -413,7 +413,7 @@ export class SaveService<T> {
 
 `save()` 顺序固定为：从 payload validator 取得并校验 phase/active-run 引用 -> `canPersist(value)` -> 序列化 envelope -> 写 `${key}.tmp` -> 逐字节读回并 decode -> 写 primary -> best-effort 删除 temp。`load()` 支持显式 migration map；无 envelope 只视为 v0，并继续校验现有 `boardRevision` 与 active-run 内的 run profile、正整数 order、runtime tile/slot 引用和 reward/event/ability content ID。失败时先写唯一 `${key}.quarantine.${now()}.${counter}`，逐字节确认后再删 primary。任何隔离失败都保留 primary 并返回明确 stage；不提供无法由端口实现的 quarantine 枚举。所有时间由注入的 `now(): string` 提供，测试不使用真实时钟。
 
-- [ ] **Step 4: 运行 GREEN 与 Cocos typecheck**
+- [x] **Step 4: 运行 GREEN 与 Cocos typecheck**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain`
 
@@ -423,7 +423,7 @@ Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.d
 
 Expected: exit 0。
 
-- [ ] **Step 5: 精确提交**
+- [x] **Step 5: 精确提交**
 
 ```bash
 git add -- \
@@ -444,7 +444,7 @@ git commit -m "feat(hulebu): add versioned save service"
 - Consumes: Tasks 1–4 的 `GameCoordinator`、`ContentRepository`、`SaveService`。
 - Produces: 生产输入统一经 Coordinator；active run 统一经 SaveService；Controller 不再含选牌/组合/计分 fallback。
 
-- [ ] **Step 1: 写 Controller 接线 RED 测试**
+- [x] **Step 1: 写 Controller 接线 RED 测试**
 
 静态和行为测试必须同时断言：
 
@@ -462,13 +462,13 @@ expect(controllerText).not.toContain("private findComboCandidate(");
 
 另外锁定：sample scene 没有 runtime 时点击为 no-op；多候选由 `combo.choice.required` 打开原有 overlay；选择候选按 exact candidate ID 后只执行一次；零 discard 次数不能进入选择 phase；level clear 只由唯一 `level.cleared` 事件打开一次 clear overlay；每个 `changed: true` 且回到可持久化 phase 的命令立即保存；刷新后点牌、组合、洗牌、撤回、打牌和 event/reward 目标关精确恢复；SaveService 只接收可持久化 phase；保存失败不更新 `activeRunSnapshot` 且不触发账号 push。
 
-- [ ] **Step 2: 运行 RED**
+- [x] **Step 2: 运行 RED**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain mahjong-cocos-project`
 
 Expected: FAIL on direct runtime mutations and fallback methods still present.
 
-- [ ] **Step 3: 增加长生命周期 Coordinator 与 session attach/detach helper**
+- [x] **Step 3: 增加长生命周期 Coordinator 与 session attach/detach helper**
 
 ```ts
 private attachRuntimeState(runtimeState: HulebuRuntimeState): void {
@@ -484,21 +484,21 @@ private detachRuntimeState(): void {
 
 `gameCoordinator` 在整轮 run 创建时初始化一次。所有创建、恢复和清空 runtime 的位置必须成对维护 session；换关不重建状态机。现有 `currentPhase` / `discardSelecting` 只能变成 Coordinator phase 的只读映射或被删除，不能继续作为第二状态源。
 
-- [ ] **Step 4: 把五类 mutation 改为 Coordinator 命令**
+- [x] **Step 4: 把五类 mutation 改为 Coordinator 命令**
 
 改造 `handleTileClick`、`handleComboClick`、`executeComboCandidateOption`、`handleSlotClick`、`startDiscardSelection`、`useShuffleTool`、`useUndoTool`。新增唯一 `applyCoordinatorResult(result)`：只绑定 snapshot、按事件打开/关闭原有 overlay、渲染，并在 `changed && persistable` 时保存。`refreshRuntimeScene()` 退化为纯渲染，不再判定清关或改 phase；Controller 不自行判断牌型、丢弃 exact candidate key、选 index 或加分。
 
-- [ ] **Step 5: 删除旧 fallback 数据和 helper**
+- [x] **Step 5: 删除旧 fallback 数据和 helper**
 
 删除 `selectedSlots`、旧 `score`、`refreshPlayableScene()`、`createSlotModels()`、`createComboControls()`、`findComboCandidate()`、`findHuCandidate()`、`canHuLabels()`、`canMakeMeldLabels()`、`removeSelectedSlots()`、`getSlotStatusText()`、旧 `getComboScore()` 及只被它们使用的常量/类型。删除后用 `rg` 确认无引用，不保留死代码。
 
-- [ ] **Step 6: 接入 ContentRepository 与 SaveService**
+- [x] **Step 6: 接入 ContentRepository 与 SaveService**
 
 Controller 的 start/resume 用 ContentRepository 获取/创建 level；active-run 的本地 `setItem/getItem/removeItem` 全部改走一个 SaveService 实例。`load()` 的 empty、loaded、quarantined、error 分别处理，不能把存储故障当作“没有存档”。只有 `save()` 返回 committed 后才更新 `activeRunSnapshot` 并排队账号 push；账号 pull 后也先经 SaveService 成功提交再应用到内存，禁止再次直接写 active-run key。clear 失败同样显式保留内存态。其他 profile/achievement 存档留在后续任务，不扩大范围。
 
 现有 local legacy 档和账号 `cocosSnapshot` 必须进入同一个 decoder/migration/validation gate。普通 encounter clear 与整轮 settlement 各自只提交一次；重复 dispatch、reload 或账号 hydrate 不重复发奖励、写成就或清档。
 
-- [ ] **Step 7: 运行聚焦验证**
+- [x] **Step 7: 运行聚焦验证**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain mahjong-cocos-project`
 
@@ -512,7 +512,7 @@ Run: `git diff --check`
 
 Expected: no output。
 
-- [ ] **Step 8: 精确提交 Controller 接线**
+- [x] **Step 8: 精确提交 Controller 接线**
 
 ```bash
 git add -- \
@@ -533,7 +533,7 @@ git commit -m "refactor(hulebu): route gameplay through coordinator"
 - Modify/Create: `docs/progress/2026-07-15-lee.md`
 - Create: `docs/completion/2026-07-15-task-244-hulebu-cocos-v1-m1-core-architecture.md`
 
-- [ ] **Step 1: 在干净 worktree 重跑聚焦测试和 TypeScript**
+- [x] **Step 1: 在干净 worktree 重跑聚焦测试和 TypeScript**
 
 Run: `npm run test -w packages/shared -- hulebu-cocos-domain mahjong-cocos-project`
 
@@ -543,7 +543,7 @@ Run: `npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.d
 
 Expected: exit 0。
 
-- [ ] **Step 2: 运行真实 production build 与 verify-only**
+- [x] **Step 2: 运行真实 production build 与 verify-only**
 
 Run: `npm run game:hulebu:build`
 
@@ -559,15 +559,15 @@ Expected: 不调用 Creator、不重写 manifest，现有正式包验证通过�
 
 Expected: 交互路径可完成且控制台无未处理异常；字符串扫描只作为单路径负向门禁，不代替行为测试。
 
-- [ ] **Step 4: 双独立评审**
+- [x] **Step 4: 双独立评审**
 
 一轮检查规则/phase/事件确定性，一轮检查 SaveService/ContentRepository 失败语义与 Controller 单路径。退出门槛为 0 Critical、0 Important；发现问题先修复并重跑受影响验证。
 
-- [ ] **Step 5: 更新分片并同步摘要**
+- [x] **Step 5: 更新分片并同步摘要**
 
 记录实际测试数、最终构建 id、source/artifact hash、已删除 fallback 和非阻塞遗留；运行 `npm run docs:sync`，但不暂存主摘要中的无关历史改动。
 
-- [ ] **Step 6: 精确提交收口文档**
+- [x] **Step 6: 精确提交收口文档**
 
 ```bash
 git add -- \
