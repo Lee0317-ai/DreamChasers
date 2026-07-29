@@ -5,7 +5,7 @@
 - T245 已完成：Cocos production source snapshot 的真实路径已统一，symlink worktree 路径回归覆盖通过，发布测试为 `189/189`。
 - T244 M1 核心架构代码、精确恢复校验、两轮评审和正式构建已完成；聚焦测试为 `158/158`，精确源码提交为 `1bc4867cf56919b1230307297d9d4600b4f6bb4f`。
 - 最新 production build id 为 `1bc4867cf569-20260729T150509Z`，Creator 3.8.8 build、verify-only、5 条 HTTP smoke、桌面/移动正式包加载、点击与刷新恢复均已验证。
-- T244 不得在当前任务内修改 Binder/UI/layout；`1280x720` 横屏下组合栏、卡槽和部分 HUD 超出可见区，导致完整组合/清除 smoke 暂停。下一步需 Lee 批准独立 T246 设计，限定修正 `resolveHulebuRuntimeLayout()` 的横屏可见高度计算并保留 `390x844` 基线。
+- Lee 已确认正式发布方向按微信小程序常见竖屏体验验收，横屏不属于当前目标，不登记 T246，也不修改 Binder/UI/layout。T244 当前待验收；既有 `390x844` 正式包证据覆盖完整 UI 可见、选牌与刷新恢复，仍需补一次组合、多候选 exact choice 和清关 smoke。
 - 框架规划完成。
 - 模块文档目录已建立。
 - 游戏显示名已确定为 `胡了卜`，模块 slug 仍保持 `mahjong-roguelike`。

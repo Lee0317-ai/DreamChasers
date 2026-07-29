@@ -555,7 +555,7 @@ Expected: 不调用 Creator、不重写 manifest，现有正式包验证通过�
 
 - [ ] **Step 3: 正式包交互 smoke**
 
-使用 Step 2 的 production 包检查首关真实点击入槽、组合、刷新恢复、多候选 exact choice 与一次清关。
+使用 Step 2 的 production 包，在 `390×844` 微信小程序方向竖屏视口检查首关真实点击入槽、组合、刷新恢复、多候选 exact choice 与一次清关。横屏布局不属于当前目标发布方向，不作为本任务验收项。
 
 Expected: 交互路径可完成且控制台无未处理异常；字符串扫描只作为单路径负向门禁，不代替行为测试。
 

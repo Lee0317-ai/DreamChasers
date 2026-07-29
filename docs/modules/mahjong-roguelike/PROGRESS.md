@@ -7,7 +7,8 @@
 - T244 聚焦验证通过：`hulebu-cocos-domain + mahjong-cocos-project` 共 `158/158`，Cocos domain TypeScript 检查通过，最终评审为 `0 Critical / 0 Important`。
 - 精确提交 `1bc4867cf56919b1230307297d9d4600b4f6bb4f` 已完成 Creator 3.8.8 production build 和 verify-only；build id 为 `1bc4867cf569-20260729T150509Z`，源码树摘要为 `69077b638241d0213957351cd7954a09edefb3ac2f92449d6c1fe9f82e9e3194`，产物摘要为 `0124635db2711a0b752c05be796d1232593cc71385fb6e00ed15a2048d3dc5b6`，5 条 HTTP smoke 均为 `200`。
 - 正式包浏览器验证确认：桌面与 `390x844` 均非黑屏、无控制台 warning/error；点击牌后刷新可恢复相同局内状态，移动端 HUD、牌山、组合栏、卡槽和工具栏完整可见。
-- T244 当前阻塞在桌面横屏正式包交互 smoke：`1280x720` 下组合栏、卡槽和部分 HUD 位于可见区外。T244 禁止修改 Binder/UI/layout，需 Lee 批准独立 T246 设计后再修复并完成最终 smoke。
+- Lee 已确认正式发布方向按微信小程序常见竖屏体验验收，`1280x720` 横屏不再属于当前目标，不登记 T246，也不修改 Binder/UI/layout。
+- T244 转为待验收：既有 `390x844` production 证据覆盖完整 UI 可见、选牌与刷新恢复；组合、多候选 exact choice 和一次清关仍需在可访问本地正式包的浏览器会话中补做，本轮不提前标记完成。
 
 ## 2026-06-16
 
