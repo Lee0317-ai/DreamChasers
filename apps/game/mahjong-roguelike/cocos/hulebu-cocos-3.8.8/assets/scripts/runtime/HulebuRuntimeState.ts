@@ -519,13 +519,14 @@ export class HulebuRuntimeState {
       return false;
     }
 
+    const remainingUndo = this.tools.undo - 1;
     const snapshot = this.history.pop();
     if (!snapshot) {
       return false;
     }
 
     this.restoreSnapshot(snapshot);
-    this.tools.undo -= 1;
+    this.tools.undo = remainingUndo;
     return true;
   }
 
@@ -1088,10 +1089,7 @@ export class HulebuRuntimeState {
   }
 
   private getTileLabel(tile: Pick<HulebuRuntimeTile, "suit" | "rank">): string {
-    if (tile.suit === "honor") {
-      return HONOR_LABELS[tile.rank] ?? `字${tile.rank}`;
-    }
-    return `${tile.rank}${SUIT_LABELS[tile.suit]}`;
+    return getRuntimeTileLabel(tile);
   }
 
   private getBoardTileCounter(): HulebuTileCounterModel {
@@ -1132,6 +1130,329 @@ export class HulebuRuntimeState {
     const [suit, rank] = tileKey.split("-");
     return `tile.${suit}.${rank}`;
   }
+}
+
+export function assertValidHulebuRuntimeSnapshot(
+  level: HulebuRuntimeLevelConfig,
+  snapshot: unknown,
+  runRewards: HulebuRunRewardState = createHulebuRunRewardState(),
+  metaUpgrades: HulebuMetaUpgradeState = createHulebuMetaUpgradeState(),
+): asserts snapshot is HulebuRuntimeSnapshot | HulebuRuntimeLegacySnapshot {
+  const limits = {
+    slot: level.defaults.slotLimit,
+    reserve: level.defaults.reserveLimit + runRewards.reserveBonus + metaUpgrades.reserveBonus,
+    river: DEFAULT_RIVER_LIMIT + metaUpgrades.riverBonus,
+  };
+  Object.entries(limits).forEach(([zone, limit]) => {
+    requireNonNegativeInteger(limit, `runtime ${zone} limit`);
+  });
+  validateRuntimeCoreSnapshot(level, snapshot, "runtime", limits);
+  const history = (snapshot as { history?: unknown }).history;
+  if (history === undefined) {
+    return;
+  }
+  if (!Array.isArray(history) || history.length > MAX_HISTORY_LENGTH) {
+    throw new Error("Runtime history must be an array within the retained limit.");
+  }
+  history.forEach((entry, index) => {
+    validateRuntimeCoreSnapshot(level, entry, `history[${index}]`, limits);
+  });
+}
+
+export function normalizeHulebuRuntimeSnapshot(
+  level: HulebuRuntimeLevelConfig,
+  snapshot: HulebuRuntimeSnapshot | HulebuRuntimeLegacySnapshot,
+  runRewards: HulebuRunRewardState = createHulebuRunRewardState(),
+  levelModifiers: HulebuLevelModifierState = createHulebuLevelModifierState(),
+  metaUpgrades: HulebuMetaUpgradeState = createHulebuMetaUpgradeState(),
+  runArchetype: HulebuRunArchetypeState = createHulebuRunArchetypeState(),
+): HulebuRuntimeSnapshot {
+  assertValidHulebuRuntimeSnapshot(level, snapshot, runRewards, metaUpgrades);
+  return HulebuRuntimeState.fromSnapshot(
+    level,
+    snapshot,
+    runRewards,
+    levelModifiers,
+    metaUpgrades,
+    runArchetype,
+  ).exportSnapshot();
+}
+
+function validateRuntimeCoreSnapshot(
+  level: HulebuRuntimeLevelConfig,
+  value: unknown,
+  path: string,
+  limits: Readonly<Record<"slot" | "reserve" | "river", number>>,
+): asserts value is HulebuRuntimeCoreSnapshot {
+  if (!value || typeof value !== "object") {
+    throw new Error(`${path} must be an object.`);
+  }
+  const snapshot = value as Partial<HulebuRuntimeCoreSnapshot>;
+  if (!Array.isArray(snapshot.tiles)) {
+    throw new Error(`${path} tiles must be an array.`);
+  }
+
+  requireNonNegativeInteger(snapshot.looseMountainDropIndex, `${path} looseMountainDropIndex`);
+  const looseMountainDropIndex = snapshot.looseMountainDropIndex as number;
+  if (looseMountainDropIndex > level.tiles.length) {
+    throw new Error(`${path} looseMountainDropIndex exceeds the configured tile count.`);
+  }
+
+  const configuredTilesById = new Map(level.tiles.map((tile) => [tile.id, tile]));
+  const expectedTileIds = new Set(configuredTilesById.keys());
+  const initialBlockerIds = new Set(level.tiles.flatMap((tile) => tile.blockedBy));
+  const availableLoosePositions = new Map<string, number>();
+  for (let index = 0; index < looseMountainDropIndex; index += 1) {
+    availableLoosePositions.set(getLooseMountainPositionKey(index), index);
+  }
+  const tilesById = new Map<string, HulebuRuntimeTile>();
+  const looseTileIds = new Set<string>();
+  const occupiedLoosePositions = new Set<number>();
+  for (const [index, tileValue] of snapshot.tiles.entries()) {
+    if (!tileValue || typeof tileValue !== "object") {
+      throw new Error(`${path} tile ${index} must be an object.`);
+    }
+    const tile = tileValue as Partial<HulebuRuntimeTile>;
+    if (typeof tile.id !== "string" || !expectedTileIds.has(tile.id)) {
+      throw new Error(`${path} tile ${index} has unknown id ${String(tile.id)}.`);
+    }
+    if (tilesById.has(tile.id)) {
+      throw new Error(`${path} has duplicate tile ${tile.id}.`);
+    }
+    const configuredTile = configuredTilesById.get(tile.id);
+    if (!configuredTile || !isRuntimeTileLocation(tile.location) || !isRuntimeTileSuit(tile.suit)) {
+      throw new Error(`${path} tile ${tile.id} has invalid fields.`);
+    }
+    if (!Number.isInteger(tile.rank) || !isSuitRankInRange(tile.suit, tile.rank as number)) {
+      throw new Error(`${path} tile ${tile.id} has invalid rank.`);
+    }
+    if (!Number.isFinite(tile.x)
+      || !Number.isFinite(tile.y)
+      || !Number.isInteger(tile.layer)
+      || (tile.layer as number) < 0
+      || !Array.isArray(tile.blockedBy)) {
+      throw new Error(`${path} tile ${tile.id} has invalid fields.`);
+    }
+    const blockerIds = new Set<string>();
+    for (const blockerId of tile.blockedBy) {
+      if (typeof blockerId !== "string" || !expectedTileIds.has(blockerId) || blockerId === tile.id) {
+        throw new Error(`${path} tile ${tile.id} has invalid blocker ${String(blockerId)}.`);
+      }
+      if (blockerIds.has(blockerId)) {
+        throw new Error(`${path} tile ${tile.id} has duplicate blocker ${blockerId}.`);
+      }
+      blockerIds.add(blockerId);
+    }
+
+    const keepsConfiguredGeometry = tile.x === configuredTile.x
+      && tile.y === configuredTile.y
+      && tile.layer === configuredTile.layer;
+    if (!keepsConfiguredGeometry) {
+      const loosePosition = availableLoosePositions.get(
+        getRuntimePositionKey(tile.x as number, tile.y as number, tile.layer as number),
+      );
+      if (loosePosition === undefined
+        || occupiedLoosePositions.has(loosePosition)
+        || !initialBlockerIds.has(tile.id)
+        || tile.blockedBy.length > 0) {
+        throw new Error(`${path} tile ${tile.id} has invalid loose-mountain geometry.`);
+      }
+      occupiedLoosePositions.add(loosePosition);
+      looseTileIds.add(tile.id);
+    }
+    tilesById.set(tile.id, tile as HulebuRuntimeTile);
+  }
+  if (tilesById.size !== expectedTileIds.size) {
+    throw new Error(`${path} tiles do not match the configured level.`);
+  }
+  if (!countMapsEqual(
+    countTileFaces(level.tiles),
+    countTileFaces(Array.from(tilesById.values())),
+  )) {
+    throw new Error(`${path} tile face multiset does not match the configured level.`);
+  }
+  if (looseTileIds.size !== looseMountainDropIndex) {
+    throw new Error(`${path} loose-mountain geometry does not match its drop index.`);
+  }
+  for (const tile of tilesById.values()) {
+    const configuredBlockers = looseTileIds.has(tile.id)
+      ? []
+      : configuredTilesById.get(tile.id)!.blockedBy
+        .filter((blockerId) => !looseTileIds.has(blockerId));
+    if (!stringArraysEqual(tile.blockedBy, configuredBlockers)) {
+      throw new Error(`${path} tile ${tile.id} has invalid blocker topology.`);
+    }
+  }
+
+  const zoneByTile = new Map<string, string>();
+  validateRuntimeZone(snapshot.slot, "slot", "slot", path, tilesById, zoneByTile);
+  validateRuntimeZone(snapshot.reserve, "reserve", "reserve", path, tilesById, zoneByTile);
+  validateRuntimeZone(snapshot.river, "river", "river", path, tilesById, zoneByTile);
+  for (const [zone, limit] of Object.entries(limits) as Array<[keyof typeof limits, number]>) {
+    if ((snapshot[zone] as string[]).length > limit) {
+      throw new Error(`${path} ${zone} exceeds its limit of ${limit}.`);
+    }
+  }
+  for (const tile of tilesById.values()) {
+    if ((tile.location === "slot" || tile.location === "reserve" || tile.location === "river")
+      && zoneByTile.get(tile.id) !== tile.location) {
+      throw new Error(`${path} ${tile.location} is missing tile ${tile.id}.`);
+    }
+  }
+
+  if (!Array.isArray(snapshot.openMelds)) {
+    throw new Error(`${path} open melds must be an array.`);
+  }
+  const meldTileIds = new Set<string>();
+  snapshot.openMelds.forEach((meldValue, index) => {
+    if (!meldValue || typeof meldValue !== "object") {
+      throw new Error(`${path} open meld ${index} must be an object.`);
+    }
+    const meld = meldValue as Partial<HulebuRuntimeOpenMeld>;
+    if ((meld.type !== "peng" && meld.type !== "gang" && meld.type !== "bugang")
+      || typeof meld.tileKey !== "string"
+      || typeof meld.label !== "string"
+      || !Array.isArray(meld.tileIds)
+      || !Number.isInteger(meld.count)
+      || meld.count !== meld.tileIds.length
+      || meld.count !== (meld.type === "peng" ? 3 : 4)) {
+      throw new Error(`${path} open meld ${index} has invalid fields.`);
+    }
+    const meldTiles: HulebuRuntimeTile[] = [];
+    for (const tileId of meld.tileIds) {
+      const tile = typeof tileId === "string" ? tilesById.get(tileId) : undefined;
+      if (!tile || tile.location !== "removed" || meldTileIds.has(tileId)) {
+        throw new Error(`${path} open meld ${index} has invalid tile ${String(tileId)}.`);
+      }
+      meldTileIds.add(tileId);
+      meldTiles.push(tile);
+    }
+    const meldFaceKey = getRuntimeTileFaceKey(meldTiles[0]);
+    if (meld.tileKey !== meldFaceKey
+      || meldTiles.some((tile) => getRuntimeTileFaceKey(tile) !== meldFaceKey)) {
+      throw new Error(`${path} open meld ${index} has inconsistent tile faces.`);
+    }
+    if (meld.label !== getRuntimeTileLabel(meldTiles[0])) {
+      throw new Error(`${path} open meld ${index} has an inconsistent label.`);
+    }
+  });
+
+  validateCountRecord(snapshot.comboCounts, BOSS_PROGRESS_COMBO_TYPES, `${path} comboCounts`);
+  validateCountRecord(snapshot.suitComboCounts, BOSS_PROGRESS_SUITS, `${path} suitComboCounts`);
+  requireNonNegativeInteger(snapshot.score, `${path} score`);
+  requireNonNegativeInteger(snapshot.coins, `${path} coins`);
+  validateRuntimeTools(snapshot.tools, `${path} tools`);
+}
+
+function validateRuntimeZone(
+  value: unknown,
+  zoneName: "slot" | "reserve" | "river",
+  expectedLocation: HulebuRuntimeTile["location"],
+  path: string,
+  tilesById: ReadonlyMap<string, HulebuRuntimeTile>,
+  zoneByTile: Map<string, string>,
+): void {
+  if (!Array.isArray(value)) {
+    throw new Error(`${path} ${zoneName} must be an array.`);
+  }
+  for (const tileId of value) {
+    const tile = typeof tileId === "string" ? tilesById.get(tileId) : undefined;
+    if (!tile) {
+      throw new Error(`${path} ${zoneName} references unknown tile ${String(tileId)}.`);
+    }
+    if (zoneByTile.has(tileId)) {
+      throw new Error(`${path} tile ${tileId} appears in multiple zones.`);
+    }
+    if (tile.location !== expectedLocation) {
+      throw new Error(`${path} ${zoneName} tile ${tileId} has location ${tile.location}.`);
+    }
+    zoneByTile.set(tileId, zoneName);
+  }
+}
+
+function validateCountRecord<T extends string>(
+  value: unknown,
+  keys: readonly T[],
+  path: string,
+): void {
+  if (!value || typeof value !== "object") {
+    throw new Error(`${path} must be an object.`);
+  }
+  for (const key of keys) {
+    requireNonNegativeInteger((value as Partial<Record<T, unknown>>)[key], `${path}.${key}`);
+  }
+}
+
+function validateRuntimeTools(value: unknown, path: string): void {
+  if (!value || typeof value !== "object") {
+    throw new Error(`${path} must be an object.`);
+  }
+  const tools = value as Partial<Record<HulebuToolType, unknown>>;
+  for (const tool of ["shuffle", "undo", "discard", "vision"] as const) {
+    requireNonNegativeInteger(tools[tool], `${path}.${tool}`);
+  }
+}
+
+function requireNonNegativeInteger(value: unknown, path: string): void {
+  if (!Number.isInteger(value) || (value as number) < 0) {
+    throw new Error(`${path} must be a non-negative integer.`);
+  }
+}
+
+function isRuntimeTileLocation(value: unknown): value is HulebuRuntimeTile["location"] {
+  return value === "board" || value === "slot" || value === "reserve" || value === "river" || value === "removed";
+}
+
+function isRuntimeTileSuit(value: unknown): value is HulebuTileSuit {
+  return value === "wan" || value === "tiao" || value === "tong" || value === "honor";
+}
+
+function isSuitRankInRange(suit: HulebuTileSuit, rank: number): boolean {
+  return rank >= 1 && rank <= (suit === "honor" ? 7 : 9);
+}
+
+function countTileFaces(
+  tiles: readonly Pick<HulebuRuntimeTile, "suit" | "rank">[],
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  tiles.forEach((tile) => {
+    const key = getRuntimeTileFaceKey(tile);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  });
+  return counts;
+}
+
+function countMapsEqual(left: ReadonlyMap<string, number>, right: ReadonlyMap<string, number>): boolean {
+  return left.size === right.size
+    && Array.from(left.entries()).every(([key, count]) => right.get(key) === count);
+}
+
+function getRuntimeTileFaceKey(tile: Pick<HulebuRuntimeTile, "suit" | "rank">): string {
+  return `${tile.suit}-${tile.rank}`;
+}
+
+function getRuntimeTileLabel(tile: Pick<HulebuRuntimeTile, "suit" | "rank">): string {
+  return tile.suit === "honor"
+    ? HONOR_LABELS[tile.rank] ?? `字${tile.rank}`
+    : `${tile.rank}${SUIT_LABELS[tile.suit]}`;
+}
+
+function getLooseMountainPositionKey(index: number): string {
+  const column = index % 4;
+  const row = Math.floor(index / 4);
+  return getRuntimePositionKey(
+    LOOSE_TILE_START_X + column * LOOSE_TILE_GAP_X,
+    LOOSE_TILE_START_Y + row * LOOSE_TILE_GAP_Y,
+    0,
+  );
+}
+
+function getRuntimePositionKey(x: number, y: number, layer: number): string {
+  return `${x}:${y}:${layer}`;
+}
+
+function stringArraysEqual(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function createEmptyComboCounts(): Record<HulebuComboType, number> {

@@ -254,7 +254,64 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).toContain("Resumable flow requires a retained runtime snapshot.");
     expect(controllerText).toContain("rewardCandidateIds: rewardChoices");
     expect(controllerText).toContain("eventOptionIds: eventChoices");
+    expect(controllerText).toContain("assertValidHulebuRuntimeSnapshot(");
+    expect(controllerText).toContain("validateRunRewardState(snapshot.runRewards");
+    expect(controllerText).toContain("validateMetaUpgradeState(snapshot.metaUpgrades)");
+    expect(controllerText).toContain("validateCoordinatorChoiceContext(\n      snapshot.coordinatorSnapshot,\n      snapshot.runProfile,");
+    expect(controllerText).toContain("const expectedTargetLevelOrder = currentDisplayLevelOrder + 1");
+    expect(controllerText).toContain("HULEBU_REWARD_LEVEL_ORDERS.has(currentFlowLevelOrder)");
+    expect(controllerText).toContain("getHulebuRewardChoicesForRun(profile, levelConfig)");
+    expect(controllerText).toContain("HULEBU_EVENT_LEVEL_ORDERS.has(targetFlowLevelOrder)");
+    expect(controllerText).toContain("getHulebuSpecialEventChoices(targetFlowLevelOrder, profile, runArchetypeId)");
+    expect(controllerText).toContain("snapshot.context.targetLevelOrder !== expectedTargetLevelOrder");
+    expect(controllerText).toContain("!stringArraysEqual(snapshot.context.rewardCandidateIds, expectedRewardIds)");
+    expect(controllerText).toContain("!stringArraysEqual(snapshot.context.eventOptionIds, expectedEventIds)");
+    expect(controllerText).toContain("normalizeHulebuRuntimeSnapshot(");
+    expect(controllerText).toContain("runtime: runtimeSnapshot");
+    expect(controllerText).toContain("const legacyTargetLevelOrder = currentDisplayLevelOrder + 1");
+    expect(controllerText).toContain("getFlowLevelOrderForSnapshot(\n      legacy.runProfile,\n      legacyTargetLevelOrder,");
     expect(controllerText).not.toContain("context.pendingCombo === null || typeof context.pendingCombo === \"object\"");
+  });
+
+  test("renders exact saved combo, reward, and event choices without reinitializing context", () => {
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+    const runtimeResume = controllerText.slice(
+      controllerText.indexOf("private resumeRuntimeSnapshot(snapshot: HulebuActiveRunSnapshot): void"),
+      controllerText.indexOf("private resumeClearedPhase("),
+    );
+    const rewardResume = controllerText.slice(
+      controllerText.indexOf("private resumeRewardPhase(snapshot: HulebuActiveRunSnapshot): void"),
+      controllerText.indexOf("private resumeEventPhase("),
+    );
+    const eventResume = controllerText.slice(
+      controllerText.indexOf("private resumeEventPhase(snapshot: HulebuActiveRunSnapshot): void"),
+      controllerText.indexOf("private resumeAdvancedAbilityPhase("),
+    );
+    const eventRendering = controllerText.slice(
+      controllerText.indexOf("private drawEventChoices(overlay: Node): void"),
+      controllerText.indexOf("private formatSpecialEventMeta("),
+    );
+    const rewardPicking = controllerText.slice(
+      controllerText.indexOf("pickReward(rewardId: string): void"),
+      controllerText.indexOf("pickSpecialEvent(eventId: string): void"),
+    );
+    const eventPicking = controllerText.slice(
+      controllerText.indexOf("pickSpecialEvent(eventId: string): void"),
+      controllerText.indexOf("startMainlineRun(): void"),
+    );
+
+    expect(runtimeResume).toContain("restorePendingComboChoiceOverlay(snapshot.coordinatorSnapshot.context.pendingCombo)");
+    expect(runtimeResume).not.toContain("this.hideFlowOverlay();");
+    expect(rewardResume).toContain("snapshot.coordinatorSnapshot.context.targetLevelOrder");
+    expect(rewardResume).toContain("this.renderRewardOverlay()");
+    expect(rewardResume).not.toContain("this.showRewardOverlay()");
+    expect(eventResume).toContain("snapshot.coordinatorSnapshot.context.targetLevelOrder");
+    expect(eventResume).toContain("this.renderEventOverlay()");
+    expect(eventResume).not.toContain("this.showEventOverlay()");
+    expect(eventRendering).toContain("this.gameCoordinator.snapshot().context.eventOptionIds");
+    expect(eventRendering).not.toContain("getHulebuSpecialEventChoices(");
+    expect(rewardPicking).toContain("context.rewardCandidateIds.includes(rewardId)");
+    expect(eventPicking).toContain("context.eventOptionIds.includes(eventId)");
   });
 
   test("returns a canceled combo choice to idle before hiding it", () => {
@@ -770,7 +827,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("eventConfig.dangerLevel");
     expect(gameSceneController).toContain("eventConfig.tags");
     expect(gameSceneController).toContain("pickSpecialEvent(eventId: string)");
-    expect(gameSceneController).toContain("getHulebuSpecialEventChoices(levelOrder, this.runProfile, this.runArchetype.archetypeId)");
+    expect(gameSceneController).toContain("getHulebuSpecialEventChoices(");
+    expect(gameSceneController).toContain("this.gameCoordinator.snapshot().context.eventOptionIds");
 
     expect(levelModule.HULEBU_EVENT_LEVEL_ORDERS.has(6)).toBe(true);
     expect(levelModule.HULEBU_SPECIAL_EVENTS.map((event) => event.id)).toEqual([
@@ -1189,7 +1247,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("this.showEventOverlay()");
     expect(gameSceneController).toContain("this.showAdvancedAbilityOverlay()");
     expect(gameSceneController).toContain("this.showRunArchetypeOverlay()");
-    expect(gameSceneController).toContain("snapshot.runtimeSnapshot !== null && !isRuntimeSnapshot(snapshot.runtimeSnapshot)");
+    expect(gameSceneController).toContain("assertValidHulebuRuntimeSnapshot(");
     expect(gameSceneController).toContain("if (snapshot.runtimeSnapshot)");
     expect(gameSceneController).toContain("this.resumeRuntimeSnapshot(snapshot)");
     expect(gameSceneController).toContain("const runtimeState = HulebuRuntimeState.fromSnapshot(");

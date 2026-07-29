@@ -10,7 +10,12 @@ import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { GameCoordinator, type CoordinatorResult } from "./application/GameCoordinator";
 import { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from "./content/ContentRepository";
 import { GameSession } from "./domain/GameSession";
-import { RunStateMachine, type RunPhase, type RunSnapshot } from "./domain/RunStateMachine";
+import {
+  RunStateMachine,
+  type PendingComboContext,
+  type RunPhase,
+  type RunSnapshot,
+} from "./domain/RunStateMachine";
 import { SaveService, type StoragePort } from "./persistence/SaveService";
 import {
   createHulebuAdvancedRunProfile,
@@ -19,6 +24,7 @@ import {
   getHulebuAdvancedAbilityChoices,
   getHulebuAdvancedRunPressureConfig,
   getHulebuRewardChoicesForRun,
+  getHulebuSpecialEventConfig,
   getHulebuSpecialEventChoices,
   getHulebuLevelIndexForRunOrder,
   HULEBU_EVENT_LEVEL_ORDERS,
@@ -34,16 +40,19 @@ import {
   type HulebuAdvancedRunTier,
   type HulebuRunArchetypeId,
   type HulebuRunProfile,
+  type HulebuRuntimeLevelConfig,
 } from "./config/HulebuLevelConfig";
 import {
   HulebuRuntimeState,
   applyHulebuRewardToRunState,
   applyHulebuSpecialEventToLevelState,
+  assertValidHulebuRuntimeSnapshot,
   createHulebuLevelModifierState,
   createHulebuMetaUpgradeState,
   createHulebuRunArchetypeState,
   createHulebuRunRewardState,
   mergeHulebuLevelModifierStates,
+  normalizeHulebuRuntimeSnapshot,
   type HulebuLevelModifierState,
   type HulebuMetaUpgradeState,
   type HulebuRunArchetypeState,
@@ -337,21 +346,27 @@ export class GameSceneController extends Component {
     if (!isResumableRunPhase(snapshot.resumablePhase)
       || typeof snapshot.updatedAt !== "string"
       || snapshot.updatedAt.length === 0
-      || !snapshot.runRewards
-      || !snapshot.metaUpgrades
       || !HULEBU_RUN_ARCHETYPES.some((archetype) => archetype.id === snapshot.runArchetypeId)
       || (snapshot.selectedAdvancedAbilityId !== null && typeof snapshot.selectedAdvancedAbilityId !== "string")) {
       throw new Error("Active run snapshot has invalid run context.");
     }
-    if (typeof snapshot.metaCoins !== "number" || !Number.isFinite(snapshot.metaCoins)) {
+    const knownRewardIds = new Set(this.contentRepository.manifest.rewardIds);
+    validateRunRewardState(snapshot.runRewards, knownRewardIds);
+    validateMetaUpgradeState(snapshot.metaUpgrades);
+    if (!Number.isInteger(snapshot.metaCoins) || (snapshot.metaCoins ?? -1) < 0) {
       throw new Error("Active run snapshot has invalid meta coins.");
     }
     if (!Array.isArray(snapshot.eventSeenLevelOrders)
-      || snapshot.eventSeenLevelOrders.some((levelOrder) => !Number.isInteger(levelOrder) || levelOrder < 1)) {
+      || snapshot.eventSeenLevelOrders.some((levelOrder) => !Number.isInteger(levelOrder) || levelOrder < 1)
+      || new Set(snapshot.eventSeenLevelOrders).size !== snapshot.eventSeenLevelOrders.length) {
       throw new Error("Active run snapshot has invalid event history.");
     }
-    if (snapshot.runtimeSnapshot !== null && !isRuntimeSnapshot(snapshot.runtimeSnapshot)) {
-      throw new Error("Active run snapshot has an invalid runtime snapshot.");
+    const effectiveProfile = snapshot.pendingRunProfile ?? snapshot.runProfile;
+    if (snapshot.selectedAdvancedAbilityId !== null
+      && !getHulebuAdvancedAbilityChoices(effectiveProfile).some(
+        (choice) => choice.id === snapshot.selectedAdvancedAbilityId,
+      )) {
+      throw new Error("Active run snapshot has an unknown advanced ability.");
     }
     const requiresRetainedRuntime = (snapshot.resumablePhase === "reward" || snapshot.resumablePhase === "event")
       || snapshot.resumablePhase === "cleared";
@@ -365,25 +380,44 @@ export class GameSceneController extends Component {
     if (!isResumableCoordinatorPhase(snapshot.resumablePhase, snapshot.coordinatorSnapshot.phase)) {
       throw new Error("Active run snapshot phases do not match.");
     }
+
+    const levelIndex = getHulebuLevelIndexForRunOrder(snapshot.runProfile, snapshot.currentDisplayLevelOrder);
+    const boundedLevelIndex = Math.min(Math.max(0, levelIndex), this.contentRepository.getLevelCount() - 1);
+    const levelConfig = this.contentRepository.createRuntimeLevel(
+      boundedLevelIndex,
+      snapshot.runProfile,
+      snapshot.currentDisplayLevelOrder,
+    );
+    validateCoordinatorChoiceContext(
+      snapshot.coordinatorSnapshot,
+      snapshot.runProfile,
+      snapshot.currentDisplayLevelOrder,
+      snapshot.runArchetypeId!,
+      levelConfig,
+      this.contentRepository.getLevelCount(),
+      knownRewardIds,
+    );
+    if (snapshot.runtimeSnapshot) {
+      assertValidHulebuRuntimeSnapshot(
+        levelConfig,
+        snapshot.runtimeSnapshot,
+        snapshot.runRewards,
+        snapshot.metaUpgrades,
+      );
+    }
+
     let session: GameSession | null = null;
     if (snapshot.coordinatorSnapshot.sessionSnapshot) {
       if (!snapshot.runtimeSnapshot) {
         throw new Error("Coordinator session requires a matching runtime snapshot.");
       }
-      const levelIndex = getHulebuLevelIndexForRunOrder(snapshot.runProfile, snapshot.currentDisplayLevelOrder);
-      const boundedLevelIndex = Math.min(Math.max(0, levelIndex), this.contentRepository.getLevelCount() - 1);
-      const levelConfig = this.contentRepository.createRuntimeLevel(
-        boundedLevelIndex,
-        snapshot.runProfile,
-        snapshot.currentDisplayLevelOrder,
-      );
       const runtimeState = HulebuRuntimeState.fromSnapshot(
         levelConfig,
         snapshot.runtimeSnapshot,
         snapshot.runRewards,
         createHulebuLevelModifierState(),
         snapshot.metaUpgrades,
-        createHulebuRunArchetypeState(snapshot.runArchetypeId),
+        createHulebuRunArchetypeState(snapshot.runArchetypeId!),
       );
       session = new GameSession(runtimeState, snapshot.coordinatorSnapshot.sessionSnapshot.revision);
     }
@@ -405,7 +439,6 @@ export class GameSceneController extends Component {
     if (!isHulebuRunProfile(legacy.runProfile)) {
       throw new Error("Legacy active run snapshot has an invalid run profile.");
     }
-    const runtimeSnapshot = isRuntimeSnapshot(legacy.runtimeSnapshot) ? legacy.runtimeSnapshot : null;
     const resumablePhase = resolveResumableRunPhase(legacy.resumablePhase);
     const coordinatorPhase = resumablePhase === "cleared"
       ? "encounterCleared"
@@ -432,11 +465,32 @@ export class GameSceneController extends Component {
       legacy.runProfile,
       currentDisplayLevelOrder,
     );
+    const legacyTargetLevelOrder = currentDisplayLevelOrder + 1;
+    const legacyTargetFlowLevelOrder = getFlowLevelOrderForSnapshot(
+      legacy.runProfile,
+      legacyTargetLevelOrder,
+      this.contentRepository.getLevelCount(),
+    );
+    const runRewards = cloneRunRewardState(legacy.runRewards);
+    const metaUpgrades = cloneMetaUpgradeState(legacy.metaUpgrades);
+    let runtimeSnapshot: HulebuRuntimeSnapshot | null = null;
+    if (legacy.runtimeSnapshot !== null && legacy.runtimeSnapshot !== undefined) {
+      assertValidHulebuRuntimeSnapshot(levelConfig, legacy.runtimeSnapshot, runRewards, metaUpgrades);
+      runtimeSnapshot = normalizeHulebuRuntimeSnapshot(
+        levelConfig,
+        legacy.runtimeSnapshot,
+        runRewards,
+        createHulebuLevelModifierState(),
+        metaUpgrades,
+        createHulebuRunArchetypeState(runArchetypeId),
+      );
+    }
     const rewardChoices = coordinatorPhase === "rewardChoice"
       ? getHulebuRewardChoicesForRun(legacy.runProfile, levelConfig)
       : [];
     const eventChoices = coordinatorPhase === "eventChoice"
-      ? getHulebuSpecialEventChoices(currentDisplayLevelOrder, legacy.runProfile, runArchetypeId).map((choice) => choice.id)
+      ? getHulebuSpecialEventChoices(legacyTargetFlowLevelOrder, legacy.runProfile, runArchetypeId)
+        .map((choice) => choice.id)
       : [];
     const requiresSession = coordinatorPhase === "playing.idle" || coordinatorPhase === "encounterCleared";
 
@@ -447,13 +501,13 @@ export class GameSceneController extends Component {
       currentDisplayLevelOrder,
       resumablePhase,
       updatedAt: typeof legacy.updatedAt === "string" && legacy.updatedAt ? legacy.updatedAt : new Date().toISOString(),
-      runRewards: cloneRunRewardState(legacy.runRewards),
-      metaUpgrades: cloneMetaUpgradeState(legacy.metaUpgrades),
+      runRewards,
+      metaUpgrades,
       metaCoins: typeof legacy.metaCoins === "number" ? legacy.metaCoins : HULEBU_META_INITIAL_COINS,
       runArchetypeId,
       selectedAdvancedAbilityId: typeof legacy.selectedAdvancedAbilityId === "string" ? legacy.selectedAdvancedAbilityId : null,
       eventSeenLevelOrders: Array.isArray(legacy.eventSeenLevelOrders)
-        ? legacy.eventSeenLevelOrders.filter((levelOrder) => Number.isInteger(levelOrder) && levelOrder > 0)
+        ? Array.from(new Set(legacy.eventSeenLevelOrders.filter((levelOrder) => Number.isInteger(levelOrder) && levelOrder > 0)))
         : [],
       runtimeSnapshot,
       coordinatorSnapshot: {
@@ -470,9 +524,9 @@ export class GameSceneController extends Component {
           : null,
         context: {
           targetLevelOrder: coordinatorPhase === "rewardChoice"
-            ? currentDisplayLevelOrder + 1
+            ? legacyTargetLevelOrder
             : coordinatorPhase === "eventChoice"
-              ? currentDisplayLevelOrder
+              ? legacyTargetLevelOrder
               : null,
           rewardCandidateIds: rewardChoices,
           eventOptionIds: eventChoices,
@@ -572,7 +626,8 @@ export class GameSceneController extends Component {
   }
 
   pickReward(rewardId: string): void {
-    if (this.gamePhase === "reward") {
+    const context = this.gameCoordinator.snapshot().context;
+    if (this.gamePhase === "reward" && context.rewardCandidateIds.includes(rewardId)) {
       console.log(`[Hulebu] pick reward: ${rewardId}`);
       this.runRewards = applyHulebuRewardToRunState(this.runRewards, rewardId);
       this.startNextLevel(this.pendingRewardLevelIndex ?? this.currentLevelIndex + 1);
@@ -583,7 +638,8 @@ export class GameSceneController extends Component {
   }
 
   pickSpecialEvent(eventId: string): void {
-    if (this.gamePhase === "event") {
+    const context = this.gameCoordinator.snapshot().context;
+    if (this.gamePhase === "event" && context.eventOptionIds.includes(eventId)) {
       console.log(`[Hulebu] pick event: ${eventId}`);
       this.levelEventModifiers = applyHulebuSpecialEventToLevelState(createHulebuLevelModifierState(), eventId);
       const nextDisplayOrder = this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder;
@@ -1031,6 +1087,11 @@ export class GameSceneController extends Component {
       eventOptionIds: [],
     });
     this.persistActiveRun();
+    this.renderRewardOverlay();
+  }
+
+  private renderRewardOverlay(): void {
+    this.gamePhase = "reward";
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     this.drawOverlayPanel(overlay, layout, 368, 328);
@@ -1059,11 +1120,19 @@ export class GameSceneController extends Component {
       eventOptionIds,
     });
     this.persistActiveRun();
+    this.renderEventOverlay();
+  }
+
+  private renderEventOverlay(): void {
+    this.gamePhase = "event";
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
-    const displayOrder = this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder;
+    const displayOrder = this.gameCoordinator.snapshot().context.targetLevelOrder
+      ?? this.pendingEventLevelIndex
+      ?? this.currentDisplayLevelOrder;
+    const levelIndex = getHulebuLevelIndexForRunOrder(this.runProfile, displayOrder);
     const level = this.contentRepository.getLevelByIndex(
-      getHulebuLevelIndexForRunOrder(this.runProfile, displayOrder),
+      Math.min(Math.max(0, levelIndex), this.contentRepository.getLevelCount() - 1),
     );
     this.drawOverlayPanel(overlay, layout, 332, 266);
     this.writeOverlayLabel(overlay, "OverlayTitle", "关前事件", 20, new Color(255, 246, 216, 255), 94);
@@ -1098,6 +1167,27 @@ export class GameSceneController extends Component {
     );
     this.drawComboChoiceOptions(overlay, options);
     this.createOverlayButton(overlay, "ComboChoice_Back", "返回", 0, -106, () => this.closeComboChoiceOverlay(), 126, 36);
+  }
+
+  private restorePendingComboChoiceOverlay(pendingCombo: PendingComboContext | null): void {
+    this.pendingComboChoice = null;
+    if (this.runStateMachine.phase !== "playing.comboChoosing") {
+      this.hideFlowOverlay();
+      return;
+    }
+    if (!pendingCombo) {
+      throw new Error("Restored combo choice is missing its pending context.");
+    }
+    this.showComboChoiceOverlay(
+      pendingCombo.combo,
+      pendingCombo.candidates.map((candidate) => ({
+        type: candidate.type,
+        key: candidate.key,
+        tileIds: [...candidate.tileIds],
+        labels: [...candidate.labels],
+        prefabKeys: [...candidate.prefabKeys],
+      })),
+    );
   }
 
   private drawComboChoiceOptions(overlay: Node, options: HulebuRuntimeComboCandidateOption[]): void {
@@ -1370,10 +1460,13 @@ export class GameSceneController extends Component {
   }
 
   private drawEventChoices(overlay: Node): void {
-    const levelOrder = this.getDisplayLevelOrderForFlow(this.pendingEventLevelIndex ?? this.currentDisplayLevelOrder);
-    const choices = getHulebuSpecialEventChoices(levelOrder, this.runProfile, this.runArchetype.archetypeId);
+    const choices = this.gameCoordinator.snapshot().context.eventOptionIds;
     const startX = -102;
-    choices.forEach((eventConfig, index) => {
+    choices.forEach((eventId, index) => {
+      const eventConfig = getHulebuSpecialEventConfig(eventId);
+      if (!eventConfig) {
+        return;
+      }
       const eventName = HULEBU_SPECIAL_EVENT_LABELS[eventConfig.id] ?? eventConfig.name;
       const eventMeta = this.formatSpecialEventMeta(eventConfig.rarity, eventConfig.dangerLevel, eventConfig.tags);
       this.createOverlayButton(
@@ -1651,7 +1744,7 @@ export class GameSceneController extends Component {
     this.levelEventModifiers = createHulebuLevelModifierState();
     this.ensureVisualShell(layout, runtimeState.getLevelOrder());
     this.applySceneModel(runtimeState.toSceneModel(layout));
-    this.hideFlowOverlay();
+    this.restorePendingComboChoiceOverlay(snapshot.coordinatorSnapshot.context.pendingCombo);
   }
 
   private resumeClearedPhase(snapshot: HulebuActiveRunSnapshot): void {
@@ -1664,21 +1757,29 @@ export class GameSceneController extends Component {
   }
 
   private resumeRewardPhase(snapshot: HulebuActiveRunSnapshot): void {
-    this.resumeRuntimeSnapshot({
-      ...snapshot,
-      resumablePhase: "playing",
-    });
-    this.pendingRewardLevelIndex = snapshot.currentDisplayLevelOrder + 1;
+    this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
+    this.currentLevelIndex = Math.min(
+      Math.max(0, getHulebuLevelIndexForRunOrder(snapshot.runProfile, snapshot.currentDisplayLevelOrder)),
+      this.contentRepository.getLevelCount() - 1,
+    );
+    this.restoreCoordinatorState(snapshot.coordinatorSnapshot, null);
+    this.pendingRewardLevelIndex = snapshot.coordinatorSnapshot.context.targetLevelOrder;
+    this.pendingEventLevelIndex = null;
     this.gamePhase = "reward";
-    this.showRewardOverlay();
+    this.renderRewardOverlay();
   }
 
   private resumeEventPhase(snapshot: HulebuActiveRunSnapshot): void {
-    this.resumeRuntimeSnapshot(snapshot);
-    this.pendingEventLevelIndex = snapshot.currentDisplayLevelOrder;
     this.currentDisplayLevelOrder = snapshot.currentDisplayLevelOrder;
+    this.currentLevelIndex = Math.min(
+      Math.max(0, getHulebuLevelIndexForRunOrder(snapshot.runProfile, snapshot.currentDisplayLevelOrder)),
+      this.contentRepository.getLevelCount() - 1,
+    );
+    this.restoreCoordinatorState(snapshot.coordinatorSnapshot, null);
+    this.pendingEventLevelIndex = snapshot.coordinatorSnapshot.context.targetLevelOrder;
+    this.pendingRewardLevelIndex = null;
     this.gamePhase = "event";
-    this.showEventOverlay();
+    this.renderEventOverlay();
   }
 
   private resumeAdvancedAbilityPhase(snapshot: HulebuActiveRunSnapshot): void {
@@ -3497,25 +3598,119 @@ function isResumableCoordinatorPhase(resumablePhase: HulebuResumableRunPhase, co
   return coordinatorPhase === "bossIntro";
 }
 
-function isRuntimeSnapshot(value: unknown): value is HulebuRuntimeSnapshot {
+function validateRunRewardState(
+  value: unknown,
+  knownRewardIds: ReadonlySet<string>,
+): asserts value is HulebuRunRewardState {
   if (!value || typeof value !== "object") {
-    return false;
+    throw new Error("Active run snapshot has invalid rewards.");
+  }
+  const state = value as Partial<HulebuRunRewardState>;
+  for (const [name, numericValue] of [
+    ["reserveBonus", state.reserveBonus],
+    ["shieldBonus", state.shieldBonus],
+    ["startingCoins", state.startingCoins],
+  ] as const) {
+    requireSnapshotCount(numericValue, `runRewards.${name}`);
+  }
+  if (typeof state.firstProtect !== "boolean") {
+    throw new Error("runRewards.firstProtect must be a boolean.");
+  }
+  validateSnapshotCountRecord(state.toolBonus, ["shuffle", "undo", "discard", "vision"], "runRewards.toolBonus");
+  validateSnapshotCountRecord(state.scoreBonus, ["hu", "gang", "peng", "chi", "bugang"], "runRewards.scoreBonus");
+  if (!Array.isArray(state.pickedRewards)
+    || state.pickedRewards.some((rewardId) => typeof rewardId !== "string" || !knownRewardIds.has(rewardId))) {
+    throw new Error("Active run snapshot contains an unknown picked reward.");
+  }
+}
+
+function validateMetaUpgradeState(value: unknown): asserts value is HulebuMetaUpgradeState {
+  validateSnapshotCountRecord(
+    value,
+    ["reserveBonus", "shieldBonus", "toolBonus", "riverBonus", "startingCoins", "visionBonus"],
+    "metaUpgrades",
+  );
+}
+
+function validateCoordinatorChoiceContext(
+  snapshot: RunSnapshot,
+  profile: HulebuRunProfile,
+  currentDisplayLevelOrder: number,
+  runArchetypeId: HulebuRunArchetypeId,
+  levelConfig: HulebuRuntimeLevelConfig,
+  levelCount: number,
+  knownRewardIds: ReadonlySet<string>,
+): void {
+  const context = snapshot.context;
+  if (!context || typeof context !== "object"
+    || !Array.isArray(context.rewardCandidateIds)
+    || !Array.isArray(context.eventOptionIds)) {
+    throw new Error("Active run snapshot has invalid coordinator choice context.");
+  }
+  if (context.targetLevelOrder !== null
+    && (!Number.isInteger(context.targetLevelOrder) || context.targetLevelOrder < 1)) {
+    throw new Error("Active run snapshot has invalid target level order.");
+  }
+  if (context.rewardCandidateIds.some((rewardId) => !knownRewardIds.has(rewardId))) {
+    throw new Error("Active run snapshot has an unknown reward candidate.");
+  }
+  if (context.eventOptionIds.some((eventId) => !getHulebuSpecialEventConfig(eventId))) {
+    throw new Error("Active run snapshot has an unknown event option.");
   }
 
-  const snapshot = value as Partial<HulebuRuntimeSnapshot>;
-  return Array.isArray(snapshot.tiles)
-    && Array.isArray(snapshot.slot)
-    && Array.isArray(snapshot.reserve)
-    && Array.isArray(snapshot.river)
-    && Array.isArray(snapshot.openMelds)
-    && typeof snapshot.looseMountainDropIndex === "number"
-    && typeof snapshot.score === "number"
-    && typeof snapshot.coins === "number"
-    && Boolean(snapshot.tools)
-    && typeof snapshot.tools?.shuffle === "number"
-    && typeof snapshot.tools?.undo === "number"
-    && typeof snapshot.tools?.discard === "number"
-    && typeof snapshot.tools?.vision === "number";
+  const expectedTargetLevelOrder = currentDisplayLevelOrder + 1;
+  const currentFlowLevelOrder = getFlowLevelOrderForSnapshot(profile, currentDisplayLevelOrder, levelCount);
+  const targetFlowLevelOrder = getFlowLevelOrderForSnapshot(profile, expectedTargetLevelOrder, levelCount);
+  if (snapshot.phase === "rewardChoice") {
+    const expectedRewardIds = getHulebuRewardChoicesForRun(profile, levelConfig);
+    if (snapshot.context.targetLevelOrder !== expectedTargetLevelOrder
+      || !HULEBU_REWARD_LEVEL_ORDERS.has(currentFlowLevelOrder)
+      || !stringArraysEqual(snapshot.context.rewardCandidateIds, expectedRewardIds)) {
+      throw new Error("Active run snapshot has reward choices that do not match the cleared level.");
+    }
+  }
+  if (snapshot.phase === "eventChoice") {
+    const expectedEventIds = getHulebuSpecialEventChoices(targetFlowLevelOrder, profile, runArchetypeId)
+      .map((event) => event.id);
+    if (snapshot.context.targetLevelOrder !== expectedTargetLevelOrder
+      || !HULEBU_EVENT_LEVEL_ORDERS.has(targetFlowLevelOrder)
+      || !stringArraysEqual(snapshot.context.eventOptionIds, expectedEventIds)) {
+      throw new Error("Active run snapshot has event choices that do not match the target level.");
+    }
+  }
+}
+
+function getFlowLevelOrderForSnapshot(
+  profile: HulebuRunProfile,
+  displayOrder: number,
+  levelCount: number,
+): number {
+  return profile.mode === "mainline"
+    ? displayOrder
+    : ((displayOrder - 1) % levelCount) + 1;
+}
+
+function stringArraysEqual(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function validateSnapshotCountRecord<T extends string>(
+  value: unknown,
+  keys: readonly T[],
+  path: string,
+): void {
+  if (!value || typeof value !== "object") {
+    throw new Error(`${path} must be an object.`);
+  }
+  for (const key of keys) {
+    requireSnapshotCount((value as Partial<Record<T, unknown>>)[key], `${path}.${key}`);
+  }
+}
+
+function requireSnapshotCount(value: unknown, path: string): void {
+  if (!Number.isInteger(value) || (value as number) < 0) {
+    throw new Error(`${path} must be a non-negative integer.`);
+  }
 }
 
 function isPersistableRunPhase(value: RunPhase): boolean {

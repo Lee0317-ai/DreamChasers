@@ -45,6 +45,16 @@ let GameCoordinator: typeof GameCoordinatorClass;
 let ContentRepository: typeof ContentRepositoryClass;
 let SaveService: typeof SaveServiceClass;
 let HULEBU_LEGACY_CONTENT_SOURCE: ContentSource;
+let HulebuRuntimeExports: {
+  assertValidHulebuRuntimeSnapshot?: (
+    level: HulebuRuntimeLevelConfig,
+    snapshot: unknown,
+  ) => void;
+  normalizeHulebuRuntimeSnapshot?: (
+    level: HulebuRuntimeLevelConfig,
+    snapshot: HulebuRuntimeSnapshot | HulebuRuntimeLegacySnapshot,
+  ) => HulebuRuntimeSnapshot;
+};
 
 beforeAll(async () => {
   const virtualEntryId = "\0hulebu-domain-test-entry";
@@ -56,6 +66,8 @@ beforeAll(async () => {
       resolveId: (id) => id === virtualEntryId ? virtualEntryId : null,
       load: (id) => id === virtualEntryId
         ? [
+          `import * as HulebuRuntimeExports from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/runtime/HulebuRuntimeState.ts"))};`,
+          "export { HulebuRuntimeExports };",
           `export { HulebuRuntimeState } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/runtime/HulebuRuntimeState.ts"))};`,
           `export { GameSession } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/domain/GameSession.ts"))};`,
           `export { RunStateMachine } from ${JSON.stringify(path.join(cocosRoot, "assets/scripts/domain/RunStateMachine.ts"))};`,
@@ -80,6 +92,7 @@ beforeAll(async () => {
     ContentRepository: typeof ContentRepositoryClass;
     SaveService: typeof SaveServiceClass;
     HULEBU_LEGACY_CONTENT_SOURCE: ContentSource;
+    HulebuRuntimeExports: typeof HulebuRuntimeExports;
   };
   HulebuRuntimeState = domainModule.HulebuRuntimeState;
   GameSession = domainModule.GameSession;
@@ -88,6 +101,7 @@ beforeAll(async () => {
   ContentRepository = domainModule.ContentRepository;
   SaveService = domainModule.SaveService;
   HULEBU_LEGACY_CONTENT_SOURCE = domainModule.HULEBU_LEGACY_CONTENT_SOURCE;
+  HulebuRuntimeExports = domainModule.HulebuRuntimeExports;
 });
 
 type LevelTile = HulebuRuntimeLevelConfig["tiles"][number];
@@ -872,6 +886,32 @@ describe("Hulebu Cocos domain session", () => {
       .toEqual(original.dispatch({ type: "tool.use", tool: "undo" }));
   });
 
+  test("spends every undo use across multiple live and restored undos", () => {
+    const level = createLevel({
+      undo: 2,
+      tiles: [
+        createTile("board-a", "wan", 1),
+        createTile("board-b", "tong", 2),
+        createTile("board-c", "tiao", 3),
+      ],
+    });
+    const live = new HulebuRuntimeState(level);
+    expect(live.moveTileToSlot("board-a")).toBe(true);
+    expect(live.moveTileToSlot("board-b")).toBe(true);
+    const restored = HulebuRuntimeState.fromSnapshot(
+      level,
+      JSON.parse(JSON.stringify(live.exportSnapshot())) as HulebuRuntimeSnapshot,
+    );
+
+    for (const runtime of [live, restored]) {
+      expect(runtime.useUndoTool()).toBe(true);
+      expect(runtime.exportSnapshot().tools.undo).toBe(1);
+      expect(runtime.useUndoTool()).toBe(true);
+      expect(runtime.exportSnapshot().tools.undo).toBe(0);
+      expect(runtime.useUndoTool()).toBe(false);
+    }
+  });
+
   test("migrates a legacy runtime snapshot to empty disabled undo history", () => {
     const level = createLevel({
       tiles: [createTile("board-a", "wan", 1), createTile("board-b", "tong", 2)],
@@ -886,6 +926,128 @@ describe("Hulebu Cocos domain session", () => {
     expect(restored.exportSnapshot().history).toEqual([]);
     expect(restored.exportSnapshot().tools.undo).toBe(0);
     expect(restored.useUndoTool()).toBe(false);
+  });
+
+  test("normalizes legacy runtime snapshots once and deep-validates every zone and history entry", () => {
+    expect(HulebuRuntimeExports.assertValidHulebuRuntimeSnapshot).toBeTypeOf("function");
+    expect(HulebuRuntimeExports.normalizeHulebuRuntimeSnapshot).toBeTypeOf("function");
+    const assertValid = HulebuRuntimeExports.assertValidHulebuRuntimeSnapshot;
+    const normalize = HulebuRuntimeExports.normalizeHulebuRuntimeSnapshot;
+    if (!assertValid || !normalize) return;
+
+    const level = createLevel({
+      undo: 2,
+      tiles: [createTile("board-a", "wan", 1), createTile("board-b", "tong", 2)],
+    });
+    const current = new HulebuRuntimeState(level);
+    expect(current.moveTileToSlot("board-a")).toBe(true);
+    const snapshot = current.exportSnapshot();
+    expect(() => assertValid(level, snapshot)).not.toThrow();
+
+    const { history: _history, ...legacy } = snapshot;
+    const normalized = normalize(level, legacy);
+    expect(normalized.history).toEqual([]);
+    expect(normalized.tools.undo).toBe(0);
+    expect(() => assertValid(level, normalized)).not.toThrow();
+
+    const looseLevel = createLevel({
+      tiles: [
+        { ...createTile("loose-a", "wan", 1), layer: 1 },
+        createTile("covered-a", "tong", 2, "board", ["loose-a"]),
+      ],
+    });
+    const validLooseSnapshot = new HulebuRuntimeState(looseLevel).exportSnapshot();
+    const looseTile = validLooseSnapshot.tiles.find((tile) => tile.id === "loose-a")!;
+    const coveredTile = validLooseSnapshot.tiles.find((tile) => tile.id === "covered-a")!;
+    Object.assign(looseTile, { x: 210, y: 64, layer: 0, blockedBy: [] });
+    coveredTile.blockedBy = [];
+    validLooseSnapshot.looseMountainDropIndex = 1;
+    expect(() => assertValid(looseLevel, validLooseSnapshot)).not.toThrow();
+
+    const withGhostSlot = structuredClone(snapshot);
+    withGhostSlot.slot.push("ghost");
+    expect(() => assertValid(level, withGhostSlot)).toThrow(/slot.*ghost/i);
+
+    const withDuplicateTile = structuredClone(snapshot);
+    withDuplicateTile.tiles.push(structuredClone(withDuplicateTile.tiles[0]));
+    expect(() => assertValid(level, withDuplicateTile)).toThrow(/duplicate.*tile/i);
+
+    const withBadHistory = structuredClone(snapshot);
+    withBadHistory.history[0].reserve.push("ghost-history");
+    expect(() => assertValid(level, withBadHistory)).toThrow(/history.*reserve.*ghost-history/i);
+
+    const withInfiniteTool = structuredClone(snapshot);
+    withInfiniteTool.tools.undo = Number.POSITIVE_INFINITY;
+    expect(() => assertValid(level, withInfiniteTool)).toThrow(/undo/i);
+
+    const withImpossibleRank = structuredClone(snapshot);
+    withImpossibleRank.tiles[0].rank = 99;
+    expect(() => assertValid(level, withImpossibleRank)).toThrow(/rank/i);
+
+    const withForgedFace = structuredClone(snapshot);
+    withForgedFace.tiles[0].suit = "tong";
+    withForgedFace.tiles[0].rank = 9;
+    expect(() => assertValid(level, withForgedFace)).toThrow(/face multiset/i);
+
+    const withForeignGeometry = structuredClone(snapshot);
+    withForeignGeometry.tiles[0].x += 1;
+    expect(() => assertValid(level, withForeignGeometry)).toThrow(/geometry/i);
+
+    const withForeignTopology = structuredClone(snapshot);
+    withForeignTopology.tiles[0].blockedBy = ["board-b"];
+    expect(() => assertValid(level, withForeignTopology)).toThrow(/blocker topology/i);
+
+    const tightLevel = createLevel({
+      slotLimit: 1,
+      tiles: [createTile("tight-a", "wan", 1), createTile("tight-b", "tong", 2)],
+    });
+    const tightRuntime = new HulebuRuntimeState(tightLevel);
+    expect(tightRuntime.moveTileToSlot("tight-a")).toBe(true);
+    const overfilledSlot = tightRuntime.exportSnapshot();
+    overfilledSlot.tiles.find((tile) => tile.id === "tight-b")!.location = "slot";
+    overfilledSlot.slot.push("tight-b");
+    expect(() => assertValid(tightLevel, overfilledSlot)).toThrow(/slot.*limit/i);
+
+    const overfilledReserve = tightRuntime.exportSnapshot();
+    overfilledReserve.tiles.find((tile) => tile.id === "tight-b")!.location = "reserve";
+    overfilledReserve.reserve.push("tight-b");
+    expect(() => assertValid(tightLevel, overfilledReserve)).toThrow(/reserve.*limit/i);
+
+    const forgedMeldLevel = createLevel({
+      tiles: [
+        createTile("meld-a", "wan", 1),
+        createTile("meld-b", "tong", 2),
+        createTile("meld-c", "tiao", 3),
+      ],
+    });
+    const forgedMeld = new HulebuRuntimeState(forgedMeldLevel).exportSnapshot();
+    forgedMeld.tiles.forEach((tile) => { tile.location = "removed"; });
+    forgedMeld.openMelds.push({
+      type: "peng",
+      tileKey: "wan-1",
+      label: "1万",
+      tileIds: ["meld-a", "meld-b", "meld-c"],
+      count: 3,
+    });
+    expect(() => assertValid(forgedMeldLevel, forgedMeld)).toThrow(/meld.*face/i);
+
+    const forgedLabelLevel = createLevel({
+      tiles: [
+        createTile("label-a", "wan", 1),
+        createTile("label-b", "wan", 1),
+        createTile("label-c", "wan", 1),
+      ],
+    });
+    const forgedLabel = new HulebuRuntimeState(forgedLabelLevel).exportSnapshot();
+    forgedLabel.tiles.forEach((tile) => { tile.location = "removed"; });
+    forgedLabel.openMelds.push({
+      type: "peng",
+      tileKey: "wan-1",
+      label: "伪造标签",
+      tileIds: ["label-a", "label-b", "label-c"],
+      count: 3,
+    });
+    expect(() => assertValid(forgedLabelLevel, forgedLabel)).toThrow(/meld.*label/i);
   });
 
   test("keeps runtime history bounded and free of nested history payloads", () => {
