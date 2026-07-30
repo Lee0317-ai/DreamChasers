@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：待验收
+- 状态：已完成
 - 依赖：T244 代码实现与竖屏验收结论
 - 阻塞：无
 - 主要文件范围：`.gitignore`、`docs/tasks/CHANGE_INTAKE.md`、`docs/tasks/NEXT_ID.md`、`docs/tasks/items/T244-hulebu-cocos-v1-m1-core-architecture.md`、`docs/tasks/items/T246-hulebu-cocos-v1-m2-three-node-vertical-slice-design.md`、`docs/tasks/claims/T246-lee.md`、`docs/superpowers/specs/2026-07-30-hulebu-cocos-v1-m2-three-node-vertical-slice-design.md`、`docs/modules/mahjong-roguelike/PROGRESS.md`、`docs/modules/mahjong-roguelike/DECISIONS.md`、`docs/modules/mahjong-roguelike/HANDOFF.md`、`docs/progress/2026-07-29-lee.md`、`docs/progress/2026-07-30-lee.md`、本任务完成记录及 `npm run docs:sync` 自动生成的任务主摘要
@@ -50,3 +50,4 @@ M0 已建立可重复 production build，M1 已建立 GameSession、RunStateMach
 - 可视化伴侣已完成产品结构、玩家流程、关键界面、架构恢复和交付范围三轮确认。
 - 正式规格已完成并通过占位、内部一致性、范围和歧义自查；当前等待 Lee 审阅书面版本。
 - 本任务没有修改 Cocos、Web、shared 或资源代码，也没有开始代码级实施计划。
+- Lee 已审阅并批准书面规格；T246 完成，后续代码级计划由 T247 承接。

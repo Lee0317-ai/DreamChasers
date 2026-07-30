@@ -2,12 +2,12 @@
 
 ## 2026-07-30
 
-- 创建 T246 胡了卜 Cocos v1 M2 三节点完整纵切设计，并完成对话式设计确认。
+- 完成 T246 胡了卜 Cocos v1 M2 三节点完整纵切设计，并获 Lee 书面批准；随后完成 T247 代码级实施计划，尚未开始 M2 实现代码。
 - M2 主目标固定为新玩家无需外部说明，在 `8–12` 分钟内完成 `Boot → Title → 碰教学 → 吃/多候选教学 → 奖励三选一 → mini Boss → Result`。
 - 采用独立 `Boot / Title / Game / Result` 四 Scene；Game 内奖励、多候选、Boss 介绍、暂停和设置使用正式 Modal Prefab，不采用单场景多层或丰富局外首页。
 - mini Boss 强制 `完成一次杠 + 清空牌山`，胡保留为可选高价值操作；强制胡教学和完整十节点章节留到 M3。
 - M2 建立真实 AppFlowController、Prefab、checkpoint、AudioService 与 settings 边界；音频先使用 1 首有许可记录的临时 BGM 和 8 类关键 SFX，最终视听品质留到 M4。
-- 正式规格已写入 `docs/superpowers/specs/2026-07-30-hulebu-cocos-v1-m2-three-node-vertical-slice-design.md`，T246 当前等待 Lee 审阅书面版本；未开始实施代码。
+- 正式规格已写入 `docs/superpowers/specs/2026-07-30-hulebu-cocos-v1-m2-three-node-vertical-slice-design.md`；可执行计划已写入 `docs/superpowers/plans/2026-07-30-hulebu-cocos-v1-m2-three-node-vertical-slice.md`。计划按 App Flow/Settings/四 Scene、Prefab/薄适配器、三节点内容/Coordinator、恢复/音频、production E2E 五批推进；T244 竖屏 production 完整交互 smoke 是 Batch 1 前置门槛。
 
 ## 2026-07-29
 

@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-- T246 M2 三节点完整纵切设计已完成初稿并等待 Lee 书面审阅：采用 `Boot → Title → Game → Result` 四 Scene，三节点为碰教学、吃/多候选教学、奖励和 mini Boss；规格通过后才进入代码级实施计划。
+- T246 M2 三节点完整纵切设计已获 Lee 书面批准；T247 代码级实施计划已完成：采用 `Boot → Title → Game → Result` 四 Scene，三节点为碰教学、吃/多候选教学、奖励和 mini Boss。后续按 `docs/superpowers/plans/2026-07-30-hulebu-cocos-v1-m2-three-node-vertical-slice.md` 的五批边界实施，当前尚未开始 M2 代码。
 - M2 只验证 `8–12` 分钟完整产品闭环、第一版正式 Prefab、存档检查点和临时真实音频链路；完整十节点、最终 UI/音频和微信小游戏发布分别留到 M3、M4、M5。
 - T245 已完成：Cocos production source snapshot 的真实路径已统一，symlink worktree 路径回归覆盖通过，发布测试为 `189/189`。
 - T244 M1 核心架构代码、精确恢复校验、两轮评审和正式构建已完成；聚焦测试为 `158/158`，精确源码提交为 `1bc4867cf56919b1230307297d9d4600b4f6bb4f`。
