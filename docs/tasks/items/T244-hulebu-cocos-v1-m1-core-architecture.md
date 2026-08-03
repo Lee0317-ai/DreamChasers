@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：待验收
+- 状态：已完成
 - 依赖：T243
 - 阻塞：无。Lee 已确认正式发布方向按微信小程序常见竖屏验收，横屏布局不属于当前目标，也不再登记横屏适配任务。
 - 主要文件范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/domain/**`、`assets/scripts/application/**`、`assets/scripts/content/**`、`assets/scripts/persistence/**`、`assets/scripts/GameSceneController.ts` 的最小 Coordinator 接线、必要的 `assets/scripts/runtime/HulebuRuntimeState.ts` 适配、`tsconfig.domain.json`、对应 `.meta`、`packages/shared/src/hulebu-cocos-domain.test.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、本任务计划/领取/进展/完成与模块交接文档
@@ -54,3 +54,19 @@ T241 已批准采用绞杀式迁移：保留现有可玩行为，先建立不依
 - 内置浏览器确认正式包非黑屏、无 warn/error；全新 origin 选牌后刷新能恢复同一局面，`390×844` 可完整显示 HUD、组合栏和槽位。
 - Lee 已确认后续较大概率发布微信小程序，`1280×720` 横屏不属于目标发布方向，也不再作为阻塞；不登记横屏适配任务，T244 仍不修改 Binder/UI/布局。
 - 既有 `390×844` production 验证已覆盖完整 UI 可见、选牌与刷新恢复；本轮内置浏览器拒绝重新访问本地 production 地址，因此未新增组合、多候选与一次清关的端到端证据。T244 保持待验收，不提前标记完成。
+
+## 2026-08-03 进展
+
+- 获得 Lee 明确授权后，在内置浏览器以 `390×844` 竖屏重新打开 production web-mobile；Canvas CSS 尺寸为 `390×844`，页面非黑屏，HUD、牌山、组合栏、八格槽位和工具栏完整可见。
+- 实机完成点击入槽、手动碰牌组合和首层清台，出现“第 1 层通关”弹窗；随后进入第二层构造多候选吃牌，弹层同时显示 `4筒 5筒 6筒` 与 `5筒 6筒 7筒`。
+- 在 `playing.comboChoosing` 选择态刷新页面后，两组候选及顺序原样恢复；点击右侧 `5筒 6筒 7筒` 后只移除该组三张，槽中保留 `4筒`，exact candidate 结算正确。全流程游戏控制台无 warn/error。
+- 聚焦测试 `hulebu-cocos-domain + mahjong-cocos-project` 重新运行通过 `158/158`，`tsconfig.domain.json` TypeScript 检查和 `git diff --check` 通过。
+- 当前 HEAD `a17a37ee` 相对已验证构建提交 `1bc4867c` 只包含文档提交，正式源码输入无差异；已重新生成匹配当前 HEAD 的 production build，`game:hulebu:build` 与授权后的 `game:hulebu:verify-build` 均通过。T244 验收完成。
+
+## 完成结论
+
+- 任务状态：已完成。
+- Exact-commit production build：`a17a37ee7c3b-20260803T042725Z`，commit `a17a37ee7c3bfac9332686446ce77d340ec3904d`，Creator `3.8.8`。
+- 构建验证：`cocosTypecheckPassed: true`；source tree SHA-256 `69077b638241d0213957351cd7954a09edefb3ac2f92449d6c1fe9f82e9e3194`；build 与 verify-only 的 5 条 HTTP smoke 全部 `200`。
+- 交互验证：`390×844` 竖屏点击入槽、碰牌、刷新恢复、多候选 exact choice 和一次清台均已通过，游戏控制台无 warn/error。
+- 遗留问题：无 T244 范围内遗留问题；横屏适配不属于当前微信小程序发布目标。
