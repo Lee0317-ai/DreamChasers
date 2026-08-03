@@ -1,0 +1,35 @@
+# T224 胡了卜 Cocos 开局前 flow 恢复基础完成记录
+
+- 完成时间：2026-06-29
+- 负责人：Lee
+- 任务编号：T224
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T224-hulebu-cocos-pre-run-phase-resume-foundation.md`
+  - `docs/tasks/claims/T224-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-29-lee.md`
+  - `docs/completion/2026-06-29-task-224-hulebu-cocos-pre-run-phase-resume-foundation.md`
+- 实现内容：
+  - 扩展 `HulebuResumableRunPhase`，支持 `advancedAbility / archetype` 两类开局前节点。
+  - `HulebuActiveRunSnapshot` 新增 `pendingRunProfile`，用于恢复高阶、每日、无尽等待启动 run profile。
+  - 高阶能力选择和本局流派选择 overlay 进入时会持久化 active run；继续本轮会按 phase 恢复对应 overlay。
+  - 共享 Cocos 工程测试补充 phase、pending profile 和恢复分支断言。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 通过：共享测试 1 个文件、27 条测试通过。
+  - 通过：Cocos TypeScript 编译检查无报错。
+  - 通过：文档同步完成，扫描 199 个任务分片和 191 个领取分片。
+  - 通过：空白检查无输出。
+- 遗留问题：
+  - 当前仍是本地 active run 恢复，不含账号同步或跨设备恢复。
+  - 不恢复选择弹层内 hover、高亮等纯 UI 临时态。

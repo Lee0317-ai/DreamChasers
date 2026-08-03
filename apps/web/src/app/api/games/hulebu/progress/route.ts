@@ -30,7 +30,15 @@ export async function POST(request: Request) {
         bestEndlessLayer?: number;
         bestAscensionLevel?: number;
         dailyBestLevels?: Record<string, number>;
+        dailyStreak?: number;
+        lastDailySeed?: string | null;
         achievements?: Record<string, string>;
+        upgrades?: Record<string, number>;
+        routeProgress?: Record<string, number>;
+        preferredRoute?: string | null;
+        equippedAscensionLoadout?: string[];
+        unlockedAscensionPerks?: Record<string, boolean>;
+        activeRun?: Record<string, unknown> | null;
       }
     | null;
 

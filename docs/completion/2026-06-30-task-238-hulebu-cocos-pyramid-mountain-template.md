@@ -1,0 +1,34 @@
+# T238 胡了卜 Cocos 中央堆叠牌山模板完成记录
+
+- 任务编号：T238
+- 负责人：Lee
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuMountainGenerator.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/items/T238-hulebu-cocos-pyramid-mountain-template.md`
+  - `docs/tasks/claims/T238-Lee.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/progress/2026-06-30-lee.md`
+- 实现内容：
+  - 新增 `pyramid` 中央堆叠牌山模板，让前 5 关优先呈现目标图方向的三角牌山。
+  - 保留后续关卡原有 Graph 模板轮换，避免只剩单一牌山形态。
+  - 拆分顶部 HUD 的记牌器和余牌进度，减少文字叠压。
+  - 更新共享测试，覆盖新模板、前 5 关应用、后续模板轮换和集中牌山约束。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - `/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator --project /Users/lee/Desktop/Lee/DreamChasers/apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8 --build "platform=web-mobile;debug=false"`
+  - Playwright 截图检查 `tmp-hulebu-cocos-t238c-portrait.png`、`tmp-hulebu-cocos-t238c-mobile.png`
+  - `npm run docs:sync`
+  - `git diff --check`
+- 验证结果：
+  - 共享测试通过：29 tests passed。
+  - Cocos TypeScript 检查通过。
+  - Cocos Web Mobile 构建日志显示 `build Task (web-mobile) Finished`，但 Cocos CLI 仍返回退出码 36。
+  - Playwright 成功进入 `HulebuGameScene` 的真实 playing 状态并生成桌面竖屏与 390px 移动端截图。
+- 遗留问题：
+  - 顶部余牌牌匾目前使用程序化普通牌匾，后续可补一张同风格窄版进度贴图。
+  - Cocos CLI 退出码 36 仍需后续单独定位。

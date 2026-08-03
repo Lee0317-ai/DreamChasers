@@ -1,0 +1,21 @@
+# T235：胡了卜 Cocos 局内布局截图 QA 和修正
+
+- 优先级：P1
+- 默认负责人：Lee
+- 状态：已完成
+- 依赖：T231, T232, T233, T234
+- 主要文件范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`
+- 禁止修改范围：`apps/web/**`, 非胡了卜 Cocos 模块、数据库和账号系统、PDF 工具箱、AI 修图工具
+- 验证方式：`npm run test -w packages/shared -- mahjong-cocos-project`; `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`; Cocos Web Mobile 构建和 Playwright 桌面/移动截图检查；`npm run docs:sync`; `git diff --check`
+- 背景：对照目标概念图检查 Cocos Web 预览时，发现局内真实首屏已经加载茶桌背景、顶部 HUD、右侧工具按钮和木质槽位，但牌山偏到右上角、底部托盘被截，说明 Cocos 运行时坐标和实际可见画布尺寸没有对齐。
+- 目标：让局内牌山、底部槽位、右侧工具按钮和顶部 HUD 在桌面和移动 Web 预览中按实际画布居中/贴边显示，接近目标概念图的空间结构。
+- 不做：不改玩法规则、不新增新模式、不重做全部美术资源、不调整 Web 站内 Demo。
+- 当前进展：
+  - 已用 Cocos Web Mobile 构建产物和 Playwright 截图复现布局问题。
+  - 已确认默认大厅和流派弹窗属于正常入口流程，真正偏差出现在进入局内后。
+  - 已修正 Cocos runtime layout：局内坐标改用 `visibleSize` 作为世界尺寸，避免 DOM CSS 尺寸二次换算导致桌面竖屏偏移。
+  - 已把茶室背景 Sprite 锚到 Cocos 居中坐标原点，解决左半屏黑底和背景右偏。
+  - 已收紧 runtime 牌山缩放上限，让首局牌堆从散落全屏回到桌面中心区域。
+  - 已把组合动作条改为跟随底部槽位上方，避免横向按钮压在牌堆中间。
+  - 已用 Playwright 通过 Cocos `GameSceneController` API 进入 `playing` 状态并截图验证：`tmp-hulebu-cocos-final2-ingame-portrait.png`、`tmp-hulebu-cocos-final2-ingame-mobile.png`。
+  - 已完成验证：共享测试 29 项通过；Cocos TypeScript 检查通过；Cocos Web Mobile 构建日志显示完成但 CLI 仍返回退出码 36。

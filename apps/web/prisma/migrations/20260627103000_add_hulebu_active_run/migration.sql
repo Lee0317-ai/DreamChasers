@@ -1,0 +1,2 @@
+ALTER TABLE "HulebuProgress"
+ADD COLUMN IF NOT EXISTS "activeRun" JSONB;

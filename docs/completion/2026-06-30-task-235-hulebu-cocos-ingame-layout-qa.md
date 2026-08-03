@@ -1,0 +1,34 @@
+# T235 胡了卜 Cocos 局内布局截图 QA 和修正完成记录
+
+- 任务编号：T235
+- 负责人：Lee
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/bootstrap/HulebuSampleSceneModel.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/ComboBarBinder.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/items/T235-hulebu-cocos-ingame-layout-qa.md`
+  - `docs/tasks/claims/T235-Lee.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/progress/2026-06-30-lee.md`
+- 实现内容：
+  - 修正 Cocos runtime layout 解析，局内坐标改用 `visibleSize` 世界尺寸。
+  - 修正茶室背景 Sprite 锚点，避免背景右偏和左侧黑底。
+  - 收紧 runtime 牌山缩放上限，让首局牌堆更集中在桌面中心。
+  - 将组合动作条定位到槽位上方，避免覆盖牌堆。
+  - 用 Playwright 调用 `GameSceneController` API 进入真实局内状态并截图验证。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - `/Applications/Cocos/Creator/3.8.8/CocosCreator.app/Contents/MacOS/CocosCreator --project /Users/lee/Desktop/Lee/DreamChasers/apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8 --build "platform=web-mobile;debug=true"`
+  - Playwright 截图检查 `tmp-hulebu-cocos-final2-ingame-portrait.png`、`tmp-hulebu-cocos-final2-ingame-mobile.png`
+- 验证结果：
+  - 共享测试 29 项通过。
+  - Cocos TypeScript 检查通过。
+  - Cocos Web Mobile 构建日志显示 `build Task (web-mobile) Finished`，但 CLI 仍返回退出码 36。
+  - Playwright 截图显示茶室背景、牌山、右侧工具、组合动作条和底部槽位已进入同一视觉坐标系。
+- 遗留问题：
+  - Debug 构建会显示 Cocos profiler 覆盖层；正式检查应使用非 debug 构建或关闭 profiler。
+  - 390px 极窄移动端顶部 HUD 仍偏紧，后续可单开任务做 HUD 响应式精修。

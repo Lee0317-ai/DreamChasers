@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>胡了卜 UI 草图对比</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; background: #15120f; color: #f7ead0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; padding: 28px; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    p { color: #cbb893; line-height: 1.6; margin-bottom: 22px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; max-width: 1100px; }
+    a { color: inherit; text-decoration: none; }
+    .card { border: 1px solid rgba(239, 201, 126, .28); background: #211a13; border-radius: 8px; padding: 18px; min-height: 150px; transition: transform .18s ease, border-color .18s ease; }
+    .card:hover { transform: translateY(-2px); border-color: rgba(239, 201, 126, .7); }
+    .tag { display: inline-block; font-size: 12px; color: #251609; background: #e7bd68; border-radius: 999px; padding: 4px 8px; margin-bottom: 14px; font-weight: 800; }
+    h2 { font-size: 18px; margin-bottom: 8px; }
+    .card p { font-size: 14px; margin: 0; color: #d6c3a0; }
+  </style>
+</head>
+<body>
+  <h1>胡了卜 Cocos 局内 UI 三版草图</h1>
+  <p>这三个都是一次性 HTML 草图，不碰 Cocos 正式代码。先选方向，再决定怎么落到 Binder 和资源里。</p>
+  <section class="grid">
+    <a class="card" href="001-teahouse-table/index.html"><span class="tag">氛围优先</span><h2>茶馆牌桌</h2><p>牌桌和牌山是主角。适合把游戏做出麻将桌味道，但信息密度较低。</p></a>
+    <a class="card" href="002-mobile-hud/index.html"><span class="tag">可读性优先</span><h2>手游 HUD</h2><p>目标、按钮、手槽层级最清楚。适合先落地到 Cocos，让玩家不迷路。</p></a>
+    <a class="card" href="003-roguelike-drama/index.html"><span class="tag">记忆点优先</span><h2>国风 Roguelike</h2><p>风场、事件、Boss 更有戏。适合高阶和事件关，但普通关不能太吵。</p></a>
+    <a class="card" href="004-concept-layered/index.html"><span class="tag">概念图复刻</span><h2>上层压顶 + 记牌器</h2><p>专门对齐参考图：三张上层牌压住主牌山，左上角有记牌器，适合后续落 Cocos。</p></a>
+  </section>
+</body>
+</html>

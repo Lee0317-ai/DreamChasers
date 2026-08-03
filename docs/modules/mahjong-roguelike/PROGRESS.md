@@ -24,14 +24,119 @@
 - 正式包浏览器验证确认：桌面与 `390x844` 均非黑屏、无控制台 warning/error；点击牌后刷新可恢复相同局内状态，移动端 HUD、牌山、组合栏、卡槽和工具栏完整可见。
 - Lee 已确认正式发布方向按微信小程序常见竖屏体验验收，`1280x720` 横屏不再属于当前目标，不登记横屏适配任务，也不修改 Binder/UI/layout。
 - T244 转为待验收：既有 `390x844` production 证据覆盖完整 UI 可见、选牌与刷新恢复；组合、多候选 exact choice 和一次清关仍需在可访问本地正式包的浏览器会话中补做，本轮不提前标记完成。
+## 2026-07-01
+
+- 接续 T239 文档：确认 Cocos `pyramid` 牌山的验收口径应从“集中成三角轮廓”改为“真实逐层收拢结构”。底层、中层、顶层需要各自拥有独立 footprint，越上层横向跨度越窄，并由生成器计算出的上层覆盖关系写入 `blockedBy`。
+- T239 后续测试建议钉住四点：至少 3 层、底层 x 跨度大于顶层、顶层平均 y 高于底层、低层节点存在来自更高层的 blocker。截图验收则看首局牌山是否呈现底宽顶窄坡面，而不是平面模板点循环堆叠。
+- 并发风险已记录：来源 Codex 线程仍在进行 T239 代码修正，本次只续写文档，不改 Cocos 生成器代码，避免覆盖原线程改动。
+
+## 2026-06-28
+
+- 完成 T238：Cocos 首局牌山新增中央堆叠 `pyramid` 模板，前 5 关优先使用更接近目标图的三角牌山，后续关卡继续轮换原有 Graph 模板。
+- T238 顺手拆开 HUD 顶部记牌器与余牌进度：记牌器回到关卡牌匾下方只做牌型计数，`余牌 42` 改成独立牌匾，避免文字压在记牌器贴图上。
+- T238 已用 Cocos Web Mobile 构建产物和 Playwright 进入真实 `playing` 状态检查竖屏与 390px 移动端，截图为 `tmp-hulebu-cocos-t238c-portrait.png` 和 `tmp-hulebu-cocos-t238c-mobile.png`；Cocos CLI 仍在显示 build finished 后返回退出码 36。
+- 完成 T237：Cocos 局内可玩性和观感继续重排；麻将牌进一步缩到 `38x51`，牌山缩放上限收紧，组合按钮缩小并下移，底部槽位压进背景木托盘，右侧工具按钮继续保持顶层但减少侵占。
+- T237 使用 `debug=false` Cocos Web Mobile 构建产物截图检查，竖屏和 390px 移动端均已去掉 profiler 干扰，画面从“太丑且玩不了”推进到更干净的可玩局内布局。
+- 完成 T236：按反馈继续精修 Cocos 局内比例和 HUD 层级；麻将牌从 `52x70` 收到 `44x59`，底部额外托盘层已隐藏/移除调用，右侧 `洗牌 / 撤回 / 提示` 挂到 Canvas 顶层的 `ToolOverlayRoot`，记牌器移动到关卡牌匾下方。
+- T236 已用 Cocos Web Mobile 构建产物和 Playwright 截图检查竖屏与 390px 移动端，四项反馈均已落到画面；debug 构建仍会显示 Cocos profiler 覆盖层。
+- 完成 T235：Cocos Web 预览已通过 Playwright 进入真实 `playing` 状态做截图 QA；修正 runtime layout 使用 Cocos `visibleSize` 作为世界尺寸，茶室背景居中，首局牌山缩放收紧，组合动作条改为跟随底部槽位上方，整体从图1的绿色空底/错位状态推进到接近图2的茶桌局内构图。
+- T235 验证通过：`npm run test -w packages/shared -- mahjong-cocos-project`、`npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`、Cocos Web Mobile 构建产物 + Playwright 截图检查；Cocos CLI 仍会在显示 build finished 后返回退出码 36。
+- 完成 T232：Cocos 正式工程已接入茶室桌面整屏背景，补齐目标概念图里最明显缺失的场景氛围层。
+- 背景资源已归档到 `output/hulebu-ui-assets/hulebu-scene-background-v1/`，运行时资源位于 Cocos `assets/resources/ui/v6/backgrounds/`；`GameSceneController` 新增 `SceneBackgroundArt`，加载成功后隐藏旧程序化绿桌底板，加载失败时回退旧底板。
+- 完成 T233：Cocos 奖励三选一已从小按钮弹窗调成更大的三张奖励卡呈现，标题和副标题上移，卡牌尺寸提升到 `106x120`。
+- 完成 T234：Cocos 右侧工具按钮角标现在会从 runtime `hud.toolText` 动态同步洗牌、撤回和打牌次数，不再固定显示 `3`。
+- 完成 T231：Cocos `ui/v6` 资源树已补齐奖励卡、场景皮肤卡、弹层底板和面板资源；顶部牌匾、奖励选择卡和流程弹层会优先加载真实 Sprite。
+
+- 修正 `6条` UI 牌面：原 `tile_bamboo_06.png` 视觉上像内嵌小牌，且和 `4条` 在小尺寸下容易混淆；现在按参考图改为 `4条` 同款竹节元件的三列两排布局，基于 v7 标准空白底牌重组，沿用同一套牌体、底色、竹节笔触和阴影风格。
+- 已同步源原型与站内静态 Demo：`apps/game/mahjong-roguelike/prototypes/config-playable/assets/ui-v6/tiles/mahjong/bamboo/tile_bamboo_06.png` 和 `apps/web/public/games/hulebu-demo/assets/ui-v6/tiles/mahjong/bamboo/tile_bamboo_06.png`。
+- 完成 T198：Cocos 正式工程已接入关前特殊事件基础流程，第 `6 / 8 / 10 / 14 / 18` 关前会进入事件三选一；第一版事件覆盖 `路遇老雀 / 旧牌匣 / 暗灯牌局 / 封盘押后`，分别对应本关铜钱、撤回补给、禁看山和禁洗牌。
+- 完成 T199：Cocos 正式工程已新增长期模式入口基础，配置层提供 `mainline / endless / daily` run profile 和关卡映射 helper；Controller 可启动主线、无尽和每日 run，并把展示层数与实际复用的关卡配置分开。
+- 完成 T200：Cocos 正式工程已接入局外成长基础状态，`HulebuMetaUpgradeState` 覆盖备用槽、护符、初始工具、河道扩容、开局铜钱和看山预置；runtime 会把这些加成合入 HUD、槽位容量、牌河容量和工具次数。
+- 完成 T201：Cocos 正式工程已接入本局流派基础状态，第一版包含 `顺吃流 / 碰开流 / 开杠流 / 追胡流 / 道具流 / 信息流`；runtime 会把流派加成合入工具、铜钱和组合得分，Controller 提供 `selectRunArchetype()` 供后续开局 UI 调用。
+- 完成 T202：Cocos 正式工程已接入开局流派选择 UI，新 run 启动前会弹出六个流派选项；点击后选择本局流派并进入对应模式首关。
+- 完成 T203：Cocos 正式工程已接入局外模式入口，默认启动先显示 `主线 / 无尽 / 每日` 三个模式按钮；选择模式后进入本局流派选择，再进入对应模式首关。
+- 完成 T204：Cocos 正式工程已接入局外成长 UI，大厅 `升级` 入口可进入六轴成长面板；点击备用槽、护符、工具、牌河、铜钱、看山会更新局外成长状态并影响下一局 runtime。
+- 完成 T205：Cocos 正式工程已接入高阶周目入口基础，配置层新增 `advanced` run mode 和东风场、南风场、西风场、北风场四档 profile；大厅 `高阶` 入口可选择风场，再进入本局流派选择。
+- 完成 T206：Cocos 正式工程已接入局外铜钱和升级成本闭环，Controller 本地持有铜钱；通关回大厅前发放铜钱，局外成长面板会显示等级和价格，升级会扣费并受上限约束。
+
+## 2026-06-22
+
+- 创建 T185 胡了卜 Web 数值平衡和内容冻结第一轮，并先收“特殊事件后半程断档”这一刀。
+- T185 继续把晚段奖励往“兑现而不是解释”收口：主线 `18+` 新增 `胡分 / 杠分 / 工具包` 的收官偏置，高阶第 `16 / 18` 档也从 `看山` 改成 `工具包`，后段更像整理手牌和封口，而不是继续补信息件。
+- T185 又继续把每日终章前一拍收进同一口径：每日第 `18` 档也从 `看山` 收成 `工具包`，现在第 `18 / 20` 两档都会更像整手和封口，而不是在终章前再补信息件。
+- 主线特殊事件触发已从 `6 / 8 / 10 / 13 / 16 / 19` 扩成 `6 / 8 / 10 / 12 / 14 / 16 / 18 / 20`，让主线后半程持续有事件分叉，而不是只在前半段和尾声各露几次面。
+- 每日牌局事件触发同步扩成 `4 / 7 / 10 / 12 / 14 / 16 / 18 / 20`，高阶周目同步扩成 `5 / 8 / 11 / 13 / 15 / 17 / 19 / 20` 对应关前节点。
+- 主线后半段新增分段事件偏置：先推信息 / 护路，再推顺手追胡和风险抬注，中段再进挡墙续压，终段再推牌尾收束和北风封尾，后半程内容味道不再混成一团。
+- 无尽长跑新增 `chapterIndex >= 5 && chapterStep === 3` 的额外事件点，长期 run 后段从每章 3 次事件抬到 4 次，长跑不会越往后越安静。
+- 每日和高阶后半段事件也继续补了分段偏置：每日第 `12 / 14 / 16 / 18 / 20` 关前会更明显地往信息、续压、挡墙、封口和终局封尾推进；高阶第 `11 / 13 / 15 / 17 / 19 / 20` 关前也补进对应偏置，后半程不再只是把前段事件重复播一遍。
+- 主线终章前最后一档奖励已从纯容错倾向改成 `胡分 / 看山 / 工具` 的收官包；每日和高阶第 20 档奖励偏置也同步改成这组口味，终局前会更像在补最后一刀，而不是继续发护符和位子。
+- 无尽后段奖励继续收口：长跑 `chapterStep === 3` 的奖励改成 `胡分 / 看山 / 铜钱`，高章节第 `6 / 7` 相位的章节偏置也改成更偏 `收口 / 读口 / 整手` 的组合，后段不会一直只给续命件。
+- 这轮又把晚段内容再推向收官：主线第 `19` 关、每日第 `20` 关和高阶第 `19` 档的后段事件从 `探牌 / 试口` 压向 `锁门 / 封尾`，无尽第 `7` 章的回账主题奖励把 `洗牌` 换成 `工具包`，终局前后更像 build 落成而不是继续拿信息过渡。
+- 每日后段两档主题词缀也继续收口：`挡墙续押` 不再发信息件拖中段，而是改成更明确的 `胡/杠` 收官包；`封尾落锁` 也从 `胡/碰 + 丢弃补刀` 收成 `胡/杠 + 工具包`，让每日后段更像主题终局局。
+- 后段路线奖励也继续拉开了：`胡流` 更偏终口兑现，`信息流` 更偏读口转化，`河控流` 更偏控河转压，`道具流` 更偏整理节奏，`救场流` 则回到补位续命；无尽 / 每日 / 高阶三条线的后段 build 味道不再只是换个顺序的同一组奖励。
+- 第 `17 / 18 / 19` 关主线牌山压力继续收了一刀：牌量从 `336 / 348 / 360` 收到 `330 / 340 / 348`，字牌权重从 `68 / 74 / 82` 收到 `64 / 70 / 76`，孤张预算也各回落一格，终章前的压力改成持续绷紧而不是最后三关一起顶满。
+- `胡了卜王` 终章 Boss 继续收口：朋友试玩终章仍保留复合目标，但把 `碰 2` 收到 `碰 1`、积分目标从 `180` 收到 `170`，让终章更像 build 检查而不是把所有轴同时卡死。
+- 无尽后段 Boss 也继续收了一格：后段章节守层的记分线再从 `170 + 章节 * 20` 收到 `168 + 章节 * 18`，同时第 8 章这类本来就自带 `胡 / 杠` 的终局章节不再额外叠第二层 `杠 2`；`吃` 额外检查只留在第 7 相位，不再把第 8 相位做成四种组合一起压桌。
+- 每日终局 Boss 同步收口：每日第 20 关仍保留词缀驱动的终章变体，但 `碰` 目标压回 `1`，得分目标上限再压到 `190`，避免当天词缀把终章再抬成比主线更硬的一档。
+- 主线终章前两档再继续收了一格：第 `18 / 19` 关牌量进一步从 `340 / 348` 收到 `336 / 344`，字牌权重从 `70 / 76` 收到 `68 / 72`，孤张预算从 `9 / 10` 收到 `8 / 9`，让终章门前和终章本体的压力递进更顺，不再像连续两脚一起踩满。
+- 每日终局 Boss 继续去掉机械叠题：第 20 关现在只再挂 `1` 个今日词缀重点组合，不再默认把词缀重点叠成 `2` 个额外目标，终局会更像“当天主题版 Boss”，不是再额外做一张词缀考卷。
+- 无尽第 `7 / 8` 相位也继续去掉机械补题：章节主题已经带双组合目标时，不再额外挂通用 `碰 1`，守层压力更多来自章节身份本身。
+- 无尽后段章节 Boss 记分线继续从 `168 + 章节 * 18` 收到 `166 + 章节 * 17`，让后段逼分仍在，但不会和章节主题、胡杠目标一起把结尾压到太死。
+- 主线第 `17 / 18 / 19` 关再收一刀：当前压成 `328 / 334 / 340` 张、字牌权重 `62 / 66 / 70`、孤张预算 `7 / 8 / 8`，终章门前和终章本体之间的递进更顺。
+- 主线和每日终局 Boss 同步再收：`胡了卜王` 现在把 `杠` 目标也压回 `1` 且得分线为 `166`；每日第 20 关最终得分线卡进 `186` 内；每日第 `16` 档奖励改成 `胡钱 / 整手 / 工具` 过渡包。
+- 无尽高章节守层分数线继续从 `166 + 章节 * 17` 收到 `164 + 章节 * 16`，让长跑后段仍逼分，但少一点机械补题感。
+- 本轮把代码、静态副本和回归也一起重新钉到这组冻结值：朋友试玩主线第 `17 / 18 / 19` 关现为 `328 / 334 / 340` 张、字牌权重 `62 / 66 / 70`、孤张预算 `7 / 8 / 8`；无尽后段 Boss 守层分数线为 `164 + 章节 * 16`。
+- 创建 T184 胡了卜路线奖励和长期成长深化。
+- 创建 T186 胡了卜局外成长与局内流派开局重构规划。
+- 把原先只停留在路线图里的长期成长第二轮正式收口为六轴：`备用槽 / 满槽护符 / 初始道具 / 河道扩容 / 开局铜钱 / 看山预置`。
+- `/games/hulebu` 升级页新增路线 `当前收益 / 下一步` 状态卡，右侧预览也同步补了 `路线当前收益 / 路线下一步`，让路线挂载不再只藏在参数和局内偏置里。
+- 已确认新的主线产品结构：长期成长依赖局外加点、资源、解锁和携带能力；每一局真正的打法则在开局前通过流派技能选择决定。后续奖励、事件和 Boss 检查都应围绕“本局已选流派”偏置，而不是默认玩家会跨多关长成同一条路线。
+- T186 继续落到壳层：`/games/hulebu` 的 `局内流派` 面板已补前 20 关引导式解锁状态，`吃 / 碰` 起步可选，`杠 / 胡 / 道具 / 信息` 会随主线进度逐步开放；20 关后以及无尽、每日、高阶显示自由选择口径。
+- T186 内层奖励池也继续收口：`preferredRoute` 的基础偏好池现在只轻补一张协同奖励，不再把中后段路线 bias 直接拼进去；中后段奖励加权继续由本局 `runArchetype` 主导。
+- T186 事件和终章 Boss 口径也继续收口：事件池中 `preferredRoute` 只轻补一个基础偏好事件，高阶事件不再额外挂旧局外偏好；终章 Boss 的压力说明改用本局 `runArchetype` 流派标签，不再读旧路线挂载。
+- T186 最终术语扫尾已完成：外层自动候选统一改成 `自动偏好`，内层 Boss 阶段目标改成 `本局流派主骨`，避免旧 `自动挂载 / 当前路线主骨` 文案继续暗示路线挂载是局内主轴。
+- 失败链路保持最小口径：外层壳直接丢弃旧失败结算，`hulebu:run-failed` 不再生成任何外层失败页；失败只保留在 iframe 内的 `失败 / 重开` 弹框，原型、静态 Demo 和回归测试都已按这个口径锁定。
+- 外层 hydration 也补了旧存档兜底：如果浏览器本地还残留历史 `failed` settlement，`/games/hulebu` 不会再把它当成已完成结算恢复出来，刷新后仍只保留 iframe 内的短失败弹框口径。
+- 继续把结算里的“解释感”收掉：原型和站内静态 Demo 的通关弹层不再显示 `Boss 复盘` 卡，`/games/hulebu` 外层结算页也压回只读结果指标和一句摘要，不再顺手展开路线、词缀、Boss 或周目说明。
+- 继续把局外首页的“说明页感”收掉：主线 / 无尽 / 每日不再铺大块导向和节奏说明，外层只保留开始入口、当前进度和少量必要预览，避免失败口径收短了但局外页还在替玩家讲太多。
+- 创建 T183 胡了卜 UI 资产 Cocos 接入说明文档。
+- 新增 `UI_ASSETS_COCOS_INTEGRATION.md`，记录 T181 v6 透明 UI / 牌面资源包和 T182 v1 操作演出概念包的可用路径、预览图、Cocos `resources` 目录建议、SpriteFrame key 建议、逻辑牌面映射、导入设置、接入顺序和验收清单。
+- 文档明确 T181 v6 可作为 Cocos 后续接入候选资源；T182 的人物 cut-in 仍是程序化占位，不应直接进入正式发布包；T181 v6 暂缺正式 `胡` 按钮，需要后续单独补同风格资源。
+
+## 2026-06-21
+
+- 继续加深 T176 高阶周目结算归因。
+- `东风试路·定风 / 南风挡墙·回潮 / 西风试锋·收注 / 北风锁火·熄潮` 这批高阶 identity 已在当时补齐成功/失败读法；当前对外口径已经收回，不再把这些解释性内容挂到失败结算上。
+- `/games/hulebu` 外壳高阶配置卡同步补了四条新分支的事件聚光和奖励主骨，避免被大类通用文案吞掉。
+- 高阶结算新增 `nextDecision` 路线决策层，按东/南/西/北四档给出“继续深追、先补容错、后段收账、终局封口顺序”等下一局路线判断，原型、站内静态 Demo 和 `/games/hulebu` 结算页已同步。
+- 高阶结算继续新增 `tempoRead` 节奏读法层，东/南/西/北四档分别强调三拍开线、呼吸墙、读账收账和封火落锁，让打完一轮后的操作手感差异更明显。
+- 高阶失败结算新增 `failureAxisVerdict` 失败轴判定层，会把目标完成度、节奏断档、容错耗尽和构筑失配压成“目标线先塌 / 节奏先断拍 / 容错先见底 / 构筑先散线”的第一眼结论。
+- 高阶失败结算继续加深为四段式拆分，新增 `failureGoalBreakdown / failureTempoBreakdown / failureBufferBreakdown / failureBossMismatchVerdict`，让目标、节奏、容错和构筑 / Boss 错位不再挤在同一句里。
+- `东风探手·压口` 现在也从东风通用前段里单独拎出来，补了事件身份 / 构筑手感 / 奖励链 / Boss 压力四条判定，让前段压口不再吞进普通东风开线。
+- `西风收口·留门 / 北风锁火·终煤 / 北风封尾·闷锁` 也继续补了更偏终局的专属手感句，让后段留门、闷燃封火和闷锁封尾不再靠同一条大类文案兜底。
+- 失败反馈也继续往细处拆，`北风锁火·终煤 / 北风封尾·闷锁` 现在各自有专属的构筑手感、Boss 压力和奖励链判定，终局死法不再只剩一条“高压封刀”的大类解释。
+- `北风锁火·终煤 / 北风封尾·闷锁` 的失败拆分现在还能继续细到目标完成度、节奏和容错卡点，能更明确地分出火线没闷到最后一拍、尾门没焊死和 Boss 终局逼锁错位这几类失败。
+- 高阶成功结算新增 `rewardChainVerdict` 奖励链判定层，按东/南/西/北四档把奖励主骨压成“开线链 / 筑墙链 / 收账链 / 封刀链”，让不同构筑的收益身份更容易一眼看出。
+- 高阶事件结算新增 `eventIdentityVerdict` 事件身份判定层，按东/南/西/北四档把事件线压成“试路局 / 换气局 / 读账局 / 落锁局”，让事件差异不再只靠事件名区分。
+- 高阶构筑结算新增 `buildIdentityVerdict` 构筑手感判定层，按四档压成“前段开线 / 中段呼吸墙 / 后段读账收口 / 终局封刀”，让结算能直接说清这套 build 的手感身份。
+- 高阶 Boss 结算新增 `bossPressureVerdict` Boss 压力判定层，按四档压成“前段催线 / 中段压墙 / 后段查账 / 终局逼锁”，让玩家能看懂这一档 Boss 到底在逼哪条线。
+- 高阶奖励池新增 4 张 A1-A4 专属奖励：`东风构筑：三拍开线 / 南风构筑：呼吸墙核 / 西风构筑：读账封口 / 北风构筑：终局封刀`，并接入对应档位池与构筑加权池，让差异实际进入局内抽奖。
+- 高阶奖励池和构筑联动继续加厚，东/南/西/北四档又补了一批路线锚点、事件锚点和专属奖励；四档高阶现在不是只有一条主线奖励骨，而是开始有更密的分支词条层。
+- 本轮验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`、`npm run test -w apps/web -- hulebu`、`npm run typecheck -w apps/web`、原型 HTML 内联脚本 `node --check`、站内静态 Demo 内联脚本 `node --check`。
 
 ## 2026-06-16
 
+- 对 T181 路线奖励和局外能力深化做了第一轮实现。
+- `/games/hulebu` 的局外升级已从原来的 `备用槽 / 满槽护符 / 初始道具` 三项，扩到 `备用槽 / 满槽护符 / 初始道具 / 河道扩容 / 开局铜钱 / 看山次数` 六轴长期成长。
+- Web 壳层现在会把 `riverBonus / coinBonus / visionBonus` 连同原有三项一起写进 iframe 参数；HTML 原型和站内静态 Demo 已接住这些长期成长信号。
+- 登录账号下的 `HulebuProgress` 也同步扩展到 `dailyStreak / lastDailySeed / upgrades / equippedAscensionLoadout / unlockedAscensionPerks`，局外长期成长不再只保存在本地。
+- 本轮验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`、`npm run test -w apps/web -- hulebu`、`npm run typecheck -w apps/web`、`npm run build -w apps/web`、`git diff --check`。
+- 下一步 Web 完整版内容建议继续留在 T181，补更深的路线奖励联动和结算后的长期选择；Cocos 和音画资源继续后置。
 - 对 T176 高阶周目做了一轮后续加深补丁。
 - 原型新增更深的高阶 identity：补了 `高阶构筑：河杠连锁 / 收官定局 / 顺手成胡 / 稳压续命` 以及 `封盘护河 / 续战筹码 / 牌尾缓冲` 等北风场专属能力与奖励链。
 - 高阶事件池也补了第二轮 identity 差异：新增 `顺手摸牌 / 稳压补墙 / 河杠涨潮 / 收官落灯` 四个更贴构筑的事件，并把 `东风试胆 / 南桌续押 / 西风照听 / 北风断尾` 接入更深层的档位事件轮换。
 - 高阶结算 payload 新增 `settlementHighlights`，会把本轮更关键的高阶构筑收益收束成结构化摘要。
-- `/games/hulebu` 外层结算页把高阶复盘进一步抬成更像专属页的结构，明确显示 `构筑回顾 / 关键收益 / 关键失误 / 下一轮建议`。
+- 当时做过一轮高阶外层复盘加深；当前已回退为轻结果口径，不再在外层结算里展示 `构筑回顾 / 关键收益 / 关键失误 / 下一轮建议` 这类解释卡。
 - 本轮验证通过：`npm run test -w packages/shared -- mahjong-config-playable-prototype`、`npm run test -w apps/web -- hulebu`、`npm run typecheck -w apps/web`、`npm run build -w apps/web`、两份 HTML inline script `node --check`、`git diff --check`。
 - 创建并完成 T180 胡了卜无尽和每日深度化。
 - HTML 原型新增 `getEndlessChapterProfile()` 和 `getDailyMutatorProfile()`，无尽第 21 层后开始按每 5 层一个章节推进，并在章节尾部挂 `章节 Boss` 信号。
@@ -49,13 +154,13 @@
 - 创建并完成 T178 胡了卜特殊事件池扩容。
 - HTML 原型新增 `SPECIAL_EVENT_RARITIES`、`SPECIAL_EVENT_TAGS` 和 `EVENT_BUILD_LINKS`，把特殊事件从第一版固定补给扩到 `常见 / 稀有事件 / 高阶事件` 三层。
 - 普通 run 新增 `河灯旧约 / 封盘押后 / 险招翻倍` 等第二版事件；高阶 run 会按 `河控流 / 稳压流 / 封盘流` 等构筑线更优先给对应事件。
-- 事件弹层现在会显示稀有度、类型和构筑联动提示；外层 `/games/hulebu` 结算页新增 `最近事件` 卡片。
+- 事件弹层现在会显示稀有度、类型和构筑联动提示；外层结算不再追加 `最近事件` 卡片，避免结果页继续膨胀。
 - 站内静态 Demo 已同步，测试、类型检查、构建和脚本检查通过。
 - 下一步 Web 完整版内容建议进入 T179 成就图鉴扩容；Cocos 和音画资源继续后置。
 - 创建并完成 T177 胡了卜 Boss 试炼第二版。
 - HTML 原型新增 `BOSS_TRIAL_PHASES` 和 `BOSS_TRIAL_VARIANTS`，把第 10 关中段试炼、第 20 关终局 Boss、高阶 Boss 变体和无尽 Boss 变体区分开。
 - Boss 面板新增 `阶段目标` 和 `Boss 奖励品质`，高阶 Boss 会显示 `高阶 Boss 变体`，且不套普通教程目标。
-- 通关和失败事件新增 `bossReview` payload，外层 `/games/hulebu` 结算页新增 `Boss 复盘` 卡片，能显示变体、阶段、奖励品质、关键缺口和下一轮建议。
+- 通关和失败事件保留 `bossReview` payload 作为内部运行态数据；外层 `/games/hulebu` 结算页不再展示 `Boss 复盘` 卡片，失败只保留 iframe 内的 `失败 / 重开` 弹框。
 - 站内静态 Demo 已同步，桌面端和 390px 移动端已检查高阶 Boss 文案与页面宽度。
 - 下一步 Web 完整版内容建议进入 T178 特殊事件池扩容；Cocos 和音画资源继续后置。
 - 创建并完成 T176 胡了卜高阶周目完整版。
@@ -683,4 +788,68 @@
 - `applyStackBlockers` 已修正为任意更高层牌只要覆盖低层牌超过 5% 就写入 blocker，同列所有上层牌都会阻挡下层牌。
 - `HulebuRuntimeState` 已做测试环境可加载的轻量解耦，新增回归测试验证被盖住的下层牌不可入槽，移走 blocker 后才恢复可选。
 - 已通过 `npm run test -w packages/shared -- mahjong-cocos-project`，当前 1 个测试文件、11 个测试通过；已通过 Cocos `tsc`；已通过 Cocos Web Preview 手机视口目检，顶层牌可入槽，被同列完全覆盖的下层牌连点不入槽。
+- `/games/hulebu` 的 Web 壳层已开始把 T186 从规划落到实现：`局内流派` 现在是每局开局前的明确主轴，原来的 `路线挂载` 文案已收成 `局外偏好`，只保留长期倾向和轻协同。
+- `apps/game/mahjong-roguelike/prototypes/config-playable/index.html` 与站内静态 Demo 现已真正解析 `runArchetype` 参数，并让它主导开局加成、奖励偏置、事件偏置和主线终章 Boss 的本局打法口径；`preferredRoute / routeMasteryLevel` 仍保留，但只负责局外轻协同。
+- 又继续收了一刀旧路线残影：局外偏好现在只会轻补 1 档起手协同和少量后段偏置，不再像旧结构那样把奖励池、事件池和起手一起重新拉成“跨多关养同一路线”的读法；主线问题正式回到“每局开局前先选这局流派”。
+- T186 奖励池口径继续明确：局外基础偏好池不再吃后段路线奖励 bias，只保留一张轻协同奖励；后半程奖励链由本局流派选择承担。
+- T186 事件池和 Boss 说明也已同步到同一方向：旧 `preferredRoute` 不再连续塞事件，也不再出现在终章 Boss 主轴文案里；后续新事件或 Boss 校验优先挂到本局流派、长期模式或高阶构筑。
+- T186 最终术语扫尾已完成。外层自动候选统一读作 `自动偏好`，内层 Boss 阶段目标统一读作 `本局流派主骨`，当前实现进入待验收；后续不要再恢复旧 `自动挂载 / 当前路线主骨` 文案。
+- T187 已补刷新后继续当前本轮：`/games/hulebu` 外层会持久化未完成 `activeRun`，刷新后主线、每日、高阶恢复到当前关开局，无尽恢复到当前层开局；失败或通关后清空该快照。
+- T188 已补账号级当前本轮存档：`HulebuProgress.activeRun` 会保存同一份恢复快照，登录同步时本地和账号快照按 `updatedAt` 选择更新的一份，让继续本轮不再只依赖本机缓存。
+- T189 已开始并完成旧 Cocos 工程复用评估立项。现有 `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/` 可作为正式 Cocos 承接基座，复用项目壳、场景 Binder、runtime 起点、牌面资源目录和共享测试；后续追平应先同步 Web v6 视觉资源和全量牌面映射，再补当前 Web 的有限牌河、明牌组、补杠、震落、满槽救场、Boss、事件、无尽、每日、高阶和局外成长。
+- T190 已完成 Cocos 首轮 v6 视觉资源接入。Cocos resources 新增 `ui/v6/` 资源树，包含 Web 当前 v6 牌面、组合按钮、工具按钮、HUD 和槽位；`HulebuTileSpriteCatalog` 已从旧 `refreshed` 牌面切到 v6 牌面，`ComboBarBinder` 会优先加载 v6 操作按钮图片并保留文字 fallback；共享测试已锁定 34 张牌面资源和 `6条` 路径。
+- T191 已完成 Cocos v6 HUD、槽位和工具按钮绑定。`SlotLayerBinder` 现在会加载 `hand_slots_8` 作为主槽背板；`HudBinder` 会加载 `tile_counter_wide / level_badge / score_badge` 背板；`GameSceneController` 的 `洗牌 / 撤回 / 提示` 工具按钮会加载 v6 图片。所有新绑定都保留程序化 fallback，并由 `mahjong-cocos-project` 测试覆盖。
+- T192 已完成 Cocos 有限牌河、明牌组和补杠基础迁移。`HulebuCocosSceneModel` 已新增 `openMeldNodes / riverNodes`，`HulebuRuntimeState` 已新增 `river / riverLimit / openMelds` 和 `bugang` candidate，`MeldRiverLayerBinder` 会渲染明牌区与牌河；执行 `碰 / 杠 / 补杠 / 胡` 会维护基础明牌和牌河状态。
+- T193 已完成 Cocos 丢弃工具和牌河交互。`SlotLayerBinder` 现在支持主槽点击回调；`GameSceneController` 新增丢弃选择态，右侧 `打牌` 工具可进入选择态，点击主槽牌会调用 runtime `discardSlotTile()` 并刷新牌河。
+- T194 已完成 Cocos 基础震落和满槽救场。`HulebuRuntimeState` 现在会在 `杠 / 补杠` 后震落最多 2 张压顶牌、在 `胡` 后震落最多 3 张并清牌河；被震落的牌清除 blocker、回到可点 board 状态；主槽满且牌河可用时状态文本提示 `可打牌入河`。
+- T195 已完成 Cocos 洗牌和撤回真实交互。`HulebuRuntimeState` 新增历史快照栈和工具次数状态，`useShuffleTool()` 会确定性重排 board 牌面并消耗洗牌次数，`useUndoTool()` 会恢复最近快照并消耗撤回次数；`GameSceneController` 的右侧 `洗牌 / 撤回` 按钮已接入对应 runtime 方法。
+- T196 已完成 Cocos Boss 目标基础接入。`HulebuLevelConfig` 已支持 `bossGoals`，第 10/20 关配置了组合次数、花色集合和积分目标；`HulebuRuntimeState` 会记录 Boss 进度并输出 HUD 摘要；`GameSceneController` 已改为牌山清空且 Boss 目标完成才进入通关流程。
+- T197 已完成 Cocos 奖励效果基础接入。Cocos runtime 新增本轮奖励状态，三选一奖励现在能影响后续关卡的备用槽、护符、首败保护标记、开局铜钱、工具次数和吃/碰/杠分数；`GameSceneController` 会在选择奖励后把累计状态传入下一关。
+
+- T207 已补 Cocos 高阶风场压力基础。`HulebuLevelConfig` 新增 `HULEBU_ADVANCED_RUN_PRESSURES` 和压力读取 helper；`GameSceneController` 会在每关启动时把当前高阶风场压力与关前事件合并后传入 runtime。东风会扣看山，南风禁洗牌，西风继续压撤回/看山，北风禁洗牌和看山并扣撤回/打牌。
+
+- T208 已补 Cocos 高阶专属奖励基础。`HulebuLevelConfig` 新增 `HULEBU_ADVANCED_REWARD_POOLS` 和 `getHulebuRewardChoicesForRun()`；`GameSceneController` 的奖励弹层在高阶 run 中会优先展示当前风场奖励，并由普通奖励补足 3 个选项。高阶奖励效果已接入 runtime，可影响工具、护符、备用槽、开局铜钱和组合分数。
+
+- T209 已补 Cocos 高阶能力槽基础。`HulebuLevelConfig` 新增 `HULEBU_ADVANCED_ABILITIES` 和 `getHulebuAdvancedAbilityChoices()`；`GameSceneController` 新增 `advancedAbility` phase，高阶风场选择后会先显示高阶能力 3 选 1，再进入本局流派选择。第一版能力效果通过本轮奖励状态和每关修饰器进入 runtime。
+
+- T210 已补 Cocos 高阶事件池基础。`HulebuLevelConfig` 新增 `HULEBU_ADVANCED_SPECIAL_EVENT_POOLS`，`getHulebuSpecialEventChoices()` 现在可按 run profile 返回事件；高阶 run 会优先展示当前风场事件，再用普通事件补足 3 个选项。高阶事件复用现有事件 effect 并通过本关 modifier 生效。
+
+- T211 已补 Cocos 事件元信息基础。`HulebuSpecialEventConfig` 新增 `rarity / tags / dangerLevel`；普通事件和高阶事件都已有稀有度、标签和风险等级；`GameSceneController` 的关前事件弹层会在事件名下展示元信息，为后续事件卡美术、构筑权重和每日/无尽事件变体预留稳定字段。
+
+- T212 已补 Cocos 无尽/每日事件变体。`HulebuLevelConfig` 新增 `HULEBU_ENDLESS_SPECIAL_EVENTS`、`HULEBU_DAILY_SPECIAL_EVENTS` 和 `getHulebuModeSpecialEventPool()`；无尽事件节点优先给出长线补给与尾盘容错，每日事件节点优先给出今日补钱与禁看山词缀压力，再用普通事件补足 3 个选项。
+
+- T213 已补 Cocos 本局流派事件偏置。`HulebuLevelConfig` 新增 `HULEBU_ARCHETYPE_SPECIAL_EVENT_POOLS` 和 `getHulebuArchetypeSpecialEventPool()`；`GameSceneController` 会把当前 `runArchetype.archetypeId` 传入事件选择 helper。事件节点现在优先展示本局流派相关事件，再展示高阶/无尽/每日等模式事件，最后用普通事件补足。
+
+- T214 已补 Cocos Boss 变体基础。配置层新增 `HULEBU_BOSS_VARIANTS`、`getHulebuBossVariantForRun()` 和 `createHulebuRuntimeLevelForRun()`；主线第 10/20 关会区分 `中段试炼 / 胡了卜王`，高阶、无尽、每日 run 会按 profile 获得对应 Boss 变体和轻量目标补丁。Cocos HUD 会显示变体名称，通关判断继续复用 Boss 目标完成逻辑。
+
+- T215 已补 Cocos 当前本轮继续基础。`GameSceneController` 新增 `HulebuActiveRunSnapshot` 和本地存储 helper；进入关卡时会持久化当前 run 的 mode、当前关序、本局流派、本轮奖励、局外成长、局外铜钱和高阶能力；大厅存在“继续本轮”按钮和运行中摘要，点击后可恢复到当前关开局。
+
+- T216 已补 Cocos 最近一轮结算摘要基础。`GameSceneController` 新增 `HulebuSettlementSnapshot` 和本地存储 helper；run 通关回大厅时会记录上一轮模式、关序、铜钱奖励和奖励数；大厅副标题在无 active run 时会展示最近一轮摘要。
+
+- T217 已补 Cocos 本地长期进度基础。`GameSceneController` 新增 `HulebuMetaProgressSnapshot` 和本地存储 helper；无尽 run 完成后会刷新最高层、每日 run 会刷新对应 seed 的最佳关序、高阶 run 会刷新最高已完成风场；大厅模式按钮会显示长期进度副文案。
+
+- T218 已补 Cocos 局外生涯总览基础。大厅新增 `生涯` 入口；`GameSceneController` 新增 `collection` phase 和生涯总览弹层，可集中展示当前本轮、最近一轮、局外铜钱、六轴成长等级，以及主线、无尽、每日和高阶的本地累计状态。
+
+- T219 已补 Cocos 成就图鉴最小版基础。`GameSceneController` 新增本地 `achievements` 快照、首批 8 项成就配置和读写 helper；主线、无尽、每日、升级和高阶推进会解锁对应成就；`生涯` 面板新增图鉴总览、下一项目标和首批图鉴摘要。
+
+- T220 已补 Cocos 主线独立长期进度基础。`HulebuMetaProgressSnapshot` 新增 `bestMainlineLevel`，主线 run 完成后会写回最高已到关序；大厅主线按钮和生涯面板现在优先展示主线长期进度，不再只依赖最近一轮摘要。
+- T221 已补 Cocos 局外档案本地持久化基础。`GameSceneController` 新增独立 `meta profile` 本地快照，局外铜钱和六轴成长会在启动大厅、回大厅、局外升级和通关发钱后稳定读写。
+- T222 已补 Cocos 当前关中局恢复基础。`HulebuRuntimeState` 已提供运行态快照导出/恢复接口，`HulebuActiveRunSnapshot` 现会携带当前关 runtime 快照；大厅“继续本轮”存在 runtime 快照时可直接恢复中局牌桌、卡槽、牌河、明牌区、震落牌、分数和工具次数。
+- T223 已补 Cocos 关间 phase 恢复基础。`HulebuActiveRunSnapshot` 已新增 `resumablePhase`，`cleared / reward / event` 三类节点进入时会写回 active run；大厅“继续本轮”现在也可恢复清关继续、奖励三选一和关前事件 overlay。
+- T224 已补 Cocos 开局前 flow 恢复基础。`HulebuActiveRunSnapshot` 现会记录 `pendingRunProfile`，`resumablePhase` 覆盖 `advancedAbility / archetype`；高阶能力选择和本局流派选择节点也会写回 active run，继续本轮可恢复到对应开局前 overlay。
+- T225 已补 Cocos 每日牌局第二版信号基础。配置层新增每日词缀 helper 和 8 档每日主题；每日 run 的奖励与事件会按当日 seed 稳定偏置；`metaProgress` 新增 `dailyStreak / lastDailySeed`，大厅每日按钮和生涯总览可展示今日词缀、今日奖励、今日最佳与连续参与。
+- T226 已补 Cocos 账号进度桥接基础。`GameSceneController` 现可在浏览器环境下尝试调用 `/api/games/hulebu/progress`；大厅启动和回到局外时会尝试合并账号档，本地 `metaProfile / metaProgress / achievements / activeRun` 变化时会做轻量推送；未登录或接口失败时继续回退本地档。
+- T227 已补 Cocos 明牌区与槽位真实牌面。`MeldRiverLayerBinder` 现在会优先把明牌区和牌河渲染成真实麻将牌面，`SlotLayerBinder` 也会优先把主槽和备用槽渲染成真实麻将牌面；四块牌区继续保留文字 fallback，并已通过 Cocos TypeScript 编译与共享静态测试。
+- T228 已补 Cocos 候选组合选择弹层基础。`HulebuRuntimeState` 现在可按组合类型返回全部候选，`GameSceneController` 在多组同类候选时会先弹出选择面板；候选项优先显示真实小牌面并保留文字 fallback，选择后按点中的候选 key 结算，单候选仍直接执行。
+- T229 已修复 Cocos 预览跨工作区生成器导入。`HulebuLevelConfig.ts` 不再直接 import 工程外 `packages/shared/src/mahjong-mountain-generator`，Cocos 工程内新增 `HulebuMountainGenerator.ts` 承接预览所需的 graph-based levelTiles 生成口径；共享测试已扫描 Cocos 脚本，防止跨工程源文件 import 复发。
+- T230 已修正 Cocos 移动端布局缩放口径。runtime 布局不再把 `devicePixelRatio` 当作额外放大因子，小屏视口现在允许按可视区域缩小；`HulebuSampleSceneModel` 与 `HulebuRuntimeState` 统一改为可收缩的 `layoutScale`，共享测试已锁定这一口径，防止再次把整屏放大。
+- T231 已补 Cocos UI 素材接入。`ui/v6` 资源树补齐奖励卡、场景皮肤卡、弹层底板和 Buff 面板；`GameSceneController` 的顶部牌匾、奖励选择卡和流程弹层现在优先加载真实 Sprite，顶部 HUD 也收敛到视觉壳牌匾，减少早期占位壳和双 HUD 重叠感。
+- T239 遗留修复已接手并完成：`BoardLayerBinder` 不再依赖每张牌自己的 Button 点击状态，而是给 BoardRoot 增加全屏 `UITransform`，统一接 `TOUCH_END` 后按当前 model 屏幕矩形和更高层覆盖率做手动 hit-test；最新口径已收紧为 `0.001` 顶层-only，灰化或被任意更高层实际覆盖的牌不会触发选牌。`enforceCocosInitialFreeMaximum()` 继续用同位置更高层 blocker 压牌，但限制在当前最大层以内，首关可点目标保持 5-6 张。
+- T240 已补 Cocos 记牌器展开挂件和首关牌山观感。`HulebuHudModel.tileCounter` 现在提供结构化四门计数，`CounterPlaque` 点击可展开 `CounterExpandedPanel` 浮层并展示每张牌小图计数，浮层用 `BlockInputEvents` 阻断底层牌堆点击；首关最终切到 `long-wall` graph 模板，保持 30 张牌、6 张初始可点，并把牌山从分散环形堆叠收敛为更接近 demo 的横向压叠牌山。
+- T239/T240 已补 Cocos Web Mobile 非 debug 构建和 Playwright 验证：构建日志显示 `build Task (web-mobile) Finished`；手机视口下点击可点牌后主槽 0->1、余牌 30->29，直接调用灰化被压牌点击入口主槽保持不变；展开记牌器时 `CounterExpandedPanel` 位于 `ToolOverlayRoot`，层级高于 BoardRoot。
+- T239/T240 点击错位回归已修正：上一轮把 `UITransform.getBoundingBoxToWorld()` 误当成触摸坐标口径，导致视觉牌和命中 tileId 偏移。`BoardLayerBinder` 现在使用基于 model position 的 `getTileEventRect()` 对齐 `EventTouch.getUILocation()`；Playwright 手机视口实测 3 张代表性可点牌入槽后的 `tileId / prefabKey` 均与点击目标一致，灰化被压牌入口保持 no-op。
+- T239/T240 最新收口为 demo 风格横向压叠牌山：首关模板从 `ring` 改为 `long-wall`，覆盖阈值统一收紧到 `0.001`，只要有更高层实际覆盖就灰化并禁点；被压牌 Sprite 增加灰色 tint。`long-wall` 列距二次调整后不再是 6 个孤立小塔，也不缩成一团，手机视口验收首关 30 张、6 张亮牌、24 张灰牌、运行时 `xSpan: 152 / ySpan: 16`、覆盖规则 0 违例；灰牌不入槽，亮牌入槽 tileId/prefabKey 一致，最终截图为 `.codex-tmp/hulebu-final-wall-before-click.png`。
+- T239/T240 已补旧 active run 迁移门禁：`HulebuActiveRunSnapshot` 新增 `boardRevision`，当前版本为 `top-only-long-wall-2026-07-05`；本地 active run 或账号 `cocosSnapshot` 缺失/不匹配该版本时会自动作废，避免普通打开继续恢复旧 cross/高塔式牌山。发布包复测中预置旧 snapshot 后启动回到 lobby 且本地 active run 被清空，再进入首关为 30 张、6 张亮牌、24 张锁牌、`hasCrossIds=false`、`hasLongWallIds=true`。
+- T239/T240 根据 Lee 最新反馈再次收口：首关目标改为 15 张总牌、3 张顶层可点、12 张锁牌；`HULEBU_BOARD_REVISION` bump 为 `top-only-three-card-2026-07-05`。BoardLayer 牌面尺寸从 `38x51` 收到 `32x43`，顶层缩放从 `1.14` 收到 `1.04`，锁层颜色和透明度更暗。Kimi WebBridge 真实 Chrome 验证新构建：启动 lobby active run 为空，进入首关 `余牌 15`、3 张可点；底牌边缘点 no-op，三张顶层牌点击后 slot0 的 tileId 均与目标一致。截图为 `.codex-tmp/kimi-three-card-after-fix.png`。
+- T239/T240 入口和点击链路按 Lee 反馈再次修正：`GameSceneController` 启动时不再默认停在 lobby，读完本地状态后无有效 active run 直接进入教程首关；`HULEBU_BOARD_REVISION` bump 为 `tutorial-pointer-2026-07-08`，旧 active run 会失效，避免普通刷新继续看到旧复杂局。`BoardLayerBinder` 在原 Cocos `TOUCH_END / MOUSE_UP` 基础上新增 canvas `pointerup / mouseup / touchend` 兜底，把 DOM client 坐标换算到现有 hit-test UI 坐标后再走最高层命中判断，修复桌面点击无效。验证：共享测试 46 个通过、Cocos TS 通过、web-mobile 非 debug 构建完成；Kimi WebBridge 真实 Chrome 启动态为 `playing / 15 总牌 / 3 可点 / 12 锁牌`，截图 `.codex-tmp/kimi-tutorial-pointer-final-start.png`；Playwright 鼠标点击中间顶层牌后 slot0=`graph_long-wall_node-010`，总牌 15->14。
 - T243 已建立正式 Cocos 源码与 production 构建溯源基线。正式运行时和 v6 UI 已进入可复现提交；构建会拒绝脏/未跟踪/索引异常输入，从受保护的精确提交快照调用固定 Creator 3.8.8，并把源码、完整 Creator bundle、TypeScript、产物和 HTTP smoke 证据写入 schema 6 manifest。原子 owner marker、promotion journal 与可重试 tombstone 覆盖失败/崩溃恢复；干净 worktree 已通过发布测试 `189/189`、工程测试 `32/32` 和真实 build/verify-only。下一步 T244 回到 `GameSession / RunStateMachine / ContentRepository / SaveService` 的产品架构迁移。

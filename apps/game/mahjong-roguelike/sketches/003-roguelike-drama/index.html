@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>胡了卜 UI 草图 - 国风 Roguelike</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #120f12;
+      color: #fff2d6;
+      font-family: "Songti SC", "STSong", serif;
+    }
+    .phone {
+      width: min(390px, 100vw);
+      height: min(844px, 100vh);
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(238, 66, 38, .28), transparent 24%),
+        radial-gradient(circle at 50% 48%, rgba(31, 150, 101, .3), transparent 42%),
+        linear-gradient(180deg, #241016 0%, #101815 48%, #0b0908 100%);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .phone::before {
+      content: "南风";
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 96px;
+      font-weight: 900;
+      color: rgba(255, 214, 143, .055);
+      writing-mode: vertical-rl;
+      pointer-events: none;
+    }
+    .banner {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      top: 14px;
+      height: 88px;
+      z-index: 8;
+      display: grid;
+      grid-template-columns: 70px 1fr 70px;
+      align-items: center;
+      gap: 8px;
+    }
+    .seal {
+      width: 62px;
+      height: 62px;
+      border-radius: 16px 4px 16px 4px;
+      background: linear-gradient(180deg, #d9472e, #7c1714);
+      border: 2px solid #ffd98c;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 8px 0 #300808, 0 0 28px rgba(217, 71, 46, .36);
+      font-size: 28px;
+      font-weight: 900;
+    }
+    .run-title {
+      text-align: center;
+      display: grid;
+      gap: 4px;
+    }
+    .run-title strong { font-size: 25px; letter-spacing: 0; }
+    .run-title span { font: 700 11px/1.2 -apple-system, BlinkMacSystemFont, sans-serif; color: #e5bd7d; }
+    .meter {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: conic-gradient(#f0c35d 0 68%, rgba(255,255,255,.12) 68% 100%);
+      padding: 6px;
+      box-shadow: 0 8px 0 #050807;
+    }
+    .meter div {
+      height: 100%;
+      border-radius: 50%;
+      background: #151512;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      font: 900 12px/1.1 -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .event-card {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: 112px;
+      min-height: 72px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, rgba(124, 23, 20, .72), rgba(34, 23, 17, .86));
+      border: 1px solid rgba(255, 210, 129, .42);
+      box-shadow: 0 10px 32px rgba(0,0,0,.34);
+      padding: 10px 12px;
+      z-index: 8;
+    }
+    .event-card small { display: block; color: #ffd584; font: 800 10px/1.2 -apple-system, BlinkMacSystemFont, sans-serif; margin-bottom: 4px; }
+    .event-card b { display: block; font-size: 18px; line-height: 1.1; }
+    .event-card p { margin-top: 4px; font: 600 11px/1.35 -apple-system, BlinkMacSystemFont, sans-serif; color: #f5dcae; }
+    .table {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 198px;
+      height: 378px;
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 50% 48%, #246b4f, #102f28 70%),
+        #102f28;
+      border: 2px solid rgba(236, 187, 94, .42);
+      box-shadow: inset 0 0 0 4px rgba(20, 12, 9, .35), 0 22px 52px rgba(0,0,0,.42);
+      overflow: hidden;
+    }
+    .table::before, .table::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255, 217, 140, .13);
+      border-radius: 12px;
+      pointer-events: none;
+    }
+    .table::after { inset: 38px; border-style: dashed; }
+    .goals {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 16px;
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      z-index: 4;
+    }
+    .goal {
+      padding: 5px 9px;
+      border-radius: 4px;
+      background: rgba(255, 243, 210, .12);
+      border: 1px solid rgba(255, 216, 139, .32);
+      font: 900 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .goal.hit { background: #c33a27; color: #fff2cf; }
+    .mountain {
+      position: absolute;
+      left: 50%;
+      top: 55%;
+      transform: translate(-50%, -50%);
+      width: 310px;
+      height: 300px;
+    }
+    .tile {
+      position: absolute;
+      width: 37px;
+      height: 50px;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #fff8e9 0 70%, #ddcfaa 71%, #197d5e 72%);
+      border: 2px solid #a86934;
+      box-shadow: 0 6px 0 #0a4f3a, 0 10px 18px rgba(0,0,0,.34);
+      display: grid;
+      place-items: center;
+      color: #2d2014;
+      font-size: 16px;
+      font-weight: 900;
+    }
+    .tile.dim { opacity: .5; filter: saturate(.65); }
+    .tile.omen { box-shadow: 0 6px 0 #0a4f3a, 0 0 0 3px #f1c45a, 0 0 30px rgba(218, 56, 39, .75); }
+    .side-runes {
+      position: absolute;
+      right: 10px;
+      top: 232px;
+      z-index: 12;
+      display: grid;
+      gap: 8px;
+    }
+    .rune {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: #1a1714;
+      border: 1px solid rgba(255, 212, 131, .44);
+      box-shadow: 0 6px 0 #050403;
+      display: grid;
+      place-items: center;
+      color: #ffd989;
+      font-size: 18px;
+      font-weight: 900;
+      position: relative;
+    }
+    .rune small {
+      position: absolute;
+      right: -5px;
+      top: -5px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #c43b25;
+      display: grid;
+      place-items: center;
+      font: 900 10px/1 sans-serif;
+    }
+    .combo-scroll {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 188px;
+      height: 54px;
+      display: grid;
+      grid-template-columns: 1.2fr repeat(4, 1fr);
+      gap: 7px;
+      z-index: 15;
+    }
+    .combo-scroll button {
+      border: 1px solid rgba(255, 218, 144, .42);
+      border-radius: 5px;
+      background: linear-gradient(180deg, #2b2019, #120d0b);
+      color: #9f896b;
+      font: 900 16px/1 "Songti SC", serif;
+      box-shadow: 0 5px 0 #050403;
+    }
+    .combo-scroll .live {
+      background: linear-gradient(180deg, #f2bd50, #c93c25 70%, #6e1512);
+      color: #fff7db;
+      text-shadow: 0 2px 0 rgba(0,0,0,.3);
+      box-shadow: 0 5px 0 #530b0a, 0 0 24px rgba(221, 58, 37, .5);
+    }
+    .hand {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 16px;
+      height: 154px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(95, 48, 22, .96), rgba(28, 15, 10, .98));
+      border: 1px solid rgba(255, 218, 144, .52);
+      padding: 10px;
+      display: grid;
+      grid-template-rows: 26px 1fr;
+      gap: 9px;
+      z-index: 18;
+    }
+    .hand-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font: 800 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #f0c983;
+    }
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+    }
+    .slot {
+      border-radius: 8px;
+      background: rgba(8, 6, 5, .5);
+      border: 1px solid rgba(255, 218, 144, .25);
+      display: grid;
+      place-items: center;
+    }
+    .mini {
+      width: 31px;
+      height: 42px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #fff8e9 0 74%, #157958 75%);
+      border: 1px solid #9f6835;
+      display: grid;
+      place-items: center;
+      color: #2b2014;
+      font: 900 14px/1 serif;
+    }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <section class="banner">
+      <div class="seal">胡</div>
+      <div class="run-title"><strong>胡了卜王</strong><span>追胡流 · 南风挡墙 · 第 08 关</span></div>
+      <div class="meter"><div>目标<br>2/3</div></div>
+    </section>
+    <section class="event-card"><small>本关事件</small><b>暗灯牌局</b><p>禁看山，本关胡牌额外震落 1 张压顶牌。</p></section>
+    <section class="table">
+      <div class="goals"><span class="goal hit">碰 完成</span><span class="goal">杠 0/1</span><span class="goal">胡 0/1</span></div>
+      <div class="mountain" id="mountain"></div>
+    </section>
+    <aside class="side-runes"><div class="rune">洗<small>2</small></div><div class="rune">撤<small>1</small></div><div class="rune">打<small>3</small></div></aside>
+    <section class="combo-scroll"><button class="live">胡</button><button>杠</button><button class="live">碰</button><button>吃</button><button>补</button></section>
+    <section class="hand">
+      <div class="hand-head"><span>手槽 6/8</span><span>听：八万 · 牌山 2</span></div>
+      <div class="slots">
+        <div class="slot"><span class="mini">八</span></div><div class="slot"><span class="mini">八</span></div><div class="slot"><span class="mini">八</span></div><div class="slot"><span class="mini">中</span></div>
+        <div class="slot"><span class="mini">二</span></div><div class="slot"><span class="mini">三</span></div><div class="slot"></div><div class="slot"></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const mountain = document.querySelector('#mountain');
+    const chars = ['一','二','三','四','五','六','七','八','九','东','南','中','发'];
+    const pts = [[124,246,0],[166,244,0],[86,230,0],[206,226,0],[124,204,1],[164,198,1],[92,180,1],[198,174,1],[138,154,2],[172,146,2],[112,132,2],[152,104,3],[184,96,3],[126,72,4],[158,64,4],[66,164,1],[232,158,1],[80,102,2],[218,106,2],[102,58,1],[208,58,1]];
+    pts.forEach((p, i) => {
+      const el = document.createElement('div');
+      el.className = 'tile' + (p[2] < 2 ? ' dim' : '') + (i === 13 || i === 14 ? ' omen' : '');
+      el.textContent = chars[i % chars.length];
+      el.style.left = p[0] + 'px';
+      el.style.top = p[1] + 'px';
+      el.style.zIndex = p[2] + 1;
+      mountain.appendChild(el);
+    });
+  </script>
+</body>
+</html>

@@ -150,8 +150,7 @@
 
 .heroDescription,
 .resultDescription,
-.previewDescription,
-.resultSummary {
+.previewDescription {
   margin: 0;
   color: rgb(247 240 221 / 0.76);
   font-size: 15px;
@@ -194,12 +193,17 @@
   line-height: 1.2;
 }
 
-.statusCard p,
-.lastRun p {
+.statusCard p {
   margin: 0;
   color: rgb(247 240 221 / 0.72);
   font-size: 14px;
   line-height: 1.55;
+}
+
+.lastRunActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .primaryActions {
@@ -258,6 +262,149 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.routeFocusPanel,
+.runArchetypePanel,
+.routeFocusHeader,
+.routeFocusStatusGrid,
+.runArchetypeStatusGrid,
+.routeFocusStatusCard,
+.routeFocusPlanGrid,
+.routeFocusPlanCard,
+.modeDepthGrid,
+.modeDepthCard,
+.routeFocusGrid,
+.runArchetypeGrid,
+.routeFocusCard,
+.runArchetypeCard,
+.routeFocusHead,
+.routeFocusMeta,
+.runArchetypeMeta {
+  display: grid;
+  gap: 10px;
+}
+
+.routeFocusPanel,
+.runArchetypePanel {
+  gap: 12px;
+}
+
+.routeFocusHeader span,
+.routeFocusHead span,
+.routeFocusMeta span,
+.runArchetypeMeta span {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(245 223 184 / 0.76);
+}
+
+.routeFocusHeader strong,
+.routeFocusHead strong,
+.routeFocusMeta strong,
+.runArchetypeMeta strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.routeFocusGrid,
+.runArchetypeGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.routeFocusStatusGrid,
+.runArchetypeStatusGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.routeFocusPlanGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.routeFocusStatusCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(28 22 16 / 0.82);
+  padding: 14px;
+}
+
+.routeFocusPlanCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(24 20 16 / 0.88);
+  padding: 14px;
+}
+
+.modeDepthGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.modeDepthCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(28 22 16 / 0.82);
+  padding: 14px;
+}
+
+.routeFocusCard,
+.runArchetypeCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(34 26 18 / 0.76);
+  padding: 14px;
+}
+
+.routeFocusCardActive,
+.runArchetypeCardActive {
+  border-color: rgb(240 199 118 / 0.42);
+  background: rgb(44 31 17 / 0.88);
+}
+
+.routeFocusDescription {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.routeFocusStatusCard p {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.routeFocusPlanCard p {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.modeDepthCard p {
+  margin: 0;
+  color: rgb(247 240 221 / 0.76);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ascensionDensityGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ascensionDensityCard {
+  border: 1px solid rgb(255 248 231 / 0.1);
+  border-radius: 8px;
+  background: rgb(34 26 18 / 0.76);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
 }
 
 .codexPanel,
@@ -451,42 +598,6 @@
   gap: 10px;
 }
 
-.settlementReview,
-.settlementReviewGrid,
-.settlementReviewCard {
-  display: grid;
-  gap: 10px;
-}
-
-.settlementReviewGrid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.settlementReviewCard {
-  border: 1px solid rgb(255 248 231 / 0.1);
-  border-radius: 8px;
-  background: rgb(34 26 18 / 0.76);
-  padding: 14px;
-}
-
-.settlementReviewCard span {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgb(245 223 184 / 0.76);
-}
-
-.settlementReviewCard strong {
-  font-size: 16px;
-  line-height: 1.2;
-}
-
-.settlementReviewCard p {
-  margin: 0;
-  color: rgb(247 240 221 / 0.76);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
 .playStage {
   min-height: 100dvh;
   display: grid;
@@ -556,12 +667,35 @@
     grid-template-columns: 1fr;
   }
 
+  .routeFocusGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .runArchetypeGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .routeFocusStatusGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .runArchetypeStatusGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .routeFocusPlanGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modeDepthGrid {
+    grid-template-columns: 1fr;
+  }
+
   .codexSummary,
   .codexGroupGrid,
   .ascensionSummary,
   .ascensionConfigGrid,
-  .codexGrid,
-  .settlementReviewGrid {
+  .codexGrid {
     grid-template-columns: 1fr;
   }
 }

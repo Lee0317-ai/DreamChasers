@@ -1,0 +1,31 @@
+# T240 领取记录
+
+- 任务：T240 胡了卜 Cocos 概念图 UI 架构落地
+- 负责人：Lee
+- 状态：进行中
+- 领取时间：2026-07-01
+- 文件范围：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/BoardLayerBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/HudBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/SlotLayerBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/ComboBarBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/MeldRiverLayerBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/contracts/HulebuSceneModel.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/bootstrap/HulebuSampleSceneModel.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/modules/mahjong-roguelike/COCOS_UI_ARCHITECTURE.md`
+  - `docs/tasks/items/T240-hulebu-cocos-concept-ui-architecture.md`
+  - `docs/progress/2026-07-02-lee.md`
+  - `docs/progress/2026-07-04-lee.md`
+- 禁止范围：`apps/web/**`、Prisma/账号系统、非胡了卜模块、玩法规则和经济数值。
+- 验证命令：
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - Cocos Web Mobile 非 debug 构建截图检查
+  - `git diff --check`
+- 并发备注：T239 仍负责逐层收拢牌山生成结构；T240 不应直接覆盖 T239 对 `HulebuMountainGenerator.ts` 的修改。
+- 2026-07-02 补充：本次只触碰 Cocos 局内输入锁定和 `HulebuLevelConfig.ts` 的首关初始可点收口，不修改 `HulebuMountainGenerator.ts`。
+- 2026-07-04 补充：本次继续接手记牌器挂件和首关视觉模板，允许触碰 `contracts/HulebuSceneModel.ts`、`bootstrap/HulebuSampleSceneModel.ts`、`runtime/HulebuRuntimeState.ts`，不修改玩法经济和 Web 壳。

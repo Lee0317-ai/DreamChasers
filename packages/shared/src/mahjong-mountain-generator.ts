@@ -453,8 +453,8 @@ const HULEBU_MOUNTAIN_TEMPLATE_DEFINITIONS: Record<HulebuMountainTemplateId, Hul
     getColumnPosition({ columnIndex, columnCount }) {
       const center = (columnCount - 1) / 2;
       return {
-        x: (columnIndex - center) * 58,
-        y: (columnIndex % 2 === 0 ? -1 : 1) * 16,
+        x: (columnIndex - center) * 50,
+        y: (columnIndex % 2 === 0 ? -1 : 1) * 5,
       };
     },
     getColumnRole({ columnIndex }) {

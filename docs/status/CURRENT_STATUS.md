@@ -70,16 +70,16 @@
 
 ### 当前任务
 
-- 任务编号：T171
-- 任务名称：胡了卜每日牌局第一版
+- 任务编号：T185
+- 任务名称：胡了卜 Web 数值平衡和内容冻结第一轮
 - 负责人：Lee
-- 状态：待验收
-- 开始时间：2026-06-15
-- 允许修改文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-15-lee.md`, `docs/completion/**`
+- 状态：进行中
+- 开始时间：2026-06-22
+- 允许修改文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-22-lee.md`, `docs/completion/**`
 - 禁止修改文件：`apps/game/mahjong-roguelike/cocos/**`, `apps/game/mahjong-roguelike/config/levels.json`, `apps/game/mahjong-roguelike/config/rewards.json`, `apps/web/src/app/account/**`, `apps/web/src/lib/ai/**`, `apps/web/src/modules/tools/**`, `apps/web/prisma/**`, `/Users/lee/Desktop/Lee/TimePick/**`, `deploy/**`, `docker-compose.yml`, `docker-compose.prod.yml`
 - 验证命令：`npm run test -w packages/shared -- mahjong-config-playable-prototype`; `npm run test -w apps/web -- hulebu`; `npm run typecheck -w apps/web`; `npm run build -w apps/web`; 源原型与站内静态副本内联脚本 `node --check`; `npm run docs:sync`; `git diff --check`; 浏览器桌面端和 390px 移动端检查 `/games/hulebu`
 - 当前阻塞：无
-- 下一步：等待验收 T171；通过后优先开 T172 成就图鉴或长期承接。
+- 下一步：先把特殊事件第二版从前半段推进到主线后半程和长跑后段，作为 Web 数值冻结第一轮第一刀；随后再继续收主线后半程、终章 Boss 和长期模式节奏。
 
 领取任务后填写：
 
@@ -208,13 +208,12 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 
 ### 任务分片
 
-- 已扫描任务分片：164 个。
-- 已扫描领取分片：154 个。
+- 已扫描任务分片：224 个。
+- 已扫描领取分片：214 个。
 
 ### 当前未完成领取
 
 - T015：PDF 工具箱 PDF 转 Word Beta 导出格式修复，Lee，状态：待验收
-- T051：胡了卜麻将牌面 UI 参考图，Codex / 开发 B，状态：待验收
 - T052：胡了卜 Boss 目标配置化，Codex / 开发 B，状态：待验收
 - T053：胡了卜 Boss 牌型目标第一版，Codex / 开发 B，状态：待验收
 - T054：胡了卜 Boss 目标反馈和通关提示优化，Codex / 开发 B，状态：待验收
@@ -316,6 +315,19 @@ Cocos Creator 负责正式小游戏发布路径，尤其是微信小游戏和抖
 - T178：胡了卜特殊事件池扩容，Lee，状态：待验收
 - T179：胡了卜成就图鉴扩容，Lee，状态：待验收
 - T180：胡了卜无尽和每日深度化，Lee，状态：待验收
+- T181：胡了卜 HUD 和按钮透明切图包，Lee，状态：待验收
+- T182：胡了卜国风人物操作演出概念稿，Lee，状态：待验收
+- T183：胡了卜 UI 资产 Cocos 接入说明文档，Lee，状态：待验收
+- T184：胡了卜路线奖励和长期成长深化，Lee，状态：进行中
+- T185：胡了卜 Web 数值平衡和内容冻结第一轮，Lee，状态：进行中
+- T186：胡了卜局外成长与局内流派开局重构，Lee，状态：待验收
+- T187：胡了卜刷新后继续当前本轮，Lee，状态：待验收
+- T188：胡了卜账号级当前本轮存档，Lee，状态：待验收
+- T198：未命名任务，Lee，状态：进行中
+- T199：未命名任务，Lee，状态：进行中
+- T200：未命名任务，Lee，状态：进行中
+- T239：未命名任务，未填写领取人，状态：进行中
+- T240：未命名任务，未填写领取人，状态：进行中
 
 ### 最近完成任务分片
 

@@ -1,0 +1,34 @@
+# T229 胡了卜 Cocos 预览跨工作区生成器导入修复完成记录
+
+- 完成时间：2026-06-29
+- 负责人：Lee
+- 任务编号：T229
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuMountainGenerator.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T229-hulebu-cocos-local-mountain-generator-import-fix.md`
+  - `docs/tasks/claims/T229-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-29-lee.md`
+  - `docs/completion/2026-06-29-task-229-hulebu-cocos-local-mountain-generator-import-fix.md`
+- 实现内容：
+  - 定位 Cocos Web Preview 报错根因：`HulebuLevelConfig.ts` 直接跨出 Cocos 工程 import `packages/shared/src/mahjong-mountain-generator`，Creator 预览运行时不能解析该工作区外源文件。
+  - 新增 Cocos 工程内本地 `HulebuMountainGenerator.ts`，保留 `generateHulebuMountain()` 和 `HulebuMountainTemplateId` 等配置层所需口径。
+  - `HulebuLevelConfig.ts` 改为导入本地生成器模块。
+  - 共享静态测试新增 Cocos 脚本扫描，防止后续再次直接 import `packages/shared/src/`。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - `rg -n "packages/shared/src|mahjong-mountain-generator" apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts || true`
+- 验证结果：
+  - 通过：共享测试 1 个文件、29 条测试通过。
+  - 通过：Cocos TypeScript 编译检查无报错。
+  - 通过：Cocos 脚本中无 `packages/shared/src` 和旧 `mahjong-mountain-generator` 跨工程导入残留。
+- 遗留问题：
+  - Cocos 本地生成器是运行时预览所需的轻量镜像，未承接 shared 生成器的完整体验报告、解法 trace 和调参评估字段。
+  - 后续如果要完全复用 shared 生成器，应设计 Creator 可解析的包路径或构建产物，不要再直接引用 workspace 外 TS 源文件。

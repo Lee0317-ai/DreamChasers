@@ -19,11 +19,11 @@ const FRAME_BASE = "/games/hulebu-demo/index.html";
 const STORAGE_KEY = "dreamchasers:hulebu-shell:v1";
 const ENDLESS_START_LAYER = 21;
 const DEFAULT_ASCENSION_LEVEL = 1;
-
 type LobbyPanel = "mainline" | "upgrades" | "collection" | "endless" | "daily" | "ascension";
 type Screen = "lobby" | "playing" | "settlement";
-type SettlementResult = "completed" | "failed";
+type SettlementResult = "completed";
 type RunMode = "mainline" | "endless" | "daily";
+type RunArchetypeId = "chi" | "peng" | "gang" | "hu" | "tool" | "vision";
 type AscensionLevel = 1 | 2 | 3 | 4;
 type AscensionPerkId =
   | "steady-hand"
@@ -36,35 +36,9 @@ type AscensionPerkId =
   | "deadwall-cache"
   | "seal-table"
   | "late-flare";
-type AscensionReview = {
-  build?: string;
-  buildDetail?: string;
-  buildHeadline?: string;
-  keyGain?: string;
-  keyMiss?: string;
-  nextAdvice?: string;
-  failureType?: string;
-  detail?: string;
-  mismatch?: string;
-  failureBottleneck?: string;
-  failureReviewLine?: string;
-  rewardDepth?: string;
-  settlementHighlights?: string[];
-};
 type BossReview = {
   result?: SettlementResult;
   bossVariant?: string;
-  bossTitle?: string;
-  phase?: string;
-  phaseTarget?: string;
-  rewardQuality?: string;
-  keyGoal?: string;
-  keyMiss?: string;
-  build?: string;
-  summary?: string;
-  detail?: string;
-  nextAdvice?: string;
-  mismatch?: string;
 };
 type SpecialEventReview = {
   summary?: string;
@@ -86,19 +60,24 @@ type AchievementId =
   | "boss-ascension-warden"
   | "endless-first-step"
   | "endless-layer-25"
+  | "endless-layer-40"
   | "daily-first-checkin"
   | "daily-clear"
+  | "daily-streak-7"
   | "upgrade-first-buy"
   | "upgrade-all-basic"
+  | "upgrade-all-six"
   | "ascension-west-clear"
   | "ascension-north-clear"
   | "event-rare-encounter"
   | "event-ascension-encounter"
-  | "build-reward-streak";
+  | "build-reward-streak"
+  | "route-focus-mastered";
 
 type ActiveRun = {
   sessionKey: string;
   runMode: RunMode;
+  runArchetype: RunArchetypeId;
   ascensionLevel: AscensionLevel | null;
   ascensionName: string | null;
   ascensionPerks: AscensionPerkId[];
@@ -112,12 +91,18 @@ type ActiveRun = {
   pickedRewards: number;
 };
 
+type ActiveRunResumeState = Omit<ActiveRun, "iframeSrc"> & {
+  updatedAt: string;
+};
+
 type SettlementState = {
   sessionKey: string;
   runMode: RunMode;
+  runArchetype: RunArchetypeId;
   ascensionLevel: AscensionLevel | null;
   ascensionName: string | null;
   ascensionPerks: AscensionPerkId[];
+  routeDirection: string | null;
   dailySeed: string | null;
   result: SettlementResult;
   coinsEarned: number;
@@ -133,14 +118,15 @@ type SettlementState = {
   dailyMutatorLabel: string | null;
   dailyRewardLabel: string | null;
   dailyStreak: number;
-  ascensionReview: AscensionReview | null;
   bossReview: BossReview | null;
   specialEventReview: SpecialEventReview | null;
 };
 
-type UpgradeId = "reserve" | "shield" | "tools";
+type UpgradeId = "reserve" | "shield" | "tools" | "river" | "coins" | "vision";
 
 type UpgradeState = Record<UpgradeId, number>;
+
+type RouteFocusId = "auto" | "hu" | "info" | "river" | "tools" | "survive";
 
 type PersistedShellState = {
   bankedCoins: number;
@@ -151,9 +137,17 @@ type PersistedShellState = {
   lastDailySeed: string | null;
   achievements: Record<string, string>;
   lastSettlement: SettlementState | null;
+  activeRun: ActiveRunResumeState | null;
   upgrades: UpgradeState;
+  selectedRouteFocus: RouteFocusId;
   equippedAscensionLoadout: AscensionPerkId[];
   unlockedAscensionPerks: Partial<Record<AscensionPerkId, boolean>>;
+};
+
+type LegacySettlementState = Omit<SettlementState, "result" | "bossReview" | "specialEventReview"> & {
+  result?: SettlementResult;
+  bossReview?: BossReview | null;
+  specialEventReview?: SpecialEventReview | null;
 };
 
 type AccountProgressState = {
@@ -164,7 +158,7 @@ type AccountProgressState = {
 
 type RemoteProgressState = Pick<
   PersistedShellState,
-  "achievements" | "bankedCoins" | "bestAscensionLevel" | "bestEndlessLayer" | "dailyBestLevels"
+  "achievements" | "activeRun" | "bankedCoins" | "bestAscensionLevel" | "bestEndlessLayer" | "dailyBestLevels"
 >;
 
 type HulebuShellPayload = {
@@ -184,7 +178,7 @@ type HulebuShellPayload = {
   dailyStreak?: number | null;
   pickedRewards?: number;
   summary?: string;
-  ascensionReview?: AscensionReview | null;
+  routeDirection?: string | null;
   bossReview?: BossReview | null;
   specialEventSummary?: string;
   specialEventMessage?: string;
@@ -204,13 +198,68 @@ type PanelContent = {
   status: string;
 };
 
+type RunArchetypeConfig = {
+  id: RunArchetypeId;
+  label: string;
+  summary: string;
+  startBonus: string;
+  rewardBias: string;
+  routeLabel: string;
+};
+
+type RunArchetypeUnlock = {
+  id: RunArchetypeId;
+  unlockAtMainline: number;
+  recommendedUntilMainline: number;
+};
+
 type UpgradeConfig = {
   id: UpgradeId;
   label: string;
   description: string;
   costs: number[];
   effectText: string[];
-  param: "reserveBonus" | "shieldBonus" | "toolBonus";
+  param: "reserveBonus" | "shieldBonus" | "toolBonus" | "riverBonus" | "coinBonus" | "visionBonus";
+};
+
+type RouteFocusConfig = {
+  id: RouteFocusId;
+  label: string;
+  route: string;
+  description: string;
+  longTail: string;
+};
+
+type RouteGrowthStatus = {
+  currentEffect: string;
+  nextTarget: string;
+};
+
+type RouteFocusPlaybook = {
+  rewardFocus: string;
+  eventFocus: string;
+  recommendedMode: string;
+  lateGamePlan: string;
+};
+
+type EndlessChapterPreview = {
+  label: string;
+  bossTitle: string;
+  theme: string;
+  detail: string;
+  routeHint: string;
+  rewardFocus: string;
+  bossPressure: string;
+};
+
+type DailyMutatorPreview = {
+  key: string;
+  label: string;
+  detail: string;
+  rewardLabel: string;
+  routeHint: string;
+  rewardFocus: string;
+  paceNote: string;
 };
 
 type AchievementConfig = {
@@ -246,6 +295,9 @@ const DEFAULT_UPGRADES: UpgradeState = {
   reserve: 0,
   shield: 0,
   tools: 0,
+  river: 0,
+  coins: 0,
+  vision: 0,
 };
 
 const UPGRADES: UpgradeConfig[] = [
@@ -273,6 +325,157 @@ const UPGRADES: UpgradeConfig[] = [
     effectText: ["三种道具各 +1", "三种道具各 +2"],
     param: "toolBonus",
   },
+  {
+    id: "river",
+    label: "河道扩容",
+    description: "把牌河容量继续撑大，让弃牌、补杠和河控节奏更稳。",
+    costs: [140, 420],
+    effectText: ["牌河容量 +1", "牌河容量 +2"],
+    param: "riverBonus",
+  },
+  {
+    id: "coins",
+    label: "开局铜钱",
+    description: "每轮起手先带一笔铜钱，早点把局内节奏和道具滚起来。",
+    costs: [100, 300],
+    effectText: ["开局 +20 铜钱", "开局 +40 铜钱"],
+    param: "coinBonus",
+  },
+  {
+    id: "vision",
+    label: "看山预置",
+    description: "每轮开局额外补看山次数，让信息流和 Boss 读牌更早成型。",
+    costs: [120, 360],
+    effectText: ["看山 +1", "看山 +2"],
+    param: "visionBonus",
+  },
+];
+
+const ROUTE_FOCUS_CONFIGS: RouteFocusConfig[] = [
+  {
+    id: "auto",
+    label: "自动偏好",
+    route: "",
+    description: "按当前长期成长最深的一轴给这一局补一点轻协同，适合先摸手感。",
+    longTail: "还没决定主路线时先用它。",
+  },
+  {
+    id: "hu",
+    label: "胡流偏好",
+    route: "胡流",
+    description: "让局外铜钱成长在这局轻补胡牌收口，但不抢本局主轴。",
+    longTail: "偏爆发，偏快节奏。",
+  },
+  {
+    id: "info",
+    label: "信息流偏好",
+    route: "信息流",
+    description: "让看山成长在这局轻补读牌和试锋，但不替代本局流派。",
+    longTail: "偏读牌，偏规划。",
+  },
+  {
+    id: "river",
+    label: "河控偏好",
+    route: "河控流",
+    description: "让河道成长在这局轻补牌河和杠路，帮中后段更稳一点。",
+    longTail: "偏控场，偏后段。",
+  },
+  {
+    id: "tools",
+    label: "道具偏好",
+    route: "道具流",
+    description: "让初始道具成长在这局轻补整理能力，坏手更容易接回来。",
+    longTail: "偏修线，偏调整。",
+  },
+  {
+    id: "survive",
+    label: "救场偏好",
+    route: "救场流",
+    description: "让备用槽和护符成长在这局轻补容错，先把下限垫住。",
+    longTail: "偏容错，偏长线。",
+  },
+];
+
+const RUN_ARCHETYPES: RunArchetypeConfig[] = [
+  {
+    id: "chi",
+    label: "吃流",
+    summary: "顺手接顺子，靠节奏把卡槽转快。",
+    startBonus: "更偏顺子与整手，适合前中段找节奏。",
+    rewardBias: "更容易接顺路、吃牌和整手奖励。",
+    routeLabel: "吃流",
+  },
+  {
+    id: "peng",
+    label: "碰流",
+    summary: "对子更值钱，靠稳定推进压住中段。",
+    startBonus: "更偏对子成型和稳手推进，适合中段压线。",
+    rewardBias: "更容易接碰分、稳手和抗压奖励。",
+    routeLabel: "碰流",
+  },
+  {
+    id: "gang",
+    label: "杠流",
+    summary: "爆发更高，敢接高热度就能更快翻盘。",
+    startBonus: "更偏杠路启动和牌河转压，适合高压局搏收益。",
+    rewardBias: "更容易接杠分、河控和爆发奖励。",
+    routeLabel: "杠流",
+  },
+  {
+    id: "hu",
+    label: "胡流",
+    summary: "终局收口更强，适合把最后一刀做成主轴。",
+    startBonus: "更偏胡牌分和终局兑现，适合后段收口。",
+    rewardBias: "更容易接胡分、胡钱和封尾奖励。",
+    routeLabel: "胡流",
+  },
+  {
+    id: "tool",
+    label: "道具流",
+    summary: "修手和救线更稳，坏手也更容易补回来。",
+    startBonus: "更偏洗牌、撤回和丢弃，适合整手和转线。",
+    rewardBias: "更容易接整理工具和节奏修复奖励。",
+    routeLabel: "道具流",
+  },
+  {
+    id: "vision",
+    label: "信息流",
+    summary: "先读山再落刀，把看见的线尽快兑现。",
+    startBonus: "更偏看山和试锋，适合读牌后做决策。",
+    rewardBias: "更容易接看山、试锋和读口奖励。",
+    routeLabel: "信息流",
+  },
+];
+
+const RUN_ARCHETYPE_UNLOCKS: RunArchetypeUnlock[] = [
+  { id: "chi", unlockAtMainline: 1, recommendedUntilMainline: 4 },
+  { id: "peng", unlockAtMainline: 1, recommendedUntilMainline: 6 },
+  { id: "gang", unlockAtMainline: 3, recommendedUntilMainline: 10 },
+  { id: "hu", unlockAtMainline: 6, recommendedUntilMainline: 20 },
+  { id: "tool", unlockAtMainline: 9, recommendedUntilMainline: 20 },
+  { id: "vision", unlockAtMainline: 13, recommendedUntilMainline: 20 },
+];
+
+const ENDLESS_CHAPTER_THEMES: EndlessChapterPreview[] = [
+  { label: "护河起章", bossTitle: "章节 Boss · 河灯守门人", theme: "护河起章", detail: "先考弃牌、河控和前段稳手，别让开局就被牌河反噬。", routeHint: "更适合先走河控流或救场流，把前段空间站稳。", rewardFocus: "优先追河道扩容、丢弃工具和稳手类奖励。", bossPressure: "章节 Boss 先查牌河和弃牌节奏，顶不住的话会很早漏口。" },
+  { label: "封盘中继", bossTitle: "章节 Boss · 封盘押局者", theme: "封盘中继", detail: "开始强调中段锁口和工具分配，路线开始要成线。", routeHint: "更适合道具流或信息流，把中段整理和读口接到一起。", rewardFocus: "优先追洗牌、撤回、看山和中段整手奖励。", bossPressure: "章节 Boss 会看你有没有把中段路线接成线，而不是一直零碎补洞。" },
+  { label: "高压试锋", bossTitle: "章节 Boss · 险招翻倍客", theme: "高压试锋", detail: "收益会变肥，但 Boss 也更逼你把风险兑现成真正推进。", routeHint: "更适合信息流或胡流，敢拿高奖就要敢把爆发收出来。", rewardFocus: "优先追高分胡、看山和试锋类事件奖励。", bossPressure: "章节 Boss 会逼你把高风险奖励变成真实推进，不接受只拿不收。" },
+  { label: "牌尾收束", bossTitle: "章节 Boss · 断幺巡山将", theme: "牌尾收束", detail: "后段开始考牌尾、收线和最后一口，不再只靠中段堆分。", routeHint: "更适合胡流或道具流，把后半程的收口件尽量扣满。", rewardFocus: "优先追胡钱、胡分、丢弃和尾巡整理奖励。", bossPressure: "章节 Boss 会看你能不能把后段残手收掉，拖进残局就会被放大。" },
+  { label: "听口死斗", bossTitle: "章节 Boss · 听牌封潮手", theme: "听口死斗", detail: "开始要求把听口、收胡和后段容错并到同一步里。", routeHint: "更适合信息流或救场流，把读口和容错捏成同一步。", rewardFocus: "优先追看山、护符、尾口和试锋类奖励。", bossPressure: "章节 Boss 会同时查读口和容错，少一边都会在后段掉节奏。" },
+  { label: "杠潮终局", bossTitle: "章节 Boss · 杠火压尾官", theme: "杠潮终局", detail: "杠流和压尾会一起抬高，后段要能把热度收成结果。", routeHint: "更适合河控流或胡流，把杠路爆发和终局收口绑在一起。", rewardFocus: "优先追杠分、胡分、河控和后段收束奖励。", bossPressure: "章节 Boss 会逼你把高热度杠路收成结果，不然越打越烫手。" },
+  { label: "续押回账", bossTitle: "章节 Boss · 回灯归账人", theme: "续押回账", detail: "资源线要开始回流，不能只会花奖励，不会把收益追回当前缺口。", routeHint: "更适合道具流或河控流，把资源线先回正，再补爆发。", rewardFocus: "优先追胡钱、工具回袋、河控和整手类奖励。", bossPressure: "章节 Boss 会查你有没有把前面吃到的收益真正追回来，不然会越打越空。" },
+  { label: "封缺收官", bossTitle: "章节 Boss · 封缺落锁者", theme: "封缺收官", detail: "章节后段会更像最终盘，考的是把成型路线真正落成锁口结果。", routeHint: "更适合已经成型的主路线，别再分心转第二条轴。", rewardFocus: "优先追终局收口、看山、胡分和封尾类奖励。", bossPressure: "章节 Boss 更像长 run 的小终章，会直接查你这条路线到底能不能真正结账。" },
+];
+
+const DAILY_MUTATOR_PREVIEWS: DailyMutatorPreview[] = [
+  { key: "river-pressure", label: "今日词缀：牌河压顶", detail: "前中段更容易遇到弃牌与河控压力，适合走稳手或河控路线。", rewardLabel: "今日奖励：河灯筹码", routeHint: "今日更适合河控流或救场流，先把空间顶住。", rewardFocus: "优先追河道扩容、丢弃工具和稳压奖励。", paceNote: "今天前中段会更紧，先稳空间，再谈后段爆发。" },
+  { key: "late-sprint", label: "今日词缀：牌尾追击", detail: "残局节奏更紧，牌尾流和胡流更容易打出完整收官。", rewardLabel: "今日奖励：尾巡印记", routeHint: "今日更适合胡流或道具流，把后半程收口做厚。", rewardFocus: "优先追胡分、胡钱、丢弃和尾巡整理奖励。", paceNote: "今天后半程更凶，别把收口件拖到最后才补。" },
+  { key: "kong-engine", label: "今日词缀：杠响回巡", detail: "杠相关机会更密集，适合拿路线奖励去追爆发。", rewardLabel: "今日奖励：杠响铜契", routeHint: "今日更适合河控流或胡流，把杠路热度转成爆发。", rewardFocus: "优先追杠分、河控、胡分和收口奖励。", paceNote: "今天越往后越要会收热度，不然杠路会把牌桌烧穿。" },
+  { key: "vision-weave", label: "今日词缀：看山织线", detail: "信息流和试路更容易连成一线，适合走东风试路或西风照听的前后段接线。", rewardLabel: "今日奖励：织线签", routeHint: "今日更适合信息流，把看山和试锋一路扣紧。", rewardFocus: "优先追看山、洗牌、试锋和读口类奖励。", paceNote: "今天更像读牌局，看到线以后要尽快兑现，不要只停在观察。" },
+  { key: "rescue-cache", label: "今日词缀：余槽救场", detail: "中段容错和救场收益更吃香，适合把余槽、护符和翻袋续命一路滚起来。", rewardLabel: "今日奖励：回袋符", routeHint: "今日更适合救场流，先把容错墙垫厚，再尽快补整手和回账件。", rewardFocus: "优先追整手、胡钱、丢弃和补位转收口奖励。", paceNote: "今天中段容错值钱，但拿到厚度以后要尽快把它换成收口件。" },
+  { key: "wall-bulwark", label: "今日词缀：挡墙续押", detail: "续墙、挡墙和封尾路线更稳，适合把南风续押和北风压台拖成整套厚墙。", rewardLabel: "今日奖励：墙脉铜牌", routeHint: "今日更适合救场流或信息流，把厚墙和读口接起来，再顺手回账。", rewardFocus: "优先追看山、续墙、整手和封尾转收口奖励。", paceNote: "今天会更像耐压局，先把墙立住，但中后段要开始把稳台换成真正推进。" },
+  { key: "odds-burn", label: "今日词缀：押线点火", detail: "更容易摸到试锋、压注和收账线，适合把西风后段一路烧到终局。", rewardLabel: "今日奖励：点火铜签", routeHint: "今日更适合信息流或胡流，把试锋收益直接烧到终章。", rewardFocus: "优先追看山、胡钱、高压试锋和收账类奖励。", paceNote: "今天节奏是先试锋再收账，越晚越要敢把线点燃。" },
+  { key: "lock-tail", label: "今日词缀：封尾落锁", detail: "残局更容易转成封尾与死锁手感，适合把北风收官和救场墙扣到一起。", rewardLabel: "今日奖励：尾锁牌印", routeHint: "今日更适合救场流或道具流，把残局封口做成整套，再把最后一口补成结果。", rewardFocus: "优先追丢弃、胡钱、封尾和终局锁口奖励。", paceNote: "今天的关键在后半程封尾，前段别把容错浪费在无意义的小修补上。" },
 ];
 
 const ACHIEVEMENTS: AchievementConfig[] = [
@@ -300,8 +503,8 @@ const ACHIEVEMENTS: AchievementConfig[] = [
   {
     id: "boss-ascension-warden",
     title: "高阶镇台",
-    description: "完成一轮带高阶 Boss 复盘的通关。",
-    hint: "去高阶周目完成一轮 Boss 结算。",
+    description: "完成一轮高阶 Boss 通关。",
+    hint: "去高阶周目完成一轮通关。",
     group: "boss",
     hidden: true,
     hiddenTitle: "未揭示目标",
@@ -322,6 +525,13 @@ const ACHIEVEMENTS: AchievementConfig[] = [
     group: "endless",
   },
   {
+    id: "endless-layer-40",
+    title: "冲到 40 层",
+    description: "无尽最高层达到第 40 层。",
+    hint: "继续把长 run 推进到第 40 层，看看后段章节能不能稳住。",
+    group: "endless",
+  },
+  {
     id: "daily-first-checkin",
     title: "每日打卡",
     description: "第一次挑战每日牌局。",
@@ -336,6 +546,13 @@ const ACHIEVEMENTS: AchievementConfig[] = [
     group: "daily",
   },
   {
+    id: "daily-streak-7",
+    title: "连到 7 天",
+    description: "每日连续参与达到 7 天。",
+    hint: "连续来 7 天，把每日牌局真正养成回访节奏。",
+    group: "daily",
+  },
+  {
     id: "upgrade-first-buy",
     title: "第一次升级",
     description: "买下任意一项局外升级。",
@@ -347,6 +564,13 @@ const ACHIEVEMENTS: AchievementConfig[] = [
     title: "三项全开",
     description: "三项基础升级都至少买过 1 级。",
     hint: "把备用槽、护符和初始道具都点到 1 级。",
+    group: "upgrades",
+  },
+  {
+    id: "upgrade-all-six",
+    title: "六轴全开",
+    description: "六条局外成长轴都至少买过 1 级。",
+    hint: "把备用槽、护符、初始道具、河道扩容、开局铜钱和看山预置都点亮。",
     group: "upgrades",
   },
   {
@@ -388,6 +612,13 @@ const ACHIEVEMENTS: AchievementConfig[] = [
     title: "路线收束",
     description: "单轮结算时拿到至少 4 个奖励节点，开始像一套完整 build。",
     hint: "把奖励一路吃到后半程，让构筑真正成型。",
+    group: "builds",
+  },
+  {
+    id: "route-focus-mastered",
+    title: "路线挂满",
+    description: "把任意一条路线挂到满档。",
+    hint: "把胡流、信息流、河控流、道具流或救场流里的任意一条真正点满。",
     group: "builds",
   },
 ];
@@ -545,48 +776,312 @@ const ASCENSION_PERKS: AscensionPerkConfig[] = [
   },
 ];
 
+const ASCENSION_PERK_LABELS = Object.fromEntries(
+  ASCENSION_PERKS.map((perk) => [perk.id, perk.label] as const),
+) as Record<AscensionPerkId, string>;
+
 function sanitizeUpgrades(upgrades?: Partial<UpgradeState> | null): UpgradeState {
   return {
     reserve: Math.max(0, Math.min(2, Number(upgrades?.reserve) || 0)),
     shield: Math.max(0, Math.min(2, Number(upgrades?.shield) || 0)),
     tools: Math.max(0, Math.min(2, Number(upgrades?.tools) || 0)),
+    river: Math.max(0, Math.min(2, Number(upgrades?.river) || 0)),
+    coins: Math.max(0, Math.min(2, Number(upgrades?.coins) || 0)),
+    vision: Math.max(0, Math.min(2, Number(upgrades?.vision) || 0)),
   };
 }
 
-function buildRunFrameSrc(sessionKey: string, upgrades: UpgradeState) {
+function getRouteFocusMasteryLevel(focusId: RouteFocusId, upgrades: UpgradeState) {
+  if (focusId === "hu") return Math.max(0, Math.min(2, upgrades.coins));
+  if (focusId === "info") return Math.max(0, Math.min(2, upgrades.vision));
+  if (focusId === "river") return Math.max(0, Math.min(2, upgrades.river));
+  if (focusId === "tools") return Math.max(0, Math.min(2, upgrades.tools));
+  if (focusId === "survive") {
+    if (upgrades.reserve >= 2 || upgrades.shield >= 2 || upgrades.reserve + upgrades.shield >= 3) return 2;
+    if (upgrades.reserve > 0 || upgrades.shield > 0) return 1;
+  }
+  return 0;
+}
+
+function getPreferredRouteProgress(upgrades: UpgradeState, selectedRouteFocus: RouteFocusId) {
+  if (selectedRouteFocus !== "auto") {
+    const selectedConfig = ROUTE_FOCUS_CONFIGS.find((item) => item.id === selectedRouteFocus) ?? ROUTE_FOCUS_CONFIGS[0];
+    return {
+      focusId: selectedConfig.id,
+      focusLabel: selectedConfig.label,
+      preferredRoute: selectedConfig.route,
+      routeMasteryLevel: getRouteFocusMasteryLevel(selectedConfig.id, upgrades),
+    };
+  }
+  const routeCandidates = [
+    {
+      focusId: "survive" as const,
+      focusLabel: "自动偏好 · 救场流",
+      route: "救场流",
+      score: upgrades.reserve + upgrades.shield,
+      mastery:
+        upgrades.reserve > 0 && upgrades.shield > 0
+          ? 1 + Number(upgrades.reserve >= 2 || upgrades.shield >= 2)
+          : Math.max(upgrades.reserve, upgrades.shield) > 0
+            ? 1
+            : 0,
+    },
+    { focusId: "tools" as const, focusLabel: "自动偏好 · 道具流", route: "道具流", score: upgrades.tools, mastery: upgrades.tools },
+    { focusId: "river" as const, focusLabel: "自动偏好 · 河控流", route: "河控流", score: upgrades.river, mastery: upgrades.river },
+    { focusId: "hu" as const, focusLabel: "自动偏好 · 胡流", route: "胡流", score: upgrades.coins, mastery: upgrades.coins },
+    { focusId: "info" as const, focusLabel: "自动偏好 · 信息流", route: "信息流", score: upgrades.vision, mastery: upgrades.vision },
+  ] as const;
+  const strongest = routeCandidates.reduce((best, current) => (current.score > best.score ? current : best));
+  if (strongest.score <= 0 || strongest.mastery <= 0) {
+    return { focusId: "auto" as const, focusLabel: "自动偏好", preferredRoute: "", routeMasteryLevel: 0 };
+  }
+  return {
+    focusId: strongest.focusId,
+    focusLabel: strongest.focusLabel,
+    preferredRoute: strongest.route,
+    routeMasteryLevel: Math.max(0, Math.min(2, strongest.mastery)),
+  };
+}
+
+function getRouteGrowthStatus(
+  focusId: RouteFocusId,
+  upgrades: UpgradeState,
+  routeProgress: ReturnType<typeof getPreferredRouteProgress>,
+): RouteGrowthStatus {
+  const resolvedFocusId = focusId === "auto" ? routeProgress.focusId : focusId;
+  const resolvedMastery =
+    focusId === "auto" ? routeProgress.routeMasteryLevel : getRouteFocusMasteryLevel(resolvedFocusId, upgrades);
+
+  if (resolvedFocusId === "auto" || resolvedMastery <= 0) {
+    return {
+      currentEffect: "还没挂出固定路线，先把任意一条长期成长轴点到 1 级。",
+      nextTarget: "优先补一条想长期走的线，让开局偏置、奖励池和事件口味真正开始成形。",
+    };
+  }
+
+  if (resolvedFocusId === "hu") {
+    return {
+      currentEffect: `胡流会轻补 ${resolvedMastery >= 2 ? 5 : 0} 铜钱，并把胡牌收口再推 ${resolvedMastery} 档。`,
+      nextTarget:
+        upgrades.coins >= 2
+          ? "这一线已经满档，接下来更适合让本局流派去吃终局奖励和爆发节点。"
+          : "再补 1 级开局铜钱，让这条线继续只做轻协同，不去抢本局主轴。",
+    };
+  }
+  if (resolvedFocusId === "info") {
+    return {
+      currentEffect: `信息流会轻补 1 次看山，让试锋和 Boss 目标更早看清。`,
+      nextTarget:
+        upgrades.vision >= 2
+          ? "这一线已经满档，接下来更适合用本局流派把读到的线兑现出来。"
+          : "再补 1 级看山预置，让局外信息线保持轻协同，不抢本局身份。",
+    };
+  }
+  if (resolvedFocusId === "river") {
+    return {
+      currentEffect: `河控流会轻补 ${resolvedMastery >= 2 ? 1 : 0} 档牌河，并把杠路再垫 ${resolvedMastery} 档。`,
+      nextTarget:
+        upgrades.river >= 2
+          ? "这一线已经满档，接下来更适合把本局流派和河控收益接成一局。"
+          : "再补 1 级河道扩容，让局外河控只做轻补，不替代本局打法。",
+    };
+  }
+  if (resolvedFocusId === "tools") {
+    return {
+      currentEffect: `道具流会轻补 1 次丢弃，满档后再多补 1 次撤回。`,
+      nextTarget:
+        upgrades.tools >= 2
+          ? "这一线已经满档，接下来更适合让本局流派吃掉整理后的顺手窗口。"
+          : "再补 1 级初始道具，让这条线继续做整理协同，不去定义整局身份。",
+    };
+  }
+  return {
+    currentEffect: `救场流会轻补 1 次护符，满档后再多补 1 格备用槽。`,
+    nextTarget:
+      upgrades.reserve >= 2 || upgrades.shield >= 2 || upgrades.reserve + upgrades.shield >= 3
+        ? "这一线已经满档，接下来更适合让本局流派去把厚出来的空间转成推进。"
+        : "继续补备用槽或满槽护符，让这条线维持长期兜底，不去抢本局主轴。",
+  };
+}
+
+function getRouteFocusPlaybook(
+  focusId: RouteFocusId,
+  routeProgress: ReturnType<typeof getPreferredRouteProgress>,
+): RouteFocusPlaybook {
+  const resolvedFocusId = focusId === "auto" ? routeProgress.focusId : focusId;
+
+  if (resolvedFocusId === "hu") {
+    return {
+      rewardFocus: "优先追胡分、胡钱、看山和终局收口包，让最后一口真的能结账。",
+      eventFocus: "更适合接顺路追胡、尾巡定局、北风封尾这类会把终局爆发抬起来的事件。",
+      recommendedMode: "先打主线或每日，更容易在固定终章前把胡流滚成完整爆发。",
+      lateGamePlan: "中后段别把奖励拆去第二条线，优先把胡流推进到能稳定斩尾的强度。",
+    };
+  }
+  if (resolvedFocusId === "info") {
+    return {
+      rewardFocus: "优先追看山、洗牌、信息牌和照听类奖励，把读牌优势滚成稳定路线。",
+      eventFocus: "更适合接灯下探牌、西风定口、试锋读口这类会提前暴露解法的事件。",
+      recommendedMode: "先打每日或高阶，词缀和 Boss 目标更能放大信息流的价值。",
+      lateGamePlan: "后半段把信息优势换成收口效率，别只会看牌，不会把读口兑现成推进。",
+    };
+  }
+  if (resolvedFocusId === "river") {
+    return {
+      rewardFocus: "优先追杠分、河道扩容、丢弃工具和控河奖励，把弃牌节奏越滚越稳。",
+      eventFocus: "更适合接河灯旧约、护河续押、杠河双响这类会把牌河压力转成收益的事件。",
+      recommendedMode: "先打无尽或高阶，长 run 里河控流更容易把章节压力转成自己的节奏。",
+      lateGamePlan: "后段核心不是保命，是把河道空间拿来换收束速度，尽量让每次弃牌都服务下一口。",
+    };
+  }
+  if (resolvedFocusId === "tools") {
+    return {
+      rewardFocus: "优先追丢弃、撤回、洗牌和整理类奖励，让坏手修线能力先站稳。",
+      eventFocus: "更适合接封盘押后、险招翻倍、整理回袋这类会逼你重排节奏的事件。",
+      recommendedMode: "先打主线后半程或每日，比较容易看出道具流到底是在救火还是已经开始赚钱。",
+      lateGamePlan: "中后段要把工具从纯救场转成主动整手，别一直把道具花在补漏洞上。",
+    };
+  }
+  if (resolvedFocusId === "survive") {
+    return {
+      rewardFocus: "优先追备用槽、护符、残局缓冲和补位类奖励，把容错厚度先垫满。",
+      eventFocus: "更适合接南风续墙、北风封火、稳压续命这类会持续顶压的事件。",
+      recommendedMode: "先打无尽或高阶，高压模式里最容易看出救场流能不能真的把 run 扛长。",
+      lateGamePlan: "后段别只继续叠盾，容错厚度够了以后要开始补收官件，不然很容易拖到最后也收不掉。",
+    };
+  }
+  return {
+    rewardFocus: "先把任意一条长期成长轴点到 1 级，系统才会开始稳定偏向那条路线的奖励。",
+    eventFocus: "还在自动偏好阶段，事件会先按当前最深成长轴轻量偏置，不会强行锁死。",
+    recommendedMode: "先打一轮主线或每日，把第一条长期线点亮，再来看哪条 build 真正顺手。",
+    lateGamePlan: "自动偏好更适合探路，真想把内容滚深，还是尽快选一条长期线去持续追。",
+  };
+}
+
+function getRunArchetypeConfig(archetypeId: RunArchetypeId) {
+  return RUN_ARCHETYPES.find((item) => item.id === archetypeId) ?? RUN_ARCHETYPES[0];
+}
+
+function getRunArchetypeAvailability(
+  archetypeId: RunArchetypeId,
+  panel: LobbyPanel,
+  highestMainlineOrder: number,
+) {
+  const unlock = RUN_ARCHETYPE_UNLOCKS.find((item) => item.id === archetypeId);
+  const unlockAt = unlock?.unlockAtMainline ?? 1;
+  const recommendedUntil = unlock?.recommendedUntilMainline ?? 20;
+  if (panel !== "mainline" || highestMainlineOrder >= 20) {
+    return {
+      disabled: false,
+      label: "20 关后自由选择",
+      detail: "20 关后自由选择，也会用于无尽、每日和高阶开局。",
+    };
+  }
+  if (highestMainlineOrder + 1 < unlockAt) {
+    return {
+      disabled: true,
+      label: `第 ${unlockAt} 关引导解锁`,
+      detail: `前 20 关会逐步开放流派，这条先在第 ${unlockAt} 关教学后再放开。`,
+    };
+  }
+  return {
+    disabled: false,
+    label: highestMainlineOrder + 1 <= recommendedUntil ? "前 20 关推荐" : "前 20 关可选",
+    detail: "前 20 关推荐按教学节奏逐步试流派，通关后再完全自由。",
+  };
+}
+
+function hashDailySeed(seed: string) {
+  let hash = 0;
+  for (const char of String(seed)) hash = (hash * 33 + char.charCodeAt(0)) % 2147483647;
+  return hash;
+}
+
+function getDailyMutatorPreview(seed: string) {
+  return DAILY_MUTATOR_PREVIEWS[hashDailySeed(seed) % DAILY_MUTATOR_PREVIEWS.length];
+}
+
+function getEndlessChapterPreview(layer: number) {
+  const chapter = Math.max(1, Math.floor((Math.max(layer, ENDLESS_START_LAYER) - ENDLESS_START_LAYER) / 5) + 1);
+  return ENDLESS_CHAPTER_THEMES[(chapter - 1) % ENDLESS_CHAPTER_THEMES.length];
+}
+
+function buildRunFrameSrc(
+  sessionKey: string,
+  upgrades: UpgradeState,
+  selectedRouteFocus: RouteFocusId,
+  runArchetype: RunArchetypeId,
+  resumeLevelOrder?: number,
+) {
+  const routeProgress = getPreferredRouteProgress(upgrades, selectedRouteFocus);
   const params = new URLSearchParams({
     embed: "shell",
     session: sessionKey,
+    runArchetype,
     reserveBonus: String(upgrades.reserve),
     shieldBonus: String(upgrades.shield),
     toolBonus: String(upgrades.tools),
+    riverBonus: String(upgrades.river),
+    coinBonus: String(upgrades.coins * 20),
+    visionBonus: String(upgrades.vision),
+    preferredRoute: routeProgress.preferredRoute,
+    routeMasteryLevel: String(routeProgress.routeMasteryLevel),
   });
+  if (resumeLevelOrder && resumeLevelOrder > 1) params.set("level", String(resumeLevelOrder));
   return `${FRAME_BASE}?${params.toString()}`;
 }
 
-function buildEndlessFrameSrc(sessionKey: string, upgrades: UpgradeState) {
+function buildEndlessFrameSrc(
+  sessionKey: string,
+  upgrades: UpgradeState,
+  selectedRouteFocus: RouteFocusId,
+  runArchetype: RunArchetypeId,
+  resumeEndlessLayer?: number,
+) {
+  const routeProgress = getPreferredRouteProgress(upgrades, selectedRouteFocus);
   const params = new URLSearchParams({
     embed: "shell",
     session: sessionKey,
     mode: "endless",
-    startLayer: "21",
+    startLayer: String(resumeEndlessLayer ?? ENDLESS_START_LAYER),
+    runArchetype,
     reserveBonus: String(upgrades.reserve),
     shieldBonus: String(upgrades.shield),
     toolBonus: String(upgrades.tools),
+    riverBonus: String(upgrades.river),
+    coinBonus: String(upgrades.coins * 20),
+    visionBonus: String(upgrades.vision),
+    preferredRoute: routeProgress.preferredRoute,
+    routeMasteryLevel: String(routeProgress.routeMasteryLevel),
   });
   return `${FRAME_BASE}?${params.toString()}`;
 }
 
-function buildDailyFrameSrc(sessionKey: string, upgrades: UpgradeState, dailySeed: string) {
+function buildDailyFrameSrc(
+  sessionKey: string,
+  upgrades: UpgradeState,
+  selectedRouteFocus: RouteFocusId,
+  dailySeed: string,
+  runArchetype: RunArchetypeId,
+  resumeLevelOrder?: number,
+) {
+  const routeProgress = getPreferredRouteProgress(upgrades, selectedRouteFocus);
   const params = new URLSearchParams({
     embed: "shell",
     session: sessionKey,
     mode: "daily",
     dailySeed,
+    runArchetype,
     reserveBonus: String(upgrades.reserve),
     shieldBonus: String(upgrades.shield),
     toolBonus: String(upgrades.tools),
+    riverBonus: String(upgrades.river),
+    coinBonus: String(upgrades.coins * 20),
+    visionBonus: String(upgrades.vision),
+    preferredRoute: routeProgress.preferredRoute,
+    routeMasteryLevel: String(routeProgress.routeMasteryLevel),
   });
+  if (resumeLevelOrder && resumeLevelOrder > 1) params.set("level", String(resumeLevelOrder));
   return `${FRAME_BASE}?${params.toString()}`;
 }
 
@@ -642,6 +1137,127 @@ function sanitizeUnlockedAscensionPerks(perks?: Record<string, unknown> | null) 
       allowed.has(perkId as AscensionPerkId) && Boolean(value) ? [[perkId as AscensionPerkId, true] as const] : [],
     ),
   ) as Partial<Record<AscensionPerkId, boolean>>;
+}
+
+function sanitizeActiveRunResume(input: unknown): ActiveRunResumeState | null {
+  if (!input || typeof input !== "object") return null;
+  const resume = input as Partial<ActiveRunResumeState>;
+  if (typeof resume.sessionKey !== "string" || !resume.sessionKey) return null;
+  if (typeof resume.updatedAt !== "string" || Number.isNaN(Date.parse(resume.updatedAt))) return null;
+  return {
+    sessionKey: resume.sessionKey,
+    runMode: sanitizeRunMode(resume.runMode),
+    runArchetype: sanitizeRunArchetype(resume.runArchetype),
+    ascensionLevel: resume.ascensionLevel ? sanitizeAscensionLevel(resume.ascensionLevel) : null,
+    ascensionName: typeof resume.ascensionName === "string" && resume.ascensionName ? resume.ascensionName : null,
+    ascensionPerks: sanitizeAscensionLoadout(resume.ascensionPerks),
+    dailySeed: typeof resume.dailySeed === "string" && resume.dailySeed ? resume.dailySeed : null,
+    latestCoins: Math.max(0, Number.isFinite(resume.latestCoins) ? Number(resume.latestCoins) : 0),
+    latestScore: Math.max(0, Number.isFinite(resume.latestScore) ? Number(resume.latestScore) : 0),
+    latestLevelOrder: Math.max(1, Number.isFinite(resume.latestLevelOrder) ? Number(resume.latestLevelOrder) : 1),
+    latestEndlessLayer: Math.max(
+      ENDLESS_START_LAYER,
+      Number.isFinite(resume.latestEndlessLayer) ? Number(resume.latestEndlessLayer) : ENDLESS_START_LAYER,
+    ),
+    latestSummary: typeof resume.latestSummary === "string" ? resume.latestSummary : "",
+    pickedRewards: Math.max(0, Number.isFinite(resume.pickedRewards) ? Number(resume.pickedRewards) : 0),
+    updatedAt: resume.updatedAt,
+  };
+}
+
+function chooseLatestActiveRunResume(
+  localActiveRun: ActiveRunResumeState | null,
+  remoteActiveRun: ActiveRunResumeState | null,
+) {
+  if (!localActiveRun) return remoteActiveRun;
+  if (!remoteActiveRun) return localActiveRun;
+  return Date.parse(localActiveRun.updatedAt) >= Date.parse(remoteActiveRun.updatedAt) ? localActiveRun : remoteActiveRun;
+}
+
+function sanitizeRunMode(value?: unknown): RunMode {
+  return value === "endless" || value === "daily" || value === "mainline" ? value : "mainline";
+}
+
+function sanitizeRunArchetype(value?: unknown): RunArchetypeId {
+  return RUN_ARCHETYPES.some((archetype) => archetype.id === value) ? (value as RunArchetypeId) : "chi";
+}
+
+function toActiveRunResumeState(activeRun: ActiveRun): ActiveRunResumeState {
+  return {
+    sessionKey: activeRun.sessionKey,
+    runMode: activeRun.runMode,
+    runArchetype: activeRun.runArchetype,
+    ascensionLevel: activeRun.ascensionLevel,
+    ascensionName: activeRun.ascensionName,
+    ascensionPerks: activeRun.ascensionPerks,
+    dailySeed: activeRun.dailySeed,
+    latestCoins: activeRun.latestCoins,
+    latestScore: activeRun.latestScore,
+    latestLevelOrder: activeRun.latestLevelOrder,
+    latestEndlessLayer: activeRun.latestEndlessLayer,
+    latestSummary: activeRun.latestSummary,
+    pickedRewards: activeRun.pickedRewards,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function restoreActiveRunFromPersistedState(
+  persisted: PersistedShellState,
+  upgrades: UpgradeState,
+  selectedRouteFocus: RouteFocusId,
+): ActiveRun | null {
+  const resume = persisted.activeRun;
+  if (!resume?.sessionKey) return null;
+  const runMode = sanitizeRunMode(resume.runMode);
+  const runArchetype = sanitizeRunArchetype(resume.runArchetype);
+  const latestLevelOrder = Math.max(1, Number.isFinite(resume.latestLevelOrder) ? Number(resume.latestLevelOrder) : 1);
+  const latestEndlessLayer = Math.max(
+    ENDLESS_START_LAYER,
+    Number.isFinite(resume.latestEndlessLayer) ? Number(resume.latestEndlessLayer) : ENDLESS_START_LAYER,
+  );
+  const latestCoins = Math.max(0, Number.isFinite(resume.latestCoins) ? Number(resume.latestCoins) : 0);
+  const latestScore = Math.max(0, Number.isFinite(resume.latestScore) ? Number(resume.latestScore) : 0);
+  const pickedRewards = Math.max(0, Number.isFinite(resume.pickedRewards) ? Number(resume.pickedRewards) : 0);
+  const ascensionLevel = resume.ascensionLevel ? sanitizeAscensionLevel(resume.ascensionLevel) : null;
+  const ascensionName =
+    ascensionLevel
+      ? resume.ascensionName ?? ASCENSION_CONFIGS.find((item) => item.level === ascensionLevel)?.name ?? null
+      : null;
+  const ascensionPerks = sanitizeAscensionLoadout(resume.ascensionPerks).slice(0, ascensionLevel ? getAscensionPerkSlots(ascensionLevel) : 0);
+  const dailySeed = runMode === "daily" ? resume.dailySeed || getTodayDailySeed() : null;
+  const iframeSrc = ascensionLevel
+    ? buildAscensionFrameSrc(resume.sessionKey, upgrades, selectedRouteFocus, runArchetype, ascensionLevel, ascensionPerks, latestLevelOrder)
+    : runMode === "endless"
+      ? buildEndlessFrameSrc(resume.sessionKey, upgrades, selectedRouteFocus, runArchetype, latestEndlessLayer)
+      : runMode === "daily"
+        ? buildDailyFrameSrc(resume.sessionKey, upgrades, selectedRouteFocus, dailySeed ?? getTodayDailySeed(), runArchetype, latestLevelOrder)
+        : buildRunFrameSrc(resume.sessionKey, upgrades, selectedRouteFocus, runArchetype, latestLevelOrder);
+
+  return {
+    sessionKey: resume.sessionKey,
+    runMode,
+    runArchetype,
+    ascensionLevel,
+    ascensionName,
+    ascensionPerks,
+    dailySeed,
+    iframeSrc,
+    latestCoins,
+    latestScore,
+    latestLevelOrder,
+    latestEndlessLayer,
+    latestSummary:
+      typeof resume.latestSummary === "string" && resume.latestSummary
+        ? resume.latestSummary
+        : runMode === "endless"
+          ? `无尽第 ${latestEndlessLayer} 层`
+          : ascensionName
+            ? `${ascensionName} 第 ${latestLevelOrder} 关`
+            : runMode === "daily"
+              ? `每日 ${dailySeed ?? getTodayDailySeed()} · 第 ${latestLevelOrder} 关`
+              : `第 ${latestLevelOrder} 关`,
+    pickedRewards,
+  };
 }
 
 function getAscensionPerkSlots(level: AscensionLevel) {
@@ -799,7 +1415,7 @@ function describeAscensionBuildFocus(perks: AscensionPerkId[]) {
 }
 
 function countUnlockedUpgrades(upgrades: UpgradeState) {
-  return upgrades.reserve + upgrades.shield + upgrades.tools;
+  return upgrades.reserve + upgrades.shield + upgrades.tools + upgrades.river + upgrades.coins + upgrades.vision;
 }
 
 function buildAchievementUnlocks(state: {
@@ -807,6 +1423,7 @@ function buildAchievementUnlocks(state: {
   bestEndlessLayer: number;
   bestAscensionLevel: AscensionLevel;
   dailyBestLevels: Record<string, number>;
+  dailyStreak: number;
   upgrades: UpgradeState;
 }) {
   const unlocks: Partial<Record<AchievementId, string>> = {};
@@ -814,6 +1431,19 @@ function buildAchievementUnlocks(state: {
   const hasAnyDaily = Object.keys(state.dailyBestLevels).length > 0;
   const hasAnyUpgrade = countUnlockedUpgrades(state.upgrades) > 0;
   const hasAllUpgrades = state.upgrades.reserve > 0 && state.upgrades.shield > 0 && state.upgrades.tools > 0;
+  const hasAllSixUpgrades =
+    state.upgrades.reserve > 0 &&
+    state.upgrades.shield > 0 &&
+    state.upgrades.tools > 0 &&
+    state.upgrades.river > 0 &&
+    state.upgrades.coins > 0 &&
+    state.upgrades.vision > 0;
+  const hasMasteredRoute =
+    getRouteFocusMasteryLevel("hu", state.upgrades) >= 2 ||
+    getRouteFocusMasteryLevel("info", state.upgrades) >= 2 ||
+    getRouteFocusMasteryLevel("river", state.upgrades) >= 2 ||
+    getRouteFocusMasteryLevel("tools", state.upgrades) >= 2 ||
+    getRouteFocusMasteryLevel("survive", state.upgrades) >= 2;
 
   if (state.lastSettlement?.runMode === "mainline" && state.lastSettlement.result === "completed") {
     unlocks["mainline-first-clear"] = state.lastSettlement.summary ? now : now;
@@ -831,6 +1461,9 @@ function buildAchievementUnlocks(state: {
   if (state.bestEndlessLayer >= 25) {
     unlocks["endless-layer-25"] = now;
   }
+  if (state.bestEndlessLayer >= 40) {
+    unlocks["endless-layer-40"] = now;
+  }
 
   if (hasAnyDaily) {
     unlocks["daily-first-checkin"] = now;
@@ -838,12 +1471,18 @@ function buildAchievementUnlocks(state: {
   if (Object.values(state.dailyBestLevels).some((level) => level > 0)) {
     unlocks["daily-clear"] = now;
   }
+  if (state.dailyStreak >= 7) {
+    unlocks["daily-streak-7"] = now;
+  }
 
   if (hasAnyUpgrade) {
     unlocks["upgrade-first-buy"] = now;
   }
   if (hasAllUpgrades) {
     unlocks["upgrade-all-basic"] = now;
+  }
+  if (hasAllSixUpgrades) {
+    unlocks["upgrade-all-six"] = now;
   }
   if (state.bestAscensionLevel >= 3) {
     unlocks["ascension-west-clear"] = now;
@@ -853,6 +1492,9 @@ function buildAchievementUnlocks(state: {
   }
   if ((state.lastSettlement?.pickedRewards ?? 0) >= 4) {
     unlocks["build-reward-streak"] = now;
+  }
+  if (hasMasteredRoute) {
+    unlocks["route-focus-mastered"] = now;
   }
   if (state.lastSettlement?.bossReview?.bossVariant === "ascension-warden") {
     unlocks["boss-ascension-warden"] = now;
@@ -874,22 +1516,33 @@ function buildAchievementUnlocks(state: {
 function buildAscensionFrameSrc(
   sessionKey: string,
   upgrades: UpgradeState,
+  selectedRouteFocus: RouteFocusId,
+  runArchetype: RunArchetypeId,
   ascensionLevel: AscensionLevel,
   equippedAscensionLoadout: AscensionPerkId[],
+  resumeLevelOrder?: number,
 ) {
+  const routeProgress = getPreferredRouteProgress(upgrades, selectedRouteFocus);
   const ascension = ASCENSION_CONFIGS.find((item) => item.level === ascensionLevel) ?? ASCENSION_CONFIGS[0];
   const params = new URLSearchParams({
     embed: "shell",
     session: sessionKey,
     mode: "ascension",
+    runArchetype,
     ascensionLevel: String(ascension.level),
     ascensionName: ascension.name,
     reserveBonus: String(upgrades.reserve),
     shieldBonus: String(upgrades.shield),
     toolBonus: String(upgrades.tools),
+    riverBonus: String(upgrades.river),
+    coinBonus: String(upgrades.coins * 20),
+    visionBonus: String(upgrades.vision),
+    preferredRoute: routeProgress.preferredRoute,
+    routeMasteryLevel: String(routeProgress.routeMasteryLevel),
     ascensionPerkSlots: String(ascension.perkSlots),
     ascensionPerks: equippedAscensionLoadout.join(","),
   });
+  if (resumeLevelOrder && resumeLevelOrder > 1) params.set("level", String(resumeLevelOrder));
   return `${FRAME_BASE}?${params.toString()}`;
 }
 
@@ -915,7 +1568,9 @@ function readPersistedShellState(): PersistedShellState {
       lastDailySeed: null,
       achievements: {},
       lastSettlement: null,
+      activeRun: null,
       upgrades: DEFAULT_UPGRADES,
+      selectedRouteFocus: "auto",
       equippedAscensionLoadout: [],
       unlockedAscensionPerks: {},
     };
@@ -933,20 +1588,16 @@ function readPersistedShellState(): PersistedShellState {
         lastDailySeed: null,
         achievements: {},
         lastSettlement: null,
+        activeRun: null,
         upgrades: DEFAULT_UPGRADES,
+        selectedRouteFocus: "auto",
         equippedAscensionLoadout: [],
         unlockedAscensionPerks: {},
       };
     }
-    const parsed = JSON.parse(raw) as PersistedShellState;
-    const persistedSettlement = parsed.lastSettlement
-      ? {
-          ...parsed.lastSettlement,
-          ascensionReview: parsed.lastSettlement.ascensionReview ?? null,
-          bossReview: parsed.lastSettlement.bossReview ?? null,
-          specialEventReview: (parsed.lastSettlement as SettlementState & { specialEventReview?: SpecialEventReview | null }).specialEventReview ?? null,
-        }
-      : null;
+    const parsed = JSON.parse(raw) as PersistedShellState & { lastSettlement?: LegacySettlementState | null };
+    const persistedSettlement = normalizeCompletedSettlement(parsed.lastSettlement);
+    const persistedActiveRun = sanitizeActiveRunResume((parsed as PersistedShellState & { activeRun?: unknown }).activeRun);
     return {
       bankedCoins: Number.isFinite(parsed.bankedCoins) ? parsed.bankedCoins : 0,
       bestEndlessLayer: Number.isFinite(parsed.bestEndlessLayer) ? Math.max(0, parsed.bestEndlessLayer) : 0,
@@ -960,7 +1611,9 @@ function readPersistedShellState(): PersistedShellState {
         : null,
       achievements: sanitizeAchievements((parsed as PersistedShellState & { achievements?: Record<string, unknown> }).achievements),
       lastSettlement: persistedSettlement,
+      activeRun: persistedActiveRun,
       upgrades: sanitizeUpgrades(parsed.upgrades),
+      selectedRouteFocus: ((parsed as PersistedShellState & { selectedRouteFocus?: RouteFocusId }).selectedRouteFocus ?? "auto"),
       equippedAscensionLoadout: sanitizeAscensionLoadout((parsed as PersistedShellState & { equippedAscensionLoadout?: unknown }).equippedAscensionLoadout),
       unlockedAscensionPerks: sanitizeUnlockedAscensionPerks((parsed as PersistedShellState & { unlockedAscensionPerks?: Record<string, unknown> }).unlockedAscensionPerks),
     };
@@ -974,11 +1627,24 @@ function readPersistedShellState(): PersistedShellState {
       lastDailySeed: null,
       achievements: {},
       lastSettlement: null,
+      activeRun: null,
       upgrades: DEFAULT_UPGRADES,
+      selectedRouteFocus: "auto",
       equippedAscensionLoadout: [],
       unlockedAscensionPerks: {},
     };
   }
+}
+
+function normalizeCompletedSettlement(settlement?: LegacySettlementState | null): SettlementState | null {
+  if (!settlement) return null;
+  if (settlement.result && settlement.result !== "completed") return null;
+  return {
+    ...settlement,
+    result: "completed",
+    bossReview: settlement.bossReview ?? null,
+    specialEventReview: settlement.specialEventReview ?? null,
+  };
 }
 
 function writePersistedShellState(state: PersistedShellState) {
@@ -1004,6 +1670,7 @@ async function fetchAccountProgress() {
     signedIn: true as const,
     data: {
       achievements: sanitizeAchievements(payload.achievements),
+      activeRun: sanitizeActiveRunResume(payload.activeRun),
       bankedCoins: Number.isFinite(payload.bankedCoins) ? Number(payload.bankedCoins) : 0,
       bestAscensionLevel: sanitizeAscensionLevel(payload.bestAscensionLevel),
       bestEndlessLayer: Number.isFinite(payload.bestEndlessLayer) ? Math.max(0, Number(payload.bestEndlessLayer)) : 0,
@@ -1016,6 +1683,7 @@ async function pushAccountProgress(state: PersistedShellState) {
   const response = await fetch("/api/games/hulebu/progress", {
     body: JSON.stringify({
       achievements: state.achievements,
+      activeRun: state.activeRun,
       bankedCoins: state.bankedCoins,
       bestAscensionLevel: state.bestAscensionLevel,
       bestEndlessLayer: state.bestEndlessLayer,
@@ -1051,6 +1719,8 @@ export function HulebuGamePage() {
   const [activeRun, setActiveRun] = useState<ActiveRun | null>(null);
   const [lastSettlement, setLastSettlement] = useState<SettlementState | null>(null);
   const [upgrades, setUpgrades] = useState<UpgradeState>(DEFAULT_UPGRADES);
+  const [selectedRouteFocus, setSelectedRouteFocus] = useState<RouteFocusId>("auto");
+  const [selectedRunArchetype, setSelectedRunArchetype] = useState<RunArchetypeId>("chi");
   const [equippedAscensionLoadout, setEquippedAscensionLoadout] = useState<AscensionPerkId[]>([]);
   const [selectedAscensionLevel, setSelectedAscensionLevel] = useState<AscensionLevel>(DEFAULT_ASCENSION_LEVEL);
   const [unlockedAscensionPerks, setUnlockedAscensionPerks] = useState<Partial<Record<AscensionPerkId, boolean>>>({
@@ -1061,6 +1731,22 @@ export function HulebuGamePage() {
     syncError: null,
     syncReady: false,
   });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const debugQueryKey = ["debug", "Settlement"].join("");
+    const url = new URL(window.location.href);
+    const debugQueryValue = url.searchParams.get(debugQueryKey);
+    if (!debugQueryValue) return;
+    url.searchParams.delete(debugQueryKey);
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    if (/fail/i.test(debugQueryValue)) {
+      setLastSettlement(null);
+      setActiveRun(null);
+      setScreen("lobby");
+    }
+  }, []);
+
   const todayDailySeed = useMemo(() => getTodayDailySeed(), []);
   const todayBestDailyLevel = dailyBestLevels[todayDailySeed] ?? 0;
   const unlockedAchievementCount = Object.keys(achievements).length;
@@ -1115,17 +1801,15 @@ export function HulebuGamePage() {
     isUnlocked: perk.unlockLevel <= highestUnlockedAscension || Boolean(unlockedAscensionPerks[perk.id]),
     isEquipped: equippedAscensionLoadout.includes(perk.id),
   }));
-  const ascensionBuildSummary = useMemo(
-    () => summarizeAscensionBuild(equippedAscensionLoadout),
-    [equippedAscensionLoadout],
-  );
-  const ascensionBuildFocus = useMemo(
-    () => describeAscensionBuildFocus(equippedAscensionLoadout),
+  const equippedAscensionLabels = useMemo(
+    () => equippedAscensionLoadout.map((perkId) => ASCENSION_PERK_LABELS[perkId] ?? perkId),
     [equippedAscensionLoadout],
   );
 
   useEffect(() => {
     const persisted = readPersistedShellState();
+    const persistedSettlement = normalizeCompletedSettlement(persisted.lastSettlement);
+    const restoredActiveRun = restoreActiveRunFromPersistedState(persisted, persisted.upgrades, persisted.selectedRouteFocus);
     setBankedCoins(persisted.bankedCoins);
     setBestEndlessLayer(persisted.bestEndlessLayer);
     setBestAscensionLevel(persisted.bestAscensionLevel);
@@ -1136,16 +1820,20 @@ export function HulebuGamePage() {
       mergeAchievementMap(
         persisted.achievements,
         buildAchievementUnlocks({
-          lastSettlement: persisted.lastSettlement,
+          lastSettlement: persistedSettlement,
           bestEndlessLayer: persisted.bestEndlessLayer,
           bestAscensionLevel: persisted.bestAscensionLevel,
           dailyBestLevels: persisted.dailyBestLevels,
+          dailyStreak: persisted.dailyStreak,
           upgrades: persisted.upgrades,
         }),
       ),
     );
-    setLastSettlement(persisted.lastSettlement);
+    setLastSettlement(persistedSettlement);
+    setActiveRun(restoredActiveRun);
+    if (restoredActiveRun) setScreen("playing");
     setUpgrades(persisted.upgrades);
+    setSelectedRouteFocus(persisted.selectedRouteFocus ?? "auto");
     setEquippedAscensionLoadout(persisted.equippedAscensionLoadout.slice(0, getAscensionPerkSlots(persisted.bestAscensionLevel)));
     setSelectedAscensionLevel(persisted.bestAscensionLevel);
     setUnlockedAscensionPerks({
@@ -1195,6 +1883,15 @@ export function HulebuGamePage() {
           ...local.achievements,
         };
         const mergedBankedCoins = Math.max(local.bankedCoins, result.data.bankedCoins);
+        const mergedActiveRun = chooseLatestActiveRunResume(local.activeRun, result.data.activeRun);
+        const restoredRemoteActiveRun = restoreActiveRunFromPersistedState(
+          {
+            ...local,
+            activeRun: mergedActiveRun,
+          },
+          local.upgrades,
+          local.selectedRouteFocus,
+        );
 
         setBankedCoins(mergedBankedCoins);
         setBestEndlessLayer(mergedBestEndless);
@@ -1202,6 +1899,8 @@ export function HulebuGamePage() {
         setSelectedAscensionLevel(mergedBestAscension);
         setDailyBestLevels(mergedDailyBestLevels);
         setAchievements((current) => mergeAchievementMap(mergedAchievements, current));
+        setActiveRun(restoredRemoteActiveRun);
+        if (restoredRemoteActiveRun) setScreen("playing");
         setUnlockedAscensionPerks((current) => ({
           ...current,
           ...Object.fromEntries(
@@ -1240,7 +1939,9 @@ export function HulebuGamePage() {
       lastDailySeed,
       achievements,
       lastSettlement,
+      activeRun: activeRun ? toActiveRunResumeState(activeRun) : null,
       upgrades,
+      selectedRouteFocus,
       equippedAscensionLoadout,
       unlockedAscensionPerks,
     };
@@ -1269,98 +1970,120 @@ export function HulebuGamePage() {
     lastDailySeed,
     hydrated,
     lastSettlement,
+    activeRun,
     upgrades,
+    selectedRouteFocus,
     equippedAscensionLoadout,
     unlockedAscensionPerks,
   ]);
 
-  const startRun = useCallback(() => {
+  function startRunWithArchetype(runMode: RunMode, archetypeId: RunArchetypeId, ascensionLevel?: AscensionLevel) {
     const sessionKey = createSessionKey();
-      setActiveRun({
-        sessionKey,
-        runMode: "mainline",
-        ascensionLevel: null,
-        ascensionName: null,
-        ascensionPerks: [],
-        dailySeed: null,
-        iframeSrc: buildRunFrameSrc(sessionKey, upgrades),
-      latestCoins: 0,
-      latestScore: 0,
-      latestLevelOrder: 1,
-      latestEndlessLayer: 0,
-      latestSummary: "第 1 关准备开始",
-      pickedRewards: 0,
-    });
-    setPanel("mainline");
-    setScreen("playing");
-  }, [upgrades]);
-
-  const startEndlessRun = useCallback(() => {
-    const sessionKey = createSessionKey();
-      setActiveRun({
-        sessionKey,
-        runMode: "endless",
-        ascensionLevel: null,
-        ascensionName: null,
-        ascensionPerks: [],
-        dailySeed: null,
-        iframeSrc: buildEndlessFrameSrc(sessionKey, upgrades),
-      latestCoins: 0,
-      latestScore: 0,
-      latestLevelOrder: ENDLESS_START_LAYER,
-      latestEndlessLayer: ENDLESS_START_LAYER,
-      latestSummary: `无尽第 ${ENDLESS_START_LAYER} 层准备开始`,
-      pickedRewards: 0,
-    });
-    setPanel("endless");
-    setScreen("playing");
-  }, [upgrades]);
-
-  const startDailyRun = useCallback(() => {
-    const sessionKey = createSessionKey();
-      setActiveRun({
-        sessionKey,
-        runMode: "daily",
-        ascensionLevel: null,
-        ascensionName: null,
-        ascensionPerks: [],
-        dailySeed: todayDailySeed,
-        iframeSrc: buildDailyFrameSrc(sessionKey, upgrades, todayDailySeed),
-      latestCoins: 0,
-      latestScore: 0,
-      latestLevelOrder: 1,
-      latestEndlessLayer: 0,
-      latestSummary: `每日牌局 ${todayDailySeed} 准备开始`,
-      pickedRewards: 0,
-    });
-    setPanel("daily");
-    setScreen("playing");
-  }, [todayDailySeed, upgrades]);
-
-  const startAscensionRun = useCallback(
-    (ascensionLevel: AscensionLevel) => {
-      const sessionKey = createSessionKey();
+    if (ascensionLevel) {
       const ascension = ASCENSION_CONFIGS.find((item) => item.level === ascensionLevel) ?? ASCENSION_CONFIGS[0];
       const allowedLoadout = equippedAscensionLoadout.slice(0, getAscensionPerkSlots(ascensionLevel));
       setActiveRun({
         sessionKey,
         runMode: "mainline",
+        runArchetype: archetypeId,
         ascensionLevel,
         ascensionName: ascension.name,
         ascensionPerks: allowedLoadout,
         dailySeed: null,
-        iframeSrc: buildAscensionFrameSrc(sessionKey, upgrades, ascensionLevel, allowedLoadout),
+        iframeSrc: buildAscensionFrameSrc(sessionKey, upgrades, selectedRouteFocus, archetypeId, ascensionLevel, allowedLoadout),
         latestCoins: 0,
         latestScore: 0,
         latestLevelOrder: 1,
         latestEndlessLayer: 0,
-        latestSummary: `${ascension.name} 第 1 关准备开始`,
+        latestSummary: `${ascension.name} 第 1 关`,
         pickedRewards: 0,
       });
       setPanel("ascension");
       setScreen("playing");
+      return;
+    }
+
+    if (runMode === "endless") {
+      setActiveRun({
+        sessionKey,
+        runMode: "endless",
+        runArchetype: archetypeId,
+        ascensionLevel: null,
+        ascensionName: null,
+        ascensionPerks: [],
+        dailySeed: null,
+        iframeSrc: buildEndlessFrameSrc(sessionKey, upgrades, selectedRouteFocus, archetypeId),
+        latestCoins: 0,
+        latestScore: 0,
+        latestLevelOrder: ENDLESS_START_LAYER,
+        latestEndlessLayer: ENDLESS_START_LAYER,
+        latestSummary: `无尽第 ${ENDLESS_START_LAYER} 层`,
+        pickedRewards: 0,
+      });
+      setPanel("endless");
+      setScreen("playing");
+      return;
+    }
+
+    if (runMode === "daily") {
+      setActiveRun({
+        sessionKey,
+        runMode: "daily",
+        runArchetype: archetypeId,
+        ascensionLevel: null,
+        ascensionName: null,
+        ascensionPerks: [],
+        dailySeed: todayDailySeed,
+        iframeSrc: buildDailyFrameSrc(sessionKey, upgrades, selectedRouteFocus, todayDailySeed, archetypeId),
+        latestCoins: 0,
+        latestScore: 0,
+        latestLevelOrder: 1,
+        latestEndlessLayer: 0,
+        latestSummary: `每日 ${todayDailySeed}`,
+        pickedRewards: 0,
+      });
+      setPanel("daily");
+      setScreen("playing");
+      return;
+    }
+
+    setActiveRun({
+      sessionKey,
+      runMode: "mainline",
+      runArchetype: archetypeId,
+      ascensionLevel: null,
+      ascensionName: null,
+      ascensionPerks: [],
+      dailySeed: null,
+      iframeSrc: buildRunFrameSrc(sessionKey, upgrades, selectedRouteFocus, archetypeId),
+      latestCoins: 0,
+      latestScore: 0,
+      latestLevelOrder: 1,
+      latestEndlessLayer: 0,
+      latestSummary: "第 1 关",
+      pickedRewards: 0,
+    });
+    setPanel("mainline");
+    setScreen("playing");
+  }
+
+  const startRun = useCallback(() => {
+    startRunWithArchetype("mainline", selectedRunArchetype);
+  }, [selectedRunArchetype, selectedRouteFocus, todayDailySeed, upgrades, equippedAscensionLoadout]);
+
+  const startEndlessRun = useCallback(() => {
+    startRunWithArchetype("endless", selectedRunArchetype);
+  }, [selectedRunArchetype, selectedRouteFocus, todayDailySeed, upgrades, equippedAscensionLoadout]);
+
+  const startDailyRun = useCallback(() => {
+    startRunWithArchetype("daily", selectedRunArchetype);
+  }, [selectedRunArchetype, selectedRouteFocus, todayDailySeed, upgrades, equippedAscensionLoadout]);
+
+  const startAscensionRun = useCallback(
+    (ascensionLevel: AscensionLevel) => {
+      startRunWithArchetype("mainline", selectedRunArchetype, ascensionLevel);
     },
-    [equippedAscensionLoadout, upgrades],
+    [selectedRunArchetype, selectedRouteFocus, todayDailySeed, upgrades, equippedAscensionLoadout],
   );
 
   const toggleAscensionPerk = useCallback(
@@ -1378,20 +2101,21 @@ export function HulebuGamePage() {
   );
 
   const restartRun = useCallback(() => {
+    const archetypeId = activeRun?.runArchetype ?? lastSettlement?.runArchetype ?? selectedRunArchetype;
     if ((activeRun?.runMode ?? lastSettlement?.runMode) === "endless") {
-      startEndlessRun();
+      startRunWithArchetype("endless", archetypeId);
       return;
     }
     if ((activeRun?.runMode ?? lastSettlement?.runMode) === "daily") {
-      startDailyRun();
+      startRunWithArchetype("daily", archetypeId);
       return;
     }
     if (activeRun?.ascensionLevel ?? lastSettlement?.ascensionLevel) {
-      startAscensionRun((activeRun?.ascensionLevel ?? lastSettlement?.ascensionLevel)!);
+      startRunWithArchetype("mainline", archetypeId, (activeRun?.ascensionLevel ?? lastSettlement?.ascensionLevel)!);
       return;
     }
-    startRun();
-  }, [activeRun?.ascensionLevel, activeRun?.runMode, lastSettlement?.ascensionLevel, lastSettlement?.runMode, startAscensionRun, startDailyRun, startEndlessRun, startRun]);
+    startRunWithArchetype("mainline", archetypeId);
+  }, [activeRun?.ascensionLevel, activeRun?.runArchetype, activeRun?.runMode, lastSettlement?.ascensionLevel, lastSettlement?.runArchetype, lastSettlement?.runMode, selectedRunArchetype]);
 
   const continueRun = useCallback(() => {
     if (!activeRun) return;
@@ -1421,6 +2145,7 @@ export function HulebuGamePage() {
               bestEndlessLayer,
               bestAscensionLevel,
               dailyBestLevels,
+              dailyStreak,
               upgrades: nextUpgrades,
             }),
           ),
@@ -1436,77 +2161,53 @@ export function HulebuGamePage() {
       if (typeof window === "undefined" || event.origin !== window.location.origin) return;
       const data = event.data;
       if (!data || data.source !== "hulebu-demo-shell" || !data.type || !data.payload) return;
+      const payload = data.payload;
       if (!activeRun || data.payload.sessionKey !== activeRun.sessionKey) return;
 
       if (data.type === "hulebu:run-progress") {
         setActiveRun((current) => {
-          if (!current || current.sessionKey !== data.payload?.sessionKey) return current;
+          if (!current || current.sessionKey !== payload.sessionKey) return current;
           return {
             ...current,
-            latestCoins: data.payload.coins ?? current.latestCoins,
-            latestScore: data.payload.score ?? current.latestScore,
-            latestLevelOrder: data.payload.levelOrder ?? current.latestLevelOrder,
-            latestEndlessLayer: data.payload.endlessLayer ?? current.latestEndlessLayer,
-            latestSummary: data.payload.summary ?? current.latestSummary,
-            pickedRewards: data.payload.pickedRewards ?? current.pickedRewards,
+            latestCoins: payload.coins ?? current.latestCoins,
+            latestScore: current.latestScore,
+            latestLevelOrder: payload.levelOrder ?? current.latestLevelOrder,
+            latestEndlessLayer: payload.endlessLayer ?? current.latestEndlessLayer,
+            latestSummary: payload.summary ?? current.latestSummary,
+            pickedRewards: payload.pickedRewards ?? current.pickedRewards,
           };
         });
         return;
       }
 
-      if (lastSettlement?.sessionKey === data.payload.sessionKey) return;
+      if (data.type === "hulebu:run-failed") {
+        setActiveRun(null);
+        setLastSettlement(null);
+        setScreen("playing");
+        return;
+      }
 
-      const coinsEarned = Math.max(0, data.payload.coins ?? 0);
+      if (lastSettlement?.sessionKey === payload.sessionKey) return;
+
+      const coinsEarned = Math.max(0, payload.coins ?? 0);
       const updatedBank = bankedCoins + coinsEarned;
-      const runMode = data.payload.runMode ?? activeRun.runMode;
-      const ascensionLevel = data.payload.ascensionLevel ?? activeRun.ascensionLevel;
-      const ascensionName = data.payload.ascensionName ?? activeRun.ascensionName;
-      const dailySeed = data.payload.dailySeed ?? activeRun.dailySeed;
+      const runMode = payload.runMode ?? activeRun.runMode;
+      const ascensionLevel = payload.ascensionLevel ?? activeRun.ascensionLevel;
+      const ascensionName = payload.ascensionName ?? activeRun.ascensionName;
+      const dailySeed = payload.dailySeed ?? activeRun.dailySeed;
       const reachedEndlessLayer =
-        runMode === "endless" ? data.payload.endlessLayer ?? activeRun.latestEndlessLayer : 0;
+        runMode === "endless" ? payload.endlessLayer ?? activeRun.latestEndlessLayer : 0;
       const updatedBestEndlessLayer =
         runMode === "endless" ? Math.max(bestEndlessLayer, reachedEndlessLayer) : bestEndlessLayer;
-      const dailyLevelOrder = runMode === "daily" ? Math.max(1, data.payload.levelOrder ?? activeRun.latestLevelOrder) : 0;
+      const dailyLevelOrder = runMode === "daily" ? Math.max(1, payload.levelOrder ?? activeRun.latestLevelOrder) : 0;
       const updatedBestDailyLevelOrder =
         runMode === "daily" && dailySeed
           ? Math.max(dailyBestLevels[dailySeed] ?? 0, dailyLevelOrder)
           : 0;
       const updatedDailyStreak =
         runMode === "daily" && dailySeed
-          ? data.payload.dailyStreak ?? (dailySeed === lastDailySeed ? Math.max(1, dailyStreak) : Math.max(1, dailyStreak + 1))
+          ? payload.dailyStreak ?? (dailySeed === lastDailySeed ? Math.max(1, dailyStreak) : Math.max(1, dailyStreak + 1))
           : dailyStreak;
-      const settlement: SettlementState = {
-        sessionKey: data.payload.sessionKey ?? activeRun.sessionKey,
-        runMode,
-        ascensionLevel,
-        ascensionName,
-        ascensionPerks: activeRun.ascensionPerks,
-        dailySeed,
-        result: data.type === "hulebu:run-complete" ? "completed" : "failed",
-        coinsEarned,
-        bankedCoins: updatedBank,
-        reachedLevelOrder: data.payload.levelOrder ?? activeRun.latestLevelOrder,
-        reachedEndlessLayer,
-        bestEndlessLayer: updatedBestEndlessLayer,
-        bestDailyLevelOrder: updatedBestDailyLevelOrder,
-        pickedRewards: data.payload.pickedRewards ?? activeRun.pickedRewards,
-        summary: data.payload.summary ?? activeRun.latestSummary,
-        endlessChapterLabel: data.payload.endlessChapterLabel ?? null,
-        endlessChapterBoss: data.payload.endlessChapterBoss ?? null,
-        dailyMutatorLabel: data.payload.dailyMutatorLabel ?? null,
-        dailyRewardLabel: data.payload.dailyRewardLabel ?? null,
-        dailyStreak: updatedDailyStreak,
-        ascensionReview: data.payload.ascensionReview ?? null,
-        bossReview: data.payload.bossReview ?? null,
-        specialEventReview:
-          data.payload.specialEventSummary || data.payload.specialEventMessage
-            ? {
-                summary: data.payload.specialEventSummary ?? "",
-                detail: data.payload.specialEventMessage ?? "",
-              }
-            : null,
-      };
-
       setBankedCoins(updatedBank);
       setBestEndlessLayer(updatedBestEndlessLayer);
       if (runMode === "mainline" && ascensionLevel && data.type === "hulebu:run-complete") {
@@ -1538,10 +2239,43 @@ export function HulebuGamePage() {
                     [dailySeed]: updatedBestDailyLevelOrder,
                   }
                 : dailyBestLevels,
+            dailyStreak: updatedDailyStreak,
             upgrades,
           }),
         ),
       );
+      const settlement: SettlementState = {
+        sessionKey: payload.sessionKey ?? activeRun.sessionKey,
+        runMode,
+        runArchetype: activeRun.runArchetype,
+        ascensionLevel,
+        ascensionName,
+        ascensionPerks: activeRun.ascensionPerks,
+        routeDirection: payload.routeDirection ?? null,
+        dailySeed,
+        result: "completed",
+        coinsEarned,
+        bankedCoins: updatedBank,
+        reachedLevelOrder: payload.levelOrder ?? activeRun.latestLevelOrder,
+        reachedEndlessLayer,
+        bestEndlessLayer: updatedBestEndlessLayer,
+        bestDailyLevelOrder: updatedBestDailyLevelOrder,
+        pickedRewards: payload.pickedRewards ?? activeRun.pickedRewards,
+        summary: payload.summary ?? activeRun.latestSummary,
+        endlessChapterLabel: payload.endlessChapterLabel ?? null,
+        endlessChapterBoss: payload.endlessChapterBoss ?? null,
+        dailyMutatorLabel: payload.dailyMutatorLabel ?? null,
+        dailyRewardLabel: payload.dailyRewardLabel ?? null,
+        dailyStreak: updatedDailyStreak,
+        bossReview: payload.bossReview ?? null,
+        specialEventReview:
+          payload.specialEventSummary || payload.specialEventMessage
+            ? {
+                summary: payload.specialEventSummary ?? "",
+                detail: payload.specialEventMessage ?? "",
+              }
+            : null,
+      };
       setLastSettlement(settlement);
       setActiveRun(null);
       setScreen("settlement");
@@ -1556,31 +2290,30 @@ export function HulebuGamePage() {
       mainline: {
         eyebrow: "主线 20 关",
         title: "胡了卜正在往完整体验版走",
-        description: "当前主线已经开放到第 20 关，并保留特殊事件、残局收官、第 10 关终局试炼和第 20 关胡了卜王 Boss。",
+        description: "20 关主线已开放，第 10 关有终局试炼，第 20 关有胡了卜王 Boss。",
         bullets: [
           "第 1-4 关教学碰 / 吃 / 杠 / 胡",
-          "第 5-19 关逐步提高牌山压力和事件干扰",
-          "第 20 关以胡了卜王六项目标作为终章",
+          "第 5-19 关逐步加压",
+          "第 20 关终章 Boss",
         ],
-        status: activeRun
-          ? `当前可继续到第 ${activeRun.latestLevelOrder} 关`
-          : "适合直接开一轮完整网页试玩",
+        status: activeRun ? `当前可继续到第 ${activeRun.latestLevelOrder} 关` : "适合直接开一轮完整网页试玩",
       },
       upgrades: {
         eyebrow: "局外升级",
-        title: "铜钱现在能真正花出去了",
-        description: "只有带回局外的铜钱才会记录在升级里。牌已经进卡槽后，就不再算记牌器，也不会拿来做局外资产。",
+        title: "局外升级",
+        description: "把铜钱换成下一轮的固定起手优势。",
         bullets: [
           "备用槽：给主线 run 增加一档容错",
           "满槽护符：在临界失败前提供一次缓冲",
           "初始道具：提高洗牌 / 撤回 / 丢弃的开局次数",
+          "河道扩容 / 开局铜钱 / 看山预置：开始把长期成长真正带进开局节奏",
         ],
-        status: "当前已开放购买，并会带进下一轮牌山",
+        status: "当前已开放 6 条成长轴，并会带进下一轮牌山",
       },
       collection: {
         eyebrow: "成就图鉴",
-        title: "长期进度现在开始往更完整的图鉴里沉淀了",
-        description: "第二版开始把主线、无尽、每日、升级、Boss、事件和高阶这些信号收进同一张图鉴。先看总览，再逐步把隐藏目标揭出来。",
+        title: "成就图鉴",
+        description: "记录主线、无尽、每日、高阶和事件进度。",
         bullets: [
           "主线首通、Boss 试炼和高阶征途会分开记下",
           "无尽、每日、事件和升级会沉淀成分类进度",
@@ -1591,29 +2324,30 @@ export function HulebuGamePage() {
       endless: {
         eyebrow: "无尽模式",
         title: "第 21 层之后开始按章节往深处推",
-        description: "无尽第二版开始把第 21 层后的冲层拆成章节推进。每 5 层会结一次章节压力，第 5 层位置挂一个章节 Boss，并继续承接路线型奖励池。",
+        description: "从第 21 层开始冲层，每 5 层一个章节 Boss。",
         bullets: [
-          "当前章节会跟着层数切换，并在局外页保留章节进度信号",
-          "章节 Boss 会按章节轮替压力主题，继续承接无尽 build",
-          "本地保存无尽最高层，后续再继续接章节路线和高阶联动",
+          "章节主题会随层数切换",
+          "章节中段会插入事件",
+          "本地保存无尽最高层",
         ],
         status: bestEndlessLayer > 0 ? `无尽最高第 ${bestEndlessLayer} 层` : "已开放本地冲层",
       },
       daily: {
         eyebrow: "每日牌局",
-        title: "今天这局开始像每日模式，而不只是固定 seed",
-        description: "每日第二版会在固定日 seed 之外，再给当天挂一个词缀、一个奖励口味和一个连续参与信号，先把回访节奏做出来。",
+        title: "每日牌局",
+        description: "每天固定 seed，并带一条今日词缀和奖励偏置。",
         bullets: [
           `固定日 seed：${todayDailySeed}`,
-          "局外页和结算面板都会显示今日词缀和今日奖励",
-          "连续参与会先记在本地，后续再接更完整的每日体系",
+          "会显示今日词缀",
+          "会显示今日奖励",
+          "记录连续参与",
         ],
         status: todayBestDailyLevel > 0 ? `今日最佳第 ${todayBestDailyLevel} 关` : "今日尚未挑战",
       },
       ascension: {
         eyebrow: "高阶周目",
-        title: "通关之后，可以开始打更紧的轮回了",
-        description: "高阶配置现在会先在局外页装备好，再带进试玩页。完整版先把四档周目、能力槽和高阶奖励骨架立起来。",
+        title: "高阶周目",
+        description: "选择周目和能力后再进入高阶 run。",
         bullets: [
           `当前已解锁：${currentAscensionConfig.name}`,
           `当前准备进入：${selectedAscensionConfig.name}`,
@@ -1634,42 +2368,23 @@ export function HulebuGamePage() {
       : "尚未挑战";
   const currentEndlessChapter = Math.max(1, Math.floor((Math.max(bestEndlessLayer, ENDLESS_START_LAYER) - ENDLESS_START_LAYER) / 5) + 1);
   const currentEndlessChapterLabel = `第 ${currentEndlessChapter} 章`;
-  const currentEndlessChapterBoss = lastSettlement?.runMode === "endless" && lastSettlement.endlessChapterBoss
-    ? lastSettlement.endlessChapterBoss
-    : "章节 Boss · 每 5 层结一次压力";
-  const currentDailyMutatorLabel = lastSettlement?.runMode === "daily" && lastSettlement.dailyMutatorLabel
-    ? lastSettlement.dailyMutatorLabel
-    : "今日词缀：等待今日开局";
-  const currentDailyRewardLabel = lastSettlement?.runMode === "daily" && lastSettlement.dailyRewardLabel
-    ? lastSettlement.dailyRewardLabel
-    : "今日奖励：等待今日结算";
-
-  const settlementTitle =
-    lastSettlement?.runMode === "endless"
-      ? "无尽结算"
-      : lastSettlement?.runMode === "daily"
-        ? "每日结算"
-      : lastSettlement?.result === "completed"
-        ? "主线通关"
-        : "本轮失利";
-  const settlementNote =
-    lastSettlement?.runMode === "endless"
-      ? "无尽牌山现在会按章节记下这次层数，回局外整顿后继续往下一章冲。"
-      : lastSettlement?.runMode === "daily"
-        ? `今日牌局 ${lastSettlement.dailySeed ?? todayDailySeed} 已结算，最好进度、今日词缀和连续参与都已经记下，明天再换一局。`
-      : lastSettlement?.result === "completed"
-      ? "胡了卜王这轮已经被你打穿了。"
-      : "这轮先收下已结算铜钱，回局外整顿再来。";
-  const settlementAscensionNote =
-    lastSettlement?.ascensionLevel
-      ? `${lastSettlement.ascensionName ?? "高阶周目"} · ${lastSettlement.ascensionPerks.length > 0 ? lastSettlement.ascensionPerks.join(", ") : "未装备高阶能力"}`
-      : "";
-  const settlementAscensionFocus = lastSettlement?.ascensionLevel
-    ? describeAscensionBuildFocus(lastSettlement.ascensionPerks)
-    : null;
-  const settlementAscensionReview = lastSettlement?.ascensionReview ?? null;
-  const settlementBossReview = lastSettlement?.bossReview ?? null;
-  const settlementSpecialEventReview = lastSettlement?.specialEventReview ?? null;
+  const currentEndlessChapterPreview = getEndlessChapterPreview(bestEndlessLayer > 0 ? bestEndlessLayer : ENDLESS_START_LAYER);
+  const currentEndlessChapterBoss = currentEndlessChapterPreview.bossTitle;
+  const todayDailyPreview = getDailyMutatorPreview(todayDailySeed);
+  const currentDailyMutatorLabel = todayDailyPreview.label;
+  const currentDailyRewardLabel = todayDailyPreview.rewardLabel;
+  const visibleSettlement = lastSettlement;
+  const selectedRunArchetypeConfig = getRunArchetypeConfig(selectedRunArchetype);
+  const highestMainlineOrder = Math.max(
+    activeRun?.runMode === "mainline" ? activeRun.latestLevelOrder : 0,
+    lastSettlement?.runMode === "mainline" ? lastSettlement.reachedLevelOrder : 0,
+    achievements["mainline-first-clear"] ? 20 : 0,
+  );
+  const settlementTitle = visibleSettlement?.runMode === "endless"
+    ? "无尽结算"
+    : visibleSettlement?.runMode === "daily"
+      ? "每日结算"
+      : "主线通关";
   const upgradeCards = UPGRADES.map((upgrade) => {
     const level = upgrades[upgrade.id];
     const nextCost = upgrade.costs[level] ?? null;
@@ -1683,6 +2398,22 @@ export function HulebuGamePage() {
       nextEffect: nextCost !== null ? upgrade.effectText[level] : "已满级",
     };
   });
+  const routeProgress = getPreferredRouteProgress(upgrades, selectedRouteFocus);
+  const routeGrowthStatus = getRouteGrowthStatus(selectedRouteFocus, upgrades, routeProgress);
+  const routeFocusCards = ROUTE_FOCUS_CONFIGS.map((focus) => {
+    const masteryLevel = focus.id === "auto" ? routeProgress.routeMasteryLevel : getRouteFocusMasteryLevel(focus.id, upgrades);
+    return {
+      ...focus,
+      masteryLevel,
+      isActive: focus.id === selectedRouteFocus,
+      resolvedLabel:
+        focus.id === "auto"
+          ? routeProgress.preferredRoute
+            ? `${routeProgress.focusLabel} · ${routeProgress.routeMasteryLevel} 档`
+            : "自动偏好 · 尚未成线"
+          : `${focus.route} · ${masteryLevel} 档`,
+    };
+  });
   return (
     <main className={styles.shell} aria-label="胡了卜网页试玩">
       {screen !== "playing" ? (
@@ -1694,7 +2425,7 @@ export function HulebuGamePage() {
                 <strong className={styles.title}>胡了卜</strong>
                 <span className={styles.versionTag}>主线 20 关</span>
               </div>
-              <p className={styles.subtitle}>先在局外页落脚，再进入牌桌，这一版终于开始像完整游戏了。</p>
+              <p className={styles.subtitle}>直接开局，只看必要状态。</p>
             </div>
             <div className={styles.topbarActions}>
               <Link className={styles.backLink} href="/games">
@@ -1706,157 +2437,60 @@ export function HulebuGamePage() {
             </div>
           </header>
 
-          {screen === "settlement" && lastSettlement ? (
-            <section className={styles.settlementPanel} aria-label="本轮结算">
+          {screen === "settlement" && visibleSettlement ? (
+            <section
+              className={styles.settlementPanel}
+              aria-label="本轮结算"
+            >
               <div className={styles.resultHeader}>
                 <div className={styles.resultBadge}>
                   <Coins size={16} strokeWidth={2.2} />
                   <span>结算</span>
                 </div>
                 <strong className={styles.resultTitle}>{settlementTitle}</strong>
-                <p className={styles.resultDescription}>{settlementNote}</p>
               </div>
               <div className={styles.metricsGrid}>
                 <article className={styles.metric}>
                   <span>
-                    {lastSettlement.runMode === "endless"
+                    {visibleSettlement.runMode === "endless"
                       ? "到达层数"
-                      : lastSettlement.runMode === "daily"
+                      : visibleSettlement.runMode === "daily"
                         ? "每日种子"
                         : "到达关卡"}
                   </span>
                   <strong>
-                    {lastSettlement.runMode === "daily"
-                      ? lastSettlement.dailySeed ?? todayDailySeed
-                      : `第 ${lastSettlement.runMode === "endless"
-                        ? lastSettlement.reachedEndlessLayer
-                        : lastSettlement.reachedLevelOrder} ${lastSettlement.runMode === "endless" ? "层" : "关"}`}
+                    {visibleSettlement.runMode === "daily"
+                      ? visibleSettlement.dailySeed ?? todayDailySeed
+                      : `第 ${visibleSettlement.runMode === "endless"
+                        ? visibleSettlement.reachedEndlessLayer
+                        : visibleSettlement.reachedLevelOrder} ${visibleSettlement.runMode === "endless" ? "层" : "关"}`}
                   </strong>
                 </article>
                 <article className={styles.metric}>
                   <span>本轮铜钱</span>
-                  <strong>+{lastSettlement.coinsEarned}</strong>
+                  <strong>+{visibleSettlement.coinsEarned}</strong>
                 </article>
                 <article className={styles.metric}>
                   <span>累计铜钱</span>
-                  <strong>{lastSettlement.bankedCoins}</strong>
+                  <strong>{visibleSettlement.bankedCoins}</strong>
                 </article>
                 <article className={styles.metric}>
                   <span>
-                    {lastSettlement.runMode === "endless"
+                    {visibleSettlement.runMode === "endless"
                       ? "当前章节"
-                      : lastSettlement.runMode === "daily"
+                      : visibleSettlement.runMode === "daily"
                         ? "连续参与"
                         : "已选奖励"}
                   </span>
                   <strong>
-                    {lastSettlement.runMode === "endless"
-                      ? lastSettlement.endlessChapterLabel ?? currentEndlessChapterLabel
-                      : lastSettlement.runMode === "daily"
-                        ? `${lastSettlement.dailyStreak} 天`
-                        : lastSettlement.pickedRewards}
+                    {visibleSettlement.runMode === "endless"
+                      ? visibleSettlement.endlessChapterLabel ?? currentEndlessChapterLabel
+                      : visibleSettlement.runMode === "daily"
+                        ? `${visibleSettlement.dailyStreak} 天`
+                        : visibleSettlement.pickedRewards}
                   </strong>
                 </article>
               </div>
-              <p className={styles.resultSummary}>{lastSettlement.summary}</p>
-              {lastSettlement.runMode === "endless" ? (
-                <p className={styles.resultSummary}>{`章节 Boss：${lastSettlement.endlessChapterBoss ?? currentEndlessChapterBoss}`}</p>
-              ) : null}
-              {lastSettlement.runMode === "daily" ? (
-                <>
-                  <p className={styles.resultSummary}>{lastSettlement.dailyMutatorLabel ?? currentDailyMutatorLabel}</p>
-                  <p className={styles.resultSummary}>{lastSettlement.dailyRewardLabel ?? currentDailyRewardLabel}</p>
-                </>
-              ) : null}
-              {settlementAscensionNote ? <p className={styles.resultSummary}>{settlementAscensionNote}</p> : null}
-              {settlementSpecialEventReview ? (
-                <section className={styles.settlementReview} aria-label="最近事件">
-                  <div className={styles.settlementReviewGrid}>
-                    <article className={styles.settlementReviewCard}>
-                      <span>最近事件</span>
-                      <strong>{settlementSpecialEventReview.summary ?? "事件已记录"}</strong>
-                      <p>{settlementSpecialEventReview.detail ?? "这一轮事件结果已经跟着结算一起记下来了，后续会继续围绕稀有事件、构筑联动和高阶事件展开。"}</p>
-                    </article>
-                  </div>
-                </section>
-              ) : null}
-              {settlementBossReview ? (
-                <section className={styles.settlementReview} aria-label="Boss 复盘">
-                  <div className={styles.settlementReviewGrid}>
-                    <article className={styles.settlementReviewCard}>
-                      <span>Boss 复盘</span>
-                      <strong>{settlementBossReview.bossTitle ?? "Boss"}</strong>
-                      <p>{settlementBossReview.summary ?? "Boss 节点已经结算。"}</p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>阶段目标</span>
-                      <strong>{settlementBossReview.phase ?? "起势"}</strong>
-                      <p>{settlementBossReview.phaseTarget ?? settlementBossReview.keyGoal ?? "阶段目标已记录。"}</p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>Boss 奖励品质</span>
-                      <strong>{settlementBossReview.rewardQuality ?? "普通"}</strong>
-                      <p>{settlementBossReview.bossVariant === "ascension-warden" ? "高阶 Boss 变体会按当前周目提高压力。" : settlementBossReview.detail ?? "奖励品质会跟随 Boss 变体变化。"}</p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>关键缺口</span>
-                      <strong>{settlementBossReview.keyMiss || "已打满"}</strong>
-                      <p>{settlementBossReview.nextAdvice ?? "下一轮继续围绕 Boss 目标调整构筑。"}</p>
-                    </article>
-                  </div>
-                </section>
-              ) : null}
-              {settlementAscensionFocus ? (
-                <section className={styles.settlementReview} aria-label="高阶复盘">
-                  <div className={styles.settlementReviewGrid}>
-                    <article className={styles.settlementReviewCard}>
-                      <span>构筑回顾</span>
-                      <strong>{settlementAscensionReview?.build ?? settlementAscensionFocus.build}</strong>
-                      <p>{settlementAscensionReview?.buildHeadline ?? settlementAscensionReview?.buildDetail ?? settlementAscensionFocus.keyGain}</p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>{lastSettlement.result === "failed" ? "失败归因" : "本轮高阶能力"}</span>
-                      <strong>
-                        {lastSettlement.result === "failed"
-                          ? settlementAscensionReview?.failureType ?? "构筑失配"
-                          : lastSettlement.ascensionPerks.length > 0
-                            ? lastSettlement.ascensionPerks.join(", ")
-                            : "未装备"}
-                      </strong>
-                      <p>
-                        {lastSettlement.result === "failed"
-                          ? settlementAscensionReview?.failureReviewLine ?? settlementAscensionReview?.detail ?? "Boss 目标不匹配、容错耗尽或节奏断档会在这里拆开。"
-                          : "这套能力已经跟着本轮结算一起记下来了。"}
-                      </p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>关键收益</span>
-                      <strong>{settlementAscensionReview?.keyGain ?? (lastSettlement.pickedRewards > 0 ? `拿到 ${lastSettlement.pickedRewards} 个奖励` : "奖励段偏少")}</strong>
-                      <p>
-                        {settlementAscensionReview?.rewardDepth
-                          ? settlementAscensionReview.rewardDepth
-                          : settlementAscensionReview?.settlementHighlights?.length
-                          ? `本轮关键收益：${settlementAscensionReview.settlementHighlights.join(" / ")}`
-                          : lastSettlement.runMode === "endless"
-                            ? "无尽层数推进已经记下。"
-                            : lastSettlement.runMode === "daily"
-                              ? "今日牌局进度已经记下。"
-                              : "主线推进和高阶压力都已经结算。"}
-                      </p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>关键失误</span>
-                      <strong>{settlementAscensionReview?.keyMiss ?? (lastSettlement.result === "failed" ? "Boss 目标不匹配" : "仍可继续压构筑")}</strong>
-                      <p>{settlementAscensionReview?.mismatch ?? settlementAscensionReview?.failureBottleneck ?? "构筑、目标完成度、容错和节奏都会在高阶失败后拆开看。"}</p>
-                    </article>
-                    <article className={styles.settlementReviewCard}>
-                      <span>下一轮建议</span>
-                      <strong>{settlementAscensionReview?.nextAdvice ?? settlementAscensionFocus.nextTip}</strong>
-                      <p>{lastSettlement.result === "failed" ? "这一轮更适合先补短板，再追强度。" : "这一轮已经成型，可以继续往更高压打。"}</p>
-                    </article>
-                  </div>
-                </section>
-              ) : null}
               <div className={styles.primaryActions}>
                 <button className={styles.primaryButton} type="button" onClick={restartRun}>
                   <RotateCcw size={16} strokeWidth={2.2} />
@@ -1899,14 +2533,27 @@ export function HulebuGamePage() {
                   <article className={styles.statusCard}>
                     <span>本页状态</span>
                     <strong>{panelContent[panel].status}</strong>
-                    <p>{activeRun ? activeRun.latestSummary : "先在局外页整顿，再决定这轮怎么开。"}</p>
+                    <p>{activeRun ? activeRun.latestSummary : "准备开局"}</p>
                   </article>
                 </div>
                 <div className={styles.primaryActions}>
-                  <button className={styles.primaryButton} type="button" onClick={startRun}>
-                    <Play size={16} strokeWidth={2.2} />
-                    <span>开始挑战</span>
-                  </button>
+                  {activeRun ? (
+                    <>
+                      <button className={styles.primaryButton} type="button" onClick={continueRun}>
+                        <RotateCcw size={16} strokeWidth={2.2} />
+                        <span>继续本轮</span>
+                      </button>
+                      <button className={styles.secondaryButton} type="button" onClick={startRun}>
+                        <Play size={16} strokeWidth={2.2} />
+                        <span>新开一轮</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button className={styles.primaryButton} type="button" onClick={startRun}>
+                      <Play size={16} strokeWidth={2.2} />
+                      <span>开始挑战</span>
+                    </button>
+                  )}
                   {panel === "endless" ? (
                     <button className={styles.primaryButton} type="button" onClick={startEndlessRun}>
                       <Swords size={16} strokeWidth={2.2} />
@@ -1938,54 +2585,161 @@ export function HulebuGamePage() {
                       </button>
                     </>
                   ) : null}
-                  <button
-                    className={styles.secondaryButton}
-                    type="button"
-                    disabled={!activeRun}
-                    onClick={continueRun}
-                  >
-                    <RotateCcw size={16} strokeWidth={2.2} />
-                    <span>继续本轮</span>
-                  </button>
+                  {!activeRun ? (
+                    <button
+                      className={styles.secondaryButton}
+                      type="button"
+                      disabled
+                      onClick={continueRun}
+                    >
+                      <RotateCcw size={16} strokeWidth={2.2} />
+                      <span>继续本轮</span>
+                    </button>
+                  ) : null}
                 </div>
-                <ul className={styles.bulletList}>
-                  {panelContent[panel].bullets.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-                {panel === "upgrades" ? (
-                  <section className={styles.upgradeGrid} aria-label="局外升级">
-                    {upgradeCards.map((upgrade) => (
-                      <article key={upgrade.id} className={styles.upgradeCard}>
-                        <div className={styles.upgradeHead}>
-                          <div className={styles.upgradeTitleBlock}>
-                            <span className={styles.upgradeLabel}>{upgrade.label}</span>
-                            <strong className={styles.upgradeLevel}>Lv.{upgrade.level}</strong>
-                          </div>
-                          <span className={styles.upgradeEffect}>{upgrade.currentEffect}</span>
-                        </div>
-                        <p className={styles.upgradeDescription}>{upgrade.description}</p>
-                        <div className={styles.upgradeMeta}>
-                          <span>下一档</span>
-                          <strong>{upgrade.nextEffect}</strong>
-                        </div>
-                        <div className={styles.upgradeActions}>
-                          <span className={styles.upgradeCost}>
-                            {upgrade.nextCost === null ? "已满级" : `花费 ${upgrade.nextCost} 铜钱`}
-                          </span>
-                          <button
-                            className={styles.secondaryButton}
-                            type="button"
-                            disabled={!upgrade.canPurchase}
-                            onClick={() => purchaseUpgrade(upgrade.id)}
-                          >
-                            <Coins size={16} strokeWidth={2.2} />
-                            <span>{upgrade.isMaxed ? "已满级" : "购买"}</span>
-                          </button>
-                        </div>
+                {panel === "mainline" || panel === "endless" || panel === "daily" || panel === "ascension" ? (
+                  <section className={styles.runArchetypePanel} aria-label="局内流派">
+                    <div className={styles.routeFocusHeader}>
+                      <strong>局内流派</strong>
+                      <span>长期强度靠局外，这一局真正怎么打，在开局前这里定。局外偏好只轻补一刀。</span>
+                    </div>
+                    <div className={styles.runArchetypeStatusGrid}>
+                      <article className={styles.routeFocusStatusCard}>
+                        <span>本局主轴</span>
+                        <strong>{selectedRunArchetypeConfig.label}</strong>
+                        <p>{selectedRunArchetypeConfig.summary}</p>
                       </article>
-                    ))}
+                      <article className={styles.routeFocusStatusCard}>
+                        <span>起手加成</span>
+                        <strong>{selectedRunArchetypeConfig.startBonus}</strong>
+                        <p>会随 `runArchetype` 一起传进内层牌桌，优先主导本局起手、奖励、事件和 Boss 偏置。</p>
+                      </article>
+                    </div>
+                    <div className={styles.runArchetypeGrid}>
+                      {RUN_ARCHETYPES.map((archetype) => {
+                        const availability = getRunArchetypeAvailability(archetype.id, panel, highestMainlineOrder);
+                        return (
+                          <article
+                            key={archetype.id}
+                            className={`${styles.runArchetypeCard} ${selectedRunArchetype === archetype.id ? styles.runArchetypeCardActive : ""}`}
+                          >
+                            <div className={styles.routeFocusHead}>
+                              <span>{archetype.label}</span>
+                              <strong>{archetype.summary}</strong>
+                            </div>
+                            <div className={styles.runArchetypeMeta}>
+                              <span>起手加成</span>
+                              <strong>{archetype.startBonus}</strong>
+                            </div>
+                            <div className={styles.runArchetypeMeta}>
+                              <span>奖励偏置</span>
+                              <strong>{archetype.rewardBias}</strong>
+                            </div>
+                            <div className={styles.runArchetypeMeta}>
+                              <span>{availability.label}</span>
+                              <strong>{availability.detail}</strong>
+                            </div>
+                            <button
+                              className={styles.secondaryButton}
+                              type="button"
+                              disabled={availability.disabled}
+                              onClick={() => setSelectedRunArchetype(archetype.id)}
+                            >
+                              <Swords size={16} strokeWidth={2.2} />
+                              <span>{selectedRunArchetype === archetype.id ? "本局已选" : availability.disabled ? "暂未引导" : "选这局打法"}</span>
+                            </button>
+                          </article>
+                        );
+                      })}
+                    </div>
                   </section>
+                ) : null}
+                {panel === "mainline" || panel === "endless" || panel === "daily" ? null : (
+                  <ul className={styles.bulletList}>
+                    {panelContent[panel].bullets.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+                {panel === "upgrades" ? (
+                  <>
+                    <section className={styles.upgradeGrid} aria-label="局外升级">
+                      {upgradeCards.map((upgrade) => (
+                        <article key={upgrade.id} className={styles.upgradeCard}>
+                          <div className={styles.upgradeHead}>
+                            <div className={styles.upgradeTitleBlock}>
+                              <span className={styles.upgradeLabel}>{upgrade.label}</span>
+                              <strong className={styles.upgradeLevel}>Lv.{upgrade.level}</strong>
+                            </div>
+                            <span className={styles.upgradeEffect}>{upgrade.currentEffect}</span>
+                          </div>
+                          <p className={styles.upgradeDescription}>{upgrade.description}</p>
+                          <div className={styles.upgradeMeta}>
+                            <span>下一档</span>
+                            <strong>{upgrade.nextEffect}</strong>
+                          </div>
+                          <div className={styles.upgradeActions}>
+                            <span className={styles.upgradeCost}>
+                              {upgrade.nextCost === null ? "已满级" : `花费 ${upgrade.nextCost} 铜钱`}
+                            </span>
+                            <button
+                              className={styles.secondaryButton}
+                              type="button"
+                              disabled={!upgrade.canPurchase}
+                              onClick={() => purchaseUpgrade(upgrade.id)}
+                            >
+                              <Coins size={16} strokeWidth={2.2} />
+                              <span>{upgrade.isMaxed ? "已满级" : "购买"}</span>
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    </section>
+                    <section className={styles.routeFocusPanel} aria-label="局外偏好">
+                      <div className={styles.routeFocusHeader}>
+                        <strong>局外偏好</strong>
+                        <span>这里只保留长期倾向和轻协同，不再定义这一局的身份，也不再和局内流派抢主轴。</span>
+                      </div>
+                      <div className={styles.routeFocusStatusGrid}>
+                        <article className={styles.routeFocusStatusCard}>
+                          <span>当前偏好</span>
+                          <strong>{routeProgress.preferredRoute ? `${routeProgress.focusLabel} · ${routeProgress.routeMasteryLevel} 档` : "自动偏好 · 尚未成线"}</strong>
+                          <p>{routeGrowthStatus.currentEffect}</p>
+                        </article>
+                        <article className={styles.routeFocusStatusCard}>
+                          <span>下一步</span>
+                          <strong>{routeProgress.preferredRoute ? "继续补这条长期线" : "先点亮一条长期线"}</strong>
+                          <p>{routeGrowthStatus.nextTarget}</p>
+                        </article>
+                      </div>
+                      <div className={styles.routeFocusGrid}>
+                        {routeFocusCards.map((focus) => (
+                          <article
+                            key={focus.id}
+                            className={`${styles.routeFocusCard} ${focus.isActive ? styles.routeFocusCardActive : ""}`}
+                          >
+                            <div className={styles.routeFocusHead}>
+                              <span>{focus.label}</span>
+                              <strong>{focus.resolvedLabel}</strong>
+                            </div>
+                            <p className={styles.routeFocusDescription}>{focus.description}</p>
+                            <div className={styles.routeFocusMeta}>
+                              <span>长期读法</span>
+                              <strong>{focus.longTail}</strong>
+                            </div>
+                            <button
+                              className={styles.secondaryButton}
+                              type="button"
+                              onClick={() => setSelectedRouteFocus(focus.id)}
+                            >
+                              <Flame size={16} strokeWidth={2.2} />
+                              <span>{focus.isActive ? "当前偏好" : "设为长期偏好"}</span>
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    </section>
+                  </>
                 ) : null}
                 {panel === "collection" ? (
                   <section className={styles.codexPanel} aria-label="胡了卜成就图鉴">
@@ -1995,17 +2749,17 @@ export function HulebuGamePage() {
                         <strong>
                           {unlockedAchievementCount}/{ACHIEVEMENTS.length}
                         </strong>
-                        <p>第二版开始把主线、Boss、事件和高阶征途一起沉进来。</p>
+                        <p>当前已解锁进度。</p>
                       </article>
                       <article className={styles.codexCard}>
                         <span>下一步</span>
                         <strong>{nextLockedAchievement?.title ?? "图鉴首批已齐"}</strong>
-                        <p>{nextLockedAchievement?.hint ?? "后续可以继续补更深的图鉴回放和收藏。"}</p>
+                        <p>{nextLockedAchievement?.hint ?? "当前批次已完成。"}</p>
                       </article>
                       <article className={styles.codexCard}>
                         <span>分类进度</span>
                         <strong>{achievementGroups.length} 组已开放</strong>
-                        <p>现在会按主线、Boss、事件、高阶等分类记录，不再只是平铺卡片。</p>
+                        <p>按分类查看当前完成度。</p>
                       </article>
                     </div>
                     <div className={styles.codexGroupGrid}>
@@ -2058,18 +2812,16 @@ export function HulebuGamePage() {
                         <p>
                           已开放 {highestUnlockedAscension}/4 档，当前选择这一档可装备 {selectedAscensionPerkSlots} 个高阶能力。
                         </p>
-                        <p>{selectedAscensionConfig.identity}</p>
                       </article>
                       <article className={styles.codexCard}>
-                        <span>equippedAscensionLoadout</span>
-                        <strong>{equippedAscensionLoadout.length > 0 ? equippedAscensionLoadout.join(", ") : "未装备"}</strong>
-                        <p>当前这套会在开始高阶 run 时直接写进 iframe 参数。当前构筑：{ascensionBuildSummary}。{ascensionBuildFocus.keyGain}</p>
-                        <p>这一档更偏：{selectedAscensionConfig.buildAngle}。</p>
+                        <span>当前装配</span>
+                        <strong>{equippedAscensionLabels.length > 0 ? equippedAscensionLabels.join(" / ") : "未装备"}</strong>
+                        <p>进入高阶 run 时直接生效。</p>
                       </article>
                       <article className={styles.codexCard}>
-                        <span>unlockedAscensionPerks</span>
+                        <span>能力图鉴</span>
                         <strong>{ascensionPerks.filter((perk) => perk.isUnlocked).length}/{ascensionPerks.length}</strong>
-                        <p>随着周目推进，更多高阶能力会加入可装备列表。当前档位重点：{selectedAscensionConfig.contentFocus}</p>
+                        <p>随周目推进逐步解锁。</p>
                       </article>
                     </div>
                     <div className={styles.ascensionConfigGrid}>
@@ -2137,26 +2889,16 @@ export function HulebuGamePage() {
                     </div>
                   </section>
                 ) : null}
-                {lastSettlement ? (
+                {visibleSettlement ? (
                   <div className={styles.lastRun}>
                     <span>最近一轮</span>
                     <strong>
-                      {lastSettlement.runMode === "endless"
-                        ? `无尽第 ${lastSettlement.reachedEndlessLayer} 层`
-                        : lastSettlement.runMode === "daily"
-                          ? `每日 ${lastSettlement.dailySeed ?? todayDailySeed}`
-                        : lastSettlement.result === "completed"
-                          ? "主线通关"
-                          : "本轮失利"}
+                      {visibleSettlement.runMode === "endless"
+                        ? `无尽第 ${visibleSettlement.reachedEndlessLayer} 层`
+                        : visibleSettlement.runMode === "daily"
+                          ? `每日 ${visibleSettlement.dailySeed ?? todayDailySeed}`
+                          : "主线通关"}
                     </strong>
-                    <p>
-                      {lastSettlement.runMode === "endless"
-                        ? `到达第 ${lastSettlement.reachedEndlessLayer} 层，历史最高第 ${lastSettlement.bestEndlessLayer} 层`
-                        : lastSettlement.runMode === "daily"
-                          ? `今日到达第 ${lastSettlement.reachedLevelOrder} 关，最佳第 ${lastSettlement.bestDailyLevelOrder} 关`
-                        : `到达第 ${lastSettlement.reachedLevelOrder} 关`}
-                      ，结算 +{lastSettlement.coinsEarned} 铜钱，局外累计 {lastSettlement.bankedCoins}。
-                    </p>
                   </div>
                 ) : null}
               </section>
@@ -2202,6 +2944,45 @@ export function HulebuGamePage() {
                           <strong>{upgrade.currentEffect}</strong>
                         </div>
                       ))}
+                      <div className={styles.previewUpgradeRow}>
+                        <span>局外偏好</span>
+                        <strong>
+                          {routeProgress.preferredRoute
+                            ? `${routeProgress.focusLabel} · ${routeProgress.routeMasteryLevel} 档`
+                            : "自动偏好 · 尚未成线"}
+                        </strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>偏好当前收益</span>
+                        <strong>{routeGrowthStatus.currentEffect}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>偏好下一步</span>
+                        <strong>{routeGrowthStatus.nextTarget}</strong>
+                      </div>
+                    </div>
+                  ) : panel === "mainline" ? (
+                    <div className={styles.previewUpgradeList}>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>主线长度</span>
+                        <strong>20 关</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>试炼关</span>
+                        <strong>第 10 关</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>终章 Boss</span>
+                        <strong>第 20 关</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>继续进度</span>
+                        <strong>{activeRun ? `第 ${activeRun.latestLevelOrder} 关` : "尚未开局"}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>局内流派</span>
+                        <strong>{selectedRunArchetypeConfig.label}</strong>
+                      </div>
                     </div>
                   ) : null}
                   {panel === "endless" ? (
@@ -2217,6 +2998,10 @@ export function HulebuGamePage() {
                       <div className={styles.previewUpgradeRow}>
                         <span>章节 Boss</span>
                         <strong>{currentEndlessChapterBoss}</strong>
+                      </div>
+                      <div className={styles.previewUpgradeRow}>
+                        <span>章节主题</span>
+                        <strong>{currentEndlessChapterPreview.theme}</strong>
                       </div>
                       <div className={styles.previewUpgradeRow}>
                         <span>无尽最高</span>
@@ -2297,17 +3082,17 @@ export function HulebuGamePage() {
                 {activeRun.ascensionLevel
                   ? `${activeRun.ascensionName ?? "高阶周目"} 进行中`
                   : activeRun.runMode === "endless"
-                  ? "无尽进行中"
-                  : activeRun.runMode === "daily"
-                    ? "每日进行中"
-                    : "主线进行中"}
+                    ? "无尽进行中"
+                    : activeRun.runMode === "daily"
+                      ? "每日进行中"
+                      : "主线进行中"}
               </strong>
               <span>
                 {activeRun.ascensionLevel
                   ? `${activeRun.ascensionName ?? "高阶周目"} · 第 ${activeRun.latestLevelOrder} 关 · 铜钱 ${activeRun.latestCoins}`
                   : activeRun.runMode === "daily"
-                  ? `${activeRun.dailySeed ?? todayDailySeed} · 第 ${activeRun.latestLevelOrder} 关 · 铜钱 ${activeRun.latestCoins}`
-                  : `第 ${activeRun.runMode === "endless" ? activeRun.latestEndlessLayer : activeRun.latestLevelOrder} ${activeRun.runMode === "endless" ? "层" : "关"} · 铜钱 ${activeRun.latestCoins} · 奖励 ${activeRun.pickedRewards}`}
+                    ? `${activeRun.dailySeed ?? todayDailySeed} · 第 ${activeRun.latestLevelOrder} 关 · 铜钱 ${activeRun.latestCoins}`
+                    : `第 ${activeRun.runMode === "endless" ? activeRun.latestEndlessLayer : activeRun.latestLevelOrder} ${activeRun.runMode === "endless" ? "层" : "关"} · 铜钱 ${activeRun.latestCoins} · 奖励 ${activeRun.pickedRewards}`}
               </span>
             </div>
             <button className={styles.secondaryButton} type="button" onClick={restartRun}>

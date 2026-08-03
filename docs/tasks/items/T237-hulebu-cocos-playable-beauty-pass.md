@@ -1,0 +1,23 @@
+# T237：胡了卜 Cocos 局内可玩性和观感重排
+
+- 优先级：P1
+- 默认负责人：Lee
+- 状态：已完成
+- 依赖：T235, T236
+- 主要文件范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`
+- 禁止修改范围：`apps/web/**`, 非胡了卜 Cocos 模块、数据库和账号系统、PDF 工具箱、AI 修图工具
+- 验证方式：`npm run test -w packages/shared -- mahjong-cocos-project`; `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`; Cocos Web Mobile 构建和 Playwright 截图检查；`npm run docs:sync`; `git diff --check`
+- 背景：T236 后画面仍然显得臃肿、拥挤，无法达到“能玩且好看”的目标，需要进一步降低 HUD 侵占、缩小牌面、压实底部操作区。
+- 目标：
+  - 进一步缩小牌和牌堆，让桌面留出呼吸感。
+  - 压低并缩小组合按钮，避免底部操作区挤住牌桌。
+  - 让槽位贴合背景托盘，不再像额外 UI 块。
+  - 保持右侧工具按钮最上层，但减少对牌堆的侵占。
+  - 产出非 debug 或弱干扰截图作为判断基准。
+- 不做：不改玩法规则、不新增模式、不重新生成背景大图。
+- 完成记录：
+  - 麻将牌进一步缩小为 `38x51`，牌山缩放上限收紧到 `0.74`，桌面中心留出更多空间。
+  - 组合按钮压缩为 `64x34`，并随槽位下移，减少底部操作区拥挤感。
+  - 底部槽位下移到背景木托盘区域，避免浮在托盘上方形成双底栏。
+  - 右侧工具按钮缩小并贴右侧居中，保持 Canvas 顶层。
+  - 已用 `debug=false` Cocos Web Mobile 构建截图验证：`tmp-hulebu-cocos-t237b-portrait.png`、`tmp-hulebu-cocos-t237b-mobile.png`。

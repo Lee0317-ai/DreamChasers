@@ -1,0 +1,22 @@
+# T236：胡了卜 Cocos HUD 比例和层级精修
+
+- 优先级：P1
+- 默认负责人：Lee
+- 状态：已完成
+- 依赖：T231, T232, T235
+- 主要文件范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/**`, `docs/completion/**`
+- 禁止修改范围：`apps/web/**`, 非胡了卜 Cocos 模块、数据库和账号系统、PDF 工具箱、AI 修图工具
+- 验证方式：`npm run test -w packages/shared -- mahjong-cocos-project`; `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`; Cocos Web Mobile 构建和 Playwright 截图检查；`npm run docs:sync`; `git diff --check`
+- 背景：对照目标概念图继续检查 Cocos 局内画面，当前仍存在麻将牌偏大、底部槽位重复、右侧工具按钮层级被牌压住、记牌器位置不符合预期的问题。
+- 目标：
+  - 缩小局内麻将牌视觉尺寸。
+  - 底部只保留一套槽位表现，去掉重复托盘。
+  - 右侧三个工具按钮保持屏幕右侧居中，并位于最上层。
+  - 将记牌器放到关卡牌匾下方。
+- 不做：不改玩法规则、不新增美术生成、不重做背景图。
+- 完成记录：
+  - 已将局内麻将牌基础显示尺寸从 `52x70` 收到 `44x59`，同步调整遮挡判断尺寸。
+  - 已隐藏 SlotLayer 的额外托盘资源，并移除 Shell 层程序化托盘调用，底部只保留背景托盘和槽位格。
+  - 已新增 `ToolOverlayRoot`，右侧三个工具按钮从背景 Shell 分离到 Canvas 顶层，保持右侧居中并压在牌之上。
+  - 已将 `ProgressPlaque` 记牌器移动到 `LevelPlaque` 关卡牌匾下方，进度点同步下移。
+  - 已用 Cocos Web Mobile 构建产物和 Playwright 截图验证：`tmp-hulebu-cocos-t236-portrait.png`、`tmp-hulebu-cocos-t236-mobile.png`。
