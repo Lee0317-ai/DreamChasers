@@ -61,12 +61,12 @@ T241 已批准采用绞杀式迁移：保留现有可玩行为，先建立不依
 - 实机完成点击入槽、手动碰牌组合和首层清台，出现“第 1 层通关”弹窗；随后进入第二层构造多候选吃牌，弹层同时显示 `4筒 5筒 6筒` 与 `5筒 6筒 7筒`。
 - 在 `playing.comboChoosing` 选择态刷新页面后，两组候选及顺序原样恢复；点击右侧 `5筒 6筒 7筒` 后只移除该组三张，槽中保留 `4筒`，exact candidate 结算正确。全流程游戏控制台无 warn/error。
 - 聚焦测试 `hulebu-cocos-domain + mahjong-cocos-project` 重新运行通过 `158/158`，`tsconfig.domain.json` TypeScript 检查和 `git diff --check` 通过。
-- 当前 HEAD `a17a37ee` 相对已验证构建提交 `1bc4867c` 只包含文档提交，正式源码输入无差异；已重新生成匹配当前 HEAD 的 production build，`game:hulebu:build` 与授权后的 `game:hulebu:verify-build` 均通过。T244 验收完成。
+- 验收阶段提交 `a17a37ee` 相对已验证构建提交 `1bc4867c` 只包含文档提交，正式源码输入无差异；已生成匹配提交的 production build，`game:hulebu:build` 与授权后的 `game:hulebu:verify-build` 均通过。最终分支 HEAD 继续以生成 manifest 的 `commit` 字段为准，不在版本化文档中自引用最终 build ID。T244 验收完成。
 
 ## 完成结论
 
 - 任务状态：已完成。
-- Exact-commit production build：`a17a37ee7c3b-20260803T042725Z`，commit `a17a37ee7c3bfac9332686446ce77d340ec3904d`，Creator `3.8.8`。
+- 验收基线 exact-commit production build：`a17a37ee7c3b-20260803T042725Z`，commit `a17a37ee7c3bfac9332686446ce77d340ec3904d`，Creator `3.8.8`；最终分支构建以产物内 `hulebu-build.json` 为准。
 - 构建验证：`cocosTypecheckPassed: true`；source tree SHA-256 `69077b638241d0213957351cd7954a09edefb3ac2f92449d6c1fe9f82e9e3194`；build 与 verify-only 的 5 条 HTTP smoke 全部 `200`。
 - 交互验证：`390×844` 竖屏点击入槽、碰牌、刷新恢复、多候选 exact choice 和一次清台均已通过，游戏控制台无 warn/error。
 - 遗留问题：无 T244 范围内遗留问题；横屏适配不属于当前微信小程序发布目标。

@@ -11,5 +11,5 @@
   - `npm run game:hulebu:verify-build`
   - `npm run docs:sync`
   - `git diff --check`
-- 验证结果：聚焦测试 `158/158`；TypeScript、文档同步和 diff 检查通过；exact-commit build `a17a37ee7c3b-20260803T042725Z` 由 Creator `3.8.8` 生成，`cocosTypecheckPassed: true`；verify-only 通过，5 条 HTTP smoke 全部 `200`；`390×844` 竖屏端到端交互通过且游戏控制台无 warn/error。
+- 验证结果：聚焦测试 `158/158`；TypeScript、文档同步和 diff 检查通过；验收基线 exact-commit build `a17a37ee7c3b-20260803T042725Z` 由 Creator `3.8.8` 生成，`cocosTypecheckPassed: true`；最终分支 HEAD 重新构建并通过 verify-only，5 条 HTTP smoke 全部 `200`，最终 build ID 以生成 manifest 为准；`390×844` 竖屏端到端交互通过且游戏控制台无 warn/error。
 - 遗留问题：无 T244 范围内遗留问题。横屏适配按 Lee 确认不属于微信小程序发布目标。

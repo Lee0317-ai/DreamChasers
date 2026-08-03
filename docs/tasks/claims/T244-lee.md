@@ -11,6 +11,6 @@
 - 当前阻塞：无。Lee 已确认正式发布方向按微信小程序常见竖屏验收，横屏不属于当前目标。
 - 并发说明：T239/T240 的 Cocos 结果已由 T243 checkpoint 纳入正式基线；T244 不修改其牌山生成器和 Binder 范围，只在当前已提交 Controller 基线上做架构接线。若工作区出现新的同文件改动，先对比并保留，再继续迁移。
 - 完成时间：2026-08-03
-- 完成结果：`390×844` production 包已完成点击入槽、碰牌、刷新恢复、多候选 exact choice 与一次清关 smoke；当前 HEAD exact-commit build `a17a37ee7c3b-20260803T042725Z`、verify-only、5 条 HTTP smoke、聚焦测试 `158/158`、领域 TypeScript 和 `git diff --check` 均通过。
+- 完成结果：`390×844` production 包已完成点击入槽、碰牌、刷新恢复、多候选 exact choice 与一次清关 smoke；验收基线 exact-commit build、最终 HEAD build/verify-only、5 条 HTTP smoke、聚焦测试 `158/158`、领域 TypeScript 和 `git diff --check` 均通过。最终 build ID 以生成产物内 `hulebu-build.json` 为准。
 - 下一步：T244 已完成，可进入 T247 M2 实现。
 - 备注：T244 已完成；横屏适配不属于当前微信小程序发布目标。

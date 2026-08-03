@@ -4,7 +4,7 @@
 
 - 补齐 T244 `390x844` production 交互 smoke：真实点击入槽、手动碰牌、首层清台与通关弹窗均通过，游戏控制台无 warn/error。
 - 第二层成功触发两组吃牌候选 `4筒 5筒 6筒` / `5筒 6筒 7筒`；选择态刷新后候选原样恢复，选择右侧候选后只结算该 exact candidate，未误删保留的 `4筒`。
-- 当前 HEAD `a17a37ee` 已重新生成 exact-commit production build `a17a37ee7c3b-20260803T042725Z`；build、授权后的 verify-only 和 5 条 HTTP smoke 均通过，T244 验收完成。
+- 验收基线提交 `a17a37ee` 已生成 exact-commit production build `a17a37ee7c3b-20260803T042725Z`；最终分支 HEAD 也重新完成 build、授权后的 verify-only 和 5 条 HTTP smoke。最终 build ID 以生成 manifest 为准，T244 验收完成。
 
 ## 2026-07-30
 
