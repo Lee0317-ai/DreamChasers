@@ -1,0 +1,60 @@
+# T187：胡了卜刷新后继续当前本轮
+
+- 任务编号：T187
+- 优先级：P0
+- 任务名称：胡了卜刷新后继续当前本轮
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T174, T186
+- 背景：胡了卜已经有局外长期进度和账号同步，但正在进行的本轮只存在 React 内存状态里。刷新 `/games/hulebu` 后 `activeRun` 丢失，玩家会回到局外，再进入时从第 1 关开始。
+- 目标：
+  - 保存当前未完成 run 的恢复快照。
+  - 刷新后恢复 `继续本轮` 和牌桌入口。
+  - 主线、每日和高阶恢复到当前关开局；无尽恢复到当前层开局。
+  - 失败或通关后清空恢复快照，避免继续失败/已完成 run。
+- 不做：
+  - 不做完整中局云存档。
+  - 不恢复牌桌、卡槽、牌河、事件弹窗或奖励选择弹窗的精确瞬时状态。
+  - 不改 Prisma、账号 API、Cocos、PDF、AI 修图、TimePick 或部署。
+- 允许修改文件：
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T187-hulebu-resume-active-run.md`
+  - `docs/tasks/claims/T187-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/specs/2026-06-26-hulebu-resume-active-run-design.md`
+  - `docs/superpowers/plans/2026-06-26-hulebu-resume-active-run.md`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-26-lee.md`
+- 禁止修改文件：
+  - `apps/web/prisma/**`
+  - `apps/web/src/app/api/games/hulebu/**`
+  - `apps/web/src/lib/account/**`
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `deploy/**`
+- 验证方式：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - 源原型与站内静态副本内联脚本 `node --check`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T187-hulebu-resume-active-run.md docs/tasks/claims/T187-lee.md docs/superpowers/specs/2026-06-26-hulebu-resume-active-run-design.md docs/superpowers/plans/2026-06-26-hulebu-resume-active-run.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-26-lee.md`
+  - `git diff --check`
+- 当前进展：
+  - 已确认当前长期进度存储不覆盖未完成 run。
+  - 已采用低风险方案：先恢复到当前关/当前层开局，不做完整中局快照。
+  - 已实现外层 `activeRun` 恢复快照：刷新后主线、每日、高阶会带 `level` 回到当前关，无尽会带 `startLayer` 回到当前层。
+  - 已完成验证，通关或失败会清掉未完成 run 快照，避免继续已结束的本轮；当前进入待验收。

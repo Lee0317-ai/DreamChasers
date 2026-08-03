@@ -348,11 +348,11 @@ describe("胡了卜配置加载验证", () => {
     const summary = readPrototypeFailureSummary();
 
     expect(summary.phase).toBe("failed");
-    expect(summary.statusText).toContain("本关失败");
+    expect(summary.statusText).toBe("");
     expect(summary.overlayShown).toBe(true);
-    expect(summary.rewardTitleText).toBe("本关失败");
-    expect(summary.failureSummaryText).toContain("主槽已满");
-    expect(summary.actionTexts).toContain("重开本关");
+    expect(summary.rewardTitleText).toBe("失败");
+    expect(summary.failureSummaryText).toBe("重开");
+    expect(summary.actionTexts).toEqual(["重开"]);
   });
 
   it("试玩 Demo 支持有限牌河、补杠、明杠开山和胡后清河", () => {
@@ -1247,6 +1247,7 @@ interface PrototypeDummyElement {
   disabled: boolean;
   append(...nodes: unknown[]): void;
   appendChild(node: unknown): unknown;
+  replaceChildren(...nodes: unknown[]): void;
   setAttribute(name: string, value: string): void;
   addEventListener(type: string, listener: unknown): void;
   querySelector(selector: string): PrototypeDummyElement;
@@ -3013,6 +3014,9 @@ function createPrototypeDummyElement(): PrototypeDummyElement {
   element.appendChild = (node: unknown): unknown => {
     if (isPrototypeDummyElement(node)) element.children.push(node);
     return node;
+  };
+  element.replaceChildren = (...nodes: unknown[]): void => {
+    element.children = nodes.filter(isPrototypeDummyElement);
   };
   element.setAttribute = (): void => {};
   element.addEventListener = (): void => {};

@@ -1,0 +1,30 @@
+# T228 胡了卜 Cocos 候选组合选择弹层基础完成记录
+
+- 完成时间：2026-06-29
+- 负责人：Lee
+- 任务编号：T228
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/items/T228-hulebu-cocos-combo-choice-overlay.md`
+  - `docs/tasks/claims/T228-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-29-lee.md`
+  - `docs/completion/2026-06-29-task-228-hulebu-cocos-combo-choice-overlay.md`
+- 实现内容：
+  - `HulebuRuntimeState` 新增按组合类型读取全部候选的接口，候选包含 key、tileIds、文字标签和牌面资源 key。
+  - `GameSceneController` 点击组合按钮时会按候选数量分支：无候选忽略，单候选直接执行，多候选弹出候选选择面板。
+  - 候选选择面板优先展示真实麻将小牌面，资源不可用时保留文字 fallback。
+  - 玩家选择候选后按对应 candidate key 执行，不再默认执行第一组。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+- 验证结果：
+  - 通过：共享测试 1 个文件、28 条测试通过。
+  - 通过：Cocos TypeScript 编译检查无报错。
+- 遗留问题：
+  - 候选弹层仍是程序化基础 UI，未做最终美术、动画或人物 cut-in。
+  - `comboChoice` 不单独进入可恢复 phase；刷新后仍按当前关 runtime 快照恢复，不恢复弹层内临时选择态。

@@ -308,7 +308,15 @@ model HulebuProgress {
   bestEndlessLayer   Int      @default(0)
   bestAscensionLevel Int      @default(1)
   dailyBestLevels    Json
+  dailyStreak        Int      @default(0)
+  lastDailySeed      String?
   achievements       Json
+  upgrades           Json
+  routeProgress      Json
+  preferredRoute     String?
+  equippedAscensionLoadout Json
+  unlockedAscensionPerks   Json
+  activeRun          Json?
   updatedAt          DateTime @updatedAt
   createdAt          DateTime @default(now())
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)

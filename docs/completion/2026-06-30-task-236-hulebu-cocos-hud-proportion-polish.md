@@ -1,0 +1,30 @@
+# T236 胡了卜 Cocos HUD 比例和层级精修完成记录
+
+- 任务编号：T236
+- 负责人：Lee
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/BoardLayerBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/SlotLayerBinder.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/items/T236-hulebu-cocos-hud-proportion-polish.md`
+  - `docs/tasks/claims/T236-Lee.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/progress/2026-06-30-lee.md`
+- 实现内容：
+  - 麻将牌视觉尺寸从 `52x70` 收到 `44x59`。
+  - 底部额外托盘层已隐藏/移除调用，只保留一套槽位表现。
+  - 右侧工具按钮迁移到 `ToolOverlayRoot` 顶层，保持右侧居中且压在牌面之上。
+  - 记牌器移动到关卡牌匾下方，进度点同步移动。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - Cocos Web Mobile 构建和 Playwright 截图检查
+- 验证结果：
+  - 共享测试 29 项通过。
+  - Cocos TypeScript 检查通过。
+  - Cocos Web Mobile 构建日志显示完成，但 CLI 仍返回退出码 36。
+  - Playwright 截图 `tmp-hulebu-cocos-t236-portrait.png`、`tmp-hulebu-cocos-t236-mobile.png` 已确认四项反馈落图。
+- 遗留问题：
+  - 当前截图来自 debug 构建，Cocos profiler 覆盖层仍会遮挡底部；正式检查需关闭 profiler 或使用非 debug 构建。

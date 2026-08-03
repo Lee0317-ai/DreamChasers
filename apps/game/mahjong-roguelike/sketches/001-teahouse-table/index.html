@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>胡了卜 UI 草图 - 茶馆牌桌</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #17110b;
+      font-family: "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+      color: #f6ead0;
+    }
+    .phone {
+      width: min(390px, 100vw);
+      height: min(844px, 100vh);
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(243, 196, 108, 0.18), transparent 34%),
+        linear-gradient(180deg, #2a1b11 0%, #402611 42%, #16100b 100%);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .phone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 18px 18px;
+      mask-image: radial-gradient(circle at center, black 0 55%, transparent 92%);
+      pointer-events: none;
+    }
+    .top {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 18px;
+      height: 82px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 10px;
+      z-index: 5;
+    }
+    .chapter {
+      display: inline-grid;
+      gap: 4px;
+      padding: 10px 14px 12px;
+      background: linear-gradient(180deg, #f4ddb0, #b9793c);
+      color: #3b2413;
+      border: 2px solid #6d391c;
+      box-shadow: 0 7px 0 #32190d, 0 14px 30px rgba(0,0,0,.34);
+      border-radius: 8px;
+    }
+    .chapter b { font-size: 18px; line-height: 1; }
+    .chapter span { font: 600 11px/1.2 -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: 0; }
+    .counters {
+      display: grid;
+      gap: 6px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px;
+    }
+    .counter {
+      min-width: 92px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 9px;
+      background: rgba(28, 18, 10, .78);
+      border: 1px solid rgba(239, 198, 125, .42);
+      border-radius: 999px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .table {
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      top: 116px;
+      height: 462px;
+      border-radius: 28px 28px 44px 44px;
+      background:
+        radial-gradient(ellipse at center, #23694d 0%, #17513d 58%, #103629 100%);
+      border: 10px solid #72421f;
+      box-shadow: inset 0 0 0 2px #b87939, inset 0 18px 42px rgba(255,255,255,.08), 0 28px 70px rgba(0,0,0,.55);
+      z-index: 2;
+    }
+    .table::after {
+      content: "胡了卜";
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      transform: translate(-50%, -50%);
+      color: rgba(245, 220, 164, .1);
+      font-size: 58px;
+      font-weight: 900;
+      writing-mode: vertical-rl;
+    }
+    .goal-strip {
+      position: absolute;
+      left: 26px;
+      right: 26px;
+      top: 14px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      z-index: 4;
+    }
+    .goal {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(250, 229, 178, .16);
+      border: 1px solid rgba(250, 229, 178, .34);
+      font: 700 11px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .mountain {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: 286px;
+      height: 292px;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+    .tile {
+      position: absolute;
+      width: 38px;
+      height: 51px;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #fff9eb 0%, #e8d8b7 72%, #168259 73%, #0b5f43 100%);
+      border: 2px solid #8f5a2d;
+      box-shadow: 0 5px 0 #074832, 0 10px 18px rgba(0,0,0,.32);
+      display: grid;
+      place-items: center;
+      color: #2d2419;
+      font: 800 17px/1 "Songti SC", serif;
+    }
+    .tile.locked { filter: saturate(.55) brightness(.72); opacity: .72; }
+    .tile.hot { box-shadow: 0 5px 0 #074832, 0 0 0 3px rgba(244, 192, 74, .9), 0 0 26px rgba(244, 170, 50, .65); }
+    .tools {
+      position: absolute;
+      right: 12px;
+      top: 204px;
+      display: grid;
+      gap: 12px;
+      z-index: 8;
+    }
+    .tool {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 2px solid #f1c46e;
+      background: radial-gradient(circle at 35% 28%, #fff1bd, #1f805f 38%, #0f4f39 100%);
+      box-shadow: 0 7px 0 #072c23, 0 14px 20px rgba(0,0,0,.35);
+      display: grid;
+      place-items: center;
+      font: 900 18px/1 "Songti SC", serif;
+      color: #fff3cf;
+    }
+    .tool small {
+      position: absolute;
+      right: -4px;
+      top: -4px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: #ce3c24;
+      border: 1px solid #ffe1a0;
+      font: 800 10px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .river {
+      position: absolute;
+      left: 36px;
+      right: 98px;
+      bottom: 238px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      background: rgba(17, 38, 31, .58);
+      border: 1px solid rgba(246, 210, 144, .28);
+      border-radius: 14px;
+      z-index: 6;
+    }
+    .river-label {
+      font: 700 11px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #eed7a9;
+      width: 34px;
+    }
+    .mini-tile {
+      width: 26px;
+      height: 35px;
+      border-radius: 5px;
+      background: linear-gradient(180deg, #fff8e9 0 74%, #137755 75%);
+      border: 1px solid #9a6534;
+      display: grid;
+      place-items: center;
+      color: #332417;
+      font: 800 12px/1 serif;
+    }
+    .combo {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 145px;
+      height: 48px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      z-index: 7;
+    }
+    .combo button {
+      border: 1px solid rgba(247, 207, 127, .5);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #61402a, #2a1a12);
+      color: #a89170;
+      font: 800 15px/1 "Songti SC", serif;
+    }
+    .combo button.live {
+      color: #fff1c1;
+      background: linear-gradient(180deg, #dc7b29, #8d2919);
+      box-shadow: 0 0 18px rgba(255, 100, 34, .55);
+    }
+    .hand {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 28px;
+      height: 100px;
+      padding: 14px 10px 12px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #6e3f21, #2f1a11);
+      border: 2px solid #bb7a39;
+      box-shadow: inset 0 4px 10px rgba(255,255,255,.08), 0 -12px 40px rgba(0,0,0,.38);
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+      z-index: 8;
+    }
+    .slot {
+      border-radius: 8px;
+      background: rgba(17, 10, 7, .55);
+      border: 1px solid rgba(241, 190, 106, .34);
+      display: grid;
+      place-items: center;
+    }
+    .slot .mini-tile { width: 32px; height: 43px; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <section class="top">
+      <div class="chapter"><b>第 08 关</b><span>南风挡墙 · 高压牌山</span></div>
+      <div class="counters">
+        <div class="counter"><span>余牌</span><b>126</b></div>
+        <div class="counter"><span>铜钱</span><b>280</b></div>
+      </div>
+    </section>
+    <section class="table">
+      <div class="goal-strip"><span class="goal">杠 1</span><span class="goal">胡 1</span><span class="goal">积分 166</span></div>
+      <div class="mountain" id="mountain"></div>
+    </section>
+    <aside class="tools">
+      <div class="tool">洗<small>2</small></div>
+      <div class="tool">撤<small>1</small></div>
+      <div class="tool">打<small>3</small></div>
+    </aside>
+    <section class="river"><span class="river-label">牌河</span><span class="mini-tile">七</span><span class="mini-tile">中</span><span class="mini-tile">三</span></section>
+    <section class="combo"><button class="live">胡</button><button>杠</button><button class="live">碰</button><button>吃</button><button>补杠</button></section>
+    <section class="hand">
+      <div class="slot"><span class="mini-tile">八</span></div><div class="slot"><span class="mini-tile">八</span></div><div class="slot"><span class="mini-tile">八</span></div><div class="slot"><span class="mini-tile">中</span></div>
+      <div class="slot"><span class="mini-tile">二</span></div><div class="slot"><span class="mini-tile">三</span></div><div class="slot"></div><div class="slot"></div>
+    </section>
+  </main>
+  <script>
+    const mountain = document.querySelector('#mountain');
+    const chars = ['一','二','三','四','五','六','七','八','九','东','南','中','发'];
+    const points = [
+      [114,230,0],[154,226,0],[76,218,0],[192,212,0],[116,188,1],[154,184,1],[92,174,1],[184,168,1],[132,145,2],[164,140,2],[108,132,2],[144,104,3],[176,98,3],[122,75,4],[152,68,4],[92,96,2],[202,126,1],[62,146,0],[220,176,0],[70,188,1],[198,88,2]
+    ];
+    points.forEach((p, i) => {
+      const tile = document.createElement('div');
+      tile.className = 'tile' + (p[2] < 2 ? ' locked' : '') + (i === 13 || i === 14 ? ' hot' : '');
+      tile.textContent = chars[i % chars.length];
+      tile.style.left = p[0] + 'px';
+      tile.style.top = p[1] + 'px';
+      tile.style.zIndex = p[2] + 1;
+      mountain.appendChild(tile);
+    });
+  </script>
+</body>
+</html>

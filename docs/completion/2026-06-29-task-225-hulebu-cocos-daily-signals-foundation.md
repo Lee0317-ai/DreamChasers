@@ -1,0 +1,32 @@
+# T225 胡了卜 Cocos 每日牌局第二版信号基础完成记录
+
+- 完成时间：2026-06-29
+- 负责人：Lee
+- 任务编号：T225
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T225-hulebu-cocos-daily-signals-foundation.md`
+  - `docs/tasks/claims/T225-lee.md`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-29-lee.md`
+  - `docs/completion/2026-06-29-task-225-hulebu-cocos-daily-signals-foundation.md`
+- 实现内容：
+  - 配置层新增 `HulebuDailyMutatorProfile`、8 档每日词缀配置和 `getHulebuDailyMutatorProfile()`。
+  - 每日 run 的奖励池和事件池会按 daily seed 对应的每日词缀稳定偏置。
+  - `metaProgress` 新增 `dailyStreak / lastDailySeed`，每日启动时记录连续参与。
+  - 大厅每日按钮和生涯总览可展示今日词缀、今日奖励、今日最佳和连续参与状态。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+- 验证结果：
+  - 通过：共享测试 1 个文件、27 条测试通过。
+  - 通过：Cocos TypeScript 编译检查无报错。
+- 遗留问题：
+  - 当前仍是 Cocos 本地每日信号，不含账号同步或每日奖励领取仓库。
+  - 每日词缀只影响事件/奖励展示偏置，不新增独立 runtime effect 类型。

@@ -1,0 +1,26 @@
+# T181：胡了卜 HUD 和按钮透明切图包
+
+- 优先级：P1
+- 负责人：Lee
+- 状态：待验收
+- 背景：T051 已完成并验收 v7 麻将牌面资源，但 HUD、右侧工具按钮、底部组合按钮、组合选择弹层、槽位、奖励卡和场景皮肤卡仍只存在于整张 UI 参考图中，没有独立透明 PNG。用户确认组合选择弹层需要用真实麻将图片替代文字牌名。
+- 目标：从用户提供的两张胡了卜 UI 参考图中生成一套透明背景 UI 组件资源包，覆盖顶部 HUD、记牌器宽条、右侧工具按钮、底部组合按钮、组合选择弹层底板、弃牌/手牌槽、Buff 抽屉和三选一奖励卡；组合选择弹层预览使用 T051 v7 牌面小图合成。玩法整图里本身半截或贴边的组件不进入正式可用包。
+- 不做：不接入 Web 或 Cocos 工程，不修改玩法、关卡、奖励、配置、账号、PDF、AI 修图、TimePick、部署或包管理文件；不做图集打包；不做多语言动态文字系统。
+- 依赖：T051；用户提供的两张 UI 参考图。
+- 允许修改文件：`output/hulebu-ui-assets/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T181-hulebu-ui-component-transparent-assets.md`, `docs/tasks/claims/T181-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-06-21-lee.md`, `docs/progress/2026-06-22-lee.md`, `docs/completion/**`
+- 禁止修改文件：`apps/web/**`, `apps/game/**`, `packages/shared/**`, `apps/web/prisma/**`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`, `package.json`, `package-lock.json`
+- 验证命令：`/Users/lee/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 -m py_compile output/hulebu-ui-assets/scripts/build_ui_component_pack_v1.py output/hulebu-ui-assets/scripts/build_ui_component_pack_v2.py output/hulebu-ui-assets/scripts/build_ui_component_pack_v3.py output/hulebu-ui-assets/scripts/build_ui_component_pack_redesign_v4.py output/hulebu-ui-assets/scripts/build_ui_component_pack_source_faithful_v5.py output/hulebu-ui-assets/scripts/build_ui_component_pack_source_faithful_v6.py output/hulebu-ui-assets/scripts/validate_ui_component_pack.py`; `/Users/lee/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 output/hulebu-ui-assets/scripts/validate_ui_component_pack.py output/hulebu-ui-assets/hulebu-ui-component-pack-v6-source-faithful-transparent-tiles`; `npm run docs:sync`; `git diff --check -- output/hulebu-ui-assets/scripts output/hulebu-ui-assets/hulebu-ui-component-pack-v6-source-faithful-transparent-tiles docs/tasks/items/T181-hulebu-ui-component-transparent-assets.md docs/tasks/claims/T181-lee.md docs/tasks/TASK_BOARD.md docs/tasks/CLAIMS.md docs/status/CURRENT_STATUS.md docs/progress/2026-06-21-lee.md docs/progress/2026-06-22-lee.md`
+- 执行记录：
+  - 2026-06-21：新增任务，确认范围为 UI 组件透明切图包；组合选择弹层输出空底板和真实麻将小图预览，不再使用文字牌名。
+  - 2026-06-21：已保存用户提供的两张 UI 参考图到 `output/hulebu-ui-assets/hulebu-ui-component-sources/`。
+  - 2026-06-21：已新增切图脚本和校验脚本：`output/hulebu-ui-assets/scripts/build_ui_component_pack_v1.py`、`output/hulebu-ui-assets/scripts/validate_ui_component_pack.py`。
+  - 2026-06-21：已生成透明组件包：`output/hulebu-ui-assets/hulebu-ui-component-pack-v1-transparent/`，包含 `hud/`、`buttons/combo/`、`buttons/tools/`、`combo-choice/`、`slots/`、`panels/`、`cards/`、`source/`、`preview/`、`manifest.json` 和 `alpha-report.json`。
+  - 2026-06-21：组合选择弹层已输出 `combo-choice/panel_bg.png` 空底板，并用 T051 v7 麻将牌面生成 `combo_choice_preview_wan_03_04_05.png`、`combo_choice_preview_wan_04_05_06.png`，不再使用文字牌名。
+  - 2026-06-21：已通过 Python 脚本编译和透明组件包校验；当前等待用户查看 `preview/contact-sheet.png`。
+  - 2026-06-21：用户指出 v1 中很多玩法整图来源组件是半截图，判断不可作为正式资源；已新增 v2 可用包 `output/hulebu-ui-assets/hulebu-ui-component-pack-v2-usable-only/`，只保留完整来源组件，剔除玩法整图中的半截 `tool_counter` 和场景皮肤卡。
+  - 2026-06-21：复核 v2 后确认 `tool_shuffle` 圆按钮裁切偏上、`tool_hint/tool_buff` 底部标签裁切偏紧，`score_badge` 和组合选择横条被旧高容差算法抠空底色；已新增 v3 推荐包 `output/hulebu-ui-assets/hulebu-ui-component-pack-v3-usable-clean/`，修正四个右侧工具按钮坐标、保留浅色牌匾底色，并清理组合选择横条旧文字后叠加 T051 v7 麻将小图预览。
+  - 2026-06-22：用户要求按参考样式重新做，不再只做裁切；已按 `game-studio:game-studio` 路由到游戏 UI 方向，新增 v4 重设计包 `output/hulebu-ui-assets/hulebu-ui-component-pack-v4-redesigned-style/`。v4 使用青绿金边、米色纸底、深木槽和橙色火焰态重绘 HUD、工具按钮、组合按钮、槽位、Buff 面板、奖励卡、完整场景皮肤卡和组合选择弹层；场景卡只在圆形预览中借用参考图缩略图，组件本体为完整透明 PNG。
+  - 2026-06-22：用户反馈 v4 不如原图质感；已新增 v5 原图质感忠实修正版 `output/hulebu-ui-assets/hulebu-ui-component-pack-v5-source-faithful/`，基于 v3 干净裁切继续保留原参考图材质、光影和纹理，同时用正确坐标补回完整 `tool_counter` 和四张场景皮肤卡。v5 作为当前推荐交付候选，v4 保留为重绘试验版。
+  - 2026-06-22：用户确认“先按这版来”，并补充麻将牌面也要透明底；已新增 v6 增量包 `output/hulebu-ui-assets/hulebu-ui-component-pack-v6-source-faithful-transparent-tiles/`。v6 保留 v5 的原图质感 UI 组件，并新增 `tiles/mahjong/`，包含 `万 / 筒 / 条 / 字牌` 34 张正面和 1 张背面透明 PNG；新增 `preview/mahjong-tile-contact-sheet.png` 和 `tileComponents` alpha 报告。
+- 当前阻塞：无。
+- 完成摘要：已生成 v6 原图质感 + 透明麻将牌面组件包，当前推荐查看 `output/hulebu-ui-assets/hulebu-ui-component-pack-v6-source-faithful-transparent-tiles/preview/contact-sheet.png` 和 `output/hulebu-ui-assets/hulebu-ui-component-pack-v6-source-faithful-transparent-tiles/preview/mahjong-tile-contact-sheet.png`；v1/v2 保留为诊断和中间版本，v3 保留为干净裁切版，v4 保留为重绘试验版，v5 保留为原图质感无牌面增量版，v6 作为当前交付候选；本任务未接入 Web 或 Cocos 工程。

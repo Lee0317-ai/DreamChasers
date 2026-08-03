@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>胡了卜 UI 草图 - 概念图复刻层次</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #17120d;
+      color: #fff0cf;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    }
+    .phone {
+      width: min(390px, 100vw);
+      height: 844px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse at 50% 8%, rgba(250, 221, 143, .28), transparent 28%),
+        radial-gradient(circle at 50% 44%, rgba(44, 151, 103, .42), transparent 38%),
+        linear-gradient(180deg, #2b1a10 0%, #3f2512 34%, #15100b 100%);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .room-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0 18%, rgba(255, 215, 136, .08) 18% 19%, transparent 19% 81%, rgba(255, 215, 136, .08) 81% 82%, transparent 82%);
+      pointer-events: none;
+    }
+    .top-order {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 14px;
+      height: 82px;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      align-items: center;
+      gap: 9px;
+    }
+    .exit-button {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      border: 2px solid rgba(255, 218, 144, .68);
+      background: linear-gradient(180deg, #3a2618, #140b07);
+      box-shadow: 0 6px 0 #070302, 0 10px 22px rgba(0,0,0,.36);
+      color: #ffdf98;
+      display: grid;
+      place-items: center;
+      font: 900 18px/1 "Songti SC", serif;
+    }
+    .title-plaque {
+      height: 64px;
+      border-radius: 17px;
+      background: linear-gradient(180deg, #f3d696, #9d5b27 72%, #6d3518);
+      border: 2px solid #52240f;
+      box-shadow: 0 8px 0 #160805, 0 16px 32px rgba(0,0,0,.34);
+      color: #341807;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 4px;
+    }
+    .title-plaque strong {
+      font: 900 22px/1 "Songti SC", serif;
+      letter-spacing: 1px;
+    }
+    .title-plaque span {
+      font: 900 11px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #4b2411;
+    }
+    .top-actions {
+      display: grid;
+      gap: 6px;
+    }
+    .small-action {
+      width: 62px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 226, 155, .66);
+      background: rgba(28, 17, 10, .82);
+      color: #ffe0a2;
+      font: 900 11px/1 sans-serif;
+      box-shadow: 0 4px 0 #080302;
+      display: grid;
+      place-items: center;
+    }
+    .table-shell {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 106px;
+      bottom: 212px;
+      perspective: 780px;
+      z-index: 5;
+    }
+    .table-plane {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      top: 48px;
+      bottom: 8px;
+      transform: rotateX(10deg);
+      transform-origin: center bottom;
+      border-radius: 34px 34px 58px 58px;
+      background: radial-gradient(ellipse at center, #2f9169 0%, #1f6f53 48%, #13422f 100%);
+      border: 16px solid #744221;
+      box-shadow:
+        inset 0 0 0 3px #c0813d,
+        inset 0 24px 54px rgba(255,255,255,.1),
+        0 38px 80px rgba(0,0,0,.62);
+    }
+    .table-plane::before {
+      content: "";
+      position: absolute;
+      inset: 28px;
+      border-radius: 24px 24px 44px 44px;
+      border: 2px solid rgba(251, 221, 150, .18);
+    }
+    .counter-panel {
+      position: absolute;
+      left: 24px;
+      top: 70px;
+      width: 126px;
+      min-height: 126px;
+      padding: 9px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(59, 36, 20, .96), rgba(24, 16, 11, .96));
+      border: 2px solid rgba(234, 183, 94, .78);
+      box-shadow: 0 8px 0 #130a06, 0 16px 30px rgba(0,0,0,.36);
+      z-index: 24;
+    }
+    .counter-panel h3 {
+      font: 900 13px/1 "Songti SC", serif;
+      color: #ffe0a0;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .counter-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+    }
+    .counter-cell {
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(255, 245, 215, .1);
+      border: 1px solid rgba(255, 222, 151, .22);
+      display: grid;
+      place-items: center;
+      font: 800 10px/1 sans-serif;
+      color: #f2d99d;
+    }
+    .counter-cell.hot {
+      background: rgba(230, 68, 40, .38);
+      color: #fff5d7;
+      border-color: rgba(255, 204, 108, .85);
+    }
+    .mountain {
+      position: absolute;
+      left: 50%;
+      top: 314px;
+      width: 330px;
+      height: 330px;
+      transform: translate(-50%, -50%);
+      z-index: 12;
+    }
+    .shadow-bridge {
+      position: absolute;
+      left: 86px;
+      top: 112px;
+      width: 160px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.28);
+      filter: blur(12px);
+      z-index: 4;
+    }
+    .tile {
+      position: absolute;
+      width: 44px;
+      height: 60px;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.65), transparent 16%),
+        linear-gradient(180deg, #fff9eb 0%, #ead8b5 70%, #138059 71%, #0a583f 100%);
+      border: 2px solid #9f642f;
+      box-shadow: 0 7px 0 #074733, 0 13px 20px rgba(0,0,0,.35);
+      display: grid;
+      place-items: center;
+      color: #2c2014;
+      font: 900 19px/1 "Songti SC", serif;
+    }
+    .tile.low { filter: saturate(.72) brightness(.72); opacity: .78; }
+    .tile.mid { filter: saturate(.9) brightness(.9); }
+    .tile.top {
+      width: 52px;
+      height: 70px;
+      font-size: 23px;
+      border-radius: 10px;
+      box-shadow: 0 9px 0 #064331, 0 18px 34px rgba(0,0,0,.52), 0 0 0 3px rgba(255, 214, 116, .48);
+    }
+    .tile.top::after {
+      content: "";
+      position: absolute;
+      inset: -9px;
+      border-radius: 14px;
+      background: radial-gradient(circle, rgba(255, 202, 78, .34), transparent 64%);
+      z-index: -1;
+    }
+    .tools {
+      position: absolute;
+      right: 22px;
+      top: 250px;
+      transform: translateY(-50%);
+      display: grid;
+      gap: 10px;
+      z-index: 26;
+    }
+    .tool {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 25%, #fff2bd, #258663 42%, #104833);
+      border: 2px solid #f1c66e;
+      box-shadow: 0 7px 0 #061f18;
+      display: grid;
+      place-items: center;
+      font: 900 18px/1 "Songti SC", serif;
+      color: #fff2cf;
+      position: relative;
+    }
+    .tool span {
+      position: absolute;
+      right: -5px;
+      top: -5px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #c73622;
+      display: grid;
+      place-items: center;
+      font: 900 10px/1 sans-serif;
+      border: 1px solid #ffe1a0;
+    }
+    .river-panel {
+      position: absolute;
+      left: 30px;
+      right: 94px;
+      top: 454px;
+      height: 58px;
+      border-radius: 14px;
+      background: rgba(28, 18, 12, .86);
+      border: 1px solid rgba(238, 190, 98, .42);
+      box-shadow: 0 6px 0 #100704;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      z-index: 22;
+    }
+    .river-panel b { font-size: 12px; color: #edc77f; margin-right: 2px; }
+    .mini {
+      width: 29px;
+      height: 39px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #fff8e9 0 73%, #147858 74%);
+      border: 1px solid #9d6633;
+      display: grid;
+      place-items: center;
+      color: #2c2014;
+      font: 900 13px/1 serif;
+    }
+    .combo-bar {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 154px;
+      height: 48px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      z-index: 30;
+    }
+    .combo-bar button {
+      border: 1px solid rgba(245, 206, 122, .45);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #4a3321, #21130c);
+      color: #a98f6d;
+      font: 900 15px/1 "Songti SC", serif;
+      box-shadow: 0 5px 0 #090504;
+    }
+    .combo-bar .live {
+      background: linear-gradient(180deg, #ffc558, #df6730 58%, #821d17);
+      color: #fff5d3;
+      box-shadow: 0 5px 0 #4e0d0a, 0 0 22px rgba(255, 98, 42, .5);
+    }
+    .hand-tray {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 22px;
+      height: 116px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #7a4724, #2c170d);
+      border: 2px solid #c7833f;
+      box-shadow: inset 0 5px 12px rgba(255,255,255,.08), 0 -12px 40px rgba(0,0,0,.42);
+      padding: 15px 10px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 6px;
+      z-index: 31;
+    }
+    .center-toast {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 252px;
+      min-height: 118px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(69, 41, 22, .96), rgba(21, 12, 8, .96));
+      border: 2px solid rgba(255, 215, 132, .86);
+      box-shadow: 0 12px 0 #110704, 0 24px 54px rgba(0,0,0,.55), 0 0 38px rgba(255, 168, 55, .24);
+      padding: 16px;
+      text-align: center;
+      z-index: 40;
+      pointer-events: none;
+    }
+    .center-toast small {
+      display: block;
+      color: #f0c77f;
+      font: 900 11px/1 sans-serif;
+      margin-bottom: 8px;
+    }
+    .center-toast strong {
+      display: block;
+      font: 900 24px/1 "Songti SC", serif;
+      color: #fff0bd;
+      margin-bottom: 8px;
+    }
+    .center-toast span {
+      color: #dec597;
+      font: 700 12px/1.35 sans-serif;
+    }
+    .center-toast.preview {
+      opacity: .82;
+      display: none;
+    }
+    .slot {
+      border-radius: 9px;
+      background: rgba(11, 7, 5, .5);
+      border: 1px solid rgba(255, 222, 153, .32);
+      display: grid;
+      place-items: center;
+    }
+    .slot .mini { width: 33px; height: 45px; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <main class="phone">
+    <div class="room-glow"></div>
+    <header class="top-order">
+      <div class="exit-button">退</div>
+      <section class="title-plaque"><strong>胡了卜</strong><span>第 08 关 · 南风挡墙</span></section>
+      <aside class="top-actions"><div class="small-action">重开</div><div class="small-action">暂停</div></aside>
+    </header>
+    <section class="table-shell">
+      <div class="table-plane"></div>
+      <aside class="counter-panel">
+        <h3><span>记牌器</span><span>余 126</span></h3>
+        <div class="counter-grid">
+          <span class="counter-cell hot">一 2</span><span class="counter-cell">二 4</span><span class="counter-cell">三 3</span><span class="counter-cell">四 1</span>
+          <span class="counter-cell">五 5</span><span class="counter-cell hot">六 1</span><span class="counter-cell">七 3</span><span class="counter-cell">八 2</span>
+          <span class="counter-cell">九 4</span><span class="counter-cell">东 2</span><span class="counter-cell">中 1</span><span class="counter-cell">白 0</span>
+        </div>
+      </aside>
+      <div class="mountain" id="mountain"><div class="shadow-bridge"></div></div>
+      <aside class="tools"><div class="tool">洗<span>2</span></div><div class="tool">撤<span>1</span></div><div class="tool">打<span>3</span></div></aside>
+      <section class="river-panel"><b>牌河</b><span class="mini">七</span><span class="mini">中</span><span class="mini">三</span></section>
+    </section>
+    <section class="combo-bar"><button class="live">胡</button><button>杠</button><button class="live">碰</button><button>吃</button><button>补</button></section>
+    <section class="hand-tray"><div class="slot"><span class="mini">八</span></div><div class="slot"><span class="mini">八</span></div><div class="slot"><span class="mini">八</span></div><div class="slot"><span class="mini">中</span></div><div class="slot"><span class="mini">二</span></div><div class="slot"><span class="mini">三</span></div><div class="slot"></div><div class="slot"></div></section>
+  </main>
+  <script>
+    const mountain = document.querySelector('#mountain');
+    const chars = ['一','二','三','四','五','六','七','八','九','东','南','中','发'];
+    const low = [[34,238],[78,250],[122,246],[166,252],[210,240],[252,230],[58,202],[104,210],[150,206],[196,212],[238,198]];
+    const mid = [[78,168],[122,174],[166,166],[210,160],[104,132],[150,128],[194,122]];
+    const top = [[88,74],[142,62],[196,72]];
+    [...low.map(p=>[...p,'low']), ...mid.map(p=>[...p,'mid']), ...top.map(p=>[...p,'top'])].forEach((p, i) => {
+      const tile = document.createElement('div');
+      tile.className = `tile ${p[2]}`;
+      tile.textContent = chars[i % chars.length];
+      tile.style.left = p[0] + 'px';
+      tile.style.top = p[1] + 'px';
+      tile.style.zIndex = p[2] === 'top' ? 30 + i : p[2] === 'mid' ? 15 + i : i;
+      mountain.appendChild(tile);
+    });
+  </script>
+</body>
+</html>

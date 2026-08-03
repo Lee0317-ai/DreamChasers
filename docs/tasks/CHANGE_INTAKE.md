@@ -48,6 +48,708 @@
 
 ## 4. 待评估想法
 
+### IDEA-20260710-01：胡了卜 Cocos 正式游戏 v1 重规划
+
+- 提出人：Lee
+- 提出时间：2026-07-10
+- 背景：胡了卜目前同时存在 Web demo 与 Cocos 正式工程，两条运行时在规则、关卡、流程和表现上持续分叉。Cocos 已累积大量功能，但核心 Controller 同时承担规则、流程、存档、账号桥接和动态 UI，缺少稳定的产品入口、正式 UI/音频管线、可重复发布门禁，整体仍像功能样机而不是能完整上线的游戏。
+- 目标：新增 T241，冻结 Web demo 的玩法扩展，将 Cocos 确认为唯一正式运行时，先规划并交付一个 20–30 分钟、8–12 个遭遇、包含教学/奖励/Boss/结算/继续游玩的完整章节，再补齐 UI、音频、存档、性能、构建和上线验收体系。
+- 不做：本规划阶段不修改游戏代码、不新增第二套玩法实现、不做多人/排行榜/完整支付/复杂麻将算法，不把无尽、高阶周目、每日和账号跨端同步作为 v1 上线阻塞项。
+- 用户价值：玩家打开后看到的是一款有标题入口、教学、清晰操作反馈、完整章节、失败恢复、结算与声音反馈的游戏，而不是功能入口堆叠、状态分叉的开发 demo。
+- 涉及模块：胡了卜 Cocos 正式工程、Web 游戏宿主边界、配置与规则契约、UI/音频资产、存档、构建发布和任务文档。
+- 可能影响文件：本规划阶段仅涉及 `docs/tasks/**`、`docs/status/**`、`docs/superpowers/specs/**`、`docs/modules/mahjong-roguelike/**`；后续实现文件范围由独立实施任务逐项领取。
+- 是否影响另一方任务：否。规划由 Lee 负责；后续实现前需先收口 T239/T240 的并发边界。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：形成经审阅的产品与技术设计，明确 v1 范围、玩家流程、架构边界、UI/音频清单、存档与构建策略、性能和 QA 门禁、分阶段里程碑及每阶段退出标准；规划不含占位项或互相冲突的双实现口径。
+- AI 初步方案：采用“Cocos 唯一正式运行时 + Web 仅宿主 + 纯 TypeScript 游戏会话核心 + Cocos Scene/Prefab 表现层”的路线；先做一个完整章节纵切，再扩内容和长期模式；用版本化内容清单、存档迁移、自动化规则测试、桌面/移动端截图与真机构建共同守住发布质量。
+- 处理结论：已入任务池
+- 对应任务编号：T241
+
+### IDEA-20260701-01：胡了卜 Cocos 概念图 UI 架构落地
+
+- 提出人：Lee
+- 提出时间：2026-07-01
+- 背景：当前 Cocos 正式工程功能链路已基本完成，但表现层仍像工程态 HUD，缺少参考概念图里的顶部秩序层、牌桌透视、牌山层级、记牌器/工具挂件和中心弹层秩序。参考图已确认，草图方向已对齐。
+- 目标：新增 T240，按概念图把 Cocos 局内 UI 落成五层结构：顶部秩序层、牌桌主体层、牌桌挂件层、底部操作层、中心弹层层；并让牌山支持低/中/顶层视觉权重，上层三张牌压住下层。
+- 不做：不生成最终商业级美术资产；不改 Web 版试玩壳；不改 Prisma/账号；不改玩法规则和经济数值；不覆盖 T239 对牌山生成器的改动。
+- 用户价值：Cocos 正式工程从"功能堆上去了但像调试页"推进到符合概念图视觉秩序的局内界面，玩家第一眼能看到牌桌、牌山层级和关键操作。
+- 涉及模块：胡了卜 Cocos Controller / Binder / scene model / 任务和模块文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `BoardLayerBinder.ts`, `HudBinder.ts`, `SlotLayerBinder.ts`, `ComboBarBinder.ts`, `MeldRiverLayerBinder.ts`, `contracts/HulebuSceneModel.ts`, `bootstrap/HulebuSampleSceneModel.ts`, `docs/modules/mahjong-roguelike/COCOS_UI_ARCHITECTURE.md`, `docs/tasks/**`, `docs/progress/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 表现层和文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 局内首屏呈现顶部名称/关卡/退出、中间牌桌占满剩余空间、左上记牌器、右侧工具按钮、底部组合栏与手牌槽；牌山支持低/中/顶层视觉权重；中心弹层可复用到通关和奖励三选一；390x844 手机竖屏截图不互相遮挡、不出界；Cocos TypeScript 和共享测试通过。
+- AI 初步方案：先整理 `GameSceneController` 的 top/table/bottom/center overlay 五层根节点和定位 helper，再把记牌器和工具按钮从全屏角挂改为基于 `tableRect`/`mountainRect` 的牌桌挂件；牌山表现按层级调整 scale/tint/shadow/zIndex；底部组合栏和手牌槽固定到底部；统一 overlay 到中心弹层。
+- 处理结论：已入任务池
+- 对应任务编号：T240
+
+### IDEA-20260629-17：胡了卜 Cocos 预览跨工作区生成器导入修复
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：Cocos Web Preview 报错：以 `HulebuLevelConfig.ts` 为入口找不到 `../../../../../../../../packages/shared/src/mahjong-mountain-generator`。当前 Cocos 配置层直接 import 工作区外 shared TS 源文件，本地 `tsc` 可解析，但 Cocos 预览运行时不会把工程外 `packages/shared` 纳入模块图。
+- 目标：新增 T229，把 Cocos 所需的牌山生成器依赖收回 Cocos 工程内部可解析模块，修复预览启动报错。
+- 不做：不改 Web 原型、站内静态 Demo、Prisma 或账号接口；不重做牌山生成算法；不扩大到 Cocos UI 美术。
+- 用户价值：Cocos 工程可以在 Creator/Web Preview 中正常加载关卡配置，不再因工程外相对 import 直接白屏报错。
+- 涉及模块：胡了卜 Cocos config、共享静态测试、任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuMountainGenerator.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的 Cocos 配置和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：Cocos 配置层不再直接 import `packages/shared/src/mahjong-mountain-generator`；Cocos 仍可生成 graph-based 牌山；共享静态测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 Cocos `assets/scripts/config/` 内新增可被 Cocos 解析的轻量牌山生成器模块，保留当前 `generateHulebuMountain()` 输入输出口径；`HulebuLevelConfig.ts` 改为相对导入本地模块；共享测试新增扫描，防止 Cocos 脚本再次跨出工程引用 shared 源文件。
+- 处理结论：已入任务池
+- 对应任务编号：T229
+
+### IDEA-20260629-16：胡了卜 Cocos 候选组合选择弹层基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：当前 Cocos 正式工程已经具备 `吃 / 碰 / 杠 / 补杠 / 胡` 的基础运行时和按钮栏，但点击组合按钮时仍优先执行第一组候选，没有承接 Web 现有的“候选组合可选”体验。遇到多组 `吃`、多组 `碰` 或多个 `补杠` 出口时，Cocos 的可控性明显落后于当前 Web 版本。
+- 目标：新增 T228，为 Cocos 补一版候选组合选择弹层；当同一组合类型存在多组候选时，不直接执行第一组，而是先弹出候选选择面板，由玩家点选具体那一组再结算。
+- 不做：不改 Web 原型或站内静态 Demo、不重做最终弹层美术、不补人物 cut-in、不接完整中局 phase 持久化到“候选组合弹层中”。
+- 用户价值：Cocos 局内操作会更接近当前 Web 正式体验，尤其在多组 `吃 / 碰 / 补杠` 同时成立时，玩家终于能自己选而不是被系统代打第一组。
+- 涉及模块：胡了卜 Cocos Controller、Cocos runtime、共享静态测试、任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos、共享静态测试和文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 在同一组合类型存在多组候选时会弹出候选选择面板；面板内可看到每组候选的小牌面或清晰文本；选择后只执行用户点中的候选；单一候选仍可直接执行；Cocos TypeScript、共享静态测试、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `comboChoice` phase 和待选候选状态；`HulebuRuntimeState` 暴露按组合类型筛选的候选接口；按钮点击时按 `0 / 1 / 多组` 分支分别忽略、直结算或弹面板；面板先复用现有 overlay 与 v6 小牌资源，不等最终美术。
+- 处理结论：已入任务池
+- 对应任务编号：T228
+
+### IDEA-20260629-15：胡了卜 Cocos 明牌区与槽位真实牌面补齐
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：现有 Cocos 正式工程已具备主牌桌、组合按钮、局外大厅和长期进度链路，但 `明牌区 / 牌河 / 主槽 / 备用槽` 仍主要依赖文字标签。继续把 Web 当前体验搬进 Cocos 时，这一层表现仍显得像调试态，而不是正式局内界面。
+- 目标：新增 T227，把 Cocos `明牌区 / 牌河 / 主槽 / 备用槽` 由文字标签补成真实麻将牌面显示，并保留当前节点结构与 fallback，不改规则层。
+- 不做：不改 Web 原型或站内静态 Demo、不改 Prisma 或账号接口、不重做最终 prefab 动效、不补音效和角色演出。
+- 用户价值：Cocos 局内界面会更接近 Web 当前视觉口径，玩家最常盯着的牌区不再停留在调试态文字。
+- 涉及模块：胡了卜 Cocos Binder、任务文档、模块进展。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/MeldRiverLayerBinder.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/SlotLayerBinder.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`。
+- 是否影响另一方任务：否。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：明牌区、牌河、主槽和备用槽优先显示真实麻将牌面；资源加载失败时保留文字 fallback；Cocos TypeScript、共享静态测试、文档同步和 diff 空白检查通过。
+- AI 初步方案：复用 `HulebuTileSpriteCatalog`，在 `MeldRiverLayerBinder` 和 `SlotLayerBinder` 增加局内牌面 sprite 节点；明牌区展示 3-4 张同牌，牌河展示单张弃牌，主槽/备用槽占位内优先显示真实牌面。
+- 处理结论：已入任务池
+- 对应任务编号：T227
+
+### IDEA-20260629-14：胡了卜 Cocos 账号进度桥接基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T215-T225 已让 Cocos 正式工程具备本地 `activeRun / lastSettlement / metaProfile / metaProgress / achievements` 闭环，但这些状态仍只留在本地存储。Web `/games/hulebu` 已经有登录账号下的 `HulebuProgress` 读写 API，如果继续把现有体验搬进 Cocos，下一步最值当的是先接一条账号进度桥。
+- 目标：新增 T226，让 Cocos 在可用浏览器环境下尝试读写现有 `/api/games/hulebu/progress`；先把局外铜钱、六轴成长、无尽最高层、每日最佳/连续参与、成就和当前本轮快照桥接到账号进度；未登录或接口不可用时继续回退本地档。
+- 不做：不修改 Web 试玩页或静态 Demo、不改 Prisma schema、不新增账号中心 UI、不做完整跨设备中局冲突解决、不把 `lastSettlement / bestMainlineLevel` 扩到服务端模型。
+- 用户价值：Cocos 不再只是“本机有档”，而开始具备真正可跟账号走的长期进度基础；后续正式嵌入站内或小游戏壳时，账号接线不会从零开始。
+- 涉及模块：胡了卜 Cocos Controller、共享静态测试、任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务不碰 Web 试玩页、Prisma 和站点 UI，只复用现有账号进度 API。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 在浏览器环境下可尝试 GET/POST `/api/games/hulebu/progress`；本地状态与账号字段完成最小映射；未登录或接口失败时不会阻断本地流程；共享静态测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增账号进度同步 helper、账户字段映射和本地回写；大厅启动/返回局外时做一次拉取合并，局外成长、长期进度、成就和 active run 变化时做防抖推送；生涯或大厅文案补一个轻量同步状态。
+- 处理结论：已入任务池
+- 对应任务编号：T226
+
+### IDEA-20260629-13：胡了卜 Cocos 每日牌局第二版信号基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：Web 完整版 T180 已让每日牌局具备 `今日词缀 / 今日奖励 / 连续参与` 三个长期信号，但 Cocos 当前每日只具备基础 daily profile、每日事件变体和今日最佳记录。继续迁移 Cocos 时，需要先把每日第二版的可读信号补进正式工程。
+- 目标：新增 T225，为 Cocos 每日牌局补齐本地 `daily mutator / daily reward / daily streak` 基础；每日 run 启动、通关和大厅展示能读到今日主题、今日奖励和连续参与状态。
+- 不做：不改 Web 试玩页或站内静态 Demo、不接账号同步、不做完整每日奖励领取仓库、不做最终每日卡面美术。
+- 用户价值：Cocos 的每日牌局不再只是换 seed 的普通关，而开始具备每日主题、每日奖励和连续参与记忆，更贴近 Web 完整版。
+- 涉及模块：胡了卜 Cocos config / Controller / 本地长期进度 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 配置层提供 daily mutator/reward helper；Cocos 本地 metaProgress 记录 daily streak；大厅每日按钮、生涯面板或每日 run HUD 能显示今日主题和奖励；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增每日 profile helper，按 seed 稳定返回今日词缀和奖励文案；`metaProgress` 增加 streak 字段；`startDailyRun()` 和 run 完成链路更新参与/连续状态；大厅和生涯摘要展示今日词缀、奖励、最佳与连续参与。
+- 处理结论：已入任务池
+- 对应任务编号：T225
+
+### IDEA-20260629-12：胡了卜 Cocos 开局前 flow 恢复基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T223 已让 Cocos active run 可以恢复 `cleared / reward / event` 三类关间 phase，但当前 run 在“高阶能力选择”“本局流派选择”这两类开局前节点仍不会恢复。高阶周目和普通开局中断后，继续本轮会掉回大厅或直接跳过前置选择。
+- 目标：新增 T224，为 Cocos active run 补齐 `advancedAbility / archetype` 两类开局前 flow 的恢复基础；继续本轮时能回到对应的开局前选择节点，并保留待启动 run profile、已选高阶能力和当前本局流派上下文。
+- 不做：不接账号同步、不恢复完整弹窗内 hover/临时高亮状态、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 的“继续本轮”不只覆盖关中局和关间节点，也能承接开局前选择流，离可长期游玩的完整迁移版更近一步。
+- 涉及模块：胡了卜 Cocos Controller / active run snapshot / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`HulebuActiveRunSnapshot` 会记录可恢复的开局前 phase 和待启动 profile；继续本轮能恢复 `advancedAbility / archetype` 节点；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：为 active run 增加更完整的 resumable phase 和 pending run profile 字段；进入高阶能力/流派选择时持久化快照；`resumeActiveRun()` 按 phase 分支恢复高阶能力弹层或流派选择弹层。
+- 处理结论：已入任务池
+- 对应任务编号：T224
+
+### IDEA-20260629-11：胡了卜 Cocos 关间 phase 恢复基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T222 已让 Cocos 的 active run 可以恢复到当前关中局，但当前恢复仍只覆盖 `playing` 运行态。奖励三选一、关前事件、清关继续这些关间 phase 还不会恢复，长局链路还差一截。
+- 目标：新增 T223，为 Cocos active run 补齐 `cleared / reward / event` 三类关间 phase 恢复；继续本轮时能回到对应的关间节点，而不是一律退回当前关运行态或开局。
+- 不做：不接账号同步、不恢复 `advancedAbility / archetype` 这类开局前选择 flow、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 长局流程更完整，继续本轮不只恢复牌桌，也能恢复“过关后选奖励”“进关前选事件”等实际游玩节点，更接近现有 Web 完整体验。
+- 涉及模块：胡了卜 Cocos Controller / active run snapshot / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`HulebuActiveRunSnapshot` 会记录可恢复的关间 phase 和必要 pending 字段；继续本轮能恢复 `cleared / reward / event` 节点；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：为 active run 新增 resumable phase 字段；在进入 `showClearOverlay()`、`showRewardOverlay()`、`showEventOverlay()` 前持久化 phase；`resumeActiveRun()` 按 phase 分支恢复 overlay 和 pending index。
+- 处理结论：已入任务池
+- 对应任务编号：T223
+
+### IDEA-20260629-10：胡了卜 Cocos 当前关中局恢复基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T215 已让 Cocos 有“继续本轮”入口，但当前恢复口径只到“回到当前关开局”，不会恢复牌桌、卡槽、牌河、明牌区、震落牌和当前分数。Web 侧也一直把完整中局存档后置；现在既然在继续推进 Cocos 迁移，最值当的下一步就是把当前关中局状态补齐。
+- 目标：新增 T222，为 Cocos active run 增加当前关 runtime 快照；进入大厅、刷新恢复或点击“继续本轮”后，能把当前关中局牌桌恢复出来，而不是重新从该关开局。
+- 不做：不接账号同步、不做跨设备恢复、不改 Web 试玩页或站内静态 Demo、不恢复未弹完的奖励/事件选择弹层。
+- 用户价值：Cocos 正式工程的“继续本轮”不再只是壳，而是真正可持续游玩的中局恢复体验，更接近完整搬迁目标。
+- 涉及模块：胡了卜 Cocos runtime / Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`HulebuRuntimeState` 提供运行态快照导出/恢复能力；`HulebuActiveRunSnapshot` 包含当前关 runtime 快照；“继续本轮”会优先恢复当前关中局牌桌；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 runtime snapshot 导出/恢复接口；`persistActiveRun()` 写入当前 runtime 状态；`resumeActiveRun()` 存在 runtime 快照时直接重建 `HulebuRuntimeState` 并刷新 scene model；若缺快照则回退到当前关开局恢复。
+- 处理结论：已入任务池
+- 对应任务编号：T222
+
+### IDEA-20260629-09：胡了卜 Cocos 局外档案本地持久化基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T204/T206 已让 Cocos 有局外铜钱和六轴成长闭环，但当前 `metaCoins` 和 `metaUpgrades` 仍只保存在运行时内存里，关闭或重开 Cocos 后会丢。
+- 目标：新增 T221，为 Cocos 增加独立的局外档案本地存储；把局外铜钱和六轴成长持久化到本地；启动和回到大厅时恢复这些状态。
+- 不做：不接账号同步、不改 Web 试玩页或站内静态 Demo、不扩更多局外字段。
+- 用户价值：Cocos 局外成长和铜钱真正成为可持续累计的长期档案，而不是一次会话内的临时状态。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：新增独立局外档案存储 key 和读写 helper；`metaCoins`、`metaUpgrades` 会在局外变更时写本地；启动和回大厅会恢复；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 `HULEBU_META_PROFILE_STORAGE_KEY`、`HulebuMetaProfileSnapshot`、`persistMetaProfile()`、`readMetaProfileSnapshot()`；`start()` 和 `returnToLobby()` 读取；`applyMetaUpgrades()`、`awardMetaCoinsForRun()` 等变更点写回本地。
+- 处理结论：已入任务池
+- 对应任务编号：T221
+
+### IDEA-20260629-08：胡了卜 Cocos 主线独立长期进度基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T217 已让 Cocos 有无尽、每日和高阶的本地长期进度，T218/T219 也补了生涯和图鉴基础，但主线仍只借最近一轮摘要展示，缺独立长期字段。
+- 目标：新增 T220，在 Cocos `metaProgress` 中加入主线独立进度字段；主线 run 结算后刷新最高已到关序；大厅和生涯面板改为优先读取主线长期进度，而不是依赖 `lastSettlement`。
+- 不做：不做主线星级系统、不接账号同步、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 局外长期进度口径更完整，主线也成为真正的生涯数据，而不是一条最近战绩。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：`metaProgress` 新增主线独立进度字段；主线 run 完成后会刷新该字段；大厅主线按钮和生涯面板会优先展示主线长期进度；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `HulebuMetaProgressSnapshot` 中新增 `bestMainlineLevel`；`persistMetaProgress()` 补主线更新；`readMetaProgressSnapshot()` 补字段读取；`getMainlineProgressText()` 优先读 `metaProgress.bestMainlineLevel`。
+- 处理结论：已入任务池
+- 对应任务编号：T220
+
+### IDEA-20260629-07：胡了卜 Cocos 成就图鉴最小版基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T218 已让 Cocos 大厅有 `生涯总览`，但目前仍只是累计状态摘要。Web 完整版已有本地成就/图鉴口径，Cocos 继续迁移时需要先承接一版本地成就快照和最小图鉴展示。
+- 目标：新增 T219，在 Cocos Controller 中加入本地 `achievements` 快照；基于主线完成、无尽最高层、每日参与/完成、局外升级和高阶推进等现有状态解锁首批成就；`生涯` 面板展示成就总数、下一项未解锁目标和首批图鉴列表。
+- 不做：不做完整分类卡面、账号同步、隐藏目标体系第二版、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 局外层开始具备真正可读的“图鉴/成就”进度，而不只是一些累计数字，迁移完成度更高。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 有本地成就快照和读写 helper；首批成就会在主线、无尽、每日、升级和高阶推进时解锁；`生涯` 面板能展示成就总数、下一项目标和首批图鉴列表；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `HULEBU_ACHIEVEMENTS_STORAGE_KEY`、成就配置常量和 `persistAchievements()` helper；在 `startDailyRun()`、`upgradeMetaAxis()`、`showRunCompleteOverlay()` 链路更新本地成就；生涯面板增加 `图鉴总览 / 下一目标 / 首批卡片` 最小布局。
+- 处理结论：已入任务池
+- 对应任务编号：T219
+
+### IDEA-20260629-06：胡了卜 Cocos 局外生涯总览基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T215-T217 已让 Cocos 大厅具备继续本轮、最近一轮摘要和本地长期进度，但当前局外层仍缺一个可集中查看累计状态的“生涯/图鉴”入口。Web 完整版已有图鉴和局外进度阅读口径，Cocos 迁移继续推进时需要先补一个最小局外总览面板。
+- 目标：新增 T218，在 Cocos 大厅加入 `生涯` 入口；打开后展示局外铜钱、六轴成长等级、最近一轮摘要、主线最近进度、无尽最高层、今日每日最佳和高阶最高风场等本地累计状态。
+- 不做：不做完整成就系统、不做账号同步、不做完整图鉴分类和解锁卡面、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 局外层不再只有“开始/升级/高阶”，而开始具备集中查看累计状态的正式感，更接近 Web 完整版长期壳层。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：大厅新增 `生涯` 入口；Cocos 有局外生涯总览弹层；弹层能展示本地铜钱、六轴成长等级、最近一轮、主线最近进度、无尽最高层、今日每日最佳和高阶最高风场；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `collection` phase、`showCollectionOverlay()`、`drawCollectionSummary()` 和若干文本 helper；大厅新增 `LobbyMode_Collection` 按钮；生涯面板集中复用现有 `metaCoins`、`metaUpgrades`、`lastSettlementSnapshot`、`metaProgress` 和 active run/主线摘要 helper。
+- 处理结论：已入任务池
+- 对应任务编号：T218
+
+### IDEA-20260629-03：胡了卜 Cocos 当前本轮继续基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T203-T214 已让 Cocos 承接局外大厅、模式入口、本局流派、高阶、奖励、事件、局外成长和 Boss 变体，但当前离开一局后仍只能重新开新 run。Web 完整版已具备“继续本轮”基础，Cocos 迁移继续推进时也需要先补最小 run 恢复壳。
+- 目标：新增 T215，在 Cocos Controller 中加入本地 `activeRun` 快照；进入关卡、过奖励/事件节点和回到大厅时维护该快照；大厅在存在快照时显示“继续本轮”，点击后按保存的 mode、display order、本局流派、奖励、成长和高阶能力重新启动到当前关开局。
+- 不做：不做完整中局牌桌存档、不接账号同步、不改 Web 试玩页或站内静态 Demo、不接结算复盘和云存档。
+- 用户价值：Cocos 正式工程不再只有“新开一轮”，而开始具备局外大厅返回后继续当前 run 的基础体验，更接近 Web 现有长线壳层。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Controller 有本地 active run snapshot；大厅存在“继续本轮”按钮和状态文案；恢复会按 run profile、当前关序、流派、奖励、成长和高阶能力回到当前关开局；通关回大厅会清空 active run；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `HulebuActiveRunSnapshot`、本地存取 helper、`persistActiveRun()`、`clearActiveRun()`、`resumeActiveRun()`；在 `startLevel()`、奖励/事件选择后和 `returnToLobbyWithMetaReward()` 前维护快照；大厅按钮根据 `hasActiveRun()` 切换 `开始挑战 / 继续本轮`。
+- 处理结论：已入任务池
+- 对应任务编号：T215
+
+### IDEA-20260629-04：胡了卜 Cocos 最近一轮结算摘要基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T215 已让 Cocos 大厅可以继续当前 run，但局外层仍缺“上一轮打成什么样”的最小沉淀。Web 完整版已经有 `lastSettlement` 基础，Cocos 迁移继续推进时也需要先补本地最近一轮摘要。
+- 目标：新增 T216，在 Cocos Controller 中加入本地 `lastSettlement` 结构；run 通关回大厅时记录模式、关序、铜钱、奖励数和摘要；大厅在无 active run 时展示最近一轮状态文案，为后续图鉴、成就、账号同步和完整结算页预留口径。
+- 不做：不做完整结算页、不接账号同步、不补 Boss 复盘和事件复盘、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 局外层不再只是“开始/继续”，而开始能记住上一轮结果，整体更接近正式版闭环。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Controller 有本地 `lastSettlement` 结构和读写 helper；通关回大厅会记录最近一轮摘要；大厅在无 active run 时展示最近一轮文案；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 `HulebuSettlementSnapshot` 和本地存储 key；在 `showRunCompleteOverlay()` / `returnToLobbyWithMetaReward()` 链路中写入 settlement；大厅副标题优先显示 active run，其次显示最近一轮摘要。
+- 处理结论：已入任务池
+- 对应任务编号：T216
+
+### IDEA-20260629-05：胡了卜 Cocos 本地长期进度基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T215/T216 已让 Cocos 大厅记住当前 run 和最近一轮摘要，但局外层还没有长期进度信号。Web 完整版当前至少会读出无尽最高层、每日最佳和高阶解锁进度，Cocos 迁移继续推进时也需要先补这层本地长期状态。
+- 目标：新增 T217，在 Cocos Controller 中加入本地 `metaProgress` 结构；run 完成时更新 `bestEndlessLayer`、`dailyBestLevels`、`bestAdvancedTier`；大厅副标题和模式按钮文案能读出这些长期进度。
+- 不做：不做成就系统、不做账号同步、不接完整结算页或云存档、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 大厅不再只有即时 run 状态，而开始具备长期成长和挑战进度的记忆，更接近完整产品形态。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Controller 有本地长期进度结构和读写 helper；无尽 run 会更新最高层；每日 run 会更新对应 seed 的最佳关序；高阶 run 会更新最高已完成风场；大厅模式按钮或摘要会展示这些长期进度；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 `HulebuMetaProgressSnapshot` 与本地存储 key；在 `persistLastSettlement()` 或通关回大厅链路中合并更新长期进度；大厅按钮 secondaryText 展示 `无尽最高 / 今日最佳 / 高阶已解锁` 等摘要。
+- 处理结论：已入任务池
+- 对应任务编号：T217
+
+### IDEA-20260629-02：胡了卜 Cocos 局外铜钱和升级成本闭环
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T204 已把 Cocos 六轴局外成长 UI 接到大厅，但当前点击升级是免费加点；Web 完整版中局外成长依赖铜钱资产、升级成本和等级上限。Cocos 迁移继续推进时，需要先补一个本地局外钱包和升级成本闭环。
+- 目标：新增 T206，让 Cocos Controller 持有局外铜钱；通关后发放铜钱；升级面板展示当前铜钱、等级、下一档价格；点击升级需要扣铜钱且受到上限约束；下一局继续使用升级后的成长数值。
+- 不做：不接账号同步、不做真实持久化、不做完整经济曲线、不改 Web 试玩页或站内静态 Demo、不做最终美术。
+- 用户价值：Cocos 局外成长不再是调试按钮，而开始具备正式版“打局拿资源、回大厅消费升级、下一局变强”的基础循环。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Controller 有局外铜钱状态和升级价格配置；通关后回大厅前会增加局外铜钱；升级面板显示铜钱和等级；点击升级会校验价格、扣除铜钱、更新六轴成长；满级不可继续升级；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `metaCoins`、`HULEBU_META_UPGRADE_COSTS`、`HULEBU_META_UPGRADE_MAX_LEVELS`、`getMetaUpgradeCost()`、`canUpgradeMetaAxis()` 和 `awardMetaCoinsForRun()`；通关 overlay 返回局外时先发放铜钱；升级按钮文案显示等级和价格。
+- 处理结论：已入任务池
+- 对应任务编号：T206
+
+### IDEA-20260629-01：胡了卜 Cocos 高阶周目入口基础
+
+- 提出人：Lee
+- 提出时间：2026-06-29
+- 背景：T203/T204 已让 Cocos 默认进入局外大厅，并支持主线、无尽、每日和局外成长。Web 完整版已确认最终结构包含高阶周目，且高阶采用东风场、南风场、西风场、北风场四档压力。Cocos 迁移继续推进时，需要先把高阶入口和四档选择接到正式工程。
+- 目标：新增 T205，在 Cocos 大厅加入高阶入口，打开四档高阶选择面板；选择东/南/西/北风场后进入本局流派选择，并以对应高阶 profile 启动 run。
+- 不做：不接账号解锁、不做高阶能力槽装备、不做完整高阶专属奖励池和最终美术、不改 Web 试玩页或站内静态 Demo。
+- 用户价值：Cocos 正式工程开始承接 Web 完整版长期挑战结构，不再只停留在主线、无尽和每日三种入口。
+- 涉及模块：胡了卜 Cocos config / Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-29-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 配置层有四档高阶 run profile；大厅有高阶入口；高阶面板展示东/南/西/北四档；选择任一高阶档会进入本局流派选择并启动对应 profile；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 `HulebuAdvancedRunTier`、`HULEBU_ADVANCED_RUN_PROFILES` 和 `createHulebuAdvancedRunProfile()`；`GameSceneController` 新增 `advanced` phase、`showAdvancedRunOverlay()`、`drawAdvancedRunChoices()` 和 `startAdvancedRun()`；大厅增加高阶按钮。
+- 处理结论：已入任务池
+- 对应任务编号：T205
+
+### IDEA-20260628-18：胡了卜 Cocos 局外成长 UI
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T200 已把 Cocos 六轴局外成长接入 runtime，T203 已补 Cocos 局外入口，但玩家还不能在 Cocos 内操作这些成长。
+- 目标：新增 T204，在 Cocos 局外入口中加入升级按钮和六轴成长面板，支持备用槽、护符、初始工具、河道扩容、开局铜钱、看山预置六项升级，并让升级影响下一局 runtime。
+- 不做：不接账号存档、不做铜钱消费和成本曲线、不改 Web 试玩页、不制作最终局外首页美术。
+- 用户价值：Cocos 正式工程开始承接 Web 完整版的局外长期成长，不再只有模式选择和局内流程。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外入口有升级按钮；升级面板展示六轴成长；点击升级会调用 `applyMetaUpgrades()` 更新 `metaUpgrades`；下一局 runtime 使用升级后的数值；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `meta` phase、`showMetaUpgradeOverlay()`、`drawMetaUpgradeChoices()`、`upgradeMetaAxis()` 和 `getMetaUpgradeValue()`；局外入口新增 `LobbyMode_Upgrade` 按钮；每个升级按钮对对应字段 +1 或固定步进。
+- 处理结论：已入任务池
+- 对应任务编号：T204
+
+### IDEA-20260628-17：胡了卜 Cocos 局外入口和模式选择
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T202 已让 Cocos 新 run 开局前选择本局流派，但 Cocos 启动后仍缺局外首页和模式入口。Web 完整版已有主线、无尽、每日等局外入口，Cocos 需要先接一个最小模式选择壳。
+- 目标：新增 T203，让 Cocos 默认启动时显示局外入口弹层，提供主线、无尽、每日三种模式按钮；点击后进入本局流派选择，再进入对应模式首关。
+- 不做：不接账号进度、不做成就图鉴、不做高阶周目、不改 Web 试玩页、不制作最终首页美术。
+- 用户价值：Cocos 正式工程从单局试玩推进到局外入口结构，玩家可以在正式工程内选择长期模式，再选择本局打法。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos 默认启动进入 `lobby` phase；局外入口渲染主线、无尽、每日三个按钮；点击按钮调用对应 run 启动函数并进入流派选择；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：在 `GameSceneController` 新增 `lobby` phase、`showLobbyOverlay()`、`drawLobbyModeChoices()` 和 `returnToLobby()`；`start()` 默认显示 lobby，`showRunCompleteOverlay()` 的再来按钮回到 lobby；模式按钮复用现有 `startMainlineRun()` / `startEndlessRun()` / `startDailyRun()`。
+- 处理结论：已入任务池
+- 对应任务编号：T203
+
+### IDEA-20260628-16：胡了卜 Cocos 开局流派选择 UI
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T201 已把 Cocos 本局流派状态接入 runtime 和 Controller，但还没有玩家可用的开局选择 UI。Cocos 迁移需要把 Web 完整版的“每局开局前选择本局打法”真正接到表现层。
+- 目标：新增 T202，让 Cocos 新 run 启动前弹出本局流派选择，展示六个流派选项，点击后选择流派并进入对应模式首关。
+- 不做：不做局外首页、不接账号存档、不改 Web 试玩页、不制作最终美术卡面或动画。
+- 用户价值：Cocos 正式工程不再只能从默认流派开始，玩家可以在开局前选择本局打法，迁移后的主流程更接近 Web 完整版结构。
+- 涉及模块：胡了卜 Cocos Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：新 run 启动前进入流派选择相位；弹层渲染六个本局流派；点击流派会调用 `selectRunArchetype()` 并进入首关；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：给 `GameSceneController` 增加 `archetype` phase、pending run profile、`showRunArchetypeOverlay()` 和 `drawRunArchetypeChoices()`；`startRunWithProfile()` 先展示选择弹层，选择后再重置奖励/事件并进入 `startNextLevel()`。
+- 处理结论：已入任务池
+- 对应任务编号：T202
+
+### IDEA-20260628-15：胡了卜 Cocos 本局流派基础接入
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：Cocos 已接入局外长期成长基础，但 Web 版当前产品结构要求每局开局前选择本局打法流派，Cocos 需要先有可传入 runtime 的流派状态和效果。
+- 目标：新增 T201，为 Cocos 配置层、runtime、bootstrap 和 Controller 接入本局流派。第一版覆盖吃、碰、杠、胡、道具和信息六类流派的最小数值效果。
+- 不做：不做完整 Cocos 流派选择 UI、不改 Web 试玩页、不接账号存档、不改非胡了卜模块。
+- 用户价值：Cocos 正式工程能承接“局外成长 + 本局打法选择”的新结构，后续补 UI 时可以直接调用流派选择接口。
+- 涉及模块：胡了卜 Cocos runtime / Controller / config / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/bootstrap/HulebuConfiguredSceneModel.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：配置层有六类本局流派定义；runtime 可接收流派状态并影响工具、铜钱或组合得分；Controller 有开局前选择流派接口并启动关卡时传入；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 `HulebuRunArchetypeConfig` 与 `HULEBU_RUN_ARCHETYPES`；runtime 新增 `HulebuRunArchetypeState`，将流派 toolBonus/scoreBonus/startingCoins 合入已有奖励和局外成长管线；Controller 新增 `selectRunArchetype()`。
+- 处理结论：已入任务池
+- 对应任务编号：T201
+
+### IDEA-20260628-07：胡了卜 Cocos 洗牌和撤回真实交互
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T193/T194 已接 Cocos 打牌入河、震落开山和满槽救场，但右侧 `洗牌 / 撤回` 仍只是视觉按钮。Web 当前版本已有洗牌重排牌面和撤回历史栈。
+- 目标：新增 T195，在 Cocos runtime 中实现基础历史快照、洗牌和撤回；右侧 `洗牌 / 撤回` 按钮点击后调用 runtime 并刷新场景。
+- 不做：不实现完整 UI 禁用态、不追 Boss、事件、无尽、每日、高阶或账号局外成长；不改 Web 玩法。
+- 用户价值：Cocos 右侧三枚工具按钮不再只有 `打牌` 可用，基础救场工具链开始追上 Web 当前局内体验。
+- 涉及模块：胡了卜 Cocos runtime / Controller / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：runtime 有历史栈；入槽、打牌、组合、洗牌前会记录快照；`useShuffleTool()` 会重排 board 牌面并消耗次数；`useUndoTool()` 会恢复快照并消耗次数；Controller 右侧洗牌/撤回按钮调用对应方法；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 runtime snapshot 类型，记录 tiles/slot/reserve/river/openMelds/score/coins/looseDropIndex；实现 deterministic rotate 洗牌避免随机测试不稳定；Controller 的 ToolButton_Wash/Undo 绑定 runtime 方法。
+- 处理结论：已入任务池
+- 对应任务编号：T195
+
+### IDEA-20260628-09：胡了卜 Cocos 奖励效果基础接入
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T190-T196 已让 Cocos 追平 v6 视觉、牌河明牌、打牌、震落、洗牌/撤回和 Boss 目标。当前第 3/6/9/13/16/19 关奖励三选一仍只是流程推进，没有把奖励应用到后续关卡 runtime。
+- 目标：新增 T197，让 Cocos 奖励节点的三选一真正影响后续关卡。第一版接入基础奖励效果：备用槽 +1、护符 +1、工具次数 +1、开局铜钱、吃/碰/杠分数加成和首败保护标记；Controller 在选择奖励后保存 run rewards，并在下一关创建 runtime 时传入。
+- 不做：不做完整奖励卡美术、不做复杂被动状态机、不做奖励随机权重、不接账号局外成长、不接事件、无尽、每日或高阶；不改 Web 玩法。
+- 用户价值：Cocos 主线不再只是单关试玩，而开始具备 Roguelike 过关构筑的最小闭环，奖励选择能被下一关感知。
+- 涉及模块：胡了卜 Cocos runtime / Controller / config / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：runtime 支持累计 run reward modifiers；Controller 选择奖励后会带入下一关；备用槽、工具次数、分数加成、铜钱和护符/首败标记能体现在 HUD 或状态中；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增 `HulebuRunRewardState` 和 `createHulebuRunRewardState`；runtime 构造函数接受 reward state 并合并 defaults；`getComboScore()` 读取加成；`applyReward()` 更新 run reward state；Controller 持有 `runRewards`，`pickReward()` 先应用再进下一关。
+- 处理结论：已入任务池
+- 对应任务编号：T197
+
+### IDEA-20260628-08：胡了卜 Cocos Boss 目标基础接入
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T190-T195 已把 Cocos 视觉资源、牌河明牌、打牌救场、震落开山、洗牌和撤回工具接入。下一步需要把 Web 已确认的 Boss 多目标基础迁到 Cocos，避免第 10/20 关只是普通清牌关。
+- 目标：新增 T196，在 Cocos 关卡配置、runtime、HUD 和通关判断中接入 Boss 目标基础能力；第 10/20 关带 `combo_count / suit_set / score_target` 目标，执行组合后记录进度，牌山清空且 Boss 目标完成才通关。
+- 不做：不做 Boss 专属动画、不做失败结算弹层、不补完整事件、无尽、每日、高阶、账号局外成长；不改 Web 玩法。
+- 用户价值：Cocos 正式工程开始承接主线阶段 Boss 的玩法门槛，后续可以继续追终章 Boss、事件和长线模式。
+- 涉及模块：胡了卜 Cocos config/runtime/controller/HUD / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/config/HulebuLevelConfig.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/contracts/HulebuSceneModel.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/HudBinder.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos level config 支持 `bossGoals`；第 10/20 关存在 Boss 目标；runtime 记录组合次数、花色集合和分数目标进度；HUD 可展示 Boss 进度；Controller 使用 `isLevelCleared()` 而不是单纯 `isBoardCleared()` 通关；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：参考 Web 多目标口径，先实现 `combo_count`、`suit_set`、`score_target` 三类目标；runtime 在组合成功时记录 combo/suit 进度，快照包含 Boss 进度；HUD 将 Boss 摘要拼到工具栏文本里，避免当前 Cocos 场景新增复杂节点。
+- 处理结论：已入任务池
+- 对应任务编号：T196
+
+### IDEA-20260628-06：胡了卜 Cocos 杠胡震落和满槽救场
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T192/T193 已把 Cocos 的牌河、明牌、补杠和打牌入河交互接起来。Web 当前版本还有 `杠 / 胡` 后震落开山，以及主槽满时如果可打牌入河则提示救场而非直接失败。
+- 目标：新增 T194，在 Cocos runtime 中实现基础震落开山和满槽救场提示：`杠 / 补杠` 震落 2 张可选牌，`胡` 震落 3 张并清一张牌河，主槽满且牌河有空间时 HUD 提示可打牌入河。
+- 不做：不做完整震落动画、不实现完整失败弹层、不追 Boss、事件、无尽、每日、高阶或账号局外成长；不改 Web 玩法。
+- 用户价值：Cocos 继续追平 Web 当前核心局内手感，杠/胡不再只是移除槽位牌，而会松动牌山；满槽时也能走牌河救场。
+- 涉及模块：胡了卜 Cocos runtime / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：runtime 中存在震落常量和开山方法；`gang/bugang` 后可震落最多 2 张阻挡牌；`hu` 后可震落最多 3 张并清牌河；满槽且牌河可用时状态文本提示打牌入河；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：参考 Web `openMountainByAction`，在 Cocos runtime 里选择正在压住下层牌的 board blocker，清理其 blockedBy，被震落的牌重置 layer/blocker 并移动到 loose 区域；更新 `getSlotStatusText()` 的满槽提示。
+- 处理结论：已入任务池
+- 对应任务编号：T194
+
+### IDEA-20260628-05：胡了卜 Cocos 丢弃工具和牌河交互
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T192 已把 Cocos runtime 的有限牌河、明牌组和补杠基础结构迁入，但右侧工具按钮还只是视觉资源，没有接 Web 当前“打牌到牌河”的选择交互。
+- 目标：新增 T193，让 Cocos 右侧工具按钮中的 `提示/打牌` 进入丢弃选择态，玩家点击主槽牌后调用 `discardSlotTile()` 打入牌河，并刷新 scene model。
+- 不做：不实现完整洗牌/撤回历史栈、不追 Boss、事件、无尽、每日、高阶、账号或完整局外成长；不改 Web 玩法。
+- 用户价值：Cocos 开始具备 Web 当前有限牌河的可操作闭环，不只是状态展示。
+- 涉及模块：胡了卜 Cocos 工程 / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/SlotLayerBinder.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：SlotLayer 支持主槽点击回调；GameSceneController 有丢弃选择态；点击右侧提示/打牌工具后，点击主槽牌可进入牌河；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：给 `SlotLayerBinder` 增加 `setSlotClickHandler` 和点击绑定；Controller 新增 `discardSelecting`，右侧 `ToolButton_Hint` 绑定 `startDiscardSelection()`，主槽点击时调用 runtime `discardSlotTile(slotIndex)` 并刷新。
+- 处理结论：已入任务池
+- 对应任务编号：T193
+
+### IDEA-20260628-04：胡了卜 Cocos 有限牌河、明牌组和补杠基础迁移
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T190/T191 已把 Cocos 首屏视觉资源接近 Web v6。当前 Cocos runtime 仍只有牌山、主槽、备用槽和基础 `吃 / 碰 / 杠 / 胡`，缺 Web 现有版本的有限牌河、明牌区和补杠核心结构。
+- 目标：新增 T192，在 Cocos scene model/runtime 中加入 `river / openMelds / bugang` 基础结构，并新增 Binder 渲染牌河和明牌组；执行 `碰 / 杠 / 补杠 / 胡` 时能更新明牌区和牌河基础状态。
+- 不做：不实现完整工具按钮交互、不追 Boss、事件、无尽、每日、高阶、账号或完整局外成长；不重建 Cocos 项目；不改 Web 玩法。
+- 用户价值：Cocos 不再只是视觉搬迁，而开始承接 Web 当前核心玩法状态，后续才能继续补满槽救场、震落和长期内容。
+- 涉及模块：胡了卜 Cocos 工程 / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/**`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos scene model 有 `riverNodes / openMeldNodes`；runtime 支持 `riverLimit`、`river`、`openMelds` 和 `bugang` candidate；Cocos 首屏会渲染明牌区和牌河；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：扩展 contracts；runtime 中新增 `river/openMelds/riverLimit`，`peng/gang/bugang/hu` 执行时维护明牌与牌河；新增 `MeldRiverLayerBinder`；Controller 接入 Binder；共享测试锁定字段、脚本和基础行为。
+- 处理结论：已入任务池
+- 对应任务编号：T192
+
+### IDEA-20260628-03：胡了卜 Cocos v6 HUD 槽位和工具按钮绑定
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T190 已将 Web v6 牌面、组合按钮、工具按钮、HUD 和槽位 PNG 接入 Cocos resources，并让牌面和组合按钮开始加载 v6 Sprite。下一步需要把剩余 HUD、手牌槽、弃牌槽和右侧工具按钮也真正绑定到 Cocos 场景层。
+- 目标：新增 T191，让 Cocos 首屏使用 v6 `hand_slots_8`、`tile_counter_wide`、`level_badge / score_badge` 和 `tool_shuffle / tool_undo / tool_hint` 图片；保留程序化 fallback；测试锁定脚本引用和资源路径。
+- 不做：不实现工具按钮真实道具逻辑；不追 Boss、事件、无尽、每日、高阶、账号或完整局外成长；不重建 Cocos 项目；不改 Web 玩法。
+- 用户价值：Cocos 首屏不再只是牌面换图，而是 HUD、槽位和右侧工具按钮也开始贴近当前 Web v6 观感。
+- 涉及模块：胡了卜 Cocos 工程 / Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/SlotLayerBinder.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/HudBinder.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：槽位层会加载 `hand_slots_8`；HUD 会加载 `tile_counter_wide / level_badge / score_badge`；视觉壳右侧工具按钮会加载 `tool_shuffle / tool_undo / tool_hint`；共享测试、Cocos TypeScript、文档同步和空白检查通过。
+- AI 初步方案：新增通用 v6 Sprite 加载辅助到各 Binder 的局部实现；SlotLayer 增加 `SlotTrayArt` 背板；HudBinder 为标签创建 badge sprite；GameSceneController 的工具按钮改成 Sprite 优先、程序化绘制兜底。
+- 处理结论：已入任务池
+- 对应任务编号：T191
+
+### IDEA-20260628-02：胡了卜 Cocos 首轮视觉资源接入
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：T189 已确认旧 Cocos Creator 3.8.8 工程可复用，用户要求“开始帮我做吧，接入 cocos”。第一步应避免一次性追平全部玩法，先把 Web 当前 v6 牌面、按钮和槽位资源接到 Cocos，锁住资源映射与核心点击链路。
+- 目标：新增 T190，将 Web v6 UI 资源复制到 Cocos resources，切换 Cocos tile catalog 到 v6 牌面路径，补资源结构测试，确保 `6条` 不再误映射为 `4条`。
+- 不做：不追平 Boss、事件、无尽、每日、高阶、账号和完整局外成长；不重建 Cocos 项目；不改 PDF、AI 修图、TimePick 或部署。
+- 用户价值：Cocos 首屏先摆脱旧牌面和缺资源状态，后续可以在稳定视觉基座上继续追玩法。
+- 涉及模块：胡了卜 Cocos 工程 / Web v6 UI 资源 / 共享 Cocos 工程测试 / 任务文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/v6/**`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/assets/HulebuTileSpriteCatalog.ts`, `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/BoardLayerBinder.ts`, `packages/shared/src/mahjong-cocos-project.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-28-lee.md`, `docs/superpowers/plans/2026-06-28-hulebu-cocos-v6-visual-assets.md`。
+- 是否影响另一方任务：否。本任务只改 Lee 负责的胡了卜 Cocos 和测试文档。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：Cocos resources 下存在 v6 牌面、组合按钮、工具按钮、HUD 和槽位资源；catalog 映射 `tile.tiao.6` 到 `tile_bamboo_06`；共享测试覆盖 34 张牌面和关键 UI 资源；Cocos TypeScript、共享测试、docs sync 和空白检查通过。
+- AI 初步方案：复制 Web v6 PNG 到 Cocos `assets/resources/ui/v6/`，为目录和 PNG 生成 Cocos meta；把 `HulebuTileSpriteCatalog` 从旧 `mahjong-tiles/tiles/refreshed` 切到 `ui/v6/tiles/mahjong`；调整 BoardLayer 的堆叠提示层级，避免压在新牌面上；更新 `mahjong-cocos-project.test.ts` 锁定路径、尺寸和 6条资源。
+- 处理结论：已入任务池
+- 对应任务编号：T190
+
+### IDEA-20260628-01：胡了卜 Cocos 旧工程复用和 Web 冻结追平
+
+- 提出人：Lee
+- 提出时间：2026-06-28
+- 背景：胡了卜 Web 玩法已经接近可冻结，用户提出“原来已经有建了一个 Cocos，可以先看看是否可以复用”。现有 Cocos Creator 3.8.8 工程已具备项目壳、场景绑定、牌山渲染、点击入槽、基础组合、奖励节点和共享测试，但它落后于当前 Web 完整版内容。
+- 目标：新增 T189，先评估旧 Cocos 工程可复用范围，并形成 Web 冻结后追平 Cocos 的阶段计划，明确哪些层复用、哪些层改造、哪些内容暂缓。
+- 不做：本任务不直接修改 Cocos 工程代码、资源或场景；不重建 Cocos 项目；不追平全部 Web 玩法；不改 PDF、AI 修图、账号、Prisma、TimePick 或部署。
+- 用户价值：避免推倒重来，也避免 Cocos 追着仍在变化的 Web Demo 重复返工；后续可以用已有工程快速承接正式版。
+- 涉及模块：胡了卜 Cocos 工程 / 共享表现层 / Web 冻结规格 / 模块文档 / 任务文档。
+- 可能影响文件：`docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T189-hulebu-cocos-reuse-catchup-plan.md`, `docs/tasks/claims/T189-lee.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/IMPLEMENTATION_PLAN.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/progress/2026-06-28-lee.md`。
+- 是否影响另一方任务：否。本任务只做胡了卜 Cocos 复用评估和文档，不修改另一方模块。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：任务分片和领取记录存在；复用结论覆盖项目壳、脚本分层、资源目录、共享测试和 runtime 差距；追平计划明确 Web 冻结、资源同步、玩法追平、局外系统和发布验证顺序；文档同步和空白检查通过。
+- AI 初步方案：复用现有 `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/` 作为正式工程基座；第一阶段只同步 v6 UI 资源和牌面资源映射，第二阶段追平牌河、明牌、补杠、震落、满槽救场和提示，第三阶段再接 Boss、事件、无尽、每日、高阶和局外成长。
+- 处理结论：已入任务池
+- 对应任务编号：T189
+
+### IDEA-20260627-01：胡了卜账号级当前本轮存档
+
+- 提出人：Lee
+- 提出时间：2026-06-27
+- 背景：T187 已把未完成本轮保存到本地 `localStorage`，但用户明确希望除本地缓存外也保存到账号对应进度中，避免换浏览器、换设备或清本地缓存后继续本轮丢失。
+- 目标：新增 T188，把 T187 的 `activeRun` resume snapshot 接入账号进度。登录用户打开 `/games/hulebu` 时可从账号恢复未完成本轮；本地和账号都有快照时选择更新的一份；失败或通关后同步清空账号快照。
+- 不做：不做完整中局云存档，不恢复牌桌、卡槽、牌河、事件弹窗或奖励选择弹窗；不改 Cocos、AI、PDF、TimePick 或部署。
+- 用户价值：玩家登录后可以跨浏览器/设备继续当前本轮，不再只依赖本机缓存。
+- 涉及模块：胡了卜 Web shell / 账号进度 API / Prisma / 回归测试 / 任务文档。
+- 可能影响文件：`apps/web/prisma/schema.prisma`, `apps/web/prisma/migrations/**`, `apps/web/src/lib/account/hulebu-progress.ts`, `apps/web/src/app/api/games/hulebu/progress/route.ts`, `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-27-lee.md`。
+- 是否影响另一方任务：否。本轮只改胡了卜账号进度和 Web shell，不碰其他产品模块。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：Prisma 模型和迁移包含 `activeRun`；账号 GET/POST 读写 `activeRun`；前端登录同步会从账号恢复未完成本轮并回写更新快照；失败/通关清空账号快照；测试、Prisma validate、类型检查、构建、文档同步和空白检查通过。
+- AI 初步方案：在 `HulebuProgress` 增加 `activeRun Json?`；扩展 `HulebuProgressRecord` 和 sanitize/merge/upsert；前端 `RemoteProgressState` 纳入 `activeRun`，初始同步时在本地和远端之间选择更新时间更新的一份；T187 的本地 persistence effect 继续调用 `pushAccountProgress`，让账号快照随本地状态一起更新。
+- 处理结论：已入任务池
+- 对应任务编号：T188
+
+### IDEA-20260626-01：胡了卜刷新后继续当前本轮
+
+- 提出人：Lee
+- 提出时间：2026-06-26
+- 背景：当前 `/games/hulebu` 已有局外长期进度存储，但刷新页面后正在进行的本轮 `activeRun` 会丢失，玩家会回到局外并从第 1 关重新开始，长 run 体验很割裂。
+- 目标：新增 T187，先做一版低风险的本地继续本轮：外层 shell 保存当前 run 的恢复快照，刷新后仍能显示 `继续本轮`，并从当前关/当前层开局恢复 iframe。
+- 不做：不做完整牌桌状态云存档，不恢复每张牌、卡槽、牌河、事件弹窗或奖励选择弹窗的精确中局状态；不改 Prisma、账号 API、Cocos、AI、PDF、部署或其他模块。
+- 用户价值：玩家刷新页面或误触返回后，不会被迫从第 1 关重来，至少能回到当前关/当前层继续打。
+- 涉及模块：胡了卜 Web shell / HTML 试玩原型 / 静态 Demo / 回归测试 / 任务文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/superpowers/specs/**`, `docs/superpowers/plans/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-26-lee.md`。
+- 是否影响另一方任务：否。本轮只改胡了卜 Web 试玩链路和对应文档测试，不动共享账号数据库和其他模块。
+- 是否需要新增任务：是
+- 建议优先级：P0
+- 验收标准：刷新后本地存储可恢复未完成 run；主线/每日/高阶按当前关恢复，无尽按当前层恢复；失败或通关后清掉可恢复 run；测试、类型检查、构建、HTML 脚本检查、文档同步和空白检查通过。
+- AI 初步方案：新增 `activeRun` 持久化字段和恢复构造函数；在 `hulebu:run-progress` 更新快照；恢复时重建 iframe URL 并带 `level` 或 `startLayer`；失败/通关时清空快照；内层原型沿用已有 `level` 与 `startLayer` 参数。
+- 处理结论：已入任务池
+- 对应任务编号：T187
+
+### IDEA-20260622-04：胡了卜 Web 数值平衡和内容冻结第一轮
+
+- 提出人：Lee
+- 提出时间：2026-06-22
+- 背景：T177-T184 已把 Boss 第二版、特殊事件第二版、图鉴扩容、无尽/每日深化和长期成长第二轮都接进 Web 版，但这些内容目前更像“都已接上”，还不算“节奏已经收稳”。当前最明显的缺口是特殊事件第二版虽然池子和联动已扩了，主线 20 关里的触发仍基本集中在前半程，后半段和长跑的变化感还不够，数值冻结也还没有正式任务承接。
+- 目标：新增 T185，作为 Web 数值平衡和内容冻结第一轮；先不做全量重平衡，而是先收一刀最影响内容体感的节奏问题，把特殊事件从前半段固定三次推进到主线后半程与长跑后段也能稳定触发，让 20 关主线、无尽、每日和高阶的中后段变化感更连续。
+- 不做：不改 Cocos 正式工程、不补音乐/美术/动效正式资源、不重做奖励 effect 底座、不改账号/Prisma/PDF/AI 修图/TimePick/部署、不进入完整数值冻结第二轮。
+- 用户价值：玩家不会只在前半段看到“事件系统存在”，而会在主线后半程、长跑和高阶里持续感到这局还有分叉和风味变化，内容完成度更接近真正可冻结的完整版。
+- 涉及模块：胡了卜 HTML 原型 / 站内静态 Demo / 共享原型测试 / Web 内容冻结文档。
+- 可能影响文件：`apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-22-lee.md`。
+- 是否影响另一方任务：否。本轮只改胡了卜 Web 试玩原型、静态副本、测试和文档，不动 Cocos、账号中心或其他模块。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：特殊事件触发点从前半段扩展到主线后半程；站内静态 Demo 与原型保持一致；自动化测试、脚本检查、构建、文档同步和桌面/移动端浏览器检查通过；文档明确这只是数值冻结第一轮，而非最终全量平衡。
+- AI 初步方案：新增 T185 分片和领取记录；先用测试锁定新的事件触发节奏；再同步原型与站内静态 Demo；最后把 T184 收到待验收，并在模块进展/交接里记录“内容冻结第一轮已开工”。
+- 处理结论：已入任务池
+- 对应任务编号：T185
+
+### IDEA-20260622-03：胡了卜路线奖励和长期成长深化正式收口
+
+- 提出人：Lee
+- 提出时间：2026-06-22
+- 背景：T175 的后续路线里已经明确了“无尽/每日深化之后，继续做路线奖励和局外能力深化，再做数值冻结”。当前代码里已经出现第二轮长期成长实现迹象，包括 `河道扩容 / 开局铜钱 / 看山预置`、路线挂载、开局偏置、事件倾向和奖励池偏置，但这部分还没有一个正式任务编号承接，导致代码、文档和验收口径错位。
+- 目标：新增 T184，把这轮长期成长深化正式收口，明确 `/games/hulebu` 局外升级从三轴扩到六轴、路线挂载会影响开局偏置/奖励池/事件池，并让玩家在局外页能直接看懂“当前收益 / 下一步”。
+- 不做：不做完整数值冻结、不改 Prisma 和账号结构、不改 Cocos 正式工程、不补音乐/美术/动效正式资源、不改 PDF、AI 修图、TimePick、账号中心或 AI Gateway。
+- 用户价值：长期成长不再只是藏在 iframe 参数和局内细节里，玩家能在局外清楚读到自己这条路线现在给了什么、下一步该补什么，也能更稳定地围绕胡流/信息流/河控流/道具流/救场流做 build。
+- 涉及模块：胡了卜站内壳层 / HTML 试玩原型 / 站内静态 Demo / 长期成长文档。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/**`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/progress/2026-06-22-lee.md`。
+- 是否影响另一方任务：否。本次只改胡了卜 Web 侧与对应文档测试，不动 Cocos、账号中心和其他模块。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：局外升级明确扩成六轴；路线挂载会影响开局偏置、奖励和事件倾向；`/games/hulebu` 升级页能直接显示路线当前收益和下一步；测试、类型检查、构建、脚本检查、文档同步和桌面/移动端浏览器检查通过。
+- AI 初步方案：新增 T184 分片和领取记录；把现有长期成长实现正式落档，并在升级页补“当前收益 / 下一步”信息；随后同步模块 README/PROGRESS/HANDOFF、当天进展和 docs:sync 摘要。
+- 处理结论：已入任务池
+- 对应任务编号：T184
+
+### IDEA-20260622-02：胡了卜 UI 资产 Cocos 接入说明文档
+
+- 提出人：Lee
+- 提出时间：2026-06-22
+- 背景：T181 已产出胡了卜 HUD、按钮、槽位、奖励卡、场景皮肤卡和透明麻将牌面资源；T182 已产出操作演出概念贴图和人物 cut-in 占位。后续接入 Cocos 时需要一份可直接调用的资产说明，避免再次从散落 output 目录中猜路径、命名和用途。
+- 目标：新增 T183，整理一份面向 Cocos 接入的 UI 资产使用文档，记录可用资源包、预览图、目录结构、命名映射、Cocos 导入建议、SpriteFrame key 建议、九宫格/原尺寸/贴图 atlas 使用口径和接入顺序。
+- 不做：不接入 Cocos 工程，不复制 PNG 到 Cocos assets，不做图集打包，不改 Web Demo，不生成新美术资源，不改玩法、关卡、账号、PDF、AI 修图、TimePick 或部署文件。
+- 用户价值：后续 Cocos 追平或接美术时，可以按文档直接导入透明 UI / 牌面 / 操作贴图，减少返工和路径混乱。
+- 涉及模块：胡了卜 UI 美术资源 / Cocos 接入文档 / 模块交接文档。
+- 可能影响文件：`docs/modules/mahjong-roguelike/UI_ASSETS_COCOS_INTEGRATION.md`, `docs/modules/mahjong-roguelike/README.md`, `docs/modules/mahjong-roguelike/PROGRESS.md`, `docs/modules/mahjong-roguelike/HANDOFF.md`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T183-hulebu-ui-assets-cocos-integration-doc.md`, `docs/tasks/claims/T183-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-06-22-lee.md`。
+- 是否影响另一方任务：否。本任务只新增和更新文档，不修改工程代码。
+- 是否需要新增任务：是
+- 建议优先级：P2
+- 验收标准：模块文档中存在 Cocos UI 资产接入说明；文档明确 T181 v6 和 T182 v1 的可用范围、路径、运行时 key 建议、导入顺序和不要直接使用的占位项；README / HANDOFF / PROGRESS 已挂入口；文档同步和 scoped diff 检查通过。
+- AI 初步方案：新增 T183 分片和领取记录；创建 `UI_ASSETS_COCOS_INTEGRATION.md`，按“资源包入口、Cocos 资源目录建议、SpriteFrame 映射、组件使用口径、操作演出层级、导入顺序、风险清单”组织；最后同步模块索引和当天进展。
+- 处理结论：已入任务池
+- 对应任务编号：T183
+
+### IDEA-20260622-01：胡了卜国风人物操作演出概念稿
+
+- 提出人：Lee
+- 提出时间：2026-06-22
+- 背景：用户希望在 `碰 / 杠 / 胡` 等较大的操作中加入动画和贴图来增强爽感，并倾向“国风克制、像精致棋牌游戏”的方向，同时参考其他麻将游戏的人物图片和效果，但不希望做成廉价或过度二次元的大特写。
+- 目标：新增 T182，先做一版不接入工程的国风人物操作演出概念稿，展示 `碰 / 杠 / 补杠 / 胡` 的演出层级、人物 cut-in 位置、字牌贴图和牌面合拢效果；如当前图像生成 API 不可用，先用程序化概念板和透明贴图占位表达构图。
+- 不做：不接入 Web 或 Cocos 工程，不做完整动画状态机，不生成最终商用人物立绘，不修改玩法、关卡、账号、PDF、AI 修图、TimePick 或部署文件。
+- 用户价值：在投入正式人物立绘和动画前，先验证“人物图 + 操作贴图”的克制国风方向是否适合胡了卜。
+- 涉及模块：胡了卜 UI 美术资源 / `output/hulebu-ui-assets/` / 任务文档。
+- 可能影响文件：`output/hulebu-ui-assets/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T182-hulebu-action-fx-character-concept.md`, `docs/tasks/claims/T182-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-06-22-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只新增概念资源和文档，不修改工程代码。
+- 是否需要新增任务：是
+- 建议优先级：P2
+- 验收标准：输出一张可直接查看的国风人物操作演出概念板；输出至少 `杠 / 补杠 / 胡` 三个透明操作贴图占位；资源附 manifest；脚本编译、资源存在性检查、文档同步和 scoped diff 检查通过。
+- AI 初步方案：先登记 T182；如果 `PPTOKEN_API_KEY` 可用则生成真实人物 cut-in 草图，否则用现有透明麻将牌、UI 组件和程序化国风人物剪影生成概念板；后续用户确认方向后再单独生成四风场人物立绘。
+- 处理结论：已入任务池
+- 对应任务编号：T182
+
+### IDEA-20260621-01：胡了卜 HUD 和按钮透明切图包
+
+- 提出人：Lee
+- 提出时间：2026-06-21
+- 背景：T051 已完成并验收 v7 麻将牌面资源，但用户指出 HUD、右侧工具按钮、底部组合按钮、组合选择弹层、槽位、奖励卡和场景皮肤卡仍停留在整张 UI 参考图中，没有单独抠成透明背景 PNG。组合选择弹层还需要把文字牌名改为真实麻将小图。
+- 目标：新增 T181，从用户提供的两张胡了卜 UI 参考图中切出透明背景 UI 组件包；正式输出包含按钮、面板、槽位、奖励卡、场景卡和组合选择弹层底板；组合选择弹层内容使用 T051 v7 牌面小图生成预览，不再使用文字牌名。
+- 不做：不接入 Web 或 Cocos 工程，不修改玩法、关卡、奖励、配置、账号、PDF、AI 修图、TimePick 或部署文件；不做多语言动态文字系统；不做图集打包。
+- 用户价值：后续接入游戏时不再从整张概念图中临时裁按钮，能直接使用透明 PNG 检查真实 HUD、操作按钮和弹层观感。
+- 涉及模块：胡了卜 UI 美术资源 / `output/hulebu-ui-assets/` / 任务文档。
+- 可能影响文件：`output/hulebu-ui-assets/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/NEXT_ID.md`, `docs/tasks/items/T181-hulebu-ui-component-transparent-assets.md`, `docs/tasks/claims/T181-lee.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-06-21-lee.md`, `docs/completion/**`。
+- 是否影响另一方任务：否。本任务只新增资源包和文档，不修改 Web/Cocos 代码。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：正式组件 PNG 为 RGBA 且有透明边缘；按钮和面板不带整图米色背景；组合选择弹层预览使用真实麻将图片替代文字牌名；输出 manifest、alpha 校验报告和 contact sheet；脚本编译、资源校验、文档同步和 scoped diff 检查通过。
+- AI 初步方案：先保存两张参考图为 source，再用手工坐标表加边缘 flood-fill alpha 抠图生成组件；组合选择弹层单独输出空底板，并用 T051 v7 `base/*.png` 合成两组三选预览；最后输出 manifest、alpha report、contact sheet 和 T181 文档记录。
+- 处理结论：已入任务池
+- 对应任务编号：T181
+
 ### IDEA-20260616-04：胡了卜特殊事件池扩容
 
 - 提出人：Lee
@@ -2572,6 +3274,24 @@
 - 对应任务编号：T086
 - 验收补充：2026-06-01 Lee 在 T092 验收中继续明确密集牌山起手 3-8 张即可，不要过多；低于 8% 的轻微遮挡仍应可点，达到 8% 才阻塞；牌可以稍大，且大多数牌应继续集中在主牌山堆里。该补充已并入 T092 的 `config-playable` 原型验收调参，不新开任务。
 
+### IDEA-20260623-01：胡了卜局外成长与局内流派开局重构
+
+- 提出人：Lee
+- 提出时间：2026-06-23
+- 背景：当前主线更像跨多关慢慢长成一条路线，和“每一局开局主动选打法”的目标不一致。用户已明确：长期成长应依赖局外的加点和资源；局内则应允许玩家在开局前选择本局流派，并在这局里围绕该流派获利。
+- 目标：把胡了卜重构为 `局外长期成长 + 局内开局选流派` 双层结构。前 20 关保留渐进解锁和引导，20 关后以及长期模式开始前都可选择对应流派技能开局。
+- 不做：本轮先做规划，不直接改运行时代码；不改 Cocos 正式工程、音画资源、账号同步和共享 JSON。
+- 用户价值：玩家每一局都能主动决定这局要走 `吃 / 碰 / 杠 / 胡 / 道具 / 信息` 哪条打法，同时保留账号推进和局外成长带来的长期目标感。
+- 涉及模块：`/games/hulebu` Web shell、`config-playable` HTML 原型、站内静态 Demo、胡了卜模块文档与任务体系。
+- 可能影响文件：`apps/web/src/modules/games/hulebu/**`, `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`, `apps/web/public/games/hulebu-demo/index.html`, `packages/shared/src/mahjong-config-playable-prototype.test.ts`, `docs/tasks/**`, `docs/modules/mahjong-roguelike/**`, `docs/superpowers/plans/**`
+- 是否影响另一方任务：否；本轮只规划 Lee 负责的胡了卜模块，不碰 Jaspon 负责范围。
+- 是否需要新增任务：是
+- 建议优先级：P1
+- 验收标准：新增规划任务和完整实现计划；计划清楚拆出局外成长、开局流派选择、路线挂载降级、奖励/事件/Boss 偏置和 20 关后模式接入；文档同步完成。
+- AI 初步方案：新增 `T186` 作为结构重构规划任务，先产出完整实现计划，再基于该计划决定后续分批实施是并入 T184/T185 收尾还是拆成新的实现任务。
+- 处理结论：已入任务池
+- 对应任务编号：T186
+
 ## 6. AI 处理新想法时必须输出
 
 当用户对 AI 说“我有个新想法”“帮我规划这个功能”“顺便实现一下”时，AI 必须先输出：
@@ -2586,3 +3306,91 @@
 2. `docs/tasks/TASK_BOARD.md`
 3. 必要时更新 `docs/tasks/CLAIMS.md`
 4. 必要时更新 `docs/status/CURRENT_STATUS.md`
+# 2026-06-28：T198 胡了卜 Cocos 特殊事件基础接入
+
+- 来源：Lee 要求继续把胡了卜搬迁到 Cocos。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T198。
+- 范围：仅接入 Cocos 关前特殊事件基础流程、本关事件效果和对应回归测试，不修改 Web 试玩页或账号进度。
+# 2026-06-28：T199 胡了卜 Cocos 长期模式入口基础
+
+- 来源：Lee 要求继续把胡了卜现有内容搬迁到 Cocos。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T199。
+- 范围：只接入 Cocos run mode 基础层，让主线、无尽、每日能通过统一 profile 选择关卡和展示模式，不修改 Web 试玩页或账号进度。
+# 2026-06-28：T200 胡了卜 Cocos 局外成长基础接入
+
+- 来源：Lee 要求继续把胡了卜现有内容搬迁到 Cocos。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T200。
+- 范围：只接入 Cocos 局外成长基础状态，让备用槽、护符、工具、河道容量、开局铜钱和看山预置能影响 runtime；不修改 Web 试玩页或账号进度。
+
+# 2026-06-29：T207 胡了卜 Cocos 高阶风场压力基础
+
+- 来源：Lee 要求继续把胡了卜玩法接入 Cocos，高阶入口已存在但局内仍缺少实际压力规则。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T207。
+- 范围：只为 Cocos 高阶东/南/西/北四档风场增加每关生效的工具扣减和禁用压力，并补静态回归测试与模块文档；不修改 Web 试玩页、账号同步、完整高阶奖励或美术资产。
+
+# 2026-06-29：T208 胡了卜 Cocos 高阶专属奖励基础
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；T205/T207 已有高阶入口和风场压力，但奖励节点仍只用普通奖励池，缺少高阶 run 的专属收益承接。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T208。
+- 范围：只为 Cocos 高阶 run 增加第一版高阶专属奖励配置和奖励节点选择逻辑，让东/南/西/北风场能抽到对应高阶奖励；不修改 Web 试玩页、账号同步、完整高阶能力槽或最终美术。
+
+# 2026-06-29：T209 胡了卜 Cocos 高阶能力槽基础
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；T205/T207/T208 已有高阶入口、风场压力和专属奖励，但还缺 Web 高阶周目的开局能力选择。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T209。
+- 范围：只为 Cocos 高阶 run 增加第一版高阶能力 3 选 1 流程和能力效果，让风场选择后先选高阶能力，再进入本局流派；不修改 Web 试玩页、账号同步、完整能力槽装备或最终美术。
+
+# 2026-06-29：T210 胡了卜 Cocos 高阶事件池基础
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；T198 已接基础事件，T205-T209 已接高阶入口、压力、奖励和能力，但高阶 run 仍使用普通事件池。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T210。
+- 范围：只为 Cocos 高阶 run 增加第一版高阶事件配置和事件选择逻辑，让高阶事件节点优先出现当前风场相关事件；不修改 Web 试玩页、账号同步、完整事件稀有度或最终事件卡美术。
+
+# 2026-06-29：T211 胡了卜 Cocos 事件元信息基础
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；T198/T210 已接事件流程和高阶事件池，但 Cocos 事件配置还缺少 Web 完整版已经形成的稀有度、标签和风险提示信号。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T211。
+- 范围：只为 Cocos 普通/高阶事件增加第一版 `rarity / tags / dangerLevel` 元信息，并在事件选择弹层展示；不修改 Web 试玩页、账号同步、完整事件权重或最终事件卡美术。
+
+# 2026-06-29：T212 胡了卜 Cocos 无尽/每日事件变体
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；Cocos 已有主线、高阶事件和事件元信息，但无尽/每日仍缺少对应模式的事件味道。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T212。
+- 范围：只为 Cocos 无尽和每日 run 增加第一版模式专属事件池，并让事件选择 helper 按 run profile 优先返回对应事件；不修改 Web 试玩页、账号同步、完整事件权重或最终事件卡美术。
+
+# 2026-06-29：T213 胡了卜 Cocos 本局流派事件偏置
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；Cocos 已有本局流派选择和多模式事件池，但事件节点还不会根据本局流派给出贴打法的事件。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T213。
+- 范围：只为 Cocos 增加第一版本局流派事件池，并让事件选择 helper 在传入流派 id 时优先返回对应事件；不修改 Web 试玩页、账号同步、完整事件权重或最终事件卡美术。
+
+# 2026-06-29：T214 胡了卜 Cocos Boss 变体基础
+
+- 来源：Lee 要求继续把胡了卜迁到 Cocos；Cocos 已有 Boss 目标基础，但还缺 Web 完整版中的普通、终局、高阶、无尽和每日 Boss 变体口径。
+- 变更类型：Cocos 正式工程功能追平。
+- 处理任务：T214。
+- 范围：只为 Cocos 增加第一版 Boss 变体配置、目标补丁和 HUD 摘要；不修改 Web 试玩页、账号同步、完整 Boss 阶段动画、结算复盘或最终 Boss 卡美术。
+
+# 2026-06-30：T230 胡了卜 Cocos 移动端布局缩放修正
+
+- 来源：Lee 反馈胡了卜 Cocos 预览“整个画面太大了”，手机视口下牌山、按钮和 HUD 整体放大过头。
+- 变更类型：Cocos 正式工程体验修复。
+- 处理任务：T230。
+- 范围：只修正 Cocos runtime 的移动端布局缩放口径，让小屏/高 DPR 设备允许缩小布局且不再因像素密度额外放大；不改玩法逻辑、资源尺寸、关卡配置或 Web 试玩页。
+
+# 2026-06-30：T231 胡了卜 Cocos UI 素材补齐接入
+
+- 来源：Lee 对比当前 Cocos 预览和目标 UI 概念图，指出当前仍像占位壳；要求调用 `game-studio` skill，一起补齐缺少的 UI。
+- 变更类型：Cocos 正式工程视觉接入。
+- 处理任务：T231。
+- 范围：补齐 Cocos `ui/v6` 中尚未导入的奖励卡、场景皮肤卡、弹层底板和面板资源，并让顶部牌匾、奖励选择和弹层优先使用真实 Sprite；不改玩法规则、关卡配置、账号同步或 Web 试玩页。

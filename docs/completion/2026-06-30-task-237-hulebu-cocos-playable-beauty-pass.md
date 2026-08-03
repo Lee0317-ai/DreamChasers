@@ -1,0 +1,33 @@
+# T237 胡了卜 Cocos 局内可玩性和观感重排完成记录
+
+- 任务编号：T237
+- 负责人：Lee
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/BoardLayerBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/ComboBarBinder.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/SlotLayerBinder.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/items/T237-hulebu-cocos-playable-beauty-pass.md`
+  - `docs/tasks/claims/T237-Lee.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/progress/2026-06-30-lee.md`
+- 实现内容：
+  - 缩小牌面到 `38x51`，并同步遮挡判断尺寸。
+  - 收紧牌山整体缩放，让中心牌桌更清爽。
+  - 缩小组合按钮并下移到底部槽位上方。
+  - 将底部槽位压进背景木托盘区域，减少重复底栏感。
+  - 缩小右侧工具按钮并保留顶层显示。
+- 验证命令：
+  - `npm run test -w packages/shared -- mahjong-cocos-project`
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - Cocos Web Mobile `debug=false` 构建和 Playwright 截图检查
+- 验证结果：
+  - 共享测试 29 项通过。
+  - Cocos TypeScript 检查通过。
+  - Cocos 构建日志显示完成，但 CLI 仍返回退出码 36。
+  - Playwright 截图 `tmp-hulebu-cocos-t237b-portrait.png`、`tmp-hulebu-cocos-t237b-mobile.png` 已确认非 debug 画面更干净。
+- 遗留问题：
+  - 当前牌山结构仍来自真实关卡数据，若要进一步贴近图2的“中央金字塔堆”，需要单独做首关模板/布局生成器任务。

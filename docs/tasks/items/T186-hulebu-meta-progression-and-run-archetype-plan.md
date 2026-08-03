@@ -1,0 +1,65 @@
+# T186：胡了卜局外成长与局内流派开局重构
+
+- 任务编号：T186
+- 优先级：P1
+- 任务名称：胡了卜局外成长与局内流派开局重构
+- 默认负责人：Lee
+- 负责人：Lee
+- 状态：待验收
+- 依赖：T184, T185
+- 背景：当前 `/games/hulebu` 已经把局外成长、路线挂载、奖励池、事件池和多模式入口都接上了，但主线体验仍偏向“跨多关慢慢长成一条路线”。这与当前确认的新方向不一致：长期成长应来自局外加点、资源和解锁；每一局真正的打法则应在开局前主动选择。
+- 目标：
+  - 明确胡了卜新的产品结构：`长期成长在局外，本局打法在开局选择`。
+  - 把旧的路线挂载从“整局 build 身份”降级成“局外偏好和轻协同”。
+  - 按实现计划推进 shell、HTML 原型、静态 Demo、测试和文档。
+  - 为 T184/T185 之后的主线结构重构提供单独入口，避免继续把产品结构问题混在纯数值冻结里。
+- 不做：
+  - 不重写引擎或整体游戏架构。
+  - 不改 Cocos 正式工程、音画资源、账号同步和 Prisma。
+  - 不重写共享 JSON 配置和现有关卡总量。
+- 允许修改文件：
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/tasks/items/T186-hulebu-meta-progression-and-run-archetype-plan.md`
+  - `docs/tasks/claims/T186-lee.md`
+  - `docs/tasks/TASK_BOARD.md`
+  - `docs/tasks/CLAIMS.md`
+  - `docs/status/CURRENT_STATUS.md`
+  - `docs/superpowers/plans/2026-06-23-hulebu-meta-progression-and-run-archetype-selection.md`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.tsx`
+  - `apps/web/src/modules/games/hulebu/HulebuGamePage.module.css`
+  - `apps/web/src/modules/games/hulebu/__tests__/hulebu-publish.test.ts`
+  - `apps/game/mahjong-roguelike/prototypes/config-playable/index.html`
+  - `apps/web/public/games/hulebu-demo/index.html`
+  - `packages/shared/src/mahjong-config-playable-prototype.test.ts`
+  - `docs/modules/mahjong-roguelike/README.md`
+  - `docs/modules/mahjong-roguelike/PROGRESS.md`
+  - `docs/modules/mahjong-roguelike/HANDOFF.md`
+  - `docs/progress/2026-06-23-lee.md`
+- 禁止修改文件：
+  - `apps/game/mahjong-roguelike/cocos/**`
+  - `apps/game/mahjong-roguelike/config/**`
+  - `apps/web/prisma/**`
+  - `apps/web/src/lib/ai/**`
+  - `apps/web/src/modules/tools/**`
+  - `deploy/**`
+- 验证方式：
+  - `npm run test -w apps/web -- hulebu`
+  - `npm run test -w packages/shared -- mahjong-config-playable-prototype`
+  - 源原型与站内静态副本内联脚本 `node --check`
+  - `npm run typecheck -w apps/web`
+  - `npm run build -w apps/web`
+  - `npm run docs:sync`
+  - `rg -n "T[B]D|T[O]DO|待[补]" docs/tasks/items/T186-hulebu-meta-progression-and-run-archetype-plan.md docs/tasks/claims/T186-lee.md docs/superpowers/plans/2026-06-23-hulebu-meta-progression-and-run-archetype-selection.md docs/modules/mahjong-roguelike/README.md docs/modules/mahjong-roguelike/PROGRESS.md docs/modules/mahjong-roguelike/HANDOFF.md docs/progress/2026-06-23-lee.md`
+  - `git diff --check`
+- 当前进展：
+  - 已确认新的主线方向不是“跨多关 build 一个流派”，而是“长期成长在局外，每一局开局主动选流派”。
+  - 已调用 `game-studio:game-studio` 与 `web-game-foundations` 规划路径，决定保留当前 Web shell + HTML 原型双层结构，不做引擎切换。
+  - 已新增完整实现计划：`docs/superpowers/plans/2026-06-23-hulebu-meta-progression-and-run-archetype-selection.md`。
+  - 已明确后续真正要改的核心不是失败弹框，而是主线产品结构、开局流派选择、奖励/事件偏置和 20 关后的长期模式入口。
+  - 已开始按计划实现：壳层已有 `局内流派` 选择，原型已接 `runArchetype` 并把旧路线收成 `局外偏好` 轻协同。
+  - 已补主线前 20 关的引导式流派解锁 UI：`吃 / 碰` 起步可选，`杠 / 胡 / 道具 / 信息` 按主线进度逐步开放；20 关后以及无尽、每日、高阶会显示自由选择口径。
+  - 已继续收窄内层奖励主轴：`runArchetype` 仍负责中后段奖励加权，`preferredRoute` 的基础偏好池只轻补一张协同牌，不再把后段奖励 bias 直接拼进基础偏好池。
+  - 已继续收窄事件和 Boss 口径：事件池里 `preferredRoute` 只轻补一个基础偏好事件，高阶事件不再额外吃旧局外偏好；终章 Boss 面板也改为显示本局 `runArchetype` 流派标签。
+  - 已完成最终术语扫尾：外层自动候选改为 `自动偏好` 口径，内层 Boss 阶段目标改为 `本局流派主骨`，避免旧 `自动挂载 / 当前路线主骨` 抢回主轴。
+  - 当前实现已进入待验收，后续新增奖励、事件或 Boss 校验时继续以本局 `runArchetype` 为主轴，`preferredRoute` 只保留局外轻协同。

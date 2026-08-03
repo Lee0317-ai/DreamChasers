@@ -2,12 +2,12 @@
 
 - 优先级：P1
 - 负责人：Codex / 开发 B
-- 状态：待验收
+- 状态：已完成
 - 背景：胡了卜规则、配置和密集牌山原型已完成，下一步需要为正式美术资源确定牌面 UI 风格方向。用户希望先使用 `pptoken-imagegen` 生成 `万 / 条 / 筒` 三种花色和 1-9 点数的参考图。
 - 目标：生成至少 3 张麻将牌面 UI 参考 sheet，每张包含 `万 / 条 / 筒` 三种花色和 1-9 点数，用于比较视觉风格、移动端识别度、色彩区分和密集堆叠可读性。
 - 不做：不切最终 sprite atlas，不修改原型代码，不接入 Cocos/GDevelop，不替换配置试玩页牌面，不调整玩法、规则模型、关卡或奖励。
 - 依赖：T050；`PPTOKEN_API_KEY`
-- 允许修改文件：`output/imagegen/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T051-hulebu-tile-ui-references.md`, `docs/tasks/claims/T051-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`
+- 允许修改文件：`output/imagegen/**`, `output/hulebu-ui-assets/**`, `docs/modules/mahjong-roguelike/**`, `docs/tasks/CHANGE_INTAKE.md`, `docs/tasks/items/T051-hulebu-tile-ui-references.md`, `docs/tasks/claims/T051-codex.md`, `docs/tasks/TASK_BOARD.md`, `docs/tasks/CLAIMS.md`, `docs/status/CURRENT_STATUS.md`, `docs/progress/2026-05-23.md`, `docs/progress/2026-06-21-lee.md`, `docs/completion/2026-06-21-task-051-hulebu-tile-ui-references.md`
 - 禁止修改文件：`apps/web/**`, `packages/shared/**`, `apps/game/mahjong-roguelike/**`, `apps/web/src/components/portal-data.ts`, `package.json`, `package-lock.json`, `docker-compose.yml`, `docker-compose.prod.yml`, `deploy/**`
 - 验证命令：`npm run docs:sync`; `git diff --check`; 人工查看生成图片
 - 执行记录：
@@ -121,5 +121,15 @@
   - 2026-05-26 根据用户提供的字牌参考图，生成青瓷风字牌完整预览图：`output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png`。
   - 字牌预览图从左到右为 `北 / 白板 / 南 / 中 / 發 / 東 / 西`，其中 `中` 为红字、`發` 为绿字、其余为黑字，白板为黑色双框。
   - 已检查字牌预览图为 `2172 x 724` PNG，并人工查看字牌顺序、颜色和白板排布。
+  - 2026-06-20 Lee 续作：用户补入 4 张 master source sheet 后，改用固定网格/手工坐标重切，不再依赖自动组件检测。
+  - 已新增固定网格切图脚本和校验脚本：`output/hulebu-ui-assets/scripts/build_master_tile_pack_fixed_grid.py`、`output/hulebu-ui-assets/scripts/build_master_tile_pack_green_base_v3.py`、`output/hulebu-ui-assets/scripts/validate_master_tile_pack.py`。
+  - v2 初版仅 `1-9万 / 东南西北` 可用；用户指出筒/条/中发白/牌背存在绿底缺失或裁切不准。
+  - 已新增 v3 绿底保留版 master pack：`output/hulebu-ui-assets/hulebu-master-tile-pack-v3-retained-green-base/`，包含 35 张基础牌、4 张状态覆盖层、manifest、crop-report、raw-crops、debug 源图和预览样张。
+  - v3 沿用可用的 `1-9万 / 东南西北`，其余牌改用实测边界重裁和边缘背景 flood-fill 透明化，已验证底部绿座保留。
+  - 用户继续反馈 `1-9筒 / 1-9条` 的绿底和其他牌不一致；已开始 v4 修正，改为让筒/条共用标准底板，仅转描符号，目标输出目录为 `output/hulebu-ui-assets/hulebu-master-tile-pack-v4-standard-body/`。
+  - v4 已完成生成和验证：`output/hulebu-ui-assets/hulebu-master-tile-pack-v4-standard-body/`；`1-9筒 / 1-9条` 已改为共用标准底板并通过 `--require-green-base --require-standard-body` 校验，当前预览以 `preview/contact-sheet.png` 为准。
+  - 用户继续反馈 `1-9筒` 像被切上去；定位为筒子符号融合蒙版过松以及标准空底板残留 `萬` 字下沿。
+  - 已新增 v7 清底融合版 master pack：`output/hulebu-ui-assets/hulebu-master-tile-pack-v7-clean-template-dots/`；筒子改用严格颜色蒙版、羽化融合、底缘碎片清理和完整清洁标准底板，已通过 `--require-green-base --require-standard-body --require-fused-dots --require-clean-dot-edges` 校验。
+  - 2026-06-21 用户确认 v7 清底融合版“可以”，T051 按 `output/hulebu-ui-assets/hulebu-master-tile-pack-v7-clean-template-dots/` 收口为已完成。
 - 当前阻塞：无。
-- 完成摘要：已完成 3 张 AI 风格参考 sheet、准确版 v2-v8、基于 `candidate-2` 风格的完整青瓷风牌面总览图、条子 `1-9` 青瓷风校正版完整预览图，以及单张审核流的 `1条 / 2条 / 3条 / 4条 / 5条 / 6条 / 7条 / 9条` 单牌；`8条` 使用用户确认的 `hulebu-eight-bamboo-celadon-candidate-2.png` 基准稿；筒子已生成 `1筒 / 2筒 / 3筒 / 4筒 / 5筒 / 6筒 / 7筒 / 8筒 / 9筒`；万子已生成 `1万 / 7万 / 8万 / 9万`；字牌已生成完整预览图 `北 / 白板 / 南 / 中 / 發 / 東 / 西`，当前推荐查看 `output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png`。
+- 完成摘要：已完成 3 张 AI 风格参考 sheet、准确版 v2-v8、基于 `candidate-2` 风格的完整青瓷风牌面总览图、条子 `1-9` 青瓷风校正版完整预览图，以及单张审核流的 `1条 / 2条 / 3条 / 4条 / 5条 / 6条 / 7条 / 9条` 单牌；`8条` 使用用户确认的 `hulebu-eight-bamboo-celadon-candidate-2.png` 基准稿；筒子已生成 `1筒 / 2筒 / 3筒 / 4筒 / 5筒 / 6筒 / 7筒 / 8筒 / 9筒`；万子已生成 `1万 / 7万 / 8万 / 9万`；字牌已生成完整预览图 `北 / 白板 / 南 / 中 / 發 / 東 / 西`；2026-06-21 已基于用户补入 master source sheet 生成并验收 `output/hulebu-ui-assets/hulebu-master-tile-pack-v7-clean-template-dots/`，该目录为当前可交付版本，预览以 `preview/contact-sheet.png`、`base/tile_dot_01.png`、`base/tile_dot_09.png` 为准。
