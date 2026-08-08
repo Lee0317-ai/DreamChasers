@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>胡了卜 - 牌面资产完整预览 v1</title>
+  <style>
+    :root {
+      --bg: #efe4cd;
+      --panel: #f8f1e2;
+      --ink: #433423;
+      --muted: #725c43;
+      --line: #ccb48a;
+    }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+    body { padding: 24px; }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    p { margin: 6px 0 18px; color: var(--muted); line-height: 1.5; }
+    .sheet { display: grid; gap: 18px; max-width: 1680px; margin: 0 auto; }
+    .section {
+      background: rgba(255,255,255,0.34);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(95,70,35,0.08);
+    }
+    .section h2 { margin: 0 0 12px; font-size: 22px; }
+    .grid { display: grid; gap: 12px; }
+    .grid-9 { grid-template-columns: repeat(9, minmax(110px, 1fr)); }
+    .grid-7 { grid-template-columns: repeat(7, minmax(130px, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(220px, 1fr)); }
+    .tile {
+      background: rgba(255,255,255,0.42);
+      border: 1px solid rgba(120,92,55,0.16);
+      border-radius: 12px;
+      padding: 10px 10px 12px;
+      text-align: center;
+    }
+    .tile img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #f3ead7;
+    }
+    .tile .name { margin-top: 8px; font-size: 15px; font-weight: 600; }
+    .tile .src { margin-top: 4px; font-size: 12px; color: var(--muted); word-break: break-all; }
+    .wide img { aspect-ratio: 1.2 / 1; object-fit: cover; }
+    .note { font-size: 13px; color: var(--muted); margin-top: 6px; }
+    @media (max-width: 1200px) {
+      .grid-9, .grid-7, .grid-4 { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div>
+      <h1>胡了卜 - 牌面资产完整预览 v1</h1>
+      <p>优先使用你之前已经满意的单张图；`8条` 使用候选图，`白板` 来自字牌合集中的第二张牌。</p>
+    </div>
+
+    <section class="section">
+      <h2>万子</h2>
+      <div class="grid grid-9">
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-one-wan-celadon-single-v1.png"><div class="name">1万</div></div>
+        <div class="tile"><div class="name">2万</div><div class="src">缺少明确命名单张</div></div>
+        <div class="tile"><div class="name">3万</div><div class="src">缺少明确命名单张</div></div>
+        <div class="tile"><div class="name">4万</div><div class="src">缺少明确命名单张</div></div>
+        <div class="tile"><div class="name">5万</div><div class="src">缺少明确命名单张</div></div>
+        <div class="tile"><div class="name">6万</div><div class="src">缺少明确命名单张</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-seven-wan-celadon-single-v1.png"><div class="name">7万</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-eight-wan-celadon-single-v1.png"><div class="name">8万</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-nine-wan-celadon-single-v1.png"><div class="name">9万</div></div>
+      </div>
+      <div class="note">说明：当前文件夹里明确命名的万子只有 1万、7万、8万、9万；2-6万需要从未命名图里确认或重新补生成。</div>
+    </section>
+
+    <section class="section">
+      <h2>筒子</h2>
+      <div class="grid grid-9">
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-one-dot-celadon-single-v1.png"><div class="name">1筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-two-dot-celadon-single-v1.png"><div class="name">2筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-three-dot-celadon-single-v1.png"><div class="name">3筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-four-dot-celadon-single-v1.png"><div class="name">4筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-five-dot-celadon-single-v1.png"><div class="name">5筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-six-dot-celadon-single-v1.png"><div class="name">6筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-seven-dot-celadon-single-v1.png"><div class="name">7筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-eight-dot-celadon-single-v1.png"><div class="name">8筒</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-nine-dot-celadon-single-v1.png"><div class="name">9筒</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>条子</h2>
+      <div class="grid grid-9">
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-one-bamboo-celadon-single-v1.png"><div class="name">1条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-two-bamboo-celadon-single-v1.png"><div class="name">2条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-three-bamboo-celadon-single-v2.png"><div class="name">3条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-four-bamboo-celadon-single-v1.png"><div class="name">4条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-five-bamboo-celadon-single-v1.png"><div class="name">5条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-six-bamboo-celadon-single-v1.png"><div class="name">6条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-seven-bamboo-celadon-single-v1.png"><div class="name">7条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-eight-bamboo-celadon-candidate-2.png"><div class="name">8条</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-nine-bamboo-celadon-single-v1.png"><div class="name">9条</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>字牌 / 白板</h2>
+      <div class="grid grid-7">
+        <div class="tile wide"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png"><div class="name">东南西北中发白板合集</div><div class="src">白板在第 2 张</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png"><div class="name">白板来源</div><div class="src">第 2 张牌</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png"><div class="name">东 / 南 / 西 / 北 / 中 / 发</div><div class="src">合集统一风格</div></div>
+        <div class="tile"><img src="file:///Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png"><div class="name">字牌参考</div><div class="src">后续可拆单张</div></div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

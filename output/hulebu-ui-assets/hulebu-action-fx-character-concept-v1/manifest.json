@@ -1,0 +1,117 @@
+{
+  "name": "hulebu-action-fx-character-concept-v1",
+  "notes": [
+    "Concept-only assets for restrained guofeng operation feedback.",
+    "Character cut-ins are programmatic placeholders because PPTOKEN_API_KEY is not set in the current environment.",
+    "Do not ship these as final character art; replace with generated or hand-painted transparent character illustrations after direction approval.",
+    "No Web or Cocos runtime integration in this task."
+  ],
+  "sourceAssets": {
+    "mahjongTiles": "../hulebu-ui-component-pack-v6-source-faithful-transparent-tiles/tiles/mahjong",
+    "font": "/System/Library/Fonts/Supplemental/Songti.ttc"
+  },
+  "assets": [
+    {
+      "name": "east_court_lady_cutin",
+      "path": "characters/east_court_lady_cutin.png",
+      "size": [
+        520,
+        760
+      ],
+      "role": "transparent restrained guofeng character cut-in placeholder"
+    },
+    {
+      "name": "south_court_lady_cutin",
+      "path": "characters/south_court_lady_cutin.png",
+      "size": [
+        520,
+        760
+      ],
+      "role": "transparent restrained guofeng character cut-in placeholder"
+    },
+    {
+      "name": "west_court_lady_cutin",
+      "path": "characters/west_court_lady_cutin.png",
+      "size": [
+        520,
+        760
+      ],
+      "role": "transparent restrained guofeng character cut-in placeholder"
+    },
+    {
+      "name": "north_court_lady_cutin",
+      "path": "characters/north_court_lady_cutin.png",
+      "size": [
+        520,
+        760
+      ],
+      "role": "transparent restrained guofeng character cut-in placeholder"
+    },
+    {
+      "name": "action_gang_callout",
+      "path": "stickers/action_gang_callout.png",
+      "size": [
+        360,
+        190
+      ],
+      "role": "transparent operation word sticker"
+    },
+    {
+      "name": "action_bugang_callout",
+      "path": "stickers/action_bugang_callout.png",
+      "size": [
+        360,
+        190
+      ],
+      "role": "transparent operation word sticker"
+    },
+    {
+      "name": "action_hu_callout",
+      "path": "stickers/action_hu_callout.png",
+      "size": [
+        520,
+        280
+      ],
+      "role": "transparent operation word sticker"
+    },
+    {
+      "name": "action_fx_character_concept_board",
+      "path": "preview/action-fx-character-concept-board.png",
+      "size": [
+        1536,
+        1024
+      ],
+      "role": "concept board preview"
+    }
+  ],
+  "previews": {
+    "conceptBoard": "preview/action-fx-character-concept-board.png",
+    "transparentStickerSheet": "preview/transparent-sticker-sheet.png"
+  },
+  "recommendedRuntimeHierarchy": [
+    {
+      "action": "chi_peng",
+      "strength": "light",
+      "durationMs": 300,
+      "characterCutin": false
+    },
+    {
+      "action": "gang",
+      "strength": "medium",
+      "durationMs": 550,
+      "characterCutin": true
+    },
+    {
+      "action": "bugang",
+      "strength": "medium-light",
+      "durationMs": 450,
+      "characterCutin": true
+    },
+    {
+      "action": "hu",
+      "strength": "high",
+      "durationMs": 1200,
+      "characterCutin": true
+    }
+  ]
+}

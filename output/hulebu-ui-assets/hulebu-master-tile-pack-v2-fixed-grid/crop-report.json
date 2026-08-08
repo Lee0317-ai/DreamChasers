@@ -1,0 +1,757 @@
+{
+  "method": "fixed-grid-manual-v2",
+  "generatedAt": "2026-06-20T12:56:40.088782+00:00",
+  "sourceDir": "master-sources",
+  "outputDir": "hulebu-master-tile-pack-v2-fixed-grid",
+  "sources": [
+    {
+      "sheet": "wan",
+      "file": "source-wan-1-9.png",
+      "size": [
+        2079,
+        756
+      ]
+    },
+    {
+      "sheet": "dot",
+      "file": "source-dot-1-9.png",
+      "size": [
+        2135,
+        736
+      ]
+    },
+    {
+      "sheet": "bamboo",
+      "file": "source-bamboo-1-9.png",
+      "size": [
+        1942,
+        809
+      ]
+    },
+    {
+      "sheet": "honor",
+      "file": "source-honor-back-effects.png",
+      "size": [
+        1923,
+        818
+      ]
+    }
+  ],
+  "canvas": {
+    "width": 272,
+    "height": 384
+  },
+  "tileMaskBox": [
+    28,
+    24,
+    244,
+    352
+  ],
+  "slots": [
+    {
+      "id": "tile_wan_01",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        154.0,
+        386.0
+      ],
+      "sourceBox": [
+        43,
+        215,
+        265,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_01.png"
+    },
+    {
+      "id": "tile_wan_02",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        375.0,
+        386.0
+      ],
+      "sourceBox": [
+        264,
+        215,
+        486,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_02.png"
+    },
+    {
+      "id": "tile_wan_03",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        596.0,
+        386.0
+      ],
+      "sourceBox": [
+        485,
+        215,
+        707,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_03.png"
+    },
+    {
+      "id": "tile_wan_04",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        817.0,
+        386.0
+      ],
+      "sourceBox": [
+        706,
+        215,
+        928,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_04.png"
+    },
+    {
+      "id": "tile_wan_05",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        1038.0,
+        386.0
+      ],
+      "sourceBox": [
+        927,
+        215,
+        1149,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_05.png"
+    },
+    {
+      "id": "tile_wan_06",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        1259.0,
+        386.0
+      ],
+      "sourceBox": [
+        1148,
+        215,
+        1370,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_06.png"
+    },
+    {
+      "id": "tile_wan_07",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        1480.0,
+        386.0
+      ],
+      "sourceBox": [
+        1369,
+        215,
+        1591,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_07.png"
+    },
+    {
+      "id": "tile_wan_08",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        1701.0,
+        386.0
+      ],
+      "sourceBox": [
+        1590,
+        215,
+        1812,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_08.png"
+    },
+    {
+      "id": "tile_wan_09",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "center": [
+        1922.0,
+        386.0
+      ],
+      "sourceBox": [
+        1811,
+        215,
+        2033,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_wan_09.png"
+    },
+    {
+      "id": "tile_dot_01",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        136.0,
+        378.0
+      ],
+      "sourceBox": [
+        26,
+        209,
+        246,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_01.png"
+    },
+    {
+      "id": "tile_dot_02",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        368.75,
+        378.0
+      ],
+      "sourceBox": [
+        259,
+        209,
+        479,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_02.png"
+    },
+    {
+      "id": "tile_dot_03",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        601.5,
+        378.0
+      ],
+      "sourceBox": [
+        492,
+        209,
+        712,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_03.png"
+    },
+    {
+      "id": "tile_dot_04",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        834.25,
+        378.0
+      ],
+      "sourceBox": [
+        724,
+        209,
+        944,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_04.png"
+    },
+    {
+      "id": "tile_dot_05",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        1067.0,
+        378.0
+      ],
+      "sourceBox": [
+        957,
+        209,
+        1177,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_05.png"
+    },
+    {
+      "id": "tile_dot_06",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        1299.75,
+        378.0
+      ],
+      "sourceBox": [
+        1190,
+        209,
+        1410,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_06.png"
+    },
+    {
+      "id": "tile_dot_07",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        1532.5,
+        378.0
+      ],
+      "sourceBox": [
+        1422,
+        209,
+        1642,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_07.png"
+    },
+    {
+      "id": "tile_dot_08",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        1765.25,
+        378.0
+      ],
+      "sourceBox": [
+        1655,
+        209,
+        1875,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_08.png"
+    },
+    {
+      "id": "tile_dot_09",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "center": [
+        1998.0,
+        378.0
+      ],
+      "sourceBox": [
+        1888,
+        209,
+        2108,
+        547
+      ],
+      "cropSize": [
+        220,
+        338
+      ],
+      "output": "base/tile_dot_09.png"
+    },
+    {
+      "id": "tile_bamboo_01",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        144.0,
+        424.0
+      ],
+      "sourceBox": [
+        35,
+        246,
+        253,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_01.png"
+    },
+    {
+      "id": "tile_bamboo_02",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        352.75,
+        424.0
+      ],
+      "sourceBox": [
+        244,
+        246,
+        462,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_02.png"
+    },
+    {
+      "id": "tile_bamboo_03",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        561.5,
+        424.0
+      ],
+      "sourceBox": [
+        452,
+        246,
+        670,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_03.png"
+    },
+    {
+      "id": "tile_bamboo_04",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        770.25,
+        424.0
+      ],
+      "sourceBox": [
+        661,
+        246,
+        879,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_04.png"
+    },
+    {
+      "id": "tile_bamboo_05",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        979.0,
+        424.0
+      ],
+      "sourceBox": [
+        870,
+        246,
+        1088,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_05.png"
+    },
+    {
+      "id": "tile_bamboo_06",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        1187.75,
+        424.0
+      ],
+      "sourceBox": [
+        1079,
+        246,
+        1297,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_06.png"
+    },
+    {
+      "id": "tile_bamboo_07",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        1396.5,
+        424.0
+      ],
+      "sourceBox": [
+        1288,
+        246,
+        1506,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_07.png"
+    },
+    {
+      "id": "tile_bamboo_08",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        1605.25,
+        424.0
+      ],
+      "sourceBox": [
+        1496,
+        246,
+        1714,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_08.png"
+    },
+    {
+      "id": "tile_bamboo_09",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "center": [
+        1814.0,
+        424.0
+      ],
+      "sourceBox": [
+        1705,
+        246,
+        1923,
+        602
+      ],
+      "cropSize": [
+        218,
+        356
+      ],
+      "output": "base/tile_bamboo_09.png"
+    },
+    {
+      "id": "tile_honor_east",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        154.0,
+        238.0
+      ],
+      "sourceBox": [
+        43,
+        67,
+        265,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_east.png"
+    },
+    {
+      "id": "tile_honor_south",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        375.57,
+        238.0
+      ],
+      "sourceBox": [
+        265,
+        67,
+        487,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_south.png"
+    },
+    {
+      "id": "tile_honor_west",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        597.14,
+        238.0
+      ],
+      "sourceBox": [
+        486,
+        67,
+        708,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_west.png"
+    },
+    {
+      "id": "tile_honor_north",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        818.71,
+        238.0
+      ],
+      "sourceBox": [
+        708,
+        67,
+        930,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_north.png"
+    },
+    {
+      "id": "tile_honor_red",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        1040.29,
+        238.0
+      ],
+      "sourceBox": [
+        929,
+        67,
+        1151,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_red.png"
+    },
+    {
+      "id": "tile_honor_green",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        1261.86,
+        238.0
+      ],
+      "sourceBox": [
+        1151,
+        67,
+        1373,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_green.png"
+    },
+    {
+      "id": "tile_honor_whiteboard",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        1483.43,
+        238.0
+      ],
+      "sourceBox": [
+        1372,
+        67,
+        1594,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "output": "base/tile_honor_whiteboard.png"
+    },
+    {
+      "id": "tile_back_default",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "center": [
+        1743,
+        238
+      ],
+      "sourceBox": [
+        1623,
+        67,
+        1863,
+        409
+      ],
+      "cropSize": [
+        240,
+        342
+      ],
+      "output": "base/tile_back_default.png"
+    }
+  ],
+  "notes": [
+    "Do not use connected-component auto detection for these sheets.",
+    "Rows are cropped by explicit centers and shared crop sizes to avoid glow/shadow false positives.",
+    "State overlays are generated separately and are not baked into base tile art."
+  ]
+}

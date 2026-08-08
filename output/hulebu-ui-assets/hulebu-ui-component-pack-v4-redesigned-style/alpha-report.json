@@ -1,0 +1,527 @@
+{
+  "pack": "hulebu-ui-component-pack-v4-redesigned-style",
+  "components": [
+    {
+      "name": "level_badge",
+      "path": "hud/level_badge.png",
+      "alpha": {
+        "size": [
+          424,
+          198
+        ],
+        "transparentRatio": 0.1892,
+        "partialAlphaRatio": 0.1069,
+        "alphaBbox": [
+          12,
+          18,
+          412,
+          198
+        ]
+      }
+    },
+    {
+      "name": "score_badge",
+      "path": "hud/score_badge.png",
+      "alpha": {
+        "size": [
+          354,
+          166
+        ],
+        "transparentRatio": 0.225,
+        "partialAlphaRatio": 0.1207,
+        "alphaBbox": [
+          12,
+          18,
+          342,
+          156
+        ]
+      }
+    },
+    {
+      "name": "tile_counter_wide",
+      "path": "hud/tile_counter_wide.png",
+      "alpha": {
+        "size": [
+          764,
+          186
+        ],
+        "transparentRatio": 0.1771,
+        "partialAlphaRatio": 0.0989,
+        "alphaBbox": [
+          12,
+          14,
+          752,
+          176
+        ]
+      }
+    },
+    {
+      "name": "combo_chi_normal",
+      "path": "buttons/combo/action_chi_normal.png",
+      "alpha": {
+        "size": [
+          214,
+          158
+        ],
+        "transparentRatio": 0.3472,
+        "partialAlphaRatio": 0.1361,
+        "alphaBbox": [
+          18,
+          21,
+          196,
+          145
+        ]
+      }
+    },
+    {
+      "name": "combo_chi_fire",
+      "path": "buttons/combo/action_chi_fire.png",
+      "alpha": {
+        "size": [
+          232,
+          176
+        ],
+        "transparentRatio": 0.2046,
+        "partialAlphaRatio": 0.2396,
+        "alphaBbox": [
+          5,
+          0,
+          232,
+          176
+        ]
+      }
+    },
+    {
+      "name": "combo_peng_normal",
+      "path": "buttons/combo/action_peng_normal.png",
+      "alpha": {
+        "size": [
+          214,
+          158
+        ],
+        "transparentRatio": 0.3472,
+        "partialAlphaRatio": 0.1361,
+        "alphaBbox": [
+          18,
+          21,
+          196,
+          145
+        ]
+      }
+    },
+    {
+      "name": "combo_peng_fire",
+      "path": "buttons/combo/action_peng_fire.png",
+      "alpha": {
+        "size": [
+          232,
+          176
+        ],
+        "transparentRatio": 0.2003,
+        "partialAlphaRatio": 0.244,
+        "alphaBbox": [
+          0,
+          1,
+          231,
+          176
+        ]
+      }
+    },
+    {
+      "name": "combo_gang_normal",
+      "path": "buttons/combo/action_gang_normal.png",
+      "alpha": {
+        "size": [
+          214,
+          158
+        ],
+        "transparentRatio": 0.3472,
+        "partialAlphaRatio": 0.1361,
+        "alphaBbox": [
+          18,
+          21,
+          196,
+          145
+        ]
+      }
+    },
+    {
+      "name": "combo_gang_fire",
+      "path": "buttons/combo/action_gang_fire.png",
+      "alpha": {
+        "size": [
+          232,
+          176
+        ],
+        "transparentRatio": 0.2158,
+        "partialAlphaRatio": 0.2285,
+        "alphaBbox": [
+          0,
+          0,
+          231,
+          176
+        ]
+      }
+    },
+    {
+      "name": "combo_bugang_normal",
+      "path": "buttons/combo/action_bugang_normal.png",
+      "alpha": {
+        "size": [
+          214,
+          158
+        ],
+        "transparentRatio": 0.3472,
+        "partialAlphaRatio": 0.1361,
+        "alphaBbox": [
+          18,
+          21,
+          196,
+          145
+        ]
+      }
+    },
+    {
+      "name": "combo_bugang_fire",
+      "path": "buttons/combo/action_bugang_fire.png",
+      "alpha": {
+        "size": [
+          232,
+          176
+        ],
+        "transparentRatio": 0.2078,
+        "partialAlphaRatio": 0.2365,
+        "alphaBbox": [
+          2,
+          0,
+          229,
+          176
+        ]
+      }
+    },
+    {
+      "name": "tool_shuffle",
+      "path": "buttons/tools/tool_shuffle.png",
+      "alpha": {
+        "size": [
+          208,
+          216
+        ],
+        "transparentRatio": 0.3573,
+        "partialAlphaRatio": 0.1942,
+        "alphaBbox": [
+          18,
+          14,
+          196,
+          202
+        ]
+      }
+    },
+    {
+      "name": "tool_undo",
+      "path": "buttons/tools/tool_undo.png",
+      "alpha": {
+        "size": [
+          208,
+          216
+        ],
+        "transparentRatio": 0.3573,
+        "partialAlphaRatio": 0.1942,
+        "alphaBbox": [
+          18,
+          14,
+          196,
+          202
+        ]
+      }
+    },
+    {
+      "name": "tool_hint",
+      "path": "buttons/tools/tool_hint.png",
+      "alpha": {
+        "size": [
+          208,
+          216
+        ],
+        "transparentRatio": 0.3573,
+        "partialAlphaRatio": 0.1942,
+        "alphaBbox": [
+          18,
+          14,
+          196,
+          202
+        ]
+      }
+    },
+    {
+      "name": "tool_buff",
+      "path": "buttons/tools/tool_buff.png",
+      "alpha": {
+        "size": [
+          208,
+          216
+        ],
+        "transparentRatio": 0.3573,
+        "partialAlphaRatio": 0.1942,
+        "alphaBbox": [
+          18,
+          14,
+          196,
+          202
+        ]
+      }
+    },
+    {
+      "name": "tool_counter",
+      "path": "buttons/tools/tool_counter.png",
+      "alpha": {
+        "size": [
+          208,
+          216
+        ],
+        "transparentRatio": 0.3825,
+        "partialAlphaRatio": 0.1953,
+        "alphaBbox": [
+          18,
+          14,
+          191,
+          202
+        ]
+      }
+    },
+    {
+      "name": "discard_slots",
+      "path": "slots/discard_slots.png",
+      "alpha": {
+        "size": [
+          266,
+          150
+        ],
+        "transparentRatio": 0.2319,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          13,
+          13,
+          266,
+          138
+        ]
+      }
+    },
+    {
+      "name": "hand_slots_8",
+      "path": "slots/hand_slots_8.png",
+      "alpha": {
+        "size": [
+          586,
+          150
+        ],
+        "transparentRatio": 0.2082,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          13,
+          13,
+          574,
+          138
+        ]
+      }
+    },
+    {
+      "name": "buff_drawer_panel",
+      "path": "panels/buff_drawer_panel.png",
+      "alpha": {
+        "size": [
+          354,
+          528
+        ],
+        "transparentRatio": 0.1172,
+        "partialAlphaRatio": 0.4252,
+        "alphaBbox": [
+          12,
+          18,
+          342,
+          518
+        ]
+      }
+    },
+    {
+      "name": "reward_card_combo",
+      "path": "cards/reward_combo_strength.png",
+      "alpha": {
+        "size": [
+          224,
+          288
+        ],
+        "transparentRatio": 0.1939,
+        "partialAlphaRatio": 0.1663,
+        "alphaBbox": [
+          12,
+          18,
+          212,
+          278
+        ]
+      }
+    },
+    {
+      "name": "reward_card_score",
+      "path": "cards/reward_score_bonus.png",
+      "alpha": {
+        "size": [
+          224,
+          288
+        ],
+        "transparentRatio": 0.1939,
+        "partialAlphaRatio": 0.1667,
+        "alphaBbox": [
+          12,
+          18,
+          212,
+          278
+        ]
+      }
+    },
+    {
+      "name": "reward_card_slot",
+      "path": "cards/reward_slot_expand.png",
+      "alpha": {
+        "size": [
+          224,
+          288
+        ],
+        "transparentRatio": 0.1939,
+        "partialAlphaRatio": 0.1648,
+        "alphaBbox": [
+          12,
+          18,
+          212,
+          278
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_east_card",
+      "path": "cards/scene_skin_east_card.png",
+      "alpha": {
+        "size": [
+          194,
+          328
+        ],
+        "transparentRatio": 0.1985,
+        "partialAlphaRatio": 0.1119,
+        "alphaBbox": [
+          12,
+          18,
+          182,
+          318
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_south_card",
+      "path": "cards/scene_skin_south_card.png",
+      "alpha": {
+        "size": [
+          194,
+          328
+        ],
+        "transparentRatio": 0.1985,
+        "partialAlphaRatio": 0.1119,
+        "alphaBbox": [
+          12,
+          18,
+          182,
+          318
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_west_card",
+      "path": "cards/scene_skin_west_card.png",
+      "alpha": {
+        "size": [
+          194,
+          328
+        ],
+        "transparentRatio": 0.1985,
+        "partialAlphaRatio": 0.1119,
+        "alphaBbox": [
+          12,
+          18,
+          182,
+          318
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_north_card",
+      "path": "cards/scene_skin_north_card.png",
+      "alpha": {
+        "size": [
+          194,
+          328
+        ],
+        "transparentRatio": 0.1985,
+        "partialAlphaRatio": 0.1119,
+        "alphaBbox": [
+          12,
+          18,
+          182,
+          318
+        ]
+      }
+    },
+    {
+      "name": "combo_choice_panel_bg",
+      "path": "combo-choice/panel_bg.png",
+      "alpha": {
+        "size": [
+          524,
+          128
+        ],
+        "transparentRatio": 0.2545,
+        "partialAlphaRatio": 0.1374,
+        "alphaBbox": [
+          12,
+          18,
+          512,
+          118
+        ]
+      }
+    },
+    {
+      "name": "combo_choice_preview_wan_03_04_05",
+      "path": "combo-choice/combo_choice_preview_wan_03_04_05.png",
+      "alpha": {
+        "size": [
+          524,
+          128
+        ],
+        "transparentRatio": 0.2545,
+        "partialAlphaRatio": 0.1374,
+        "alphaBbox": [
+          12,
+          18,
+          512,
+          118
+        ]
+      }
+    },
+    {
+      "name": "combo_choice_preview_wan_04_05_06",
+      "path": "combo-choice/combo_choice_preview_wan_04_05_06.png",
+      "alpha": {
+        "size": [
+          524,
+          128
+        ],
+        "transparentRatio": 0.2545,
+        "partialAlphaRatio": 0.1374,
+        "alphaBbox": [
+          12,
+          18,
+          512,
+          118
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "version": "hulebu-master-asset-pack-plan-v1",
+  "basis": "Use the approved new master spec sheet style only. Do not reuse old single-tile visual assets.",
+  "tileCanvas": {
+    "logical": {
+      "width": 136,
+      "height": 192
+    },
+    "export2x": {
+      "width": 272,
+      "height": 384
+    },
+    "format": "png",
+    "background": "transparent",
+    "safePaddingPx2x": 16
+  },
+  "baseTiles": [
+    "tile_wan_01",
+    "tile_wan_02",
+    "tile_wan_03",
+    "tile_wan_04",
+    "tile_wan_05",
+    "tile_wan_06",
+    "tile_wan_07",
+    "tile_wan_08",
+    "tile_wan_09",
+    "tile_dot_01",
+    "tile_dot_02",
+    "tile_dot_03",
+    "tile_dot_04",
+    "tile_dot_05",
+    "tile_dot_06",
+    "tile_dot_07",
+    "tile_dot_08",
+    "tile_dot_09",
+    "tile_bamboo_01",
+    "tile_bamboo_02",
+    "tile_bamboo_03",
+    "tile_bamboo_04",
+    "tile_bamboo_05",
+    "tile_bamboo_06",
+    "tile_bamboo_07",
+    "tile_bamboo_08",
+    "tile_bamboo_09",
+    "tile_honor_east",
+    "tile_honor_south",
+    "tile_honor_west",
+    "tile_honor_north",
+    "tile_honor_red",
+    "tile_honor_green",
+    "tile_honor_whiteboard",
+    "tile_back_default"
+  ],
+  "effects": [
+    {
+      "id": "effect_selected_glow",
+      "layer": "above",
+      "description": "soft celadon green outer glow and thin selected rim"
+    },
+    {
+      "id": "effect_playable_fire",
+      "layer": "below",
+      "description": "gold-orange fire aura for eligible chi/peng/gang/bugang actions"
+    },
+    {
+      "id": "effect_disabled_shade",
+      "layer": "above",
+      "description": "gray pressed dim overlay"
+    },
+    {
+      "id": "effect_acquired_badge",
+      "layer": "above",
+      "description": "small gold star badge at top-right"
+    }
+  ],
+  "criticalRules": {
+    "whiteboard": "Blank whiteboard tile must have a clear inner black/dark ink frame and no text.",
+    "dot02": "Two dots must be the same color/design.",
+    "dot06": "Six dots must be exactly 2 columns x 3 rows.",
+    "bamboo08": "Eight bamboo must use the special stacked W/M celadon form, not eight separate sticks.",
+    "states": "State effects are overlays, not baked into base tile art."
+  },
+  "sourceSheetsExpected": [
+    {
+      "file": "source-wan-1-9.png",
+      "count": 9,
+      "outputs": "tile_wan_01..tile_wan_09"
+    },
+    {
+      "file": "source-dot-1-9.png",
+      "count": 9,
+      "outputs": "tile_dot_01..tile_dot_09"
+    },
+    {
+      "file": "source-bamboo-1-9.png",
+      "count": 9,
+      "outputs": "tile_bamboo_01..tile_bamboo_09"
+    },
+    {
+      "file": "source-honor-back-effects.png",
+      "count": 13,
+      "outputs": "tile_honor_east..tile_honor_whiteboard, tile_back_default, state samples"
+    }
+  ]
+}

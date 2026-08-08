@@ -1,0 +1,647 @@
+{
+  "method": "fixed-grid-green-base-v3",
+  "generatedAt": "2026-06-20T16:30:39.668671+00:00",
+  "sourceDir": "master-sources",
+  "outputDir": "hulebu-master-tile-pack-v3-retained-green-base",
+  "sources": [
+    {
+      "sheet": "wan",
+      "file": "source-wan-1-9.png",
+      "size": [
+        2079,
+        756
+      ]
+    },
+    {
+      "sheet": "dot",
+      "file": "source-dot-1-9.png",
+      "size": [
+        2135,
+        736
+      ]
+    },
+    {
+      "sheet": "bamboo",
+      "file": "source-bamboo-1-9.png",
+      "size": [
+        1942,
+        809
+      ]
+    },
+    {
+      "sheet": "honor",
+      "file": "source-honor-back-effects.png",
+      "size": [
+        1923,
+        818
+      ]
+    }
+  ],
+  "canvas": {
+    "width": 272,
+    "height": 384
+  },
+  "slots": [
+    {
+      "id": "tile_wan_01",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        43,
+        215,
+        265,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_01.png"
+    },
+    {
+      "id": "tile_wan_02",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        262,
+        215,
+        484,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_02.png"
+    },
+    {
+      "id": "tile_wan_03",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        482,
+        215,
+        704,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_03.png"
+    },
+    {
+      "id": "tile_wan_04",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        703,
+        215,
+        925,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_04.png"
+    },
+    {
+      "id": "tile_wan_05",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        925,
+        215,
+        1147,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_05.png"
+    },
+    {
+      "id": "tile_wan_06",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        1146,
+        215,
+        1368,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_06.png"
+    },
+    {
+      "id": "tile_wan_07",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        1367,
+        215,
+        1589,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_07.png"
+    },
+    {
+      "id": "tile_wan_08",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        1588,
+        215,
+        1810,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_08.png"
+    },
+    {
+      "id": "tile_wan_09",
+      "sheet": "wan",
+      "source": "source-wan-1-9.png",
+      "sourceBox": [
+        1809,
+        215,
+        2031,
+        557
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_wan_09.png"
+    },
+    {
+      "id": "tile_dot_01",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        31,
+        188,
+        246,
+        608
+      ],
+      "cropSize": [
+        215,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_01.png"
+    },
+    {
+      "id": "tile_dot_02",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        260,
+        188,
+        485,
+        608
+      ],
+      "cropSize": [
+        225,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_02.png"
+    },
+    {
+      "id": "tile_dot_03",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        487,
+        188,
+        710,
+        608
+      ],
+      "cropSize": [
+        223,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_03.png"
+    },
+    {
+      "id": "tile_dot_04",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        720,
+        188,
+        945,
+        608
+      ],
+      "cropSize": [
+        225,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_04.png"
+    },
+    {
+      "id": "tile_dot_05",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        954,
+        188,
+        1181,
+        608
+      ],
+      "cropSize": [
+        227,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_05.png"
+    },
+    {
+      "id": "tile_dot_06",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        1189,
+        188,
+        1415,
+        608
+      ],
+      "cropSize": [
+        226,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_06.png"
+    },
+    {
+      "id": "tile_dot_07",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        1420,
+        188,
+        1649,
+        608
+      ],
+      "cropSize": [
+        229,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_07.png"
+    },
+    {
+      "id": "tile_dot_08",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        1651,
+        188,
+        1864,
+        608
+      ],
+      "cropSize": [
+        213,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_08.png"
+    },
+    {
+      "id": "tile_dot_09",
+      "sheet": "dot",
+      "source": "source-dot-1-9.png",
+      "sourceBox": [
+        1870,
+        188,
+        2097,
+        608
+      ],
+      "cropSize": [
+        227,
+        420
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_dot_09.png"
+    },
+    {
+      "id": "tile_bamboo_01",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        45,
+        214,
+        245,
+        638
+      ],
+      "cropSize": [
+        200,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_01.png"
+    },
+    {
+      "id": "tile_bamboo_02",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        252,
+        214,
+        454,
+        638
+      ],
+      "cropSize": [
+        202,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_02.png"
+    },
+    {
+      "id": "tile_bamboo_03",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        462,
+        214,
+        665,
+        638
+      ],
+      "cropSize": [
+        203,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_03.png"
+    },
+    {
+      "id": "tile_bamboo_04",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        673,
+        214,
+        874,
+        638
+      ],
+      "cropSize": [
+        201,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_04.png"
+    },
+    {
+      "id": "tile_bamboo_05",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        882,
+        214,
+        1083,
+        638
+      ],
+      "cropSize": [
+        201,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_05.png"
+    },
+    {
+      "id": "tile_bamboo_06",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        1090,
+        214,
+        1290,
+        638
+      ],
+      "cropSize": [
+        200,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_06.png"
+    },
+    {
+      "id": "tile_bamboo_07",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        1297,
+        214,
+        1495,
+        638
+      ],
+      "cropSize": [
+        198,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_07.png"
+    },
+    {
+      "id": "tile_bamboo_08",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        1504,
+        214,
+        1704,
+        638
+      ],
+      "cropSize": [
+        200,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_08.png"
+    },
+    {
+      "id": "tile_bamboo_09",
+      "sheet": "bamboo",
+      "source": "source-bamboo-1-9.png",
+      "sourceBox": [
+        1709,
+        214,
+        1908,
+        638
+      ],
+      "cropSize": [
+        199,
+        424
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_bamboo_09.png"
+    },
+    {
+      "id": "tile_honor_east",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        43,
+        67,
+        265,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_honor_east.png"
+    },
+    {
+      "id": "tile_honor_south",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        266,
+        67,
+        488,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_honor_south.png"
+    },
+    {
+      "id": "tile_honor_west",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        490,
+        67,
+        712,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_honor_west.png"
+    },
+    {
+      "id": "tile_honor_north",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        713,
+        67,
+        935,
+        409
+      ],
+      "cropSize": [
+        222,
+        342
+      ],
+      "exportMode": "rounded",
+      "output": "base/tile_honor_north.png"
+    },
+    {
+      "id": "tile_honor_red",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        945,
+        72,
+        1158,
+        414
+      ],
+      "cropSize": [
+        213,
+        342
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_honor_red.png"
+    },
+    {
+      "id": "tile_honor_green",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        1170,
+        72,
+        1382,
+        414
+      ],
+      "cropSize": [
+        212,
+        342
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_honor_green.png"
+    },
+    {
+      "id": "tile_honor_whiteboard",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        1398,
+        72,
+        1605,
+        414
+      ],
+      "cropSize": [
+        207,
+        342
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_honor_whiteboard.png"
+    },
+    {
+      "id": "tile_back_default",
+      "sheet": "honor",
+      "source": "source-honor-back-effects.png",
+      "sourceBox": [
+        1629,
+        72,
+        1860,
+        420
+      ],
+      "cropSize": [
+        231,
+        348
+      ],
+      "exportMode": "edge-alpha",
+      "output": "base/tile_back_default.png"
+    }
+  ],
+  "notes": [
+    "Wan 1-9 and east/south/west/north keep the v2-style rounded crop because the user approved them.",
+    "Dot, bamboo, red, green, whiteboard, and tile back use tighter measured source boxes.",
+    "Edge flood-fill transparency preserves each tile's real green base instead of applying a short rounded mask.",
+    "State overlays are generated separately and are not baked into base tile art."
+  ]
+}

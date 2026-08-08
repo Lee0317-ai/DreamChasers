@@ -1,0 +1,312 @@
+{
+  "version": "hulebu-master-tile-pack-v4-standard-body",
+  "basis": "Wan and honor tiles keep the approved v3 base; dot/bamboo symbols are transferred onto a shared standard body so their green base matches the approved reference.",
+  "canvas": {
+    "width": 272,
+    "height": 384
+  },
+  "items": [
+    {
+      "id": "tile_wan_01",
+      "file": "base/tile_wan_01.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_02",
+      "file": "base/tile_wan_02.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_03",
+      "file": "base/tile_wan_03.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_04",
+      "file": "base/tile_wan_04.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_05",
+      "file": "base/tile_wan_05.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_06",
+      "file": "base/tile_wan_06.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_07",
+      "file": "base/tile_wan_07.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_08",
+      "file": "base/tile_wan_08.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_wan_09",
+      "file": "base/tile_wan_09.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_01",
+      "file": "base/tile_dot_01.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_02",
+      "file": "base/tile_dot_02.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_03",
+      "file": "base/tile_dot_03.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_04",
+      "file": "base/tile_dot_04.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_05",
+      "file": "base/tile_dot_05.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_06",
+      "file": "base/tile_dot_06.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_07",
+      "file": "base/tile_dot_07.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_08",
+      "file": "base/tile_dot_08.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_dot_09",
+      "file": "base/tile_dot_09.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_01",
+      "file": "base/tile_bamboo_01.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_02",
+      "file": "base/tile_bamboo_02.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_03",
+      "file": "base/tile_bamboo_03.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_04",
+      "file": "base/tile_bamboo_04.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_05",
+      "file": "base/tile_bamboo_05.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_06",
+      "file": "base/tile_bamboo_06.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_07",
+      "file": "base/tile_bamboo_07.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_08",
+      "file": "base/tile_bamboo_08.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_bamboo_09",
+      "file": "base/tile_bamboo_09.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_east",
+      "file": "base/tile_honor_east.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_south",
+      "file": "base/tile_honor_south.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_west",
+      "file": "base/tile_honor_west.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_north",
+      "file": "base/tile_honor_north.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_red",
+      "file": "base/tile_honor_red.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_green",
+      "file": "base/tile_honor_green.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_honor_whiteboard",
+      "file": "base/tile_honor_whiteboard.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    },
+    {
+      "id": "tile_back_default",
+      "file": "base/tile_back_default.png",
+      "canvas": {
+        "width": 272,
+        "height": 384
+      }
+    }
+  ],
+  "effects": [
+    {
+      "id": "selected_glow",
+      "file": "effects/effect_selected_glow.png",
+      "layer": "above"
+    },
+    {
+      "id": "playable_fire",
+      "file": "effects/effect_playable_fire.png",
+      "layer": "below"
+    },
+    {
+      "id": "disabled_shade",
+      "file": "effects/effect_disabled_shade.png",
+      "layer": "above"
+    },
+    {
+      "id": "acquired_badge",
+      "file": "effects/effect_acquired_badge.png",
+      "layer": "above"
+    }
+  ]
+}

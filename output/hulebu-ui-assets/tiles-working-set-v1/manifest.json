@@ -1,0 +1,314 @@
+{
+  "version": "tiles-working-set-v1",
+  "source_dir": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen",
+  "output_dir": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1",
+  "items": [
+    {
+      "id": "tile_wan_01",
+      "kind": "wan",
+      "value": 1,
+      "label": "1万",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-one-wan-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_01.png"
+    },
+    {
+      "id": "tile_wan_02",
+      "kind": "wan",
+      "value": 2,
+      "label": "2万",
+      "status": "confirmed-from-unnamed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/ig_0c348a0fbfe485db016a150105785c8199a9ee5e53e06c4de8.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_02.png"
+    },
+    {
+      "id": "tile_wan_03",
+      "kind": "wan",
+      "value": 3,
+      "label": "3万",
+      "status": "confirmed-from-unnamed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/ig_0c348a0fbfe485db016a15016b79a08199a2d42db0ee0f32fc.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_03.png"
+    },
+    {
+      "id": "tile_wan_04",
+      "kind": "wan",
+      "value": 4,
+      "label": "4万",
+      "status": "confirmed-from-unnamed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/ig_0c348a0fbfe485db016a1501f206188199a71d5cb4d484726e.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_04.png"
+    },
+    {
+      "id": "tile_wan_05",
+      "kind": "wan",
+      "value": 5,
+      "label": "5万",
+      "status": "confirmed-from-unnamed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/ig_0c348a0fbfe485db016a15024c08a08199ab0efc27bc7506b4.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_05.png"
+    },
+    {
+      "id": "tile_wan_06",
+      "kind": "wan",
+      "value": 6,
+      "label": "6万",
+      "status": "confirmed-from-unnamed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/ig_0c348a0fbfe485db016a1502b1dffc8199a1bcfc14aeff40bb.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_06.png"
+    },
+    {
+      "id": "tile_wan_07",
+      "kind": "wan",
+      "value": 7,
+      "label": "7万",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-seven-wan-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_07.png"
+    },
+    {
+      "id": "tile_wan_08",
+      "kind": "wan",
+      "value": 8,
+      "label": "8万",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-eight-wan-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_08.png"
+    },
+    {
+      "id": "tile_wan_09",
+      "kind": "wan",
+      "value": 9,
+      "label": "9万",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-nine-wan-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_wan_09.png"
+    },
+    {
+      "id": "tile_dot_01",
+      "kind": "dot",
+      "value": 1,
+      "label": "1筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-one-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_01.png"
+    },
+    {
+      "id": "tile_dot_02",
+      "kind": "dot",
+      "value": 2,
+      "label": "2筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-two-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_02.png"
+    },
+    {
+      "id": "tile_dot_03",
+      "kind": "dot",
+      "value": 3,
+      "label": "3筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-three-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_03.png"
+    },
+    {
+      "id": "tile_dot_04",
+      "kind": "dot",
+      "value": 4,
+      "label": "4筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-four-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_04.png"
+    },
+    {
+      "id": "tile_dot_05",
+      "kind": "dot",
+      "value": 5,
+      "label": "5筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-five-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_05.png"
+    },
+    {
+      "id": "tile_dot_06",
+      "kind": "dot",
+      "value": 6,
+      "label": "6筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-six-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_06.png"
+    },
+    {
+      "id": "tile_dot_07",
+      "kind": "dot",
+      "value": 7,
+      "label": "7筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-seven-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_07.png"
+    },
+    {
+      "id": "tile_dot_08",
+      "kind": "dot",
+      "value": 8,
+      "label": "8筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-eight-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_08.png"
+    },
+    {
+      "id": "tile_dot_09",
+      "kind": "dot",
+      "value": 9,
+      "label": "9筒",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-nine-dot-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_dot_09.png"
+    },
+    {
+      "id": "tile_bamboo_01",
+      "kind": "bamboo",
+      "value": 1,
+      "label": "1条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-one-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_01.png"
+    },
+    {
+      "id": "tile_bamboo_02",
+      "kind": "bamboo",
+      "value": 2,
+      "label": "2条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-two-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_02.png"
+    },
+    {
+      "id": "tile_bamboo_03",
+      "kind": "bamboo",
+      "value": 3,
+      "label": "3条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-three-bamboo-celadon-single-v2.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_03.png"
+    },
+    {
+      "id": "tile_bamboo_04",
+      "kind": "bamboo",
+      "value": 4,
+      "label": "4条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-four-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_04.png"
+    },
+    {
+      "id": "tile_bamboo_05",
+      "kind": "bamboo",
+      "value": 5,
+      "label": "5条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-five-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_05.png"
+    },
+    {
+      "id": "tile_bamboo_06",
+      "kind": "bamboo",
+      "value": 6,
+      "label": "6条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-six-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_06.png"
+    },
+    {
+      "id": "tile_bamboo_07",
+      "kind": "bamboo",
+      "value": 7,
+      "label": "7条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-seven-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_07.png"
+    },
+    {
+      "id": "tile_bamboo_08",
+      "kind": "bamboo",
+      "value": 8,
+      "label": "8条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-eight-bamboo-celadon-candidate-2.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_08.png"
+    },
+    {
+      "id": "tile_bamboo_09",
+      "kind": "bamboo",
+      "value": 9,
+      "label": "9条",
+      "status": "confirmed-source",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-nine-bamboo-celadon-single-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_bamboo_09.png"
+    },
+    {
+      "id": "tile_honor_east",
+      "kind": "honor",
+      "value": "east",
+      "label": "东",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_east.png"
+    },
+    {
+      "id": "tile_honor_green",
+      "kind": "honor",
+      "value": "green",
+      "label": "发",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_green.png"
+    },
+    {
+      "id": "tile_honor_north",
+      "kind": "honor",
+      "value": "north",
+      "label": "北",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_north.png"
+    },
+    {
+      "id": "tile_honor_red",
+      "kind": "honor",
+      "value": "red",
+      "label": "中",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_red.png"
+    },
+    {
+      "id": "tile_honor_south",
+      "kind": "honor",
+      "value": "south",
+      "label": "南",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_south.png"
+    },
+    {
+      "id": "tile_honor_west",
+      "kind": "honor",
+      "value": "west",
+      "label": "西",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_west.png"
+    },
+    {
+      "id": "tile_honor_whiteboard",
+      "kind": "honor",
+      "value": "whiteboard",
+      "label": "白板",
+      "status": "split-from-reference",
+      "source": "/Users/lee/Desktop/Lee/DreamChasers/output/imagegen/hulebu-honor-tiles-celadon-reference-v1.png",
+      "file": "/Users/lee/Desktop/Lee/DreamChasers/output/hulebu-ui-assets/tiles-working-set-v1/tile_honor_whiteboard.png"
+    }
+  ],
+  "missing": []
+}

@@ -1,0 +1,1500 @@
+{
+  "name": "hulebu-ui-component-pack-v6-source-faithful-transparent-tiles",
+  "sourceImages": {
+    "spec": "source/ui-components-spec-sheet.png",
+    "gameplay": "source/hulebu-gameplay-ui-reference.png",
+    "tilePack": "../hulebu-master-tile-pack-v7-clean-template-dots/base"
+  },
+  "notes": [
+    "Formal UI components are transparent RGBA PNGs.",
+    "This pack keeps the v5 original-reference texture and lighting for HUD, buttons, panels, slots, cards, and combo choice UI.",
+    "Mahjong tile faces are copied from T051 v7 as full transparent PNGs: outside canvas is alpha, while the cream face and green base stay intact.",
+    "Combo choice panel uses an empty shell plus T051 v7 mahjong tile thumbnails in generated previews.",
+    "This pack is not wired into Web or Cocos runtime yet."
+  ],
+  "components": [
+    {
+      "name": "level_badge",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        72,
+        52,
+        438,
+        236
+      ],
+      "path": "hud/level_badge.png",
+      "alpha": {
+        "size": [
+          378,
+          196
+        ],
+        "transparentRatio": 0.2924,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          367,
+          190
+        ]
+      }
+    },
+    {
+      "name": "score_badge",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        458,
+        54,
+        795,
+        205
+      ],
+      "path": "hud/score_badge.png",
+      "alpha": {
+        "size": [
+          349,
+          163
+        ],
+        "transparentRatio": 0.309,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          25,
+          16,
+          324,
+          157
+        ]
+      }
+    },
+    {
+      "name": "tile_counter_wide",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        18,
+        302,
+        742,
+        472
+      ],
+      "path": "hud/tile_counter_wide.png",
+      "alpha": {
+        "size": [
+          736,
+          182
+        ],
+        "transparentRatio": 0.2849,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          17,
+          21,
+          680,
+          168
+        ]
+      }
+    },
+    {
+      "name": "combo_chi_normal",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        27,
+        516,
+        188,
+        638
+      ],
+      "path": "buttons/combo/action_chi_normal.png",
+      "alpha": {
+        "size": [
+          173,
+          134
+        ],
+        "transparentRatio": 0.3147,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          13,
+          16,
+          163,
+          128
+        ]
+      }
+    },
+    {
+      "name": "combo_peng_normal",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        181,
+        516,
+        342,
+        638
+      ],
+      "path": "buttons/combo/action_peng_normal.png",
+      "alpha": {
+        "size": [
+          173,
+          134
+        ],
+        "transparentRatio": 0.316,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          15,
+          16,
+          166,
+          128
+        ]
+      }
+    },
+    {
+      "name": "combo_gang_normal",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        345,
+        516,
+        496,
+        638
+      ],
+      "path": "buttons/combo/action_gang_normal.png",
+      "alpha": {
+        "size": [
+          163,
+          134
+        ],
+        "transparentRatio": 0.2736,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          8,
+          16,
+          157,
+          128
+        ]
+      }
+    },
+    {
+      "name": "combo_bugang_normal",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        496,
+        516,
+        667,
+        638
+      ],
+      "path": "buttons/combo/action_bugang_normal.png",
+      "alpha": {
+        "size": [
+          183,
+          134
+        ],
+        "transparentRatio": 0.2879,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          14,
+          15,
+          177,
+          128
+        ]
+      }
+    },
+    {
+      "name": "combo_chi_fire",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        27,
+        648,
+        190,
+        760
+      ],
+      "path": "buttons/combo/action_chi_fire.png",
+      "alpha": {
+        "size": [
+          175,
+          124
+        ],
+        "transparentRatio": 0.3373,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          8,
+          6,
+          163,
+          118
+        ]
+      }
+    },
+    {
+      "name": "combo_peng_fire",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        185,
+        648,
+        344,
+        760
+      ],
+      "path": "buttons/combo/action_peng_fire.png",
+      "alpha": {
+        "size": [
+          171,
+          124
+        ],
+        "transparentRatio": 0.338,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          8,
+          6,
+          162,
+          118
+        ]
+      }
+    },
+    {
+      "name": "combo_gang_fire",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        340,
+        648,
+        499,
+        760
+      ],
+      "path": "buttons/combo/action_gang_fire.png",
+      "alpha": {
+        "size": [
+          171,
+          124
+        ],
+        "transparentRatio": 0.3328,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          10,
+          6,
+          161,
+          118
+        ]
+      }
+    },
+    {
+      "name": "combo_bugang_fire",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        501,
+        648,
+        668,
+        760
+      ],
+      "path": "buttons/combo/action_bugang_fire.png",
+      "alpha": {
+        "size": [
+          179,
+          124
+        ],
+        "transparentRatio": 0.2935,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          8,
+          173,
+          118
+        ]
+      }
+    },
+    {
+      "name": "tool_shuffle",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        720,
+        280,
+        930,
+        450
+      ],
+      "path": "buttons/tools/tool_shuffle.png",
+      "alpha": {
+        "size": [
+          222,
+          182
+        ],
+        "transparentRatio": 0.6102,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          36,
+          6,
+          171,
+          152
+        ]
+      }
+    },
+    {
+      "name": "tool_undo",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        720,
+        430,
+        930,
+        590
+      ],
+      "path": "buttons/tools/tool_undo.png",
+      "alpha": {
+        "size": [
+          222,
+          172
+        ],
+        "transparentRatio": 0.5979,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          36,
+          17,
+          171,
+          160
+        ]
+      }
+    },
+    {
+      "name": "tool_hint",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        720,
+        570,
+        930,
+        735
+      ],
+      "path": "buttons/tools/tool_hint.png",
+      "alpha": {
+        "size": [
+          222,
+          177
+        ],
+        "transparentRatio": 0.6143,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          36,
+          32,
+          171,
+          171
+        ]
+      }
+    },
+    {
+      "name": "tool_buff",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        720,
+        735,
+        930,
+        910
+      ],
+      "path": "buttons/tools/tool_buff.png",
+      "alpha": {
+        "size": [
+          222,
+          187
+        ],
+        "transparentRatio": 0.6224,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          37,
+          15,
+          172,
+          161
+        ]
+      }
+    },
+    {
+      "name": "discard_slots",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        36,
+        1046,
+        354,
+        1136
+      ],
+      "path": "slots/discard_slots.png",
+      "alpha": {
+        "size": [
+          330,
+          102
+        ],
+        "transparentRatio": 0.2249,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          11,
+          7,
+          324,
+          94
+        ]
+      }
+    },
+    {
+      "name": "hand_slots_8",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        24,
+        1152,
+        586,
+        1278
+      ],
+      "path": "slots/hand_slots_8.png",
+      "alpha": {
+        "size": [
+          574,
+          138
+        ],
+        "transparentRatio": 0.2488,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          15,
+          559,
+          128
+        ]
+      }
+    },
+    {
+      "name": "buff_drawer_panel",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        598,
+        954,
+        900,
+        1408
+      ],
+      "path": "panels/buff_drawer_panel.png",
+      "alpha": {
+        "size": [
+          314,
+          466
+        ],
+        "transparentRatio": 0.1331,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          308,
+          460
+        ]
+      }
+    },
+    {
+      "name": "reward_card_combo",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        24,
+        1317,
+        202,
+        1518
+      ],
+      "path": "cards/reward_combo_strength.png",
+      "alpha": {
+        "size": [
+          190,
+          213
+        ],
+        "transparentRatio": 0.2796,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          16,
+          6,
+          183,
+          206
+        ]
+      }
+    },
+    {
+      "name": "reward_card_score",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        216,
+        1317,
+        389,
+        1518
+      ],
+      "path": "cards/reward_score_bonus.png",
+      "alpha": {
+        "size": [
+          185,
+          213
+        ],
+        "transparentRatio": 0.3212,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          170,
+          206
+        ]
+      }
+    },
+    {
+      "name": "reward_card_slot",
+      "kind": "crop",
+      "source": "spec",
+      "box": [
+        405,
+        1317,
+        579,
+        1518
+      ],
+      "path": "cards/reward_slot_expand.png",
+      "alpha": {
+        "size": [
+          186,
+          213
+        ],
+        "transparentRatio": 0.4527,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          160,
+          205
+        ]
+      }
+    },
+    {
+      "name": "tool_counter",
+      "kind": "crop",
+      "source": "gameplay",
+      "box": [
+        16,
+        512,
+        128,
+        586
+      ],
+      "path": "buttons/tools/tool_counter.png",
+      "alpha": {
+        "size": [
+          124,
+          86
+        ],
+        "transparentRatio": 0.2717,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          118,
+          80
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_east_card",
+      "kind": "crop",
+      "source": "gameplay",
+      "box": [
+        8,
+        1308,
+        146,
+        1628
+      ],
+      "path": "cards/scene_skin_east_card.png",
+      "alpha": {
+        "size": [
+          150,
+          332
+        ],
+        "transparentRatio": 0.2262,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          16,
+          14,
+          144,
+          326
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_south_card",
+      "kind": "crop",
+      "source": "gameplay",
+      "box": [
+        156,
+        1308,
+        296,
+        1628
+      ],
+      "path": "cards/scene_skin_south_card.png",
+      "alpha": {
+        "size": [
+          152,
+          332
+        ],
+        "transparentRatio": 0.1175,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          146,
+          326
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_west_card",
+      "kind": "crop",
+      "source": "gameplay",
+      "box": [
+        300,
+        1308,
+        428,
+        1628
+      ],
+      "path": "cards/scene_skin_west_card.png",
+      "alpha": {
+        "size": [
+          140,
+          332
+        ],
+        "transparentRatio": 0.1257,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          6,
+          134,
+          326
+        ]
+      }
+    },
+    {
+      "name": "scene_skin_north_card",
+      "kind": "crop",
+      "source": "gameplay",
+      "box": [
+        426,
+        1308,
+        558,
+        1628
+      ],
+      "path": "cards/scene_skin_north_card.png",
+      "alpha": {
+        "size": [
+          144,
+          332
+        ],
+        "transparentRatio": 0.1997,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          6,
+          14,
+          135,
+          326
+        ]
+      }
+    },
+    {
+      "name": "combo_choice_panel_bg",
+      "kind": "generated",
+      "source": "spec",
+      "box": [
+        30,
+        812,
+        522,
+        908
+      ],
+      "path": "combo-choice/panel_bg.png",
+      "alpha": {
+        "size": [
+          492,
+          96
+        ],
+        "transparentRatio": 0.1041,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          4,
+          0,
+          492,
+          96
+        ]
+      }
+    },
+    {
+      "name": "combo_choice_preview_wan_03_04_05",
+      "kind": "generated",
+      "source": "spec+v7-tiles",
+      "path": "combo-choice/combo_choice_preview_wan_03_04_05.png",
+      "alpha": {
+        "size": [
+          492,
+          96
+        ],
+        "transparentRatio": 0.1041,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          4,
+          0,
+          492,
+          96
+        ]
+      }
+    },
+    {
+      "name": "combo_choice_preview_wan_04_05_06",
+      "kind": "generated",
+      "source": "spec+v7-tiles",
+      "path": "combo-choice/combo_choice_preview_wan_04_05_06.png",
+      "alpha": {
+        "size": [
+          492,
+          96
+        ],
+        "transparentRatio": 0.1041,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          4,
+          0,
+          492,
+          96
+        ]
+      }
+    }
+  ],
+  "tileComponents": [
+    {
+      "name": "tile_wan_01",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_01.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_02",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_02.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_03",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_03.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_04",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_04.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_05",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_05.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_06",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_06.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_07",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_07.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_08",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_08.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_wan_09",
+      "kind": "transparent-mahjong-tile",
+      "group": "wan",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/wan/tile_wan_09.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_01",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_01.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_02",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_02.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_03",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_03.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_04",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_04.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_05",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_05.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_06",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_06.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_07",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_07.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_08",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_08.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_dot_09",
+      "kind": "transparent-mahjong-tile",
+      "group": "dot",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/dot/tile_dot_09.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_01",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_01.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_02",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_02.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_03",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_03.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_04",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_04.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_05",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_05.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_06",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_06.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_07",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_07.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_08",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_08.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_bamboo_09",
+      "kind": "transparent-mahjong-tile",
+      "group": "bamboo",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/bamboo/tile_bamboo_09.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_east",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_east.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_south",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_south.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_west",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_west.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_north",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_north.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_red",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_red.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.2248,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          19,
+          24,
+          268,
+          369
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_green",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_green.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.2221,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          20,
+          24,
+          269,
+          369
+        ]
+      }
+    },
+    {
+      "name": "tile_honor_whiteboard",
+      "kind": "transparent-mahjong-tile",
+      "group": "honor",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/honor/tile_honor_whiteboard.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.21,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          18,
+          24,
+          272,
+          368
+        ]
+      }
+    },
+    {
+      "name": "tile_back_default",
+      "kind": "transparent-mahjong-tile",
+      "group": "back",
+      "source": "../hulebu-master-tile-pack-v7-clean-template-dots/base",
+      "path": "tiles/mahjong/back/tile_back_default.png",
+      "alpha": {
+        "size": [
+          272,
+          384
+        ],
+        "transparentRatio": 0.2444,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          20,
+          26,
+          269,
+          365
+        ]
+      }
+    }
+  ],
+  "previews": {
+    "uiContactSheet": "preview/contact-sheet.png",
+    "mahjongTileContactSheet": "preview/mahjong-tile-contact-sheet.png"
+  }
+}

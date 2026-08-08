@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>胡了卜 - 牌面资产规范 Sheet v1</title>
+  <style>
+    :root {
+      --bg: #eadbc0;
+      --paper: #f8eedb;
+      --paper-2: #efe1c4;
+      --ink: #3f2c1d;
+      --muted: #755f43;
+      --line: #c9ad78;
+      --jade: #5f9470;
+      --gold: #d7ad57;
+      --red: #b74935;
+      --blue: #315e6a;
+      --shadow: rgba(66, 43, 22, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); }
+    body {
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      padding: 28px;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255,255,255,0.35), transparent 26%),
+        linear-gradient(135deg, #f1e4ca, #e3cfaa 58%, #dac196);
+    }
+
+    .page { max-width: 1720px; margin: 0 auto; }
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: 0; }
+    .intro { margin: 0; color: var(--muted); line-height: 1.55; max-width: 900px; }
+    .badge {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.34);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    section {
+      background: rgba(255, 250, 238, 0.56);
+      border: 1px solid rgba(145, 107, 54, 0.34);
+      border-radius: 14px;
+      padding: 18px;
+      margin: 18px 0;
+      box-shadow: 0 18px 46px rgba(85, 58, 27, 0.10);
+    }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    h3 { margin: 0 0 10px; font-size: 17px; color: var(--muted); }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .rule {
+      border: 1px solid rgba(145,107,54,0.22);
+      border-radius: 10px;
+      padding: 12px;
+      background: rgba(255,255,255,0.36);
+      min-height: 94px;
+    }
+    .rule strong { display: block; margin-bottom: 6px; font-size: 15px; }
+    .rule span { display: block; color: var(--muted); line-height: 1.45; font-size: 13px; }
+
+    .grid { display: grid; gap: 12px; }
+    .grid-9 { grid-template-columns: repeat(9, minmax(0, 1fr)); }
+    .grid-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .tile-card {
+      position: relative;
+      min-width: 0;
+      border-radius: 12px;
+      border: 1px solid rgba(145,107,54,0.18);
+      background: rgba(255,255,255,0.32);
+      padding: 10px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .tile-card img {
+      display: block;
+      width: 100%;
+      max-width: 156px;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      border-radius: 9px;
+    }
+    .tile-name { margin-top: 8px; font-size: 14px; font-weight: 700; }
+    .tile-id { margin-top: 3px; font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+
+    .effects {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .effect-stage {
+      position: relative;
+      min-height: 420px;
+      border-radius: 14px;
+      border: 1px solid rgba(145,107,54,0.22);
+      background:
+        radial-gradient(circle at 50% 26%, rgba(95,148,112,0.22), transparent 30%),
+        linear-gradient(#315e4a, #214130);
+      display: grid;
+      grid-template-columns: repeat(5, minmax(96px, 1fr));
+      gap: 14px;
+      align-items: center;
+      padding: 26px;
+      overflow: hidden;
+    }
+    .effect-sample {
+      position: relative;
+      isolation: isolate;
+      text-align: center;
+      color: #fff5dc;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .effect-sample img {
+      width: min(100%, 150px);
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      border-radius: 12px;
+      filter: drop-shadow(0 14px 14px rgba(0,0,0,0.34));
+    }
+    .effect-label { margin-top: 10px; text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+    .selected img {
+      box-shadow: 0 0 0 4px rgba(246,225,142,0.95), 0 0 28px 8px rgba(246,205,93,0.72);
+      border-radius: 16px;
+    }
+    .playable::before {
+      content: "";
+      position: absolute;
+      inset: 6px 14px 40px;
+      z-index: -1;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255,244,128,0.98), transparent 18%),
+        radial-gradient(circle at 36% 35%, rgba(255,117,40,0.92), transparent 28%),
+        radial-gradient(circle at 66% 38%, rgba(255,72,22,0.82), transparent 30%),
+        radial-gradient(circle at 50% 72%, rgba(255,174,47,0.74), transparent 34%);
+      filter: blur(8px);
+      animation: flame 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes flame {
+      from { transform: translateY(4px) scale(0.96); opacity: 0.72; }
+      to { transform: translateY(-4px) scale(1.04); opacity: 1; }
+    }
+    .disabled img { filter: grayscale(0.58) brightness(0.58) drop-shadow(0 12px 12px rgba(0,0,0,0.3)); opacity: 0.64; }
+    .locked::after {
+      content: "锁";
+      position: absolute;
+      left: 50%;
+      top: 42%;
+      transform: translate(-50%, -50%);
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      color: #fff1c9;
+      background: rgba(50,38,24,0.74);
+      border: 2px solid rgba(239,202,119,0.9);
+      font-weight: 900;
+    }
+    .buffed::after {
+      content: "+20%";
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: #b74935;
+      color: #fff3d5;
+      border: 1px solid #ffd77b;
+      font-size: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.24);
+    }
+    .effect-notes {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .effect-note {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(145,107,54,0.22);
+      background: rgba(255,255,255,0.36);
+    }
+    .effect-note strong { display: block; margin-bottom: 4px; }
+    .effect-note span { display: block; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .naming {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    code {
+      display: block;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(77, 54, 31, 0.08);
+      color: #4b3321;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 1180px) {
+      body { padding: 16px; }
+      header, .effects, .layout-grid { grid-template-columns: 1fr; }
+      .rules, .naming { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-9 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .grid-7, .grid-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .effect-stage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div>
+        <h1>胡了卜 - 牌面资产规范 Sheet v1</h1>
+        <p class="intro">基础牌面使用既有满意单张资源；状态效果作为独立 UI 叠加层，不烘焙进基础牌。这样同一张牌可复用在牌山、弃牌区、卡槽、记牌器、奖励预览里。</p>
+      </div>
+      <div class="badge">基础牌：34 张 · 万筒条 27 张 · 字牌 7 张</div>
+    </header>
+
+    <section>
+      <h2>基础规格</h2>
+      <div class="rules">
+        <div class="rule"><strong>源图尺寸</strong><span>当前工作集保持 1024 x 1024 PNG。游戏内按容器缩放，避免重新采样造成边缘发糊。</span></div>
+        <div class="rule"><strong>正式命名</strong><span>使用 `tile_wan_01`、`tile_dot_09`、`tile_honor_whiteboard` 这类稳定 ID，逻辑层不依赖中文文件名。</span></div>
+        <div class="rule"><strong>白板规则</strong><span>白板是黑色内框空白牌，不写“白”，不加额外图案。</span></div>
+        <div class="rule"><strong>8条规则</strong><span>沿用已满意的上下 W/M 形青玉符号，不改成八根独立竹条。</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>效果状态规范</h2>
+      <div class="effects">
+        <div class="effect-stage">
+          <div class="effect-sample">
+            <img src="tiles-working-set-v1/tile_dot_03.png" alt="普通" />
+            <div class="effect-label">普通</div>
+          </div>
+          <div class="effect-sample selected">
+            <img src="tiles-working-set-v1/tile_dot_06.png" alt="选中" />
+            <div class="effect-label">选中</div>
+          </div>
+          <div class="effect-sample playable">
+            <img src="tiles-working-set-v1/tile_bamboo_08.png" alt="可操作火光" />
+            <div class="effect-label">可操作 🔥</div>
+          </div>
+          <div class="effect-sample disabled">
+            <img src="tiles-working-set-v1/tile_wan_05.png" alt="不可用" />
+            <div class="effect-label">不可用</div>
+          </div>
+          <div class="effect-sample locked">
+            <img src="tiles-working-set-v1/tile_honor_whiteboard.png" alt="锁定" />
+            <div class="effect-label">锁定</div>
+          </div>
+          <div class="effect-sample buffed">
+            <img src="tiles-working-set-v1/tile_wan_09.png" alt="Buff加成" />
+            <div class="effect-label">Buff 加成</div>
+          </div>
+        </div>
+        <div class="effect-notes">
+          <div class="effect-note"><strong>普通态</strong><span>仅使用基础牌面阴影，适合牌山、弃牌区、卡槽默认展示。</span></div>
+          <div class="effect-note"><strong>选中态</strong><span>金色描边 + 玉光外发亮，用于玩家已点选的牌或组合方案。</span></div>
+          <div class="effect-note"><strong>可操作态</strong><span>满足吃/碰/杠/补杠条件时，用火光包裹牌或按钮，强调“现在能打”。</span></div>
+          <div class="effect-note"><strong>不可用态</strong><span>灰度、压暗、降低透明度，不改变原牌图。</span></div>
+          <div class="effect-note"><strong>锁定/待解锁</strong><span>用于未开放卡槽、特殊规则冻结牌、奖励预览中的未获得牌。</span></div>
+          <div class="effect-note"><strong>Buff 加成</strong><span>角标显示加成值或小图标，具体数值由逻辑层填充。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>万子</h2>
+      <div class="grid grid-9">
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_01.png"><div class="tile-name">1万</div><div class="tile-id">tile_wan_01</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_02.png"><div class="tile-name">2万</div><div class="tile-id">tile_wan_02</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_03.png"><div class="tile-name">3万</div><div class="tile-id">tile_wan_03</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_04.png"><div class="tile-name">4万</div><div class="tile-id">tile_wan_04</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_05.png"><div class="tile-name">5万</div><div class="tile-id">tile_wan_05</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_06.png"><div class="tile-name">6万</div><div class="tile-id">tile_wan_06</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_07.png"><div class="tile-name">7万</div><div class="tile-id">tile_wan_07</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_08.png"><div class="tile-name">8万</div><div class="tile-id">tile_wan_08</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_wan_09.png"><div class="tile-name">9万</div><div class="tile-id">tile_wan_09</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>筒子</h2>
+      <div class="grid grid-9">
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_01.png"><div class="tile-name">1筒</div><div class="tile-id">tile_dot_01</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_02.png"><div class="tile-name">2筒</div><div class="tile-id">tile_dot_02</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_03.png"><div class="tile-name">3筒</div><div class="tile-id">tile_dot_03</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_04.png"><div class="tile-name">4筒</div><div class="tile-id">tile_dot_04</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_05.png"><div class="tile-name">5筒</div><div class="tile-id">tile_dot_05</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_06.png"><div class="tile-name">6筒</div><div class="tile-id">tile_dot_06</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_07.png"><div class="tile-name">7筒</div><div class="tile-id">tile_dot_07</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_08.png"><div class="tile-name">8筒</div><div class="tile-id">tile_dot_08</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_dot_09.png"><div class="tile-name">9筒</div><div class="tile-id">tile_dot_09</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>条子</h2>
+      <div class="grid grid-9">
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_01.png"><div class="tile-name">1条</div><div class="tile-id">tile_bamboo_01</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_02.png"><div class="tile-name">2条</div><div class="tile-id">tile_bamboo_02</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_03.png"><div class="tile-name">3条</div><div class="tile-id">tile_bamboo_03</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_04.png"><div class="tile-name">4条</div><div class="tile-id">tile_bamboo_04</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_05.png"><div class="tile-name">5条</div><div class="tile-id">tile_bamboo_05</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_06.png"><div class="tile-name">6条</div><div class="tile-id">tile_bamboo_06</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_07.png"><div class="tile-name">7条</div><div class="tile-id">tile_bamboo_07</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_08.png"><div class="tile-name">8条</div><div class="tile-id">tile_bamboo_08</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_bamboo_09.png"><div class="tile-name">9条</div><div class="tile-id">tile_bamboo_09</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>字牌</h2>
+      <div class="grid grid-7">
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_east.png"><div class="tile-name">东</div><div class="tile-id">tile_honor_east</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_south.png"><div class="tile-name">南</div><div class="tile-id">tile_honor_south</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_west.png"><div class="tile-name">西</div><div class="tile-id">tile_honor_west</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_north.png"><div class="tile-name">北</div><div class="tile-id">tile_honor_north</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_red.png"><div class="tile-name">中</div><div class="tile-id">tile_honor_red</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_green.png"><div class="tile-name">发</div><div class="tile-id">tile_honor_green</div></div>
+        <div class="tile-card"><img src="tiles-working-set-v1/tile_honor_whiteboard.png"><div class="tile-name">白板</div><div class="tile-id">tile_honor_whiteboard</div></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>导出与命名</h2>
+      <div class="layout-grid">
+        <div class="rule">
+          <strong>推荐目录</strong>
+          <span>`assets/hulebu/tiles/base/` 放基础牌；`assets/hulebu/tiles/effects/` 放火光、选中框、锁定、Buff 角标等叠加层。</span>
+        </div>
+        <div class="naming">
+          <code>tile_wan_01.png ... tile_wan_09.png</code>
+          <code>tile_dot_01.png ... tile_dot_09.png</code>
+          <code>tile_bamboo_01.png ... tile_bamboo_09.png</code>
+          <code>tile_honor_east.png</code>
+          <code>tile_honor_green.png</code>
+          <code>tile_honor_whiteboard.png</code>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
