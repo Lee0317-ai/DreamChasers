@@ -30,6 +30,17 @@ MODAL_DEFINITIONS = (
     ("modals.settlement", "modals/settlement.png", (28, 1202, 500, 1530)),
 )
 
+HONOR_BACK_IDS = {
+    "tile_honor_east",
+    "tile_honor_south",
+    "tile_honor_west",
+    "tile_honor_north",
+    "tile_honor_red",
+    "tile_honor_green",
+    "tile_honor_whiteboard",
+    "tile_back_default",
+}
+
 
 def alpha_stats(image: Image.Image) -> dict[str, object]:
     rgba = image.convert("RGBA")
@@ -85,6 +96,28 @@ def center_on_canvas(image: Image.Image, size: tuple[int, int]) -> Image.Image:
     canvas = Image.new("RGBA", size, (0, 0, 0, 0))
     canvas.alpha_composite(source, ((size[0] - source.width) // 2, (size[1] - source.height) // 2))
     return canvas
+
+
+def clear_fully_transparent_rgb(image: Image.Image) -> Image.Image:
+    rgba = image.copy().convert("RGBA")
+    pixels = rgba.load()
+    for y in range(rgba.height):
+        for x in range(rgba.width):
+            red, green, blue, alpha = pixels[x, y]
+            if alpha == 0 and (red or green or blue):
+                pixels[x, y] = (0, 0, 0, 0)
+    return rgba
+
+
+def has_hidden_transparent_rgb(image: Image.Image) -> bool:
+    rgba = image.convert("RGBA")
+    pixels = rgba.load()
+    for y in range(rgba.height):
+        for x in range(rgba.width):
+            red, green, blue, alpha = pixels[x, y]
+            if alpha == 0 and (red or green or blue):
+                return True
+    return False
 
 
 def save_asset(
@@ -190,13 +223,18 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
     source_items = list(source_manifest["items"])
     if not any(str(item["id"]) == "tile_back_default" for item in source_items):
         source_items.append({"id": "tile_back_default", "file": "base/tile_back_default.png"})
+    standard_alpha = Image.open(TILE_SOURCE / "preview/standard-body-blank.png").convert("RGBA").getchannel("A")
     tiles: dict[str, Image.Image] = {}
     for item in source_items:
-        key, relative_path = tile_key(str(item["id"]))
-        if str(item["id"]) == "tile_bamboo_08":
+        item_id = str(item["id"])
+        key, relative_path = tile_key(item_id)
+        if item_id == "tile_bamboo_08":
             image = build_bamboo_eight()
         else:
             image = Image.open(TILE_SOURCE / str(item["file"])).convert("RGBA")
+        if item_id in HONOR_BACK_IDS:
+            image.putalpha(standard_alpha)
+            image = clear_fully_transparent_rgb(image)
         if image.size != (272, 384):
             raise ValueError(f"Unexpected tile size for {item['id']}: {image.size}")
         save_asset(image, key, relative_path, entries)
@@ -297,6 +335,27 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
     if tile_sizes != {(272, 384)}:
         errors.append(f"Tile canvas mismatch: {sorted(tile_sizes)}")
 
+    reference_alpha = Image.open(PACK / "tiles/mahjong/wan-01.png").convert("RGBA").getchannel("A")
+    reference_bbox = reference_alpha.getbbox()
+    honor_back_keys = {
+        "tiles.mahjong.honor.east",
+        "tiles.mahjong.honor.south",
+        "tiles.mahjong.honor.west",
+        "tiles.mahjong.honor.north",
+        "tiles.mahjong.honor.red",
+        "tiles.mahjong.honor.green",
+        "tiles.mahjong.honor.white",
+        "tiles.mahjong.back.default",
+    }
+    entry_by_key = {str(entry["key"]): entry for entry in entries}
+    for key in honor_back_keys:
+        path = PACK / str(entry_by_key[key]["path"])
+        image = Image.open(path).convert("RGBA")
+        if image.getchannel("A").getbbox() != reference_bbox:
+            errors.append(f"Honor/back alpha bbox mismatch: {entry_by_key[key]['path']}")
+        if has_hidden_transparent_rgb(image):
+            errors.append(f"Hidden RGB under transparent pixels: {entry_by_key[key]['path']}")
+
     return {
         "pack": "hulebu-formal-ui-v1",
         "batch": "A+B+C",
@@ -310,6 +369,8 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             "transparentCorners": not any("Opaque corner background" in error for error in errors),
             "mahjongTileCount": sum(1 for key in keys if key.startswith("tiles.mahjong.")),
             "mahjongTileCanvas": {"width": 272, "height": 384},
+            "honorBackStandardAlpha": not any("Honor/back alpha bbox mismatch" in error for error in errors),
+            "transparentRgbCleared": not any("Hidden RGB under transparent pixels" in error for error in errors),
             "targetViewport": {"width": 390, "height": 844, "resourceScale": 2},
         },
     }

@@ -1838,13 +1838,13 @@
       "state": null,
       "nineSlice": null,
       "alpha": {
-        "transparentRatio": 0.2248,
-        "partialAlphaRatio": 0.0,
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
         "alphaBbox": [
-          19,
-          24,
-          268,
-          369
+          27,
+          23,
+          246,
+          354
         ]
       }
     },
@@ -1860,13 +1860,13 @@
       "state": null,
       "nineSlice": null,
       "alpha": {
-        "transparentRatio": 0.2221,
-        "partialAlphaRatio": 0.0,
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
         "alphaBbox": [
-          20,
-          24,
-          269,
-          369
+          27,
+          23,
+          246,
+          354
         ]
       }
     },
@@ -1882,13 +1882,13 @@
       "state": null,
       "nineSlice": null,
       "alpha": {
-        "transparentRatio": 0.21,
-        "partialAlphaRatio": 0.0,
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
         "alphaBbox": [
-          18,
-          24,
-          272,
-          368
+          27,
+          23,
+          246,
+          354
         ]
       }
     },
@@ -1904,13 +1904,13 @@
       "state": null,
       "nineSlice": null,
       "alpha": {
-        "transparentRatio": 0.2444,
-        "partialAlphaRatio": 0.0,
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
         "alphaBbox": [
-          20,
-          26,
-          269,
-          365
+          27,
+          23,
+          246,
+          354
         ]
       }
     }

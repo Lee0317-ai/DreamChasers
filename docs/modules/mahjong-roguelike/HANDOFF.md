@@ -401,3 +401,5 @@ T243 已完成正式 Cocos 源码 checkpoint 与 production 构建溯源门禁�
 T249/T251 已建立正式 UI 视觉基线和 Batch A+B 分层资源。后续不要继续使用旧 v6 零散组件作为新视觉基准；以 `output/hulebu-ui-assets/hulebu-formal-ui-v1/manifest.json` 的 key、尺寸和状态为准。当前已有背景、HUD、牌槽、动作和工具三态，但尚未复制进 Cocos resources，也未建立 SpriteFrame 映射。下一步先完成 Batch C 的奖励卡、教学/多候选/暂停/设置/结算弹窗和麻将牌面，再统一进入 Cocos 接入；不要提前把整张预览图当运行时背景。
 
 T252 已补齐 formal v1 内容层，正式包现在有 80 个 manifest 资源：Batch A+B 的背景/HUD/牌槽/控件三态，加上 4 张卡片、5 个弹窗和 35 张麻将牌。卡片与弹窗只提供无文字材质底板，后续 Cocos 必须用 Label/节点填标题、正文和按钮，不要把模型文字烘焙进 Sprite。八条已在 formal 包中修为 2×4 标准竹节；后续接入以 formal 包为准，不直接读取旧 v7 路径。下一步是 Batch D Cocos 接入和 production 验收，不再继续扩资源种类。
+
+T253 已处理字牌/背面的 alpha 采样问题。东南西北、中发白和背面现在都共享标准牌体 alpha bbox，且完全透明像素不再保留白色 RGB。Batch D 导入 Cocos 时仍需检查 SpriteFrame trim、texture alpha 和深色背景下的双线性采样，不要改回旧 v7 原始字牌文件。

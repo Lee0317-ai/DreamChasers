@@ -859,3 +859,5 @@
 - T252 已完成正式 UI Batch C：新增 4 张无文字卡片、5 个无文字弹窗和 35 张统一麻将牌，formal v1 manifest 扩展到 80 项。
 - T252 卡片/弹窗由 PPTOKEN 新站生成母版并在本地完成洋红隔离底抠图；八条从旧字母状图案修正为 2×4 标准竹节，其他牌面沿用 v7 已清理牌体。
 - Batch C validation report 已通过：Batch A+B 36 项完整保留、80 个 key 唯一、全部 RGBA、透明角合格、麻将牌统一 `272×384`。
+- T253 已修正正式字牌与背面的浅色底边：东南西北、中发白和背面统一使用标准牌体 alpha，并清零完全透明像素中的隐藏 RGB；深色棋盘预览不再出现白底/白色光晕。
+- Batch C validation report 新增 `honorBackStandardAlpha` 和 `transparentRgbCleared` 门禁，两项均通过；formal v1 仍保持 80 个唯一 key 和 35 张统一牌面。
