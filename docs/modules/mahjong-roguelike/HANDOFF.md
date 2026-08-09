@@ -405,3 +405,5 @@ T252 已补齐 formal v1 内容层，正式包现在有 80 个 manifest 资源�
 T253 已处理字牌/背面的 alpha 采样问题。东南西北、中发白和背面现在都共享标准牌体 alpha bbox，且完全透明像素不再保留白色 RGB。Batch D 导入 Cocos 时仍需检查 SpriteFrame trim、texture alpha 和深色背景下的双线性采样，不要改回旧 v7 原始字牌文件。
 
 T254 已进一步清理同一批 8 张资源底座内部的不透明浅色侧壁。构建脚本会从 `y=312` 起只替换不符合绿色特征的白色、米色和棕色像素，并把最下方收成连续绿色；`honorBackGreenLowerLip` 校验已通过。Batch D 应直接使用当前 formal v1 输出，不要重新导回 T253 前的牌图。
+
+T255 已取代 T254 的底唇渐变方案。T254 会形成双层绿色结构，当前构建脚本已删除该重绘，改为从 `y=288` 起复制标准空白牌体；8 张目标资源的下半部与 `wan-01` 逐像素一致。Batch D 必须使用 T255 后的 formal v1，并以 `honorBackStandardLowerBody` 门禁为准。

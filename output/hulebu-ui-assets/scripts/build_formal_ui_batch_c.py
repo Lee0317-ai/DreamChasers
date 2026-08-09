@@ -120,39 +120,17 @@ def has_hidden_transparent_rgb(image: Image.Image) -> bool:
     return False
 
 
-def recolor_warm_lower_matte(image: Image.Image) -> Image.Image:
+def replace_lower_body(image: Image.Image, standard_body: Image.Image, start_y: int = 288) -> Image.Image:
     rgba = image.copy().convert("RGBA")
-    pixels = rgba.load()
-    start_y = 312
-    solid_green_y = 336
-    end_y = 354
-    for y in range(start_y, rgba.height):
-        depth = max(0.0, min(1.0, (y - start_y) / max(1, end_y - start_y)))
-        for x in range(rgba.width):
-            red, green, blue, alpha = pixels[x, y]
-            if alpha == 0:
-                continue
-            is_green = green >= red * 1.45 and green >= blue * 1.25
-            if y < solid_green_y and is_green:
-                continue
-            center_light = 0.88 + 0.12 * (1 - abs(x - rgba.width / 2) / (rgba.width / 2))
-            target_red = round((34 - 14 * depth) * center_light)
-            target_green = round((88 - 24 * depth) * center_light)
-            target_blue = round((47 - 15 * depth) * center_light)
-            pixels[x, y] = (target_red, target_green, target_blue, alpha)
+    lower_body = standard_body.convert("RGBA").crop((0, start_y, rgba.width, rgba.height))
+    rgba.paste(lower_body, (0, start_y))
     return rgba
 
 
-def count_non_green_lower_lip_pixels(image: Image.Image) -> int:
-    rgba = image.convert("RGBA")
-    pixels = rgba.load()
-    count = 0
-    for y in range(312, rgba.height):
-        for x in range(rgba.width):
-            red, green, blue, alpha = pixels[x, y]
-            if alpha > 0 and not (green >= red * 1.45 and green >= blue * 1.25):
-                count += 1
-    return count
+def has_standard_lower_body(image: Image.Image, standard_body: Image.Image, start_y: int = 288) -> bool:
+    actual = image.convert("RGBA").crop((0, start_y, image.width, image.height))
+    expected = standard_body.convert("RGBA").crop((0, start_y, image.width, image.height))
+    return ImageChops.difference(actual, expected).getbbox() is None
 
 
 def save_asset(
@@ -258,7 +236,8 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
     source_items = list(source_manifest["items"])
     if not any(str(item["id"]) == "tile_back_default" for item in source_items):
         source_items.append({"id": "tile_back_default", "file": "base/tile_back_default.png"})
-    standard_alpha = Image.open(TILE_SOURCE / "preview/standard-body-blank.png").convert("RGBA").getchannel("A")
+    standard_body = Image.open(TILE_SOURCE / "preview/standard-body-blank.png").convert("RGBA")
+    standard_alpha = standard_body.getchannel("A")
     tiles: dict[str, Image.Image] = {}
     for item in source_items:
         item_id = str(item["id"])
@@ -269,7 +248,7 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
             image = Image.open(TILE_SOURCE / str(item["file"])).convert("RGBA")
         if item_id in HONOR_BACK_IDS:
             image.putalpha(standard_alpha)
-            image = recolor_warm_lower_matte(image)
+            image = replace_lower_body(image, standard_body)
             image = clear_fully_transparent_rgb(image)
         if image.size != (272, 384):
             raise ValueError(f"Unexpected tile size for {item['id']}: {image.size}")
@@ -372,6 +351,7 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
         errors.append(f"Tile canvas mismatch: {sorted(tile_sizes)}")
 
     reference_alpha = Image.open(PACK / "tiles/mahjong/wan-01.png").convert("RGBA").getchannel("A")
+    standard_body = Image.open(TILE_SOURCE / "preview/standard-body-blank.png").convert("RGBA")
     reference_bbox = reference_alpha.getbbox()
     honor_back_keys = {
         "tiles.mahjong.honor.east",
@@ -391,8 +371,8 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             errors.append(f"Honor/back alpha bbox mismatch: {entry_by_key[key]['path']}")
         if has_hidden_transparent_rgb(image):
             errors.append(f"Hidden RGB under transparent pixels: {entry_by_key[key]['path']}")
-        if count_non_green_lower_lip_pixels(image) > 0:
-            errors.append(f"Non-green lower lip remains: {entry_by_key[key]['path']}")
+        if not has_standard_lower_body(image, standard_body):
+            errors.append(f"Non-standard lower body: {entry_by_key[key]['path']}")
 
     return {
         "pack": "hulebu-formal-ui-v1",
@@ -409,7 +389,7 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             "mahjongTileCanvas": {"width": 272, "height": 384},
             "honorBackStandardAlpha": not any("Honor/back alpha bbox mismatch" in error for error in errors),
             "transparentRgbCleared": not any("Hidden RGB under transparent pixels" in error for error in errors),
-            "honorBackGreenLowerLip": not any("Non-green lower lip remains" in error for error in errors),
+            "honorBackStandardLowerBody": not any("Non-standard lower body" in error for error in errors),
             "targetViewport": {"width": 390, "height": 844, "resourceScale": 2},
         },
     }

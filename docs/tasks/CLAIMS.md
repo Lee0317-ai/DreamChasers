@@ -656,4 +656,5 @@
 | T252 | 胡了卜正式 UI 资源 Batch C | Lee | 已完成 | 2026-08-09 | formal v1 的 `cards/**`、`modals/**`、`tiles/mahjong/**`、`master-sources/**`、`previews/**`、manifest/validation，Batch C 构建脚本，T248/T252 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | Batch C 构建脚本；PNG/牌面/manifest 校验；预览板人工检查；`npm run docs:sync`；UTF-8 无 BOM；密钥残留扫描；`git diff --check` | 未填写 |
 | T253 | 胡了卜正式字牌与背面透明底修正 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌与 1 张背面、牌面预览、manifest/validation、T248/T253 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 目标 alpha/RGB 检查；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check` | 未填写 |
 | T254 | 胡了卜正式字牌与背面底唇绿色化 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌与 1 张背面、牌面预览、manifest/validation、T248/T254 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 底唇浅色像素检查；T253 alpha/RGB 回归；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；`git diff --check` | 未填写 |
+| T255 | 胡了卜正式字牌与背面单层底座统一 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌与 1 张背面、牌面预览、manifest/validation、T248/T255 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 目标 8 张与 `wan-01` 标准下半部逐像素比较；T253 alpha/RGB 回归；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；`git diff --check` | 未填写 |
 <!-- DOCS_SYNC_CLAIMS_END -->

@@ -16,7 +16,7 @@
     },
     "honorBackStandardAlpha": true,
     "transparentRgbCleared": true,
-    "honorBackGreenLowerLip": true,
+    "honorBackStandardLowerBody": true,
     "targetViewport": {
       "width": 390,
       "height": 844,
