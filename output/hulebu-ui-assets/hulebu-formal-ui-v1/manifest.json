@@ -1,13 +1,13 @@
 {
   "name": "hulebu-formal-ui-v1",
-  "version": 1,
-  "batch": "A+B",
+  "version": 2,
+  "batch": "A+B+C",
   "designViewport": {
     "width": 390,
     "height": 844
   },
   "resourceScale": 2,
-  "visualBasis": "T249 approved formal UI previews and the PPTOKEN clean background master.",
+  "visualBasis": "T249 approved formal UI previews, PPTOKEN formal masters, and the cleaned v7 mahjong tile body.",
   "assets": [
     {
       "key": "background.scene.emerald",
@@ -900,6 +900,1024 @@
           251
         ]
       }
+    },
+    {
+      "key": "cards.reward.combo",
+      "path": "cards/reward-combo.png",
+      "width": 236,
+      "height": 501,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        42,
+        42,
+        70,
+        70
+      ],
+      "alpha": {
+        "transparentRatio": 0.0993,
+        "partialAlphaRatio": 0.0087,
+        "alphaBbox": [
+          8,
+          8,
+          231,
+          494
+        ]
+      }
+    },
+    {
+      "key": "cards.reward.score",
+      "path": "cards/reward-score.png",
+      "width": 236,
+      "height": 501,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        42,
+        42,
+        70,
+        70
+      ],
+      "alpha": {
+        "transparentRatio": 0.0988,
+        "partialAlphaRatio": 0.0094,
+        "alphaBbox": [
+          8,
+          8,
+          230,
+          497
+        ]
+      }
+    },
+    {
+      "key": "cards.reward.slot",
+      "path": "cards/reward-slot.png",
+      "width": 236,
+      "height": 501,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        42,
+        42,
+        70,
+        70
+      ],
+      "alpha": {
+        "transparentRatio": 0.0962,
+        "partialAlphaRatio": 0.0089,
+        "alphaBbox": [
+          5,
+          8,
+          227,
+          497
+        ]
+      }
+    },
+    {
+      "key": "cards.wind.template",
+      "path": "cards/wind-template.png",
+      "width": 236,
+      "height": 501,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        42,
+        42,
+        70,
+        70
+      ],
+      "alpha": {
+        "transparentRatio": 0.1031,
+        "partialAlphaRatio": 0.0049,
+        "alphaBbox": [
+          3,
+          8,
+          224,
+          496
+        ]
+      }
+    },
+    {
+      "key": "modals.tutorial",
+      "path": "modals/tutorial.png",
+      "width": 478,
+      "height": 309,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        58,
+        58,
+        58,
+        58
+      ],
+      "alpha": {
+        "transparentRatio": 0.1415,
+        "partialAlphaRatio": 0.0064,
+        "alphaBbox": [
+          9,
+          6,
+          467,
+          300
+        ]
+      }
+    },
+    {
+      "key": "modals.comboChoice",
+      "path": "modals/combo-choice.png",
+      "width": 478,
+      "height": 309,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        58,
+        58,
+        58,
+        58
+      ],
+      "alpha": {
+        "transparentRatio": 0.1376,
+        "partialAlphaRatio": 0.006,
+        "alphaBbox": [
+          9,
+          6,
+          468,
+          300
+        ]
+      }
+    },
+    {
+      "key": "modals.pause",
+      "path": "modals/pause.png",
+      "width": 478,
+      "height": 309,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        58,
+        58,
+        58,
+        58
+      ],
+      "alpha": {
+        "transparentRatio": 0.1362,
+        "partialAlphaRatio": 0.0071,
+        "alphaBbox": [
+          9,
+          8,
+          467,
+          303
+        ]
+      }
+    },
+    {
+      "key": "modals.settings",
+      "path": "modals/settings.png",
+      "width": 478,
+      "height": 309,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        58,
+        58,
+        58,
+        58
+      ],
+      "alpha": {
+        "transparentRatio": 0.1271,
+        "partialAlphaRatio": 0.0071,
+        "alphaBbox": [
+          8,
+          8,
+          470,
+          303
+        ]
+      }
+    },
+    {
+      "key": "modals.settlement",
+      "path": "modals/settlement.png",
+      "width": 478,
+      "height": 309,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        58,
+        58,
+        58,
+        58
+      ],
+      "alpha": {
+        "transparentRatio": 0.1459,
+        "partialAlphaRatio": 0.0069,
+        "alphaBbox": [
+          12,
+          8,
+          473,
+          300
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.01",
+      "path": "tiles/mahjong/wan-01.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.02",
+      "path": "tiles/mahjong/wan-02.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.03",
+      "path": "tiles/mahjong/wan-03.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.04",
+      "path": "tiles/mahjong/wan-04.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.05",
+      "path": "tiles/mahjong/wan-05.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.06",
+      "path": "tiles/mahjong/wan-06.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.07",
+      "path": "tiles/mahjong/wan-07.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.08",
+      "path": "tiles/mahjong/wan-08.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.wan.09",
+      "path": "tiles/mahjong/wan-09.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.01",
+      "path": "tiles/mahjong/dot-01.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.02",
+      "path": "tiles/mahjong/dot-02.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.03",
+      "path": "tiles/mahjong/dot-03.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.04",
+      "path": "tiles/mahjong/dot-04.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.05",
+      "path": "tiles/mahjong/dot-05.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.06",
+      "path": "tiles/mahjong/dot-06.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.07",
+      "path": "tiles/mahjong/dot-07.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.08",
+      "path": "tiles/mahjong/dot-08.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.dot.09",
+      "path": "tiles/mahjong/dot-09.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.01",
+      "path": "tiles/mahjong/bamboo-01.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.02",
+      "path": "tiles/mahjong/bamboo-02.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.03",
+      "path": "tiles/mahjong/bamboo-03.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.04",
+      "path": "tiles/mahjong/bamboo-04.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.05",
+      "path": "tiles/mahjong/bamboo-05.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.06",
+      "path": "tiles/mahjong/bamboo-06.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.07",
+      "path": "tiles/mahjong/bamboo-07.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.08",
+      "path": "tiles/mahjong/bamboo-08.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.bamboo.09",
+      "path": "tiles/mahjong/bamboo-09.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.east",
+      "path": "tiles/mahjong/honor-east.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.south",
+      "path": "tiles/mahjong/honor-south.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.west",
+      "path": "tiles/mahjong/honor-west.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.north",
+      "path": "tiles/mahjong/honor-north.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3123,
+        "partialAlphaRatio": 0.0197,
+        "alphaBbox": [
+          27,
+          23,
+          246,
+          354
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.red",
+      "path": "tiles/mahjong/honor-red.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2248,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          19,
+          24,
+          268,
+          369
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.green",
+      "path": "tiles/mahjong/honor-green.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2221,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          20,
+          24,
+          269,
+          369
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.honor.white",
+      "path": "tiles/mahjong/honor-white.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.21,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          18,
+          24,
+          272,
+          368
+        ]
+      }
+    },
+    {
+      "key": "tiles.mahjong.back.default",
+      "path": "tiles/mahjong/back-default.png",
+      "width": 272,
+      "height": 384,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2444,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          20,
+          26,
+          269,
+          365
+        ]
+      }
     }
+  ],
+  "batches": [
+    "A",
+    "B",
+    "C"
   ]
 }

@@ -1,14 +1,19 @@
 {
   "pack": "hulebu-formal-ui-v1",
-  "batch": "A+B",
-  "assetCount": 36,
+  "batch": "A+B+C",
+  "assetCount": 80,
   "status": "passed",
   "errors": [],
   "checks": {
+    "preservedBatchABAssets": true,
     "uniqueKeys": true,
     "rgbaAssets": true,
     "transparentCorners": true,
-    "stateCanvasAlignment": true,
+    "mahjongTileCount": 35,
+    "mahjongTileCanvas": {
+      "width": 272,
+      "height": 384
+    },
     "targetViewport": {
       "width": 390,
       "height": 844,

@@ -5,9 +5,9 @@
 - 领取人：Lee
 - 状态：进行中
 - 领取时间：2026-08-08
-- 当前阶段：设计规格和 T249 视觉样稿已获用户批准；T251 Batch A+B 已完成正式背景、HUD、牌槽和控件三态资源，尚未接入 Cocos。
+- 当前阶段：设计规格、T249 视觉样稿、T251 Batch A+B 和 T252 Batch C 均已完成；formal v1 资源包共 80 项，尚未接入 Cocos。
 - 允许修改文件：`docs/superpowers/specs/2026-08-08-hulebu-cocos-formal-ui-rebuild-design.md`、`docs/tasks/items/T248-hulebu-cocos-formal-ui-rebuild.md`、`docs/tasks/claims/T248-lee.md`、`docs/tasks/CHANGE_INTAKE.md`、`docs/tasks/NEXT_ID.md`、`docs/tasks/TASK_BOARD.md`、`docs/tasks/CLAIMS.md`、`docs/status/CURRENT_STATUS.md`、`docs/modules/mahjong-roguelike/**`、后续经批次重新领取的 `output/hulebu-ui-assets/**` 和正式 Cocos UI 文件。
 - 禁止修改文件：玩法规则、M2 App Flow/存档协议、Web 试玩版、横屏布局、微信小游戏 SDK、PDF、AI 修图和其他游戏模块。
 - 验证命令：`npm run docs:sync`；规格占位扫描；UTF-8 无 BOM 检查；`git diff --check`。
 - 当前阻塞：无。
-- 下一步：登记 Batch C，生成卡片、弹窗和麻将牌面资源；完成后再进入 Cocos SpriteFrame/Prefab 接入批次。
+- 下一步：登记 Batch D，完成 Cocos SpriteFrame key 映射、Prefab/Scene 接入和 `390×844` production 视觉验收。

@@ -399,3 +399,5 @@ T239/T240 入口和桌面点击链路已再次收口。当前 active run 版本�
 T243 已完成正式 Cocos 源码 checkpoint 与 production 构建溯源门禁。后续不要从根脏工作区绕过包装器直接发布，也不要把 `profiles/**`、`temp/**`、`library/**`、`build/**` 或本机 `information.json` 当正式源码；使用 `npm run game:hulebu:build`，让包装器保护并复核精确提交快照，三次核对完整 `CocosCreator.app/Contents` 摘要，并生成 schema 6 manifest。普通目录 promotion 提供隔离 attempt、同步回滚、持久 journal、原子 Creator owner 状态和可重试 tombstone，但不承诺跨平台零间隙目录交换。T244 应恢复既定 M1 边界：拆出 `GameSession / RunStateMachine / ContentRepository / SaveService`，逐步削薄 `GameSceneController`；不要重新扩 Web Demo 或同时重写 UI、音效。
 
 T249/T251 已建立正式 UI 视觉基线和 Batch A+B 分层资源。后续不要继续使用旧 v6 零散组件作为新视觉基准；以 `output/hulebu-ui-assets/hulebu-formal-ui-v1/manifest.json` 的 key、尺寸和状态为准。当前已有背景、HUD、牌槽、动作和工具三态，但尚未复制进 Cocos resources，也未建立 SpriteFrame 映射。下一步先完成 Batch C 的奖励卡、教学/多候选/暂停/设置/结算弹窗和麻将牌面，再统一进入 Cocos 接入；不要提前把整张预览图当运行时背景。
+
+T252 已补齐 formal v1 内容层，正式包现在有 80 个 manifest 资源：Batch A+B 的背景/HUD/牌槽/控件三态，加上 4 张卡片、5 个弹窗和 35 张麻将牌。卡片与弹窗只提供无文字材质底板，后续 Cocos 必须用 Label/节点填标题、正文和按钮，不要把模型文字烘焙进 Sprite。八条已在 formal 包中修为 2×4 标准竹节；后续接入以 formal 包为准，不直接读取旧 v7 路径。下一步是 Batch D Cocos 接入和 production 验收，不再继续扩资源种类。
