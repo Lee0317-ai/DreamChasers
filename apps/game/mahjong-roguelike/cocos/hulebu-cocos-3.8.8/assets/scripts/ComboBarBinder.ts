@@ -7,6 +7,7 @@ import {
 } from "./bootstrap/HulebuSampleSceneModel";
 import type { HulebuComboControlModel } from "./contracts/HulebuSceneModel";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
+import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
 
 const { ccclass, property } = _decorator;
 const COMBO_WIDTH = 64;
@@ -21,24 +22,24 @@ const COMBO_LABELS: Record<string, string> = {
 };
 const COMBO_BUTTON_SPRITES: Record<string, { active: string; inactive: string }> = {
   hu: {
-    active: "ui/v6/buttons/combo/action_hu_fire/spriteFrame",
-    inactive: "ui/v6/buttons/combo/action_hu_normal/spriteFrame",
+    active: HULEBU_FORMAL_UI_SPRITES.actions.hu.active,
+    inactive: HULEBU_FORMAL_UI_SPRITES.actions.hu.normal,
   },
   gang: {
-    active: "ui/v6/buttons/combo/action_gang_fire/spriteFrame",
-    inactive: "ui/v6/buttons/combo/action_gang_normal/spriteFrame",
+    active: HULEBU_FORMAL_UI_SPRITES.actions.gang.active,
+    inactive: HULEBU_FORMAL_UI_SPRITES.actions.gang.normal,
   },
   peng: {
-    active: "ui/v6/buttons/combo/action_peng_fire/spriteFrame",
-    inactive: "ui/v6/buttons/combo/action_peng_normal/spriteFrame",
+    active: HULEBU_FORMAL_UI_SPRITES.actions.peng.active,
+    inactive: HULEBU_FORMAL_UI_SPRITES.actions.peng.normal,
   },
   chi: {
-    active: "ui/v6/buttons/combo/action_chi_fire/spriteFrame",
-    inactive: "ui/v6/buttons/combo/action_chi_normal/spriteFrame",
+    active: HULEBU_FORMAL_UI_SPRITES.actions.chi.active,
+    inactive: HULEBU_FORMAL_UI_SPRITES.actions.chi.normal,
   },
   bugang: {
-    active: "ui/v6/buttons/combo/action_bugang_fire/spriteFrame",
-    inactive: "ui/v6/buttons/combo/action_bugang_normal/spriteFrame",
+    active: HULEBU_FORMAL_UI_SPRITES.actions.bugang.active,
+    inactive: HULEBU_FORMAL_UI_SPRITES.actions.bugang.normal,
   },
 };
 

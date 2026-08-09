@@ -7,6 +7,7 @@ import {
 } from "./bootstrap/HulebuSampleSceneModel";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import type { HulebuHudModel } from "./contracts/HulebuSceneModel";
+import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
 
 const { ccclass, property } = _decorator;
 const HUD_LABEL_NAMES = [
@@ -20,11 +21,11 @@ const HUD_START_X = 18;
 const HUD_LABEL_WIDTHS = [72, 62, 46, 58, 118] as const;
 const HUD_LABEL_HEIGHT = 26;
 const HUD_BADGE_SPRITES = [
-  "ui/v6/hud/tile_counter_wide/spriteFrame",
-  "ui/v6/hud/level_badge/spriteFrame",
-  "ui/v6/hud/score_badge/spriteFrame",
-  "ui/v6/hud/score_badge/spriteFrame",
-  "ui/v6/hud/tile_counter_wide/spriteFrame",
+  HULEBU_FORMAL_UI_SPRITES.hud.tileCounter,
+  HULEBU_FORMAL_UI_SPRITES.hud.levelBadge,
+  HULEBU_FORMAL_UI_SPRITES.hud.scoreBadge,
+  HULEBU_FORMAL_UI_SPRITES.hud.scoreBadge,
+  HULEBU_FORMAL_UI_SPRITES.hud.tileCounter,
 ] as const;
 
 @ccclass("HudBinder")

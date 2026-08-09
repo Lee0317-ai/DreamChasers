@@ -7,6 +7,7 @@ import { MeldRiverLayerBinder } from "./MeldRiverLayerBinder";
 import { SlotLayerBinder } from "./SlotLayerBinder";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
+import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
 import { GameCoordinator, type CoordinatorResult } from "./application/GameCoordinator";
 import { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from "./content/ContentRepository";
 import { GameSession } from "./domain/GameSession";
@@ -110,36 +111,36 @@ const REWARD_CHOICE_CARD_WIDTH = 106;
 const REWARD_CHOICE_CARD_HEIGHT = 120;
 const REWARD_CHOICE_CARD_GAP = 112;
 const TOOL_BUTTON_SPRITES: Record<string, string> = {
-  ToolButton_Wash: "ui/v6/buttons/tools/tool_shuffle/spriteFrame",
-  ToolButton_Undo: "ui/v6/buttons/tools/tool_undo/spriteFrame",
-  ToolButton_Hint: "ui/v6/buttons/tools/tool_hint/spriteFrame",
+  ToolButton_Wash: HULEBU_FORMAL_UI_SPRITES.tools.shuffle,
+  ToolButton_Undo: HULEBU_FORMAL_UI_SPRITES.tools.undo,
+  ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint,
 };
 const TOP_PLAQUE_SPRITES: Record<string, string> = {
-  LevelPlaque: "ui/v6/hud/level_badge/spriteFrame",
-  ScorePlaque: "ui/v6/hud/score_badge/spriteFrame",
-  CounterPlaque: "ui/v6/hud/tile_counter_wide/spriteFrame",
+  LevelPlaque: HULEBU_FORMAL_UI_SPRITES.hud.levelBadge,
+  ScorePlaque: HULEBU_FORMAL_UI_SPRITES.hud.scoreBadge,
+  CounterPlaque: HULEBU_FORMAL_UI_SPRITES.hud.tileCounter,
 };
-const HULEBU_SCENE_BACKGROUND_SPRITE = "ui/v6/backgrounds/teahouse_table_background/spriteFrame";
-const OVERLAY_PANEL_BG_SPRITE = "ui/v6/combo-choice/panel_bg/spriteFrame";
+const HULEBU_SCENE_BACKGROUND_SPRITE = HULEBU_FORMAL_UI_SPRITES.background;
+const OVERLAY_PANEL_BG_SPRITE = HULEBU_FORMAL_UI_SPRITES.modals.comboChoice;
 const REWARD_CARD_SPRITES: Record<string, string> = {
-  reserve_plus_1: "ui/v6/cards/reward_slot_expand/spriteFrame",
-  advanced_south_stable_table: "ui/v6/cards/reward_slot_expand/spriteFrame",
-  advanced_west_tail_gate: "ui/v6/cards/reward_slot_expand/spriteFrame",
-  advanced_north_stable_life: "ui/v6/cards/reward_slot_expand/spriteFrame",
-  gang_score_plus_25: "ui/v6/cards/reward_score_bonus/spriteFrame",
-  chi_score_plus_8: "ui/v6/cards/reward_score_bonus/spriteFrame",
-  coin_plus_20: "ui/v6/cards/reward_score_bonus/spriteFrame",
-  peng_score_plus_10: "ui/v6/cards/reward_score_bonus/spriteFrame",
-  advanced_east_flow: "ui/v6/cards/reward_score_bonus/spriteFrame",
-  advanced_east_probe: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  first_protect_shield: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  shield_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  undo_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  vision_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  shuffle_plus_1: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  advanced_south_river_guard: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  advanced_west_trial_audit: "ui/v6/cards/reward_combo_strength/spriteFrame",
-  advanced_north_kong_tide: "ui/v6/cards/reward_combo_strength/spriteFrame",
+  reserve_plus_1: HULEBU_FORMAL_UI_SPRITES.cards.slot,
+  advanced_south_stable_table: HULEBU_FORMAL_UI_SPRITES.cards.slot,
+  advanced_west_tail_gate: HULEBU_FORMAL_UI_SPRITES.cards.slot,
+  advanced_north_stable_life: HULEBU_FORMAL_UI_SPRITES.cards.slot,
+  gang_score_plus_25: HULEBU_FORMAL_UI_SPRITES.cards.score,
+  chi_score_plus_8: HULEBU_FORMAL_UI_SPRITES.cards.score,
+  coin_plus_20: HULEBU_FORMAL_UI_SPRITES.cards.score,
+  peng_score_plus_10: HULEBU_FORMAL_UI_SPRITES.cards.score,
+  advanced_east_flow: HULEBU_FORMAL_UI_SPRITES.cards.score,
+  advanced_east_probe: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  first_protect_shield: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  shield_plus_1: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  undo_plus_1: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  vision_plus_1: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  shuffle_plus_1: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  advanced_south_river_guard: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  advanced_west_trial_audit: HULEBU_FORMAL_UI_SPRITES.cards.combo,
+  advanced_north_kong_tide: HULEBU_FORMAL_UI_SPRITES.cards.combo,
 };
 const HULEBU_META_UPGRADE_OPTIONS: Array<{ axis: HulebuMetaUpgradeAxis; label: string; step: number }> = [
   { axis: "reserveBonus", label: "备用槽", step: 1 },

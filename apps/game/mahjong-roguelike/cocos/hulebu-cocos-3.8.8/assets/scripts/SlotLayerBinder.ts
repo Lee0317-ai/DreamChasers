@@ -8,6 +8,7 @@ import {
 import type { HulebuCellNodeModel } from "./contracts/HulebuSceneModel";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
+import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
 
 const { ccclass, property } = _decorator;
 const CELL_WIDTH = 40;
@@ -16,7 +17,7 @@ const CELL_GAP = 5;
 const WOOD_SLOT_FILL = new Color(67, 42, 29, 255);
 const WOOD_SLOT_STROKE = new Color(154, 97, 57, 255);
 const OCCUPIED_SLOT_FILL = new Color(255, 249, 236, 255);
-const HAND_SLOTS_SPRITE_PATH = "ui/v6/slots/hand_slots_8/spriteFrame";
+const HAND_SLOTS_SPRITE_PATH = HULEBU_FORMAL_UI_SPRITES.board.handSlots;
 
 interface SlotLayout {
   width: number;

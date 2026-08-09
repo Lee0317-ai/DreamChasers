@@ -1,6 +1,20 @@
 import { resources, SpriteFrame } from "cc";
+import { getHulebuFormalMahjongSpritePath } from "./HulebuFormalUiCatalog";
 
 export const HULEBU_TILE_SPRITE_FRAME_PATHS: Record<string, string> = {
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tiao.${index + 1}`, getHulebuFormalMahjongSpritePath(`bamboo-${String(index + 1).padStart(2, "0")}`)])),
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tong.${index + 1}`, getHulebuFormalMahjongSpritePath(`dot-${String(index + 1).padStart(2, "0")}`)])),
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.wan.${index + 1}`, getHulebuFormalMahjongSpritePath(`wan-${String(index + 1).padStart(2, "0")}`)])),
+  "tile.honor.1": getHulebuFormalMahjongSpritePath("honor-east"),
+  "tile.honor.2": getHulebuFormalMahjongSpritePath("honor-south"),
+  "tile.honor.3": getHulebuFormalMahjongSpritePath("honor-west"),
+  "tile.honor.4": getHulebuFormalMahjongSpritePath("honor-north"),
+  "tile.honor.5": getHulebuFormalMahjongSpritePath("honor-red"),
+  "tile.honor.6": getHulebuFormalMahjongSpritePath("honor-green"),
+  "tile.honor.7": getHulebuFormalMahjongSpritePath("honor-white"),
+};
+
+const HULEBU_LEGACY_TILE_SPRITE_FRAME_PATHS: Record<string, string> = {
   "tile.tiao.1": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_01/spriteFrame",
   "tile.tiao.2": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_02/spriteFrame",
   "tile.tiao.3": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_03/spriteFrame",
@@ -71,12 +85,27 @@ export class HulebuTileSpriteCatalog {
 
     this.pendingCallbacks.set(tileKey, [callback]);
     resources.load(path, SpriteFrame, (error, spriteFrame) => {
-      const loadedFrame = error ? null : spriteFrame ?? null;
-      this.loadedFrames.set(tileKey, loadedFrame);
+      if (!error && spriteFrame) {
+        this.resolveTileLoad(tileKey, spriteFrame);
+        return;
+      }
 
-      const callbacks = this.pendingCallbacks.get(tileKey) ?? [];
-      this.pendingCallbacks.delete(tileKey);
-      callbacks.forEach((pendingCallback) => pendingCallback(loadedFrame));
+      const legacyPath = HULEBU_LEGACY_TILE_SPRITE_FRAME_PATHS[tileKey];
+      if (!legacyPath) {
+        this.resolveTileLoad(tileKey, null);
+        return;
+      }
+
+      resources.load(legacyPath, SpriteFrame, (legacyError, legacySpriteFrame) => {
+        this.resolveTileLoad(tileKey, legacyError ? null : legacySpriteFrame ?? null);
+      });
     });
+  }
+
+  private resolveTileLoad(tileKey: string, spriteFrame: SpriteFrame | null): void {
+    this.loadedFrames.set(tileKey, spriteFrame);
+    const callbacks = this.pendingCallbacks.get(tileKey) ?? [];
+    this.pendingCallbacks.delete(tileKey);
+    callbacks.forEach((pendingCallback) => pendingCallback(spriteFrame));
   }
 }
