@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 依赖：T248 设计规格和实施计划已获用户批准
 - 阻塞：无
 - 允许修改文件：`output/hulebu-ui-assets/hulebu-formal-ui-v1/previews/**`、`docs/tasks/items/T249-hulebu-formal-ui-preview.md`、`docs/tasks/claims/T249-lee.md`、`docs/tasks/NEXT_ID.md`、`docs/tasks/TASK_BOARD.md`、`docs/tasks/CLAIMS.md`、`docs/status/CURRENT_STATUS.md`、`docs/tasks/claims/T248-lee.md`
@@ -37,3 +37,4 @@
 - 工具按钮第一版禁用态误生成金色高亮，未纳入交付；已定向修正并生成 `output/hulebu-ui-assets/hulebu-formal-ui-v1/previews/formal-ui-tools-states-v2.png`。
 - 三张候选图均为 `1024×1536` PNG，用于视觉方向审阅；不是最终切图或 Cocos SpriteFrame。
 - 当前等待 Lee 确认主场景构图、材质、动作按钮三态和工具按钮三态是否可作为正式资源生成基线。
+- 2026-08-09：Lee 已确认“这个版本可以”，三张样稿正式作为后续分层资源生成基线；T249 关闭，正式资源转入 T251。

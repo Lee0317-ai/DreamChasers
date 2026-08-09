@@ -1,0 +1,18 @@
+{
+  "pack": "hulebu-formal-ui-v1",
+  "batch": "A+B",
+  "assetCount": 36,
+  "status": "passed",
+  "errors": [],
+  "checks": {
+    "uniqueKeys": true,
+    "rgbaAssets": true,
+    "transparentCorners": true,
+    "stateCanvasAlignment": true,
+    "targetViewport": {
+      "width": 390,
+      "height": 844,
+      "resourceScale": 2
+    }
+  }
+}

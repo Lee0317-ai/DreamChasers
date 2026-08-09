@@ -1,0 +1,905 @@
+{
+  "name": "hulebu-formal-ui-v1",
+  "version": 1,
+  "batch": "A+B",
+  "designViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "resourceScale": 2,
+  "visualBasis": "T249 approved formal UI previews and the PPTOKEN clean background master.",
+  "assets": [
+    {
+      "key": "background.scene.emerald",
+      "path": "background/scene-emerald-v1.png",
+      "width": 780,
+      "height": 1688,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.0,
+        "partialAlphaRatio": 0.0,
+        "alphaBbox": [
+          0,
+          0,
+          780,
+          1688
+        ]
+      }
+    },
+    {
+      "key": "hud.levelBadge",
+      "path": "hud/level-badge.png",
+      "width": 305,
+      "height": 152,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        55,
+        55,
+        45,
+        45
+      ],
+      "alpha": {
+        "transparentRatio": 0.1392,
+        "partialAlphaRatio": 0.0458,
+        "alphaBbox": [
+          0,
+          0,
+          294,
+          152
+        ]
+      }
+    },
+    {
+      "key": "hud.scoreBadge",
+      "path": "hud/score-badge.png",
+      "width": 272,
+      "height": 150,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        40,
+        40,
+        32,
+        32
+      ],
+      "alpha": {
+        "transparentRatio": 0.0587,
+        "partialAlphaRatio": 0.0447,
+        "alphaBbox": [
+          1,
+          1,
+          270,
+          148
+        ]
+      }
+    },
+    {
+      "key": "hud.tileCounter",
+      "path": "hud/tile-counter.png",
+      "width": 185,
+      "height": 112,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        28,
+        28,
+        24,
+        24
+      ],
+      "alpha": {
+        "transparentRatio": 0.0733,
+        "partialAlphaRatio": 0.0613,
+        "alphaBbox": [
+          1,
+          1,
+          183,
+          110
+        ]
+      }
+    },
+    {
+      "key": "board.discardSlots",
+      "path": "board/discard-slots.png",
+      "width": 560,
+      "height": 168,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        60,
+        60,
+        45,
+        45
+      ],
+      "alpha": {
+        "transparentRatio": 0.0456,
+        "partialAlphaRatio": 0.0354,
+        "alphaBbox": [
+          2,
+          2,
+          558,
+          166
+        ]
+      }
+    },
+    {
+      "key": "board.handSlots",
+      "path": "board/hand-slots.png",
+      "width": 823,
+      "height": 220,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": null,
+      "nineSlice": [
+        85,
+        85,
+        65,
+        65
+      ],
+      "alpha": {
+        "transparentRatio": 0.0274,
+        "partialAlphaRatio": 0.0375,
+        "alphaBbox": [
+          0,
+          0,
+          823,
+          220
+        ]
+      }
+    },
+    {
+      "key": "actions.chi.normal",
+      "path": "actions/chi-normal.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.chi.active",
+      "path": "actions/chi-active.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.chi.disabled",
+      "path": "actions/chi-disabled.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.peng.normal",
+      "path": "actions/peng-normal.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.peng.active",
+      "path": "actions/peng-active.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.peng.disabled",
+      "path": "actions/peng-disabled.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.gang.normal",
+      "path": "actions/gang-normal.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.gang.active",
+      "path": "actions/gang-active.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.gang.disabled",
+      "path": "actions/gang-disabled.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.bugang.normal",
+      "path": "actions/bugang-normal.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.bugang.active",
+      "path": "actions/bugang-active.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.bugang.disabled",
+      "path": "actions/bugang-disabled.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.hu.normal",
+      "path": "actions/hu-normal.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.hu.active",
+      "path": "actions/hu-active.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "actions.hu.disabled",
+      "path": "actions/hu-disabled.png",
+      "width": 260,
+      "height": 200,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": [
+        45,
+        45,
+        34,
+        34
+      ],
+      "alpha": {
+        "transparentRatio": 0.0625,
+        "partialAlphaRatio": 0.0547,
+        "alphaBbox": [
+          0,
+          2,
+          260,
+          198
+        ]
+      }
+    },
+    {
+      "key": "tools.shuffle.normal",
+      "path": "tools/shuffle-normal.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3201,
+        "partialAlphaRatio": 0.0344,
+        "alphaBbox": [
+          38,
+          12,
+          244,
+          262
+        ]
+      }
+    },
+    {
+      "key": "tools.shuffle.active",
+      "path": "tools/shuffle-active.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2961,
+        "partialAlphaRatio": 0.0374,
+        "alphaBbox": [
+          10,
+          10,
+          227,
+          267
+        ]
+      }
+    },
+    {
+      "key": "tools.shuffle.disabled",
+      "path": "tools/shuffle-disabled.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3449,
+        "partialAlphaRatio": 0.0286,
+        "alphaBbox": [
+          0,
+          12,
+          194,
+          262
+        ]
+      }
+    },
+    {
+      "key": "tools.undo.normal",
+      "path": "tools/undo-normal.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3152,
+        "partialAlphaRatio": 0.0345,
+        "alphaBbox": [
+          38,
+          7,
+          244,
+          259
+        ]
+      }
+    },
+    {
+      "key": "tools.undo.active",
+      "path": "tools/undo-active.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2903,
+        "partialAlphaRatio": 0.0379,
+        "alphaBbox": [
+          9,
+          5,
+          226,
+          264
+        ]
+      }
+    },
+    {
+      "key": "tools.undo.disabled",
+      "path": "tools/undo-disabled.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3403,
+        "partialAlphaRatio": 0.0288,
+        "alphaBbox": [
+          0,
+          7,
+          194,
+          259
+        ]
+      }
+    },
+    {
+      "key": "tools.hint.normal",
+      "path": "tools/hint-normal.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3182,
+        "partialAlphaRatio": 0.0344,
+        "alphaBbox": [
+          38,
+          8,
+          244,
+          258
+        ]
+      }
+    },
+    {
+      "key": "tools.hint.active",
+      "path": "tools/hint-active.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2995,
+        "partialAlphaRatio": 0.0372,
+        "alphaBbox": [
+          10,
+          5,
+          226,
+          258
+        ]
+      }
+    },
+    {
+      "key": "tools.hint.disabled",
+      "path": "tools/hint-disabled.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3895,
+        "partialAlphaRatio": 0.0682,
+        "alphaBbox": [
+          0,
+          8,
+          193,
+          258
+        ]
+      }
+    },
+    {
+      "key": "tools.buff.normal",
+      "path": "tools/buff-normal.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3265,
+        "partialAlphaRatio": 0.0341,
+        "alphaBbox": [
+          38,
+          5,
+          244,
+          252
+        ]
+      }
+    },
+    {
+      "key": "tools.buff.active",
+      "path": "tools/buff-active.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.302,
+        "partialAlphaRatio": 0.0371,
+        "alphaBbox": [
+          8,
+          2,
+          226,
+          257
+        ]
+      }
+    },
+    {
+      "key": "tools.buff.disabled",
+      "path": "tools/buff-disabled.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3516,
+        "partialAlphaRatio": 0.0284,
+        "alphaBbox": [
+          0,
+          5,
+          193,
+          252
+        ]
+      }
+    },
+    {
+      "key": "tools.counter.normal",
+      "path": "tools/counter-normal.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "normal",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.3258,
+        "partialAlphaRatio": 0.0341,
+        "alphaBbox": [
+          38,
+          4,
+          244,
+          251
+        ]
+      }
+    },
+    {
+      "key": "tools.counter.active",
+      "path": "tools/counter-active.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "active",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.2997,
+        "partialAlphaRatio": 0.0364,
+        "alphaBbox": [
+          9,
+          0,
+          226,
+          253
+        ]
+      }
+    },
+    {
+      "key": "tools.counter.disabled",
+      "path": "tools/counter-disabled.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "state": "disabled",
+      "nineSlice": null,
+      "alpha": {
+        "transparentRatio": 0.353,
+        "partialAlphaRatio": 0.0284,
+        "alphaBbox": [
+          0,
+          4,
+          194,
+          251
+        ]
+      }
+    }
+  ]
+}
