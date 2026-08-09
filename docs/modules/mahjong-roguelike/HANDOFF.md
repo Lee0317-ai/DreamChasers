@@ -411,3 +411,5 @@ T255 已取代 T254 的底唇渐变方案。T254 会形成双层绿色结构，�
 T256 已进一步取代“保留旧字牌整张牌体”的合成方式。7 张字牌现在都以 `standard-body-blank.png` 为完整底板，只叠加提取后的字形或白板边框；中、发、白使用更严格的内容 alpha 下限以清除旧米白背景。牌体内容区之外由 `honorStandardWhiteBody` 保证与标准牌体逐像素一致。Batch D 不应重新导入旧字牌整图，否则会恢复双层白色边框和贴图感。
 
 T257 已在 T256 基础上为中发白增加连通域过滤，避免旧牌体边缘或纹理噪点重新进入内容层。旧牌背的裁切、拉伸和染色修补全部废弃，当前使用 PPTOKEN 纯文字生成的 `master-sources/back-default-v2.png`：连续青绿玉石面板直接连接一层深绿底座，无白色/米白侧壁或双层结构；构建时映射到标准 alpha bbox，并由 `backNoPaleLowerBody` 门禁检查底座。Batch D 应直接导入当前 formal v1 输出。
+
+T258 已完成 Batch D。Cocos 正式资源入口统一为 `assets/resources/ui/formal-v1/` 和 `HulebuFormalUiCatalog`；不要把主背景、HUD、动作/工具按钮、槽位、卡片或弹层改回 v6。`HulebuTileSpriteCatalog` 的 v6 路径只作为 formal 牌面加载失败时的容错，不是新的视觉基线。精确提交 `1eb7f00e2b2e0fa764096c73b38235c82113fbb1` 已通过 production build，`390×844` 首关实测无控制台错误且选牌可正常入槽。

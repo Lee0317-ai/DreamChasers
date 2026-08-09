@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：待领取
+- 状态：已完成
 - 依赖：T181、T183、T240、T247；用户已确认以参考图为唯一视觉基准重制
 - 阻塞：无
 - 主要文件范围：`output/hulebu-ui-assets/**`；后续实现批次再领取 `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/**`、正式 UI Scene/Prefab/Binder、对应测试和模块文档
@@ -68,3 +68,9 @@
 - Batch B：HUD、牌槽、牌河、动作/工具按钮三态。
 - Batch C：奖励、教学、多候选、暂停、设置和结算弹窗。
 - Batch D：Cocos SpriteFrame 映射、Prefab/Scene 接入和 production 视觉验收。
+
+## 完成结果
+
+- T249-T257 已完成正式视觉样稿、Batch A+B+C 资源生产和字牌/牌背精修，formal v1 最终为 80 项资源。
+- T258 已完成 Batch D：资源与 Creator 元数据进入 Cocos，运行时映射切换，production build 和 `390×844` 视觉/交互验收通过。
+- 本任务按固定竖屏完成，不包含横屏适配或微信小游戏 SDK。
