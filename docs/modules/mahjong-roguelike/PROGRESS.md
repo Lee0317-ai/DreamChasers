@@ -863,3 +863,4 @@
 - Batch C validation report 新增 `honorBackStandardAlpha` 和 `transparentRgbCleared` 门禁，两项均通过；formal v1 仍保持 80 个唯一 key 和 35 张统一牌面。
 - T254 已按截图反馈继续修正正式字牌与背面底部的不透明浅色侧壁。东南西北、中发白和背面从底座区域起识别白色、米色与棕色残留并映射为连续绿色过渡；validation report 新增 `honorBackGreenLowerLip` 门禁并通过，其他 27 张数字牌未修改。
 - T255 已修正 T254 造成的双层绿色底座。构建脚本不再额外生成绿色渐变层，而是从 `y=288` 起直接复制标准空白牌体；东南西北、中发白和背面的下半部现与 `wan-01` 逐像素一致，统一为米白侧壁加单层绿色底座。validation report 改用 `honorBackStandardLowerBody` 精确门禁并通过。
+- T256 已消除字牌白色区域的双层牌体和贴图感。东南西北、中发白现在以完整标准空白牌体为底板，只从旧字牌中提取字形或白板边框内容层；中、发、白额外设置内容 alpha 下限，避免旧米白背景被低透明度带回。内容区之外与标准牌体逐像素一致，validation report 新增 `honorStandardWhiteBody` 门禁并通过，牌背及其他 27 张牌未修改。

@@ -40,6 +40,8 @@ HONOR_BACK_IDS = {
     "tile_honor_whiteboard",
     "tile_back_default",
 }
+HONOR_IDS = HONOR_BACK_IDS - {"tile_back_default"}
+STRICT_HONOR_CONTENT_IDS = {"tile_honor_red", "tile_honor_green", "tile_honor_whiteboard"}
 
 
 def alpha_stats(image: Image.Image) -> dict[str, object]:
@@ -131,6 +133,54 @@ def has_standard_lower_body(image: Image.Image, standard_body: Image.Image, star
     actual = image.convert("RGBA").crop((0, start_y, image.width, image.height))
     expected = standard_body.convert("RGBA").crop((0, start_y, image.width, image.height))
     return ImageChops.difference(actual, expected).getbbox() is None
+
+
+def build_honor_content_mask(source: Image.Image, minimum_alpha: int = 0) -> Image.Image:
+    rgba = source.convert("RGBA")
+    mask = Image.new("L", rgba.size, 0)
+    source_pixels = rgba.load()
+    mask_pixels = mask.load()
+    for y in range(42, 288):
+        for x in range(48, 224):
+            red, green, blue, alpha = source_pixels[x, y]
+            luminance = (red * 299 + green * 587 + blue * 114) / 1000
+            dark_alpha = max(0, min(255, round((175 - luminance) / 70 * 255)))
+            red_alpha = max(0, min(255, round((red - max(green, blue) - 12) / 42 * 255)))
+            green_alpha = max(0, min(255, round((green - max(red, blue) - 8) / 34 * 255)))
+            mask_pixels[x, y] = min(alpha, max(dark_alpha, red_alpha, green_alpha))
+    if minimum_alpha > 0:
+        mask = mask.point(lambda value: 0 if value < minimum_alpha else value)
+    return mask.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(0.35))
+
+
+def build_standard_honor(
+    source: Image.Image,
+    standard_body: Image.Image,
+    *,
+    minimum_content_alpha: int = 0,
+) -> Image.Image:
+    content = source.copy().convert("RGBA")
+    content.putalpha(
+        ImageChops.multiply(
+            content.getchannel("A"),
+            build_honor_content_mask(content, minimum_content_alpha),
+        )
+    )
+    result = standard_body.copy().convert("RGBA")
+    result.alpha_composite(content)
+    return result
+
+
+def has_standard_body_outside_content(image: Image.Image, standard_body: Image.Image) -> bool:
+    actual = image.convert("RGBA")
+    expected = standard_body.convert("RGBA")
+    outside = Image.new("L", image.size, 255)
+    ImageDraw.Draw(outside).rectangle((46, 40, 225, 290), fill=0)
+    visible = expected.getchannel("A").point(lambda alpha: 255 if alpha > 0 else 0)
+    rgb_difference = ImageChops.difference(actual.convert("RGB"), expected.convert("RGB")).convert("L")
+    alpha_difference = ImageChops.difference(actual.getchannel("A"), expected.getchannel("A"))
+    difference = ImageChops.lighter(rgb_difference, alpha_difference)
+    return ImageChops.multiply(ImageChops.multiply(difference, outside), visible).getbbox() is None
 
 
 def save_asset(
@@ -246,7 +296,14 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
             image = build_bamboo_eight()
         else:
             image = Image.open(TILE_SOURCE / str(item["file"])).convert("RGBA")
-        if item_id in HONOR_BACK_IDS:
+        if item_id in HONOR_IDS:
+            image = build_standard_honor(
+                image,
+                standard_body,
+                minimum_content_alpha=48 if item_id in STRICT_HONOR_CONTENT_IDS else 0,
+            )
+            image = clear_fully_transparent_rgb(image)
+        elif item_id == "tile_back_default":
             image.putalpha(standard_alpha)
             image = replace_lower_body(image, standard_body)
             image = clear_fully_transparent_rgb(image)
@@ -373,6 +430,8 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             errors.append(f"Hidden RGB under transparent pixels: {entry_by_key[key]['path']}")
         if not has_standard_lower_body(image, standard_body):
             errors.append(f"Non-standard lower body: {entry_by_key[key]['path']}")
+        if key != "tiles.mahjong.back.default" and not has_standard_body_outside_content(image, standard_body):
+            errors.append(f"Non-standard honor body: {entry_by_key[key]['path']}")
 
     return {
         "pack": "hulebu-formal-ui-v1",
@@ -390,6 +449,7 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             "honorBackStandardAlpha": not any("Honor/back alpha bbox mismatch" in error for error in errors),
             "transparentRgbCleared": not any("Hidden RGB under transparent pixels" in error for error in errors),
             "honorBackStandardLowerBody": not any("Non-standard lower body" in error for error in errors),
+            "honorStandardWhiteBody": not any("Non-standard honor body" in error for error in errors),
             "targetViewport": {"width": 390, "height": 844, "resourceScale": 2},
         },
     }

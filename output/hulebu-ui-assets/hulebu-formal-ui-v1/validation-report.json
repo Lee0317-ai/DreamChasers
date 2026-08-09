@@ -17,6 +17,7 @@
     "honorBackStandardAlpha": true,
     "transparentRgbCleared": true,
     "honorBackStandardLowerBody": true,
+    "honorStandardWhiteBody": true,
     "targetViewport": {
       "width": 390,
       "height": 844,

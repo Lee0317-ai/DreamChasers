@@ -657,4 +657,5 @@
 | T253 | 胡了卜正式字牌与背面透明底修正 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌与 1 张背面、牌面预览、manifest/validation、T248/T253 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 目标 alpha/RGB 检查；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check` | 未填写 |
 | T254 | 胡了卜正式字牌与背面底唇绿色化 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌与 1 张背面、牌面预览、manifest/validation、T248/T254 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 底唇浅色像素检查；T253 alpha/RGB 回归；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；`git diff --check` | 未填写 |
 | T255 | 胡了卜正式字牌与背面单层底座统一 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌与 1 张背面、牌面预览、manifest/validation、T248/T255 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 目标 8 张与 `wan-01` 标准下半部逐像素比较；T253 alpha/RGB 回归；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；`git diff --check` | 未填写 |
+| T256 | 胡了卜正式字牌标准白色牌体统一 | Lee | 已完成 | 2026-08-09 | Batch C 构建脚本、formal v1 的 7 张字牌、牌面预览、manifest/validation、T248/T256 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档 | 7 张字牌内容 mask 外与 `wan-01` 标准牌体逐像素比较；T253/T255 门禁回归；35 张牌与 80 key 校验；预览人工审阅；`npm run docs:sync`；`git diff --check` | 未填写 |
 <!-- DOCS_SYNC_CLAIMS_END -->
