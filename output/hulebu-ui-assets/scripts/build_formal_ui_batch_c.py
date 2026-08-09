@@ -11,6 +11,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 ROOT = Path(__file__).resolve().parents[3]
 PACK = ROOT / "output/hulebu-ui-assets/hulebu-formal-ui-v1"
 MASTER_SHEET = PACK / "master-sources/cards-modals-sheet-v1.png"
+BACK_MASTER_SOURCE = PACK / "master-sources/back-default-v2.png"
 TILE_SOURCE = ROOT / "output/hulebu-ui-assets/hulebu-master-tile-pack-v7-clean-template-dots"
 MANIFEST_PATH = PACK / "manifest.json"
 REPORT_PATH = PACK / "validation-report.json"
@@ -129,6 +130,30 @@ def replace_lower_body(image: Image.Image, standard_body: Image.Image, start_y: 
     return rgba
 
 
+def build_redesigned_back(standard_body: Image.Image) -> Image.Image:
+    source = trim_transparent(Image.open(BACK_MASTER_SOURCE).convert("RGBA"), padding=0)
+    standard_alpha = standard_body.getchannel("A")
+    left, top, right, bottom = standard_alpha.getbbox() or (0, 0, 0, 0)
+    resized = source.resize((right - left, bottom - top), Image.Resampling.LANCZOS)
+    canvas = Image.new("RGBA", standard_body.size, (0, 0, 0, 0))
+    canvas.alpha_composite(resized, (left, top))
+    canvas.putalpha(standard_alpha)
+    return clear_fully_transparent_rgb(canvas)
+
+
+def count_pale_back_lower_pixels(image: Image.Image, start_y: int = 312) -> int:
+    rgba = image.convert("RGBA")
+    pixels = rgba.load()
+    count = 0
+    for y in range(start_y, 354):
+        for x in range(rgba.width):
+            red, green, blue, alpha = pixels[x, y]
+            is_pale = red > 150 and green > 135 and blue > 105 and red - blue < 105
+            if alpha > 0 and is_pale:
+                count += 1
+    return count
+
+
 def has_standard_lower_body(image: Image.Image, standard_body: Image.Image, start_y: int = 288) -> bool:
     actual = image.convert("RGBA").crop((0, start_y, image.width, image.height))
     expected = standard_body.convert("RGBA").crop((0, start_y, image.width, image.height))
@@ -150,7 +175,37 @@ def build_honor_content_mask(source: Image.Image, minimum_alpha: int = 0) -> Ima
             mask_pixels[x, y] = min(alpha, max(dark_alpha, red_alpha, green_alpha))
     if minimum_alpha > 0:
         mask = mask.point(lambda value: 0 if value < minimum_alpha else value)
+        mask = keep_honor_content_components(mask)
     return mask.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(0.35))
+
+
+def keep_honor_content_components(mask: Image.Image, minimum_pixels: int = 100) -> Image.Image:
+    source = mask.convert("L")
+    source_pixels = source.load()
+    pending = {
+        (x, y)
+        for y in range(42, 288)
+        for x in range(48, 224)
+        if source_pixels[x, y] > 0
+    }
+    result = Image.new("L", source.size, 0)
+    result_pixels = result.load()
+    while pending:
+        seed = pending.pop()
+        stack = [seed]
+        component = [seed]
+        while stack:
+            x, y = stack.pop()
+            for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+                if neighbor in pending:
+                    pending.remove(neighbor)
+                    stack.append(neighbor)
+                    component.append(neighbor)
+        touches_boundary = any(x in (48, 223) or y in (42, 287) for x, y in component)
+        if len(component) >= minimum_pixels and not touches_boundary:
+            for x, y in component:
+                result_pixels[x, y] = source_pixels[x, y]
+    return result
 
 
 def build_standard_honor(
@@ -287,7 +342,6 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
     if not any(str(item["id"]) == "tile_back_default" for item in source_items):
         source_items.append({"id": "tile_back_default", "file": "base/tile_back_default.png"})
     standard_body = Image.open(TILE_SOURCE / "preview/standard-body-blank.png").convert("RGBA")
-    standard_alpha = standard_body.getchannel("A")
     tiles: dict[str, Image.Image] = {}
     for item in source_items:
         item_id = str(item["id"])
@@ -304,9 +358,7 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
             )
             image = clear_fully_transparent_rgb(image)
         elif item_id == "tile_back_default":
-            image.putalpha(standard_alpha)
-            image = replace_lower_body(image, standard_body)
-            image = clear_fully_transparent_rgb(image)
+            image = build_redesigned_back(standard_body)
         if image.size != (272, 384):
             raise ValueError(f"Unexpected tile size for {item['id']}: {image.size}")
         save_asset(image, key, relative_path, entries)
@@ -428,10 +480,12 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             errors.append(f"Honor/back alpha bbox mismatch: {entry_by_key[key]['path']}")
         if has_hidden_transparent_rgb(image):
             errors.append(f"Hidden RGB under transparent pixels: {entry_by_key[key]['path']}")
-        if not has_standard_lower_body(image, standard_body):
+        if key != "tiles.mahjong.back.default" and not has_standard_lower_body(image, standard_body):
             errors.append(f"Non-standard lower body: {entry_by_key[key]['path']}")
         if key != "tiles.mahjong.back.default" and not has_standard_body_outside_content(image, standard_body):
             errors.append(f"Non-standard honor body: {entry_by_key[key]['path']}")
+        if key == "tiles.mahjong.back.default" and count_pale_back_lower_pixels(image) > 0:
+            errors.append(f"Pale back lower body: {entry_by_key[key]['path']}")
 
     return {
         "pack": "hulebu-formal-ui-v1",
@@ -450,6 +504,7 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
             "transparentRgbCleared": not any("Hidden RGB under transparent pixels" in error for error in errors),
             "honorBackStandardLowerBody": not any("Non-standard lower body" in error for error in errors),
             "honorStandardWhiteBody": not any("Non-standard honor body" in error for error in errors),
+            "backNoPaleLowerBody": not any("Pale back lower body" in error for error in errors),
             "targetViewport": {"width": 390, "height": 844, "resourceScale": 2},
         },
     }
@@ -458,6 +513,8 @@ def validate(entries: list[dict[str, object]], preserved_count: int) -> dict[str
 def main() -> None:
     if not MASTER_SHEET.exists():
         raise FileNotFoundError(MASTER_SHEET)
+    if not BACK_MASTER_SOURCE.exists():
+        raise FileNotFoundError(BACK_MASTER_SOURCE)
     if not MANIFEST_PATH.exists():
         raise FileNotFoundError(MANIFEST_PATH)
     existing_manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
