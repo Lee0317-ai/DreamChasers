@@ -54,7 +54,7 @@ describe("provider-readiness", () => {
       getProviderReadiness("openai_compatible", {
         AI_IMAGE_ACTIVE_PROVIDER: "pptoken",
         AI_IMAGE_PROVIDER_PPTOKEN_API_KEY: "sk-image",
-        AI_IMAGE_PROVIDER_PPTOKEN_BASE_URL: "https://api.pptoken.org/v1",
+        AI_IMAGE_PROVIDER_PPTOKEN_BASE_URL: "https://api.pptoken.cc/v1",
         AI_IMAGE_PROVIDER_PPTOKEN_PROTOCOL: "openai-compatible"
       })
     ).toEqual({
