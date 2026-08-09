@@ -403,3 +403,5 @@ T249/T251 已建立正式 UI 视觉基线和 Batch A+B 分层资源。后续不�
 T252 已补齐 formal v1 内容层，正式包现在有 80 个 manifest 资源：Batch A+B 的背景/HUD/牌槽/控件三态，加上 4 张卡片、5 个弹窗和 35 张麻将牌。卡片与弹窗只提供无文字材质底板，后续 Cocos 必须用 Label/节点填标题、正文和按钮，不要把模型文字烘焙进 Sprite。八条已在 formal 包中修为 2×4 标准竹节；后续接入以 formal 包为准，不直接读取旧 v7 路径。下一步是 Batch D Cocos 接入和 production 验收，不再继续扩资源种类。
 
 T253 已处理字牌/背面的 alpha 采样问题。东南西北、中发白和背面现在都共享标准牌体 alpha bbox，且完全透明像素不再保留白色 RGB。Batch D 导入 Cocos 时仍需检查 SpriteFrame trim、texture alpha 和深色背景下的双线性采样，不要改回旧 v7 原始字牌文件。
+
+T254 已进一步清理同一批 8 张资源底座内部的不透明浅色侧壁。构建脚本会从 `y=312` 起只替换不符合绿色特征的白色、米色和棕色像素，并把最下方收成连续绿色；`honorBackGreenLowerLip` 校验已通过。Batch D 应直接使用当前 formal v1 输出，不要重新导回 T253 前的牌图。

@@ -861,3 +861,4 @@
 - Batch C validation report 已通过：Batch A+B 36 项完整保留、80 个 key 唯一、全部 RGBA、透明角合格、麻将牌统一 `272×384`。
 - T253 已修正正式字牌与背面的浅色底边：东南西北、中发白和背面统一使用标准牌体 alpha，并清零完全透明像素中的隐藏 RGB；深色棋盘预览不再出现白底/白色光晕。
 - Batch C validation report 新增 `honorBackStandardAlpha` 和 `transparentRgbCleared` 门禁，两项均通过；formal v1 仍保持 80 个唯一 key 和 35 张统一牌面。
+- T254 已按截图反馈继续修正正式字牌与背面底部的不透明浅色侧壁。东南西北、中发白和背面从底座区域起识别白色、米色与棕色残留并映射为连续绿色过渡；validation report 新增 `honorBackGreenLowerLip` 门禁并通过，其他 27 张数字牌未修改。
