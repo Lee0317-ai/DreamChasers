@@ -2141,6 +2141,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     for (const asset of manifest.assets) {
       const assetPath = path.join(cocosRoot, "assets/resources/ui/formal-v1", asset.path);
       expect(fs.existsSync(assetPath), asset.path).toBe(true);
+      expect(fs.existsSync(`${assetPath}.meta`), `${asset.path}.meta`).toBe(true);
       expect(readPngInfo(assetPath), asset.path).toMatchObject({
         width: asset.width,
         height: asset.height,
