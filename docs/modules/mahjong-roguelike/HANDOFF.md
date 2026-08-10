@@ -415,3 +415,5 @@ T257 已在 T256 基础上为中发白增加连通域过滤，避免旧牌体边
 T258 已完成 Batch D。Cocos 正式资源入口统一为 `assets/resources/ui/formal-v1/` 和 `HulebuFormalUiCatalog`；不要把主背景、HUD、动作/工具按钮、槽位、卡片或弹层改回 v6。`HulebuTileSpriteCatalog` 的 v6 路径只作为 formal 牌面加载失败时的容错，不是新的视觉基线。精确提交 `1eb7f00e2b2e0fa764096c73b38235c82113fbb1` 已通过 production build，`390×844` 首关实测无控制台错误且选牌可正常入槽。
 
 T259 已把 Cocos 正式局内页收敛到固定竖屏布局。后续不要重新共用动作栏、备用槽和手牌槽的纵向位置；牌山若继续改变 `visualScale`，必须同步维护 `BoardLayerBinder.getTileEventRect()`。八条不可回退到旧 v6 错误连笔图，formal v1 `bamboo-08` 是唯一正确来源。不可点击牌保持深暗态，动作按钮只在候选存在时使用 active 图。碰/杠/补杠副露由 `openMeldNodes` 驱动，补杠识别必须继续依赖已有碰牌区和手槽第四张同牌。
+
+T260 已把被遮挡牌的显示态与点击态收敛为同一个 `selectable` 判定。后续不要只依据配置里的 `model.interactable` 点亮牌面，也不要移除 Sprite 请求键中的 `active / locked` 状态，否则异步加载可能再次把暗牌恢复为亮牌。分数和紧凑记牌器均通过贴图上方的动态值层显示，禁止重新叠加多行 `Label` 或四门长串；记牌器展开详情仍由既有 `CounterExpandedPanel` 承担。

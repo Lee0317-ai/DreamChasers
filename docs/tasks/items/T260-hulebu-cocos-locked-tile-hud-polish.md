@@ -1,8 +1,8 @@
-# T260 胡了卜 Cocos 锁牌暗态与顶部 HUD 精修
+# T260：胡了卜 Cocos 锁牌暗态与顶部 HUD 精修
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 依赖：T259
 - 阻塞：无
 - 允许修改文件：Cocos `BoardLayerBinder.ts`、顶部 HUD/记牌器相关 `GameSceneController.ts` 与必要布局 helper、对应共享回归测试、T260 分片、麻将模块文档、当天进展/完成记录及 `npm run docs:sync` 自动生成主文档
@@ -21,3 +21,12 @@
 - `npm run test -w packages/shared -- mahjong-cocos-project` 通过。
 - Cocos TypeScript、精确提交 production build、浏览器截图与控制台检查通过。
 - `npm run docs:sync`、UTF-8 无 BOM 和 `git diff --check` 通过。
+
+## 完成结果
+
+- `BoardLayerBinder` 改为先建立完整牌节点列表，再用与点击命中相同的高层覆盖判定计算 `selectable`；被遮挡牌的牌体、Sprite 色调和透明度统一进入锁定暗态。
+- Sprite 异步加载请求键加入 `active / locked` 状态，旧回调不会再把已锁定牌恢复成亮色。
+- 分数牌匾使用独立动态数值层遮盖贴图内旧数值，三位数 `106` 在 Cocos 竖屏预览中清楚可读。
+- 紧凑记牌器移动到顶部 HUD 功能带，以动态余牌总数替换贴图内旧数值；原展开详情数据和面板逻辑保留。
+- Cocos `390×844` 实测：点击暗色下层牌后槽位和余牌数不变；点击亮牌后牌进入手牌且余牌从 `23` 变为 `22`。
+- 共享测试 `40/40`、Cocos TypeScript、精确提交 production build 和 verify-only 均通过；build ID 为 `9f423dd1fb0c-20260810T160923Z`，5 个 smoke 路径均为 `200`。
