@@ -567,7 +567,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(comboBarBinder).toContain("Button");
     expect(comboBarBinder).toContain("Label");
     expect(comboBarBinder).toContain("actions.bugang.active");
-    expect(comboBarBinder).toContain("actions.bugang.normal");
+    expect(comboBarBinder).toContain("actions.bugang.disabled");
 
     expect(hudBinder).toContain("findLabel");
     expect(hudBinder).toContain("ensureLabel");
@@ -2044,7 +2044,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(blockerNode!.position.y).not.toBe(blockedNode!.position.y);
   });
 
-  test("binds board tiles to v6 Mahjong SpriteFrame resources with fallback", () => {
+  test("binds board tiles to formal Mahjong SpriteFrame resources with legacy fallback", () => {
     const catalogPath = "assets/scripts/assets/HulebuTileSpriteCatalog.ts";
     expect(fs.existsSync(path.join(cocosRoot, catalogPath)), catalogPath).toBe(true);
 
@@ -2061,7 +2061,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(catalog).toContain("\"tile.wan.2\"");
     expect(catalog).toContain("\"ui/v6/tiles/mahjong/wan/tile_wan_02/spriteFrame\"");
     expect(catalog).toContain("\"tile.tiao.8\"");
-    expect(catalog).toContain("\"ui/v6/tiles/mahjong/bamboo/tile_bamboo_08/spriteFrame\"");
+    expect(catalog).toContain("\"ui/formal-v1/tiles/mahjong/bamboo-08/spriteFrame\"");
     expect(catalog).toContain("\"tile.tiao.6\"");
     expect(catalog).toContain("\"ui/v6/tiles/mahjong/bamboo/tile_bamboo_06/spriteFrame\"");
     expect(catalog).toContain("\"tile.honor.1\"");
@@ -2082,12 +2082,14 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("safeApplySpriteFrame(artNode, sprite, spriteFrame)");
   });
 
-  test("uses v6 runtime tile UI assets for every Mahjong tile key", () => {
+  test("uses runtime tile UI assets for every Mahjong tile key", () => {
     const catalog = readText("assets/scripts/assets/HulebuTileSpriteCatalog.ts");
     const numberedTiles = [
       ...Array.from({ length: 9 }, (_, index) => ({
         tileKey: `tile.tiao.${index + 1}`,
-        target: `assets/resources/ui/v6/tiles/mahjong/bamboo/tile_bamboo_${String(index + 1).padStart(2, "0")}.png`,
+        target: index === 7
+          ? "assets/resources/ui/formal-v1/tiles/mahjong/bamboo-08.png"
+          : `assets/resources/ui/v6/tiles/mahjong/bamboo/tile_bamboo_${String(index + 1).padStart(2, "0")}.png`,
       })),
       ...Array.from({ length: 9 }, (_, index) => ({
         tileKey: `tile.tong.${index + 1}`,
@@ -2247,13 +2249,14 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
         firstProtect: false,
         tools: { shuffle: 0, undo: 0, discard: 1, vision: 0 },
       },
-      initialSlotOrder: ["slot-a", "slot-b", "slot-c", "slot-d"],
+      initialSlotOrder: ["slot-a", "slot-b", "slot-c", "slot-d", "slot-e"],
       initialReserveOrder: [],
       tiles: [
         { id: "slot-a", suit: "wan", rank: 1, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
         { id: "slot-b", suit: "wan", rank: 1, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
         { id: "slot-c", suit: "wan", rank: 1, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
         { id: "slot-d", suit: "wan", rank: 1, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+        { id: "slot-e", suit: "wan", rank: 1, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
         { id: "board-a", suit: "tiao", rank: 2, x: 310, y: 180, layer: 0, blockedBy: [], location: "board" },
       ],
     };
@@ -2271,7 +2274,13 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(sceneModel.openMeldNodes).toEqual([
       expect.objectContaining({ type: "peng", label: "1万", count: 3 }),
     ]);
-    expect(sceneModel.comboControls.some((control) => control.combo === "bugang")).toBe(true);
+    const bugang = sceneModel.comboControls.find((control) => control.combo === "bugang");
+    expect(bugang?.interactable).toBe(true);
+    expect(runtimeState.executeComboByKey(bugang?.candidateKey ?? null)).toBe(true);
+    sceneModel = runtimeState.toSceneModel(layout);
+    expect(sceneModel.openMeldNodes).toEqual([
+      expect.objectContaining({ type: "bugang", label: "1万", count: 4 }),
+    ]);
   });
 
   test("shakes loose blocker tiles after kong and keeps full-slot river rescue available", async () => {

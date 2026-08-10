@@ -24,8 +24,8 @@ const TILE_TOP_STROKE_GLOW = new Color(244, 192, 74, 255);
 const TILE_TOP_SIDE_COLOR = new Color(10, 79, 64, 255);
 const TILE_TOP_FACE_COLOR = new Color(255, 252, 242, 255);
 const TILE_ACTIVE_SPRITE_COLOR = new Color(255, 255, 255, 255);
-const TILE_LOCKED_SPRITE_COLOR = new Color(72, 84, 76, 255);
-const TILE_LOW_LAYER_OPACITY = 82;
+const TILE_LOCKED_SPRITE_COLOR = new Color(48, 61, 54, 255);
+const TILE_LOW_LAYER_OPACITY = 58;
 const TILE_LOCK_OVERLAP_THRESHOLD = 0.001;
 type BoardPointerEvent = EventTouch | EventMouse;
 type CanvasPointerEvent = MouseEvent | PointerEvent | TouchEvent;
@@ -394,7 +394,8 @@ export class BoardLayerBinder extends Component {
   private getTileEventRect(model: HulebuBoardNodeModel): Rect {
     const layout = resolveHulebuRuntimeLayout();
     const isTopLayer = model.interactable && model.zIndex >= TILE_TOP_LAYER_THRESHOLD;
-    const layerScale = isTopLayer ? layout.scale * TILE_TOP_SCALE_BOOST : layout.scale;
+    const baseScale = layout.scale * (model.visualScale ?? 1);
+    const layerScale = isTopLayer ? baseScale * TILE_TOP_SCALE_BOOST : baseScale;
     const width = scaleLayoutValue(TILE_WIDTH, layerScale);
     const height = scaleLayoutValue(TILE_HEIGHT, layerScale);
     const centerX = model.position.x;

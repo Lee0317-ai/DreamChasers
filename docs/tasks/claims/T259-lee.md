@@ -5,8 +5,8 @@
 - 领取人：Lee
 - 状态：进行中
 - 领取时间：2026-08-10
-- 允许修改文件：Cocos 竖屏运行时布局与 Binder、对应共享回归测试、T259 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档
+- 允许修改文件：Cocos 竖屏运行时布局与 Binder、牌面目录映射、对应共享回归测试、T259 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档
 - 禁止修改文件：正式图片资源、玩法规则、关卡配置、Web 试玩版、横屏、微信小游戏 SDK、其他工具与游戏模块
 - 验证命令：Cocos Creator 场景检查；共享 Cocos 测试；Cocos TypeScript；production build；标准与短竖屏浏览器视觉/交互检查；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check`
 - 当前阻塞：无
-- 下一步：用 Creator 检查实际节点层级和运行时生成布局，修正统一逻辑尺寸换算。
+- 下一步：在 Creator 验证八条、下层暗态/点击命中以及碰牌区到补杠的完整状态链路。

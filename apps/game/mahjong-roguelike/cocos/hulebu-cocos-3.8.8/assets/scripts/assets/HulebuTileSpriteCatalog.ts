@@ -22,7 +22,7 @@ const HULEBU_LEGACY_TILE_SPRITE_FRAME_PATHS: Record<string, string> = {
   "tile.tiao.5": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_05/spriteFrame",
   "tile.tiao.6": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_06/spriteFrame",
   "tile.tiao.7": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_07/spriteFrame",
-  "tile.tiao.8": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_08/spriteFrame",
+  "tile.tiao.8": "ui/formal-v1/tiles/mahjong/bamboo-08/spriteFrame",
   "tile.tiao.9": "ui/v6/tiles/mahjong/bamboo/tile_bamboo_09/spriteFrame",
   "tile.tong.1": "ui/v6/tiles/mahjong/dot/tile_dot_01/spriteFrame",
   "tile.tong.2": "ui/v6/tiles/mahjong/dot/tile_dot_02/spriteFrame",

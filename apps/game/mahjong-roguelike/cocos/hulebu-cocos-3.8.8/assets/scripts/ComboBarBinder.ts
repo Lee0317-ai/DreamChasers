@@ -21,26 +21,26 @@ const COMBO_LABELS: Record<string, string> = {
   chi: "吃",
   bugang: "补杠",
 };
-const COMBO_BUTTON_SPRITES: Record<string, { active: string; inactive: string }> = {
+const COMBO_BUTTON_SPRITES: Record<string, { active: string; disabled: string }> = {
   hu: {
     active: HULEBU_FORMAL_UI_SPRITES.actions.hu.active,
-    inactive: HULEBU_FORMAL_UI_SPRITES.actions.hu.normal,
+    disabled: HULEBU_FORMAL_UI_SPRITES.actions.hu.disabled,
   },
   gang: {
     active: HULEBU_FORMAL_UI_SPRITES.actions.gang.active,
-    inactive: HULEBU_FORMAL_UI_SPRITES.actions.gang.normal,
+    disabled: HULEBU_FORMAL_UI_SPRITES.actions.gang.disabled,
   },
   peng: {
     active: HULEBU_FORMAL_UI_SPRITES.actions.peng.active,
-    inactive: HULEBU_FORMAL_UI_SPRITES.actions.peng.normal,
+    disabled: HULEBU_FORMAL_UI_SPRITES.actions.peng.disabled,
   },
   chi: {
     active: HULEBU_FORMAL_UI_SPRITES.actions.chi.active,
-    inactive: HULEBU_FORMAL_UI_SPRITES.actions.chi.normal,
+    disabled: HULEBU_FORMAL_UI_SPRITES.actions.chi.disabled,
   },
   bugang: {
     active: HULEBU_FORMAL_UI_SPRITES.actions.bugang.active,
-    inactive: HULEBU_FORMAL_UI_SPRITES.actions.bugang.normal,
+    disabled: HULEBU_FORMAL_UI_SPRITES.actions.bugang.disabled,
   },
 };
 
@@ -153,7 +153,7 @@ export class ComboBarBinder extends Component {
     const artNode = this.ensureComboArtNode(node, scale);
     const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
     const spritePaths = COMBO_BUTTON_SPRITES[control.combo];
-    const spritePath = control.interactable ? spritePaths.active : spritePaths.inactive;
+    const spritePath = control.interactable ? spritePaths.active : spritePaths.disabled;
     const label = node.getComponentInChildren(Label);
 
     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
