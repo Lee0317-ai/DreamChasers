@@ -2,7 +2,7 @@
 
 - 优先级：P0
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 依赖：T258
 - 阻塞：无
 - 允许修改文件：Cocos 竖屏运行时布局与 Binder、牌面目录映射、对应共享回归测试、T259 分片、麻将模块文档、当天进展/完成记录及 `npm run docs:sync` 自动生成主文档
@@ -26,3 +26,11 @@
 - `npm run test -w packages/shared -- mahjong-cocos-project` 通过。
 - Cocos TypeScript、production build、浏览器交互与控制台检查通过。
 - `npm run docs:sync`、UTF-8 无 BOM和 `git diff --check` 通过。
+
+## 完成结果
+
+- 统一竖屏逻辑尺寸和五条底部功能带，消除 HUD 裁切、动作栏/槽位压叠，并放大稀疏关卡牌阵。
+- 八条强制使用 formal v1 正确 `2×4` 牌面；被遮挡牌使用更深暗态，不可执行动作使用 disabled Sprite。
+- 放大牌点击矩形同步 `visualScale`，避免可见牌面与命中区错位。
+- 明牌区继续显示碰/杠/补杠副露；回归测试覆盖第四张同牌使补杠可用并升级为四张副露。
+- 精确提交 `6a4a9cd3f5f50813d3677fa7480ae3b7f050f556` production build 通过，build ID `6a4a9cd3f5f5-20260810T145136Z`。
