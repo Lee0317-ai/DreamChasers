@@ -9,6 +9,7 @@ import type { HulebuCellNodeModel } from "./contracts/HulebuSceneModel";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
+import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 
 const { ccclass, property } = _decorator;
 const CELL_WIDTH = 40;
@@ -258,12 +259,13 @@ export class SlotLayerBinder extends Component {
 
   private getVisibleLayout(): SlotLayout {
     const visibleSize = getVisibleLayoutSize();
+    const zones = resolveHulebuPortraitZones(visibleSize);
     return {
       width: visibleSize.width,
       height: visibleSize.height,
       centerX: Math.round(visibleSize.width / 2),
-      slotY: scaleLayoutValue(Math.max(64, visibleSize.cssHeight * 0.07), visibleSize.scale),
-      reserveY: scaleLayoutValue(Math.max(132, visibleSize.cssHeight * 0.155), visibleSize.scale),
+      slotY: zones.slotY,
+      reserveY: zones.reserveY,
       scale: visibleSize.scale,
     };
   }

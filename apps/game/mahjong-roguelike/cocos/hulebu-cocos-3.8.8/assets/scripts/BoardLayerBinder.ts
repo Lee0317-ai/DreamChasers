@@ -77,7 +77,7 @@ export class BoardLayerBinder extends Component {
         new Vec3(centerLayoutX(model.position.x, layout), centerLayoutY(model.position.y, layout), model.zIndex),
       );
       child.setSiblingIndex(index);
-      this.applyTileVisual(child, model, layout.scale);
+      this.applyTileVisual(child, model, layout.scale * (model.visualScale ?? 1));
       this.bindTileClick(child);
       this.currentTiles.push({ node: child, model });
     });

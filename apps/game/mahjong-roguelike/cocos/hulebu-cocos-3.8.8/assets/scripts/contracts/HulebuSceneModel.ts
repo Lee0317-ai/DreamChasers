@@ -16,6 +16,7 @@ export interface HulebuBoardNodeModel {
   prefabKey: string;
   sourcePackage?: string;
   stackDepth?: number;
+  visualScale?: number;
 }
 
 export interface HulebuCellNodeModel {

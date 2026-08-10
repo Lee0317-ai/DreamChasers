@@ -8,10 +8,11 @@ import {
 import type { HulebuComboControlModel } from "./contracts/HulebuSceneModel";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
+import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 
 const { ccclass, property } = _decorator;
-const COMBO_WIDTH = 64;
-const COMBO_HEIGHT = 34;
+const COMBO_WIDTH = 66;
+const COMBO_HEIGHT = 50;
 const COMBO_GAP = 5;
 const COMBO_LABELS: Record<string, string> = {
   hu: "胡",
@@ -214,13 +215,13 @@ export class ComboBarBinder extends Component {
 
   private getVisibleLayout(): { width: number; height: number; startX: number; stepX: number; comboY: number; scale: number } {
     const visibleSize = getVisibleLayoutSize();
+    const zones = resolveHulebuPortraitZones(visibleSize);
     const stepX = scaleLayoutValue(COMBO_WIDTH + COMBO_GAP, visibleSize.scale);
     const totalWidth = COMBO_WIDTH * 5 + COMBO_GAP * 4;
-    const slotY = scaleLayoutValue(Math.max(64, visibleSize.cssHeight * 0.07), visibleSize.scale);
     return {
       startX: Math.round(visibleSize.width / 2 - scaleLayoutValue(totalWidth, visibleSize.scale) / 2 + scaleLayoutValue(COMBO_WIDTH / 2, visibleSize.scale)),
       stepX,
-      comboY: slotY + scaleLayoutValue(78, visibleSize.scale),
+      comboY: zones.comboY,
       scale: visibleSize.scale,
       width: visibleSize.width,
       height: visibleSize.height,

@@ -8,6 +8,7 @@ import { SlotLayerBinder } from "./SlotLayerBinder";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
+import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 import { GameCoordinator, type CoordinatorResult } from "./application/GameCoordinator";
 import { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from "./content/ContentRepository";
 import { GameSession } from "./domain/GameSession";
@@ -2689,12 +2690,9 @@ export class GameSceneController extends Component {
   }
 
   private resolveTableRect(layout: RuntimeLayout): { centerX: number; centerY: number; width: number; height: number; top: number; bottom: number } {
-    const topOrderHeight = scaleLayoutValue(96, layout.scale);
-    const bottomHandHeight = scaleLayoutValue(116, layout.scale);
-    const comboHeight = scaleLayoutValue(48, layout.scale);
-    const gap = scaleLayoutValue(12, layout.scale);
-    const top = topOrderHeight + gap;
-    const bottom = bottomHandHeight + comboHeight + gap * 2;
+    const zones = resolveHulebuPortraitZones(layout);
+    const top = zones.tableTop;
+    const bottom = zones.tableBottom;
     const height = Math.max(200, layout.height - top - bottom);
     const width = layout.width;
     return {
@@ -2762,7 +2760,8 @@ export class GameSceneController extends Component {
   }
 
   private drawTopPlaques(root: Node, layout: RuntimeLayout, levelOrder: number, tableRect: { centerX: number; centerY: number; width: number; height: number }): void {
-    const y = layout.height - scaleLayoutValue(44, layout.scale);
+    const zones = resolveHulebuPortraitZones(layout);
+    const y = zones.topPlaqueY;
     this.drawTopPlaque(
       root,
       "LevelPlaque",
@@ -3032,7 +3031,7 @@ export class GameSceneController extends Component {
   }
 
   private drawProgressDots(root: Node, layout: RuntimeLayout): void {
-    const y = layout.height - scaleLayoutValue(72, layout.scale);
+    const y = resolveHulebuPortraitZones(layout).progressDotY;
     const startX = scaleLayoutValue(276, layout.scale);
     const gap = scaleLayoutValue(24, layout.scale);
     for (let index = 0; index < 4; index += 1) {
@@ -3040,7 +3039,7 @@ export class GameSceneController extends Component {
         root,
         `ProgressDot_${index}`,
         startX + index * gap,
-        y - scaleLayoutValue(18, layout.scale),
+        y,
         scaleLayoutValue(13, layout.scale),
         scaleLayoutValue(13, layout.scale),
         scaleLayoutValue(7, layout.scale),

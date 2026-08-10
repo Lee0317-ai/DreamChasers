@@ -8,6 +8,7 @@ import {
 import type { HulebuOpenMeldNodeModel, HulebuRiverNodeModel } from "./contracts/HulebuSceneModel";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
+import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 
 const { ccclass, property } = _decorator;
 const MELD_WIDTH = 132;
@@ -44,7 +45,7 @@ export class MeldRiverLayerBinder extends Component {
   }
 
   private applyOpenMelds(openMelds: HulebuOpenMeldNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
-    const y = scaleLayoutValue(Math.max(178, layout.cssHeight * 0.25), layout.scale);
+    const y = resolveHulebuPortraitZones(layout).meldY;
     const startX = Math.round(layout.width / 2 - scaleLayoutValue(122, layout.scale));
     this.meldNodes.forEach((node) => {
       node.active = false;
@@ -61,7 +62,7 @@ export class MeldRiverLayerBinder extends Component {
   }
 
   private applyRiver(riverNodes: HulebuRiverNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
-    const y = scaleLayoutValue(Math.max(140, layout.cssHeight * 0.2), layout.scale);
+    const y = resolveHulebuPortraitZones(layout).riverY;
     const totalWidth = riverNodes.length * RIVER_CELL_WIDTH + Math.max(0, riverNodes.length - 1) * GAP;
     const startX = Math.round(layout.width / 2 - scaleLayoutValue(totalWidth / 2 - RIVER_CELL_WIDTH / 2, layout.scale));
     this.riverNodes.forEach((node) => {
@@ -72,7 +73,7 @@ export class MeldRiverLayerBinder extends Component {
       const node = this.riverNodes[index] ?? this.ensureNode("River", index, RIVER_CELL_WIDTH, RIVER_CELL_HEIGHT, layout.scale);
       this.riverNodes[index] = node;
       node.name = river.name;
-      node.active = true;
+      node.active = river.occupied;
       node.setPosition(new Vec3(centerLayoutX(startX + index * scaleLayoutValue(RIVER_CELL_WIDTH + GAP, layout.scale), layout), centerLayoutY(y, layout), 0));
       this.drawRiverCell(node, river, layout.scale);
     });

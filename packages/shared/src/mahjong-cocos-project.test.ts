@@ -120,6 +120,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
       "assets/scripts/ComboBarBinder.ts",
       "assets/scripts/HudBinder.ts",
       "assets/scripts/bootstrap/HulebuSampleSceneModel.ts",
+      "assets/scripts/bootstrap/HulebuPortraitLayout.ts",
       "assets/scripts/bootstrap/HulebuConfiguredSceneModel.ts",
       "assets/scripts/config/HulebuLevelConfig.ts",
       "assets/scripts/runtime/HulebuRuntimeState.ts",
@@ -392,6 +393,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const hudBinder = readText("assets/scripts/HudBinder.ts");
     const formalUiCatalog = readText("assets/scripts/assets/HulebuFormalUiCatalog.ts");
     const meldRiverLayerBinder = readText("assets/scripts/MeldRiverLayerBinder.ts");
+    const portraitLayout = readText("assets/scripts/bootstrap/HulebuPortraitLayout.ts");
 
     expect(sampleSceneModel).toContain("export function createHulebuSampleSceneModel");
     expect(sampleSceneModel).toContain("createHulebuSampleSceneModelForLayout");
@@ -487,6 +489,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).not.toContain("HULEBU_UNLOCK_OVERLAP_THRESHOLD = 0.001");
     expect(gameSceneController).toContain("centerLayoutX");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).not.toContain("Math.max(1, layout.scale ?? 1)");
+    expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("fittedBoardScale");
+    expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("visualScale: boardVisualScale");
     expect(gameSceneController).toContain("centerLayoutY");
 
     expect(boardLayerBinder).toContain("createTileNode");
@@ -518,6 +522,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("TILE_WIDTH = 32");
     expect(boardLayerBinder).toContain("TILE_HEIGHT = 43");
     expect(boardLayerBinder).toContain("TILE_TOP_SCALE_BOOST = 1.04");
+    expect(boardLayerBinder).toContain("layout.scale * (model.visualScale ?? 1)");
     expect(boardLayerBinder).toContain("UITransform");
     expect(boardLayerBinder).toContain("Button");
     expect(boardLayerBinder).toContain("BlockInputEvents");
@@ -534,7 +539,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(slotLayerBinder).toContain("ensureCellLabel");
     expect(slotLayerBinder).toContain("label.string = model.label ?? \"\"");
     expect(slotLayerBinder).toContain("resolveHulebuRuntimeLayout");
-    expect(slotLayerBinder).toContain("visibleSize.cssHeight * 0.07");
+    expect(slotLayerBinder).toContain("resolveHulebuPortraitZones");
     expect(slotLayerBinder).toContain("scaleLayoutValue");
     expect(slotLayerBinder).toContain("centerLayoutX");
     expect(slotLayerBinder).toContain("centerLayoutY");
@@ -553,10 +558,10 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(comboBarBinder).toContain("node.on(Button.EventType.CLICK");
     expect(comboBarBinder).toContain("this.comboClickHandler?.(control.combo)");
     expect(comboBarBinder).toContain("resolveHulebuRuntimeLayout");
-    expect(comboBarBinder).toContain("const slotY = scaleLayoutValue(Math.max(64, visibleSize.cssHeight * 0.07)");
-    expect(comboBarBinder).toContain("COMBO_WIDTH = 64");
-    expect(comboBarBinder).toContain("COMBO_HEIGHT = 34");
-    expect(comboBarBinder).toContain("comboY: slotY + scaleLayoutValue(78, visibleSize.scale)");
+    expect(comboBarBinder).toContain("resolveHulebuPortraitZones");
+    expect(comboBarBinder).toContain("COMBO_WIDTH = 66");
+    expect(comboBarBinder).toContain("COMBO_HEIGHT = 50");
+    expect(comboBarBinder).toContain("comboY: zones.comboY");
     expect(comboBarBinder).toContain("scaleLayoutValue");
     expect(comboBarBinder).toContain("Button");
     expect(comboBarBinder).toContain("Label");
@@ -568,6 +573,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(hudBinder).toContain("resolveHulebuRuntimeLayout");
     expect(hudBinder).toContain("visibleSize.height - scaleLayoutValue(40");
     expect(hudBinder).toContain("HUD_LABEL_WIDTHS");
+    expect(portraitLayout).toContain("reserveY = slotY + scaled(62, scale)");
+    expect(portraitLayout).toContain("comboY = slotY + scaled(130, scale)");
+    expect(portraitLayout).toContain("tableBottom: comboY + scaled(42, scale)");
     expect(meldRiverLayerBinder).toContain("class MeldRiverLayerBinder extends Component");
     expect(meldRiverLayerBinder).toContain("applyMeldRiverNodes");
     expect(meldRiverLayerBinder).toContain("OpenMeld");

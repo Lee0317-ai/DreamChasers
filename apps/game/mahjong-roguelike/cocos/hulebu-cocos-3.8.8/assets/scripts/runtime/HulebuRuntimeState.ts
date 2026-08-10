@@ -565,14 +565,20 @@ export class HulebuRuntimeState {
     const configCenterY = 180;
     const boardCenterX = scaleLayoutValue(screenWidth / 2, layoutScale);
     const boardCenterY = scaleLayoutValue(screenHeight * 0.56, layoutScale);
-    const boardScale = Math.min(
-      0.74,
-      Math.max(0.62, Math.min(screenWidth / 860, screenHeight / 1280)),
-    ) * layoutScale;
+    const boardTiles = this.tiles.filter((tile) => tile.location === "board");
+    const boardXs = boardTiles.length > 0 ? boardTiles.map((tile) => tile.x) : [configCenterX];
+    const boardYs = boardTiles.length > 0 ? boardTiles.map((tile) => tile.y) : [configCenterY];
+    const configWidth = Math.max(1, Math.max(...boardXs) - Math.min(...boardXs));
+    const configHeight = Math.max(1, Math.max(...boardYs) - Math.min(...boardYs));
+    const fittedBoardScale = Math.min(
+      (screenWidth - 92) / (configWidth + 52),
+      (screenHeight * 0.38) / (configHeight + 70),
+    );
+    const boardScale = Math.min(1.05, Math.max(0.62, fittedBoardScale)) * layoutScale;
+    const boardVisualScale = Math.min(1.45, Math.max(1, boardScale / (0.62 * layoutScale)));
 
     return {
-      boardNodes: this.tiles
-        .filter((tile) => tile.location === "board")
+      boardNodes: boardTiles
         .sort((a, b) => a.layer - b.layer || a.id.localeCompare(b.id))
         .map((tile) => {
           const blocked = this.isTileBlocked(tile.id);
@@ -590,6 +596,7 @@ export class HulebuRuntimeState {
             prefabKey: `tile.${tile.suit}.${tile.rank}`,
             sourcePackage: this.level.id,
             stackDepth: tile.layer + 1,
+            visualScale: boardVisualScale,
           };
         }),
       slotNodes: this.createCells("Slot", this.slot, this.level.defaults.slotLimit),
