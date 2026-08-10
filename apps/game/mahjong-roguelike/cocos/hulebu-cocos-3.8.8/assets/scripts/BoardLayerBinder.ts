@@ -77,9 +77,13 @@ export class BoardLayerBinder extends Component {
         new Vec3(centerLayoutX(model.position.x, layout), centerLayoutY(model.position.y, layout), model.zIndex),
       );
       child.setSiblingIndex(index);
-      this.applyTileVisual(child, model, layout.scale * (model.visualScale ?? 1));
-      this.bindTileClick(child);
       this.currentTiles.push({ node: child, model });
+    });
+
+    this.currentTiles.forEach(({ node, model }) => {
+      const selectable = model.interactable && !model.dimmed && !this.isTileCoveredByHigherTile(node, model);
+      this.applyTileVisual(node, model, layout.scale * (model.visualScale ?? 1), selectable);
+      this.bindTileClick(node);
     });
   }
 
@@ -104,8 +108,8 @@ export class BoardLayerBinder extends Component {
     return tile;
   }
 
-  private applyTileVisual(node: Node, model: HulebuBoardNodeModel, scale: number): void {
-    const isTopLayer = model.interactable && model.zIndex >= TILE_TOP_LAYER_THRESHOLD;
+  private applyTileVisual(node: Node, model: HulebuBoardNodeModel, scale: number, selectable: boolean): void {
+    const isTopLayer = selectable && model.zIndex >= TILE_TOP_LAYER_THRESHOLD;
     const isLowLayer = model.zIndex === 0 && model.stackDepth && model.stackDepth > 1;
     const layerScale = isTopLayer ? scale * TILE_TOP_SCALE_BOOST : scale;
     const width = scaleLayoutValue(TILE_WIDTH, layerScale);
@@ -117,13 +121,13 @@ export class BoardLayerBinder extends Component {
     uiTransform.setContentSize(width, height);
 
     const graphics = node.getComponent(Graphics) ?? node.addComponent(Graphics);
-    this.drawTileFace(graphics, width, height, model.interactable, scale, isTopLayer);
+    this.drawTileFace(graphics, width, height, selectable, scale, isTopLayer);
 
     const label = node.getComponentInChildren(Label) ?? this.createTileLabel(node, scale);
     label.string = "";
     label.node.active = false;
 
-    this.applyTileSprite(node, model, layerScale, label);
+    this.applyTileSprite(node, model, layerScale, label, selectable);
 
     const existingBtn = node.getComponent(Button);
     if (existingBtn) {
@@ -131,33 +135,34 @@ export class BoardLayerBinder extends Component {
     }
     this.configureTileInputBlocker(node);
 
-    if (model.interactable) {
+    if (selectable) {
       this.setOpacity(node, 255);
     } else {
       this.setOpacity(node, TILE_LOW_LAYER_OPACITY);
     }
   }
 
-  private applyTileSprite(node: Node, model: HulebuBoardNodeModel, scale: number, label: Label): void {
+  private applyTileSprite(node: Node, model: HulebuBoardNodeModel, scale: number, label: Label, selectable: boolean): void {
     const artNode = this.ensureTileArtNode(node, scale);
     const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
     sprite.spriteFrame = null;
-    sprite.color = model.interactable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
+    sprite.color = selectable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
     artNode.active = false;
     label.node.active = true;
 
     const tileKey = model.prefabKey;
-    this.pendingSpriteKeys.set(node, tileKey);
+    const spriteRequestKey = `${tileKey}:${selectable ? "active" : "locked"}`;
+    this.pendingSpriteKeys.set(node, spriteRequestKey);
     this.tileSpriteCatalog.loadTileSpriteFrame(tileKey, (spriteFrame: SpriteFrame | null) => {
-      if (this.pendingSpriteKeys.get(node) !== tileKey || !spriteFrame) {
+      if (this.pendingSpriteKeys.get(node) !== spriteRequestKey || !spriteFrame) {
         return;
       }
 
       if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
         return;
       }
-      sprite.color = model.interactable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
+      sprite.color = selectable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
       artNode.active = true;
       label.node.active = false;
     });
@@ -270,7 +275,12 @@ export class BoardLayerBinder extends Component {
       return false;
     }
 
-    return !this.currentTiles.some(({ node: candidateNode, model: candidateModel }) => {
+    return !this.isTileCoveredByHigherTile(node, model);
+  }
+
+  private isTileCoveredByHigherTile(node: Node, model: HulebuBoardNodeModel): boolean {
+    const tileRect = this.getTileEventRect(model);
+    return this.currentTiles.some(({ node: candidateNode, model: candidateModel }) => {
       if (candidateNode === node || !candidateNode.activeInHierarchy || candidateModel.zIndex <= model.zIndex) {
         return false;
       }

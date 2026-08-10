@@ -2776,8 +2776,8 @@ export class GameSceneController extends Component {
     this.drawTopPlaque(
       root,
       "CounterPlaque",
-      tableRect.centerX - tableRect.width / 2 + scaleLayoutValue(80, layout.scale),
-      tableRect.centerY + tableRect.height / 2 - scaleLayoutValue(30, layout.scale),
+      scaleLayoutValue(82, layout.scale),
+      zones.topPlaqueY - scaleLayoutValue(58, layout.scale),
       162,
       52,
       "",
@@ -2804,8 +2804,8 @@ export class GameSceneController extends Component {
       return;
     }
 
-    this.updateShellPlaqueText(shellRoot, "ScorePlaque", `分数\n${stripHudPrefix(hud.scoreText, "分")}`);
-    this.updateShellPlaqueText(shellRoot, "CounterPlaque", this.formatCounterPlaqueText(hud), 11);
+    this.updateScorePlaque(shellRoot, stripHudPrefix(hud.scoreText, "分"));
+    this.updateCounterPlaque(shellRoot, hud.tileCounter.total);
     this.updateShellPlaqueText(
       shellRoot,
       "ProgressPlaque",
@@ -2814,13 +2814,6 @@ export class GameSceneController extends Component {
     );
     this.drawTileCounterOverlay(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud);
     this.updateShellToolBadges(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud.toolText);
-  }
-
-  private formatCounterPlaqueText(hud: HulebuHudModel): string {
-    const summary = hud.tileCounter.suits
-      .map((suit) => `${suit.label}${suit.total}`)
-      .join(" ");
-    return summary;
   }
 
   private toggleTileCounterOverlay(): void {
@@ -2969,6 +2962,24 @@ export class GameSceneController extends Component {
     this.writeShellLabel(plaque, "Label", text, scaleLayoutValue(fontSize, layout.scale), PLAQUE_TEXT);
   }
 
+  private updateScorePlaque(root: Node, value: string): void {
+    const plaque = root.getChildByName("ScorePlaque");
+    if (!plaque) {
+      return;
+    }
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.drawScorePlaqueValue(plaque, value, layout);
+  }
+
+  private updateCounterPlaque(root: Node, total: number): void {
+    const plaque = root.getChildByName("CounterPlaque");
+    if (!plaque) {
+      return;
+    }
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.drawCounterPlaqueValue(plaque, total, layout);
+  }
+
   private updateShellToolBadges(root: Node, toolText: string): void {
     const counts = parseToolCounts(toolText);
     this.updateShellToolBadge(root, "ToolButton_Wash", counts.wash);
@@ -3021,13 +3032,65 @@ export class GameSceneController extends Component {
       layout,
     );
     this.applyTopPlaqueSprite(node, name);
-    this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), PLAQUE_TEXT);
+    if (name === "ScorePlaque") {
+      this.drawScorePlaqueValue(node, "0", layout);
+    } else if (name === "CounterPlaque") {
+      this.drawCounterPlaqueValue(node, 0, layout);
+    } else {
+      this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), PLAQUE_TEXT);
+    }
     if (name === "CounterPlaque") {
       node.getComponent(Button) ?? node.addComponent(Button);
       node.off(Node.EventType.TOUCH_END);
       node.off(Button.EventType.CLICK);
       node.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this);
     }
+  }
+
+  private drawScorePlaqueValue(plaque: Node, value: string, layout: RuntimeLayout): void {
+    const mask = this.drawRoundedPanel(
+      plaque,
+      "DynamicScoreMask",
+      0,
+      -scaleLayoutValue(8, layout.scale),
+      scaleLayoutValue(66, layout.scale),
+      scaleLayoutValue(25, layout.scale),
+      scaleLayoutValue(4, layout.scale),
+      new Color(244, 224, 184, 255),
+      new Color(244, 224, 184, 255),
+      0,
+    );
+    mask.setSiblingIndex(plaque.children.length - 1);
+    this.writeShellLabel(
+      mask,
+      "Value",
+      value,
+      scaleLayoutValue(18, layout.scale),
+      new Color(18, 86, 65, 255),
+    ).node.setSiblingIndex(mask.children.length - 1);
+  }
+
+  private drawCounterPlaqueValue(plaque: Node, total: number, layout: RuntimeLayout): void {
+    const mask = this.drawRoundedPanel(
+      plaque,
+      "DynamicCounterMask",
+      scaleLayoutValue(31, layout.scale),
+      0,
+      scaleLayoutValue(78, layout.scale),
+      scaleLayoutValue(32, layout.scale),
+      scaleLayoutValue(4, layout.scale),
+      new Color(8, 68, 52, 255),
+      new Color(8, 68, 52, 255),
+      0,
+    );
+    mask.setSiblingIndex(plaque.children.length - 1);
+    this.writeShellLabel(
+      mask,
+      "Value",
+      `×${total}`,
+      scaleLayoutValue(20, layout.scale),
+      new Color(250, 226, 171, 255),
+    ).node.setSiblingIndex(mask.children.length - 1);
   }
 
   private drawProgressDots(root: Node, layout: RuntimeLayout): void {
