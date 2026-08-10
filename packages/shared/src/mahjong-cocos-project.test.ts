@@ -490,6 +490,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("centerLayoutX");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).not.toContain("Math.max(1, layout.scale ?? 1)");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("fittedBoardScale");
+    expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("boardTiles.length <= 48 ? 0.92");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("visualScale: boardVisualScale");
     expect(gameSceneController).toContain("centerLayoutY");
 

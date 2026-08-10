@@ -574,7 +574,8 @@ export class HulebuRuntimeState {
       (screenWidth - 92) / (configWidth + 52),
       (screenHeight * 0.38) / (configHeight + 70),
     );
-    const boardScale = Math.min(1.05, Math.max(0.62, fittedBoardScale)) * layoutScale;
+    const densityScaleFloor = boardTiles.length <= 48 ? 0.92 : boardTiles.length <= 96 ? 0.78 : 0.62;
+    const boardScale = Math.min(1.05, Math.max(densityScaleFloor, fittedBoardScale)) * layoutScale;
     const boardVisualScale = Math.min(1.45, Math.max(1, boardScale / (0.62 * layoutScale)));
 
     return {
