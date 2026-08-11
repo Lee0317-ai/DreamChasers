@@ -312,30 +312,6 @@ def tile_key(item_id: str) -> tuple[str, str]:
     raise ValueError(f"Unknown tile id: {item_id}")
 
 
-def build_bamboo_eight() -> Image.Image:
-    blank = Image.open(TILE_SOURCE / "preview/standard-body-blank.png").convert("RGBA")
-    bamboo_two = Image.open(TILE_SOURCE / "base/tile_bamboo_02.png").convert("RGBA")
-    source_crop = bamboo_two.crop((82, 42, 190, 154))
-    blank_crop = blank.crop((82, 42, 190, 154))
-    difference = ImageChops.difference(source_crop.convert("RGB"), blank_crop.convert("RGB")).convert("L")
-    mask = difference.point(lambda value: 255 if value >= 18 else 0)
-    mask = mask.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.GaussianBlur(0.7))
-    bbox = mask.getbbox()
-    if bbox is None:
-        raise ValueError("Could not extract the standard bamboo glyph.")
-    glyph = source_crop.crop(bbox).convert("RGBA")
-    glyph.putalpha(mask.crop(bbox))
-    glyph.thumbnail((38, 58), Image.Resampling.LANCZOS)
-
-    result = blank.copy()
-    centers_x = (103, 169)
-    centers_y = (74, 132, 190, 248)
-    for center_y in centers_y:
-        for center_x in centers_x:
-            result.alpha_composite(glyph, (center_x - glyph.width // 2, center_y - glyph.height // 2))
-    return result
-
-
 def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
     source_manifest = json.loads((TILE_SOURCE / "manifest.json").read_text(encoding="utf-8"))
     source_items = list(source_manifest["items"])
@@ -346,10 +322,7 @@ def build_tiles(entries: list[dict[str, object]]) -> dict[str, Image.Image]:
     for item in source_items:
         item_id = str(item["id"])
         key, relative_path = tile_key(item_id)
-        if item_id == "tile_bamboo_08":
-            image = build_bamboo_eight()
-        else:
-            image = Image.open(TILE_SOURCE / str(item["file"])).convert("RGBA")
+        image = Image.open(TILE_SOURCE / str(item["file"])).convert("RGBA")
         if item_id in HONOR_IDS:
             image = build_standard_honor(
                 image,

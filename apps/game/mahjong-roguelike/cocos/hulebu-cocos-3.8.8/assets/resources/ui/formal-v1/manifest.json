@@ -183,13 +183,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3083,
+        "partialAlphaRatio": 0.0377,
         "alphaBbox": [
           0,
-          2,
-          260,
-          198
+          6,
+          243,
+          170
         ]
       }
     },
@@ -210,13 +210,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.254,
+        "partialAlphaRatio": 0.0456,
         "alphaBbox": [
-          0,
           2,
-          260,
-          198
+          3,
+          256,
+          180
         ]
       }
     },
@@ -237,13 +237,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.296,
+        "partialAlphaRatio": 0.0408,
         "alphaBbox": [
-          0,
-          2,
+          9,
+          6,
           260,
-          198
+          170
         ]
       }
     },
@@ -264,13 +264,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3149,
+        "partialAlphaRatio": 0.0376,
         "alphaBbox": [
           0,
-          2,
-          260,
-          198
+          23,
+          243,
+          186
         ]
       }
     },
@@ -291,13 +291,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.2447,
+        "partialAlphaRatio": 0.0451,
         "alphaBbox": [
-          0,
-          2,
-          260,
-          198
+          1,
+          14,
+          259,
+          190
         ]
       }
     },
@@ -318,13 +318,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3017,
+        "partialAlphaRatio": 0.0406,
         "alphaBbox": [
-          0,
-          2,
+          9,
+          23,
           260,
-          198
+          186
         ]
       }
     },
@@ -345,13 +345,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3138,
+        "partialAlphaRatio": 0.0375,
         "alphaBbox": [
           0,
-          2,
-          260,
-          198
+          38,
+          243,
+          200
         ]
       }
     },
@@ -372,13 +372,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.2414,
+        "partialAlphaRatio": 0.042,
         "alphaBbox": [
           0,
-          2,
+          26,
           260,
-          198
+          200
         ]
       }
     },
@@ -399,13 +399,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3022,
+        "partialAlphaRatio": 0.0399,
         "alphaBbox": [
-          0,
-          2,
+          9,
+          38,
           260,
-          198
+          200
         ]
       }
     },
@@ -426,13 +426,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3432,
+        "partialAlphaRatio": 0.025,
         "alphaBbox": [
           0,
-          2,
-          260,
-          198
+          49,
+          243,
+          200
         ]
       }
     },
@@ -453,13 +453,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.2864,
+        "partialAlphaRatio": 0.0314,
         "alphaBbox": [
           0,
-          2,
+          43,
           260,
-          198
+          200
         ]
       }
     },
@@ -480,13 +480,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3296,
+        "partialAlphaRatio": 0.0273,
         "alphaBbox": [
-          0,
-          2,
+          10,
+          49,
           260,
-          198
+          200
         ]
       }
     },
@@ -507,13 +507,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.3079,
+        "partialAlphaRatio": 0.0378,
         "alphaBbox": [
           0,
-          2,
-          260,
-          198
+          36,
+          242,
+          200
         ]
       }
     },
@@ -534,13 +534,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.244,
+        "partialAlphaRatio": 0.0391,
         "alphaBbox": [
-          0,
-          2,
-          260,
-          198
+          1,
+          33,
+          259,
+          200
         ]
       }
     },
@@ -561,13 +561,13 @@
         34
       ],
       "alpha": {
-        "transparentRatio": 0.0625,
-        "partialAlphaRatio": 0.0547,
+        "transparentRatio": 0.2947,
+        "partialAlphaRatio": 0.0404,
         "alphaBbox": [
-          0,
-          2,
+          10,
+          36,
           260,
-          198
+          200
         ]
       }
     },

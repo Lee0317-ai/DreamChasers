@@ -356,10 +356,11 @@ def build_state_assets(entries: list[dict[str, object]]) -> tuple[dict[str, Imag
             center_x = action_centers_x[column]
             center_y = action_centers_y[row]
             box = (center_x - 130, center_y - 100, center_x + 130, center_y + 100)
-            image = extract_masked(
+            image = extract_enclosed(
                 action_source,
                 box,
-                [("rounded", (3, 5, 257, 195), 36)],
+                [("rounded", (12, 12, 248, 170), 38)],
+                9,
             )
             key = f"actions.{action}.{state}"
             save_asset(image, f"actions/{action}-{state}.png", key, entries, state=state, nine_slice=[45, 45, 34, 34])

@@ -556,6 +556,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(formalUiCatalog).toContain("ui/formal-v1/actions/gang-normal/spriteFrame");
     expect(comboBarBinder).toContain("applyComboSprite");
     expect(comboBarBinder).toContain("ComboArt");
+    expect(comboBarBinder).toContain("clearProgrammaticButton");
     expect(comboBarBinder).toContain("resources.load");
     expect(comboBarBinder).toContain("setComboClickHandler");
     expect(comboBarBinder).toContain("node.on(Node.EventType.TOUCH_END");
@@ -2088,6 +2089,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("label.node.active = false");
     expect(boardLayerBinder).toContain("sprite.spriteFrame = null");
     expect(boardLayerBinder).toContain("safeApplySpriteFrame(artNode, sprite, spriteFrame)");
+    expect(boardLayerBinder).toContain("clearProgrammaticTileFace");
+    expect(boardLayerBinder).toContain("node.getComponent(Graphics)?.clear()");
   });
 
   test("uses runtime tile UI assets for every Mahjong tile key", () => {
@@ -2175,6 +2178,23 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     ]) {
       expect(readText(script), script).not.toContain("ui/v6/");
     }
+
+    const bambooEight = fs.readFileSync(path.join(
+      cocosRoot,
+      "assets/resources/ui/formal-v1/tiles/mahjong/bamboo-08.png",
+    ));
+    const approvedBambooEight = fs.readFileSync(path.join(
+      workspaceRoot,
+      "output/hulebu-ui-assets/hulebu-master-tile-pack-v7-clean-template-dots/base/tile_bamboo_08.png",
+    ));
+    expect(bambooEight.equals(approvedBambooEight)).toBe(true);
+
+    const actionBuilder = fs.readFileSync(
+      path.join(workspaceRoot, "output/hulebu-ui-assets/scripts/build_formal_ui_batch_ab.py"),
+      "utf8",
+    );
+    expect(actionBuilder).toContain("image = extract_enclosed(");
+    expect(actionBuilder).toContain('[("rounded", (12, 12, 248, 170), 38)]');
   });
 
   test("archives v6 non-tile UI resources for Cocos visual pass", () => {

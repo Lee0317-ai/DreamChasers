@@ -162,10 +162,15 @@ export class BoardLayerBinder extends Component {
       if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
         return;
       }
+      this.clearProgrammaticTileFace(node);
       sprite.color = selectable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
       artNode.active = true;
       label.node.active = false;
     });
+  }
+
+  private clearProgrammaticTileFace(node: Node): void {
+    node.getComponent(Graphics)?.clear();
   }
 
   private ensureTileArtNode(parent: Node, scale: number): Node {

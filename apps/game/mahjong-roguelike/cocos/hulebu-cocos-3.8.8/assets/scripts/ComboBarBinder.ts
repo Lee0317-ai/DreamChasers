@@ -172,11 +172,16 @@ export class ComboBarBinder extends Component {
       if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
         return;
       }
+      this.clearProgrammaticButton(node);
       artNode.active = true;
       if (label) {
         label.node.active = false;
       }
     });
+  }
+
+  private clearProgrammaticButton(node: Node): void {
+    node.getComponent(Graphics)?.clear();
   }
 
   private ensureComboArtNode(parent: Node, scale: number): Node {
