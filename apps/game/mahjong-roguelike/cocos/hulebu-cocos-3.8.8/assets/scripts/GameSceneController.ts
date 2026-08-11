@@ -1219,7 +1219,7 @@ export class GameSceneController extends Component {
   ): void {
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const anchor = this.resolveComboChoiceMenuAnchor(combo, layout);
-    const visibleOptions = options.slice(0, 4);
+    const visibleOptions = options.slice(0, 3);
     visibleOptions.forEach((option, index) => {
       const labels = option.labels.join(" ");
       const button = this.createOverlayButton(
@@ -2915,7 +2915,7 @@ export class GameSceneController extends Component {
       scaleLayoutValue(342, layout.scale),
       scaleLayoutValue(238, layout.scale),
       scaleLayoutValue(16, layout.scale),
-      new Color(251, 235, 199, 246),
+      new Color(7, 64, 50, 248),
       PLAQUE_STROKE,
       scaleLayoutValue(3, layout.scale),
       layout,
@@ -2933,7 +2933,7 @@ export class GameSceneController extends Component {
       "Title",
       "记牌器",
       scaleLayoutValue(14, layout.scale),
-      PLAQUE_TEXT,
+      new Color(250, 226, 171, 255),
       scaleLayoutValue(98, layout.scale),
     );
 
@@ -2944,7 +2944,7 @@ export class GameSceneController extends Component {
         `SuitLabel_${suit.suit}`,
         suit.label,
         scaleLayoutValue(12, layout.scale),
-        PLAQUE_TEXT,
+        new Color(250, 226, 171, 255),
       );
       label.node.setPosition(new Vec3(-scaleLayoutValue(162, layout.scale), rowY, 1));
       const labelTransform = label.node.getComponent(UITransform) ?? label.node.addComponent(UITransform);
@@ -3010,7 +3010,7 @@ export class GameSceneController extends Component {
       "Count",
       String(tile.count),
       scaleLayoutValue(10, layout.scale),
-      tile.count > 0 ? new Color(255, 244, 209, 255) : new Color(158, 150, 136, 255),
+      tile.count > 0 ? new Color(255, 239, 194, 255) : new Color(166, 158, 139, 255),
       -scaleLayoutValue(14, layout.scale),
     );
     const countTransform = countLabel.node.getComponent(UITransform) ?? countLabel.node.addComponent(UITransform);

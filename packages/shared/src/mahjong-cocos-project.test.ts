@@ -597,6 +597,12 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(meldRiverLayerBinder).toContain("applyMeldRiverNodes");
     expect(meldRiverLayerBinder).toContain("OpenMeld");
     expect(meldRiverLayerBinder).toContain("OpenMeldPoolBackdrop");
+    expect(meldRiverLayerBinder).toContain("OpenMeldPoolEntry");
+    expect(meldRiverLayerBinder).toContain("meldPoolExpanded");
+    expect(meldRiverLayerBinder).toContain("toggleOpenMeldPool");
+    expect(meldRiverLayerBinder).toContain("panel.active = this.meldPoolExpanded");
+    expect(meldRiverLayerBinder).toContain("node.active = this.meldPoolExpanded");
+    expect(meldRiverLayerBinder).toContain("Button.EventType.CLICK");
     expect(meldRiverLayerBinder).toContain("已碰牌池");
     expect(meldRiverLayerBinder).toContain("openMelds.slice(0, 4)");
     expect(meldRiverLayerBinder).toContain("River");
@@ -628,6 +634,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("zones.topPlaqueY - scaleLayoutValue(58");
     expect(gameSceneController).toContain("drawTileCounterOverlay");
     expect(gameSceneController).toContain("CounterExpandedPanel");
+    expect(gameSceneController).toContain("new Color(7, 64, 50, 248)");
+    expect(gameSceneController).toContain("new Color(250, 226, 171, 255)");
     expect(gameSceneController).toContain("panelHalfWidth = scaleLayoutValue(171, layout.scale)");
     expect(gameSceneController).toContain("drawCounterEntry");
     expect(gameSceneController).toContain('root.getChildByName("CounterPlaque")');
@@ -2790,6 +2798,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(inlineMenuFlow).not.toContain("writeOverlayLabel");
     expect(inlineMenuFlow).toContain("this.drawComboChoiceOptions(overlay, combo, options)");
     expect(gameSceneController).toContain("anchor.y + 56 + index * 56");
+    expect(gameSceneController).toContain("options.slice(0, 3)");
     expect(gameSceneController).toContain('this.pendingComboChoice?.combo === combo');
 
     const runtimeModule = await import(pathToFileURL(path.join(cocosRoot, runtimeStatePath)).href) as {

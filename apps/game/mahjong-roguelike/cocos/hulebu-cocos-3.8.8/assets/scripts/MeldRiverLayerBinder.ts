@@ -1,4 +1,4 @@
-import { _decorator, Color, Component, Graphics, Label, Node, Sprite, SpriteFrame, UITransform, Vec3 } from "cc";
+import { _decorator, BlockInputEvents, Button, Color, Component, Graphics, Label, Node, Sprite, SpriteFrame, UITransform, Vec3 } from "cc";
 import {
   centerLayoutX,
   centerLayoutY,
@@ -20,6 +20,8 @@ const MELD_TILE_WIDTH = 19;
 const MELD_TILE_HEIGHT = 27;
 const RIVER_TILE_WIDTH = 36;
 const RIVER_TILE_HEIGHT = 48;
+const MELD_ENTRY_WIDTH = 122;
+const MELD_ENTRY_HEIGHT = 36;
 const PANEL_FILL = new Color(248, 238, 220, 242);
 const PANEL_STROKE = new Color(188, 146, 86, 235);
 const PANEL_EMPTY_FILL = new Color(110, 88, 66, 165);
@@ -37,6 +39,8 @@ export class MeldRiverLayerBinder extends Component {
 
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
   private readonly pendingSpriteKeys = new WeakMap<Node, string>();
+  private meldPoolExpanded = false;
+  private openMeldCount = 0;
 
   applyMeldRiverNodes(openMelds: HulebuOpenMeldNodeModel[], riverNodes: HulebuRiverNodeModel[]): void {
     const layout = resolveHulebuRuntimeLayout();
@@ -47,10 +51,14 @@ export class MeldRiverLayerBinder extends Component {
   private applyOpenMelds(openMelds: HulebuOpenMeldNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
     const y = resolveHulebuPortraitZones(layout).meldY;
     const visibleMelds = openMelds.slice(0, 4);
+    this.openMeldCount = visibleMelds.length;
     const totalWidth = visibleMelds.length * MELD_WIDTH + Math.max(0, visibleMelds.length - 1) * GAP;
     const poolWidth = Math.max(150, Math.min(366, totalWidth + 20));
-    this.drawOpenMeldPool(y, poolWidth, visibleMelds.length, layout);
-    const startX = Math.round(layout.width / 2 - scaleLayoutValue(totalWidth / 2 - MELD_WIDTH / 2, layout.scale));
+    const poolX = scaleLayoutValue(8 + poolWidth / 2, layout.scale);
+    const poolY = y + scaleLayoutValue(65, layout.scale);
+    this.drawOpenMeldEntry(y, visibleMelds.length, layout);
+    this.drawOpenMeldPool(poolX, poolY, poolWidth, visibleMelds.length, layout);
+    const startX = scaleLayoutValue(8 + (poolWidth - totalWidth) / 2 + MELD_WIDTH / 2, layout.scale);
     this.meldNodes.forEach((node) => {
       node.active = false;
     });
@@ -59,17 +67,75 @@ export class MeldRiverLayerBinder extends Component {
       const node = this.meldNodes[index] ?? this.ensureNode("OpenMeld", index, MELD_WIDTH, MELD_HEIGHT, layout.scale);
       this.meldNodes[index] = node;
       node.name = meld.name;
-      node.active = true;
+      node.active = this.meldPoolExpanded;
       node.setPosition(new Vec3(
         centerLayoutX(startX + index * scaleLayoutValue(MELD_WIDTH + GAP, layout.scale), layout),
-        centerLayoutY(y - scaleLayoutValue(8, layout.scale), layout),
+        centerLayoutY(poolY - scaleLayoutValue(8, layout.scale), layout),
         0,
       ));
       this.drawMeld(node, meld, layout.scale);
     });
   }
 
+  private drawOpenMeldEntry(
+    y: number,
+    meldCount: number,
+    layout: ReturnType<typeof resolveHulebuRuntimeLayout>,
+  ): void {
+    const entry = this.node.getChildByName("OpenMeldPoolEntry") ?? new Node("OpenMeldPoolEntry");
+    entry.layer = this.node.layer;
+    if (!entry.parent) {
+      this.node.addChild(entry);
+    }
+    entry.active = true;
+    entry.setPosition(new Vec3(
+      centerLayoutX(scaleLayoutValue(69, layout.scale), layout),
+      centerLayoutY(y, layout),
+      1,
+    ));
+    const transform = entry.getComponent(UITransform) ?? entry.addComponent(UITransform);
+    transform.setContentSize(
+      scaleLayoutValue(MELD_ENTRY_WIDTH, layout.scale),
+      scaleLayoutValue(MELD_ENTRY_HEIGHT, layout.scale),
+    );
+    const graphics = entry.getComponent(Graphics) ?? entry.addComponent(Graphics);
+    graphics.clear();
+    graphics.fillColor = new Color(7, 64, 50, 242);
+    graphics.strokeColor = PANEL_STROKE;
+    graphics.lineWidth = scaleLayoutValue(2, layout.scale);
+    graphics.roundRect(-transform.width / 2, -transform.height / 2, transform.width, transform.height, scaleLayoutValue(8, layout.scale));
+    graphics.fill();
+    graphics.stroke();
+
+    const label = this.ensureLabel(entry, "Label");
+    label.string = `已碰牌池 ${meldCount}  ${this.meldPoolExpanded ? "收起" : "展开"}`;
+    label.fontSize = scaleLayoutValue(11, layout.scale);
+    label.lineHeight = scaleLayoutValue(14, layout.scale);
+    label.color = new Color(250, 226, 171, 255);
+    label.node.getComponent(UITransform)?.setContentSize(transform.width, transform.height);
+
+    entry.getComponent(Button) ?? entry.addComponent(Button);
+    entry.off(Button.EventType.CLICK, this.toggleOpenMeldPool, this);
+    entry.on(Button.EventType.CLICK, this.toggleOpenMeldPool, this);
+  }
+
+  private readonly toggleOpenMeldPool = (): void => {
+    this.meldPoolExpanded = !this.meldPoolExpanded;
+    const entryLabel = this.node.getChildByName("OpenMeldPoolEntry")?.getComponentInChildren(Label);
+    if (entryLabel) {
+      entryLabel.string = `已碰牌池 ${this.openMeldCount}  ${this.meldPoolExpanded ? "收起" : "展开"}`;
+    }
+    const panel = this.node.getChildByName("OpenMeldPoolBackdrop");
+    if (panel) {
+      panel.active = this.meldPoolExpanded;
+    }
+    this.meldNodes.forEach((node, index) => {
+      node.active = this.meldPoolExpanded && index < this.openMeldCount;
+    });
+  };
+
   private drawOpenMeldPool(
+    x: number,
     y: number,
     width: number,
     meldCount: number,
@@ -80,12 +146,13 @@ export class MeldRiverLayerBinder extends Component {
     if (!panel.parent) {
       this.node.addChild(panel);
     }
-    panel.active = true;
-    panel.setPosition(new Vec3(0, centerLayoutY(y, layout), -1));
+    panel.active = this.meldPoolExpanded;
+    panel.setPosition(new Vec3(centerLayoutX(x, layout), centerLayoutY(y, layout), -1));
     panel.setSiblingIndex(0);
     const transform = panel.getComponent(UITransform) ?? panel.addComponent(UITransform);
     transform.setContentSize(scaleLayoutValue(width, layout.scale), scaleLayoutValue(82, layout.scale));
     const graphics = panel.getComponent(Graphics) ?? panel.addComponent(Graphics);
+    panel.getComponent(BlockInputEvents) ?? panel.addComponent(BlockInputEvents);
     graphics.clear();
     graphics.fillColor = new Color(7, 64, 50, 224);
     graphics.strokeColor = PANEL_STROKE;
