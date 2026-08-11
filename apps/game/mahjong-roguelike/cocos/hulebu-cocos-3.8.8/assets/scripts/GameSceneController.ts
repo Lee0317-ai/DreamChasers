@@ -1082,11 +1082,11 @@ export class GameSceneController extends Component {
     const subtitle = level ? `${level.name} · ${level.subtitle}` : "牌山已清空";
     const score = stripHudPrefix(this.latestSceneModel?.hud.scoreText ?? "分 0", "分");
 
-    this.drawOverlayPanel(overlay, layout, 320, 200, CLEAR_OVERLAY_PANEL_BG_SPRITE);
-    this.writeOverlayLabel(overlay, "OverlayTitle", title, 21, new Color(35, 76, 57, 255), 46);
-    this.writeOverlayLabel(overlay, "OverlayScore", `本层得分 ${score}`, 17, new Color(111, 69, 34, 255), 10);
-    this.writeOverlayLabel(overlay, "OverlaySubtitle", subtitle, 13, new Color(111, 86, 58, 255), -18);
-    this.createOverlayButton(overlay, "ContinueButton", "继续", 0, -62, () => this.continueAfterClear(), 142, 42);
+    this.drawOverlayPanel(overlay, layout, 320, 220, CLEAR_OVERLAY_PANEL_BG_SPRITE);
+    this.writeOverlayLabel(overlay, "OverlayTitle", title, 20, new Color(35, 76, 57, 255), 0);
+    this.writeOverlayLabel(overlay, "OverlayScore", `本层得分 ${score}`, 16, new Color(111, 69, 34, 255), -28);
+    this.writeOverlayLabel(overlay, "OverlaySubtitle", subtitle, 12, new Color(111, 86, 58, 255), -51);
+    this.createOverlayButton(overlay, "ContinueButton", "继续", 0, -84, () => this.continueAfterClear(), 142, 40);
   }
 
   private showRewardOverlay(): void {

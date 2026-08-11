@@ -483,6 +483,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(formalUiCatalog).toContain("modals/settlement/spriteFrame");
     expect(gameSceneController).toContain("CLEAR_OVERLAY_PANEL_BG_SPRITE");
     expect(gameSceneController).toContain("`本层得分 ${score}`");
+    expect(gameSceneController).toContain("layout, 320, 220, CLEAR_OVERLAY_PANEL_BG_SPRITE");
+    expect(gameSceneController).toContain('"OverlayTitle", title, 20, new Color(35, 76, 57, 255), 0');
+    expect(gameSceneController).toContain('"ContinueButton", "继续", 0, -84');
     expect(gameSceneController).toContain("overlay.setSiblingIndex(this.node.children.length - 1)");
     expect(gameSceneController).toContain("this.rewardOverlay.setSiblingIndex(this.node.children.length - 1)");
     expect(gameSceneController).toContain("backdrop.getComponent(BlockInputEvents) ?? backdrop.addComponent(BlockInputEvents)");
