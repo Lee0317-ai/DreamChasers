@@ -423,3 +423,5 @@ T261 已锁定正式八条和 fallback 叠层口径。八条唯一正确来源�
 T262 已完成分数、记牌器和锁牌牌背收口。分数动态数字必须直接叠在正式分数底图上，不要恢复 `DynamicScoreMask`；紧凑记牌器只显示“记牌器”，34 牌详情继续放在 `ToolOverlayRoot/CounterExpandedPanel`，并保持万、条、筒、字四行完整。锁牌统一使用 formal v1 `tile.back -> back-default`，恢复可点后再显示真实牌面；不要用灰色真实牌面代替牌背。production build ID 为 `11b6581eb2e2-20260811T035723Z`。
 
 T263 已修复牌背点击穿透。`selectTileAtUiPoint()` 必须先从所有命中牌中按 sibling 绘制顺序取视觉最上层，再调用 `isTileCurrentlySelectable()`；如果最上层是牌背，要返回已消费但不得调用 `tileClickHandler`。不要恢复“先过滤锁牌、再从可点牌中找命中”的旧顺序，否则点击牌背会再次带动其他正面牌。
+
+T264 已把通关反馈从共用三选一底板改为独立 `settlement` 底板。`drawOverlayPanel()` 的 Sprite 路径参数需要保持显式 `string` 类型，正式 Sprite 加载成功后必须清空程序化 Graphics fallback。流程弹层打开后还会经历一次 HUD 刷新，因此必须在刷新后再次把 `RewardOverlay` 提到 Canvas 顶层，并保留 `OverlayBackdrop` 的 `BlockInputEvents`，否则右侧工具按钮会重新浮到遮罩上或收到穿透点击。
