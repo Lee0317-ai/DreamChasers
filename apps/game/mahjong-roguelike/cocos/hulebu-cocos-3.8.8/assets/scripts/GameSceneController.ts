@@ -123,6 +123,7 @@ const TOP_PLAQUE_SPRITES: Record<string, string> = {
 };
 const HULEBU_SCENE_BACKGROUND_SPRITE = HULEBU_FORMAL_UI_SPRITES.background;
 const OVERLAY_PANEL_BG_SPRITE = HULEBU_FORMAL_UI_SPRITES.modals.comboChoice;
+const CLEAR_OVERLAY_PANEL_BG_SPRITE = HULEBU_FORMAL_UI_SPRITES.modals.settlement;
 const REWARD_CARD_SPRITES: Record<string, string> = {
   reserve_plus_1: HULEBU_FORMAL_UI_SPRITES.cards.slot,
   advanced_south_stable_table: HULEBU_FORMAL_UI_SPRITES.cards.slot,
@@ -960,6 +961,9 @@ export class GameSceneController extends Component {
     if (result.changed && result.snapshot && this.runtimeState) {
       this.refreshRuntimeScene();
     }
+    if (openedFlowOverlay && this.rewardOverlay?.active) {
+      this.rewardOverlay.setSiblingIndex(this.node.children.length - 1);
+    }
     if (!openedFlowOverlay && result.accepted && result.phase === "playing.idle") {
       this.pendingComboChoice = null;
       this.hideFlowOverlay();
@@ -1074,12 +1078,14 @@ export class GameSceneController extends Component {
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const level = this.runtimeState?.getLevelConfig();
     const title = `${this.getRunModeLabel()}第 ${this.currentDisplayLevelOrder} 层通关`;
-    const subtitle = level ? `${level.name} / ${level.subtitle}` : "牌山已清空";
+    const subtitle = level ? `${level.name} · ${level.subtitle}` : "牌山已清空";
+    const score = stripHudPrefix(this.latestSceneModel?.hud.scoreText ?? "分 0", "分");
 
-    this.drawOverlayPanel(overlay, layout);
-    this.writeOverlayLabel(overlay, "OverlayTitle", title, 24, new Color(255, 246, 216, 255), 48);
-    this.writeOverlayLabel(overlay, "OverlaySubtitle", subtitle, 15, new Color(232, 207, 166, 255), 12);
-    this.createOverlayButton(overlay, "ContinueButton", "继续", 0, -48, () => this.continueAfterClear());
+    this.drawOverlayPanel(overlay, layout, 320, 200, CLEAR_OVERLAY_PANEL_BG_SPRITE);
+    this.writeOverlayLabel(overlay, "OverlayTitle", title, 21, new Color(35, 76, 57, 255), 46);
+    this.writeOverlayLabel(overlay, "OverlayScore", `本层得分 ${score}`, 17, new Color(111, 69, 34, 255), 10);
+    this.writeOverlayLabel(overlay, "OverlaySubtitle", subtitle, 13, new Color(111, 86, 58, 255), -18);
+    this.createOverlayButton(overlay, "ContinueButton", "继续", 0, -62, () => this.continueAfterClear(), 142, 42);
   }
 
   private showRewardOverlay(): void {
@@ -2528,6 +2534,7 @@ export class GameSceneController extends Component {
     overlay.active = true;
     overlay.layer = this.node.layer;
     overlay.setPosition(new Vec3(0, 0, 100));
+    overlay.setSiblingIndex(this.node.children.length - 1);
     overlay.children.slice().forEach((child) => {
       child.removeFromParent();
       child.destroy();
@@ -2541,8 +2548,14 @@ export class GameSceneController extends Component {
     }
   }
 
-  private drawOverlayPanel(overlay: Node, layout: RuntimeLayout, width = 300, height = 186): void {
-    this.drawRoundedPanel(
+  private drawOverlayPanel(
+    overlay: Node,
+    layout: RuntimeLayout,
+    width = 300,
+    height = 186,
+    spritePath: string = OVERLAY_PANEL_BG_SPRITE,
+  ): void {
+    const backdrop = this.drawRoundedPanel(
       overlay,
       "OverlayBackdrop",
       layout.width / 2,
@@ -2555,6 +2568,7 @@ export class GameSceneController extends Component {
       0,
       layout,
     );
+    backdrop.getComponent(BlockInputEvents) ?? backdrop.addComponent(BlockInputEvents);
     const panel = this.drawRoundedPanel(
       overlay,
       "OverlayPanel",
@@ -2568,7 +2582,7 @@ export class GameSceneController extends Component {
       scaleLayoutValue(4, layout.scale),
       layout,
     );
-    this.applyOverlayPanelSprite(panel, layout, width, height);
+    this.applyOverlayPanelSprite(panel, layout, width, height, spritePath);
   }
 
   private writeOverlayLabel(
@@ -3288,7 +3302,13 @@ export class GameSceneController extends Component {
     });
   }
 
-  private applyOverlayPanelSprite(node: Node, layout: RuntimeLayout, width: number, height: number): void {
+  private applyOverlayPanelSprite(
+    node: Node,
+    layout: RuntimeLayout,
+    width: number,
+    height: number,
+    spritePath: string,
+  ): void {
     const artNode = this.ensureChild(node, "OverlayPanelArt");
     artNode.layer = node.layer;
     artNode.setPosition(new Vec3(0, 0, 1));
@@ -3298,7 +3318,7 @@ export class GameSceneController extends Component {
     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
     artNode.active = false;
 
-    resources.load(OVERLAY_PANEL_BG_SPRITE, SpriteFrame, (error, spriteFrame) => {
+    resources.load(spritePath, SpriteFrame, (error, spriteFrame) => {
       if (error || !spriteFrame) {
         artNode.active = false;
         return;
@@ -3307,6 +3327,7 @@ export class GameSceneController extends Component {
       if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
         return;
       }
+      node.getComponent(Graphics)?.clear();
       artNode.active = true;
     });
   }

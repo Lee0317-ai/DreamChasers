@@ -480,6 +480,13 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("REWARD_CHOICE_CARD_HEIGHT = 120");
     expect(gameSceneController).toContain("REWARD_CHOICE_CARD_GAP = 112");
     expect(formalUiCatalog).toContain("modals/combo-choice/spriteFrame");
+    expect(formalUiCatalog).toContain("modals/settlement/spriteFrame");
+    expect(gameSceneController).toContain("CLEAR_OVERLAY_PANEL_BG_SPRITE");
+    expect(gameSceneController).toContain("`本层得分 ${score}`");
+    expect(gameSceneController).toContain("overlay.setSiblingIndex(this.node.children.length - 1)");
+    expect(gameSceneController).toContain("this.rewardOverlay.setSiblingIndex(this.node.children.length - 1)");
+    expect(gameSceneController).toContain("backdrop.getComponent(BlockInputEvents) ?? backdrop.addComponent(BlockInputEvents)");
+    expect(gameSceneController).toContain("node.getComponent(Graphics)?.clear()");
     expect(gameSceneController).toContain("打牌");
     expect(gameSceneController).toContain("handleComboClick");
     expect(gameSceneController).not.toContain("findComboCandidate");
