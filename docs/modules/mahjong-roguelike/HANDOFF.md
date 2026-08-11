@@ -417,3 +417,5 @@ T258 已完成 Batch D。Cocos 正式资源入口统一为 `assets/resources/ui/
 T259 已把 Cocos 正式局内页收敛到固定竖屏布局。后续不要重新共用动作栏、备用槽和手牌槽的纵向位置；牌山若继续改变 `visualScale`，必须同步维护 `BoardLayerBinder.getTileEventRect()`。八条不可回退到旧 v6 错误连笔图，formal v1 `bamboo-08` 是唯一正确来源。不可点击牌保持深暗态，动作按钮只在候选存在时使用 active 图。碰/杠/补杠副露由 `openMeldNodes` 驱动，补杠识别必须继续依赖已有碰牌区和手槽第四张同牌。
 
 T260 已把被遮挡牌的显示态与点击态收敛为同一个 `selectable` 判定。后续不要只依据配置里的 `model.interactable` 点亮牌面，也不要移除 Sprite 请求键中的 `active / locked` 状态，否则异步加载可能再次把暗牌恢复为亮牌。分数和紧凑记牌器均通过贴图上方的动态值层显示，禁止重新叠加多行 `Label` 或四门长串；记牌器展开详情仍由既有 `CounterExpandedPanel` 承担。
+
+T261 已锁定正式八条和 fallback 叠层口径。八条唯一正确来源是 v7 已确认的上下 `W/M` 形 `tile_bamboo_08.png`，不要再由 formal 构建脚本生成 `2×4` 版本。`BoardLayerBinder` 与 `ComboBarBinder` 的程序化 Graphics 只用于正式 Sprite 加载前或加载失败时的 fallback；加载成功后必须清空。动作按钮资源需要保留透明异形外轮廓，不要重新裁成整块深色矩形。
