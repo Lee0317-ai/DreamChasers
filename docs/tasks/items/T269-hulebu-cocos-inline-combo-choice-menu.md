@@ -2,7 +2,7 @@
 
 - 任务编号：T269
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 来源：Lee 指出多组“碰”应显示在“碰”按钮上方，而不是打开全屏弹框。
 - 目标：把多候选组合改成锚定对应动作按钮、向上展开的局部二级菜单。
 - 允许修改：`GameSceneController.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、T269 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档。
@@ -14,4 +14,5 @@
 
 - 2026-08-11：任务登记并由 Lee 领取，确认只替换 `playing.comboChoosing` 的表现层。
 - 2026-08-11：已移除多组合候选的全屏遮罩、面板、标题和返回按钮；候选改为锚定对应组合按钮并向上排列，同一组合按钮可再次点击收起。
-- 2026-08-11：共享 Cocos 结构测试 40 项通过，Cocos TypeScript 校验通过；待精确提交 production build 和竖屏验收。
+- 2026-08-11：共享 Cocos 结构测试 40 项、Cocos TypeScript、精确提交 production build、verify-only 和 5 条 HTTP smoke 均通过；build ID `c83d581d3274-20260811T085237Z`。
+- 2026-08-11：内置浏览器访问 `127.0.0.1:4173` 被安全策略拒绝，未绕过限制；需由 Lee 刷新现有页面做最终目视确认。
