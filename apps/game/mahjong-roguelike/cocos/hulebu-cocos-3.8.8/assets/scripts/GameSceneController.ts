@@ -1430,11 +1430,11 @@ export class GameSceneController extends Component {
     ];
     modes.forEach((mode, index) => {
       const y = 184 + index * 102;
-      const card = this.drawMetaFlowButton(overlay, `ModeCard_${mode.id}`, HULEBU_META_FLOW_UI.modes.entryPanel, mode.title, 195, y, 346, 84, mode.handler, layout, true);
+      const card = this.drawMetaFlowButton(overlay, `ModeCard_${mode.id}`, HULEBU_META_FLOW_UI.modes.entryPanel, mode.title, 195, y, 346, 84, mode.handler, layout, true, new Color(83, 57, 31, 255));
       this.drawMetaFlowChildSprite(card, "ModeIcon", mode.icon, -128, 0, 48, 48, layout);
       this.drawMetaFlowChildLabel(card, "ModeDetail", mode.detail, 32, -22, 176, 22, 10, new Color(91, 63, 37, 255), layout);
       this.drawMetaFlowChildSprite(card, "ModeTag", HULEBU_META_FLOW_UI.modes.stateTag, 124, 23, 64, 22, layout, true);
-      this.drawMetaFlowChildLabel(card, "ModeTagText", mode.id === "main" ? "进行中" : "可进入", 124, 23, 58, 18, 9, new Color(255, 238, 189, 255), layout);
+      this.drawMetaFlowChildLabel(card, "ModeTagText", mode.id === "main" ? "进行中" : "可进入", 124, 23, 58, 18, 9, new Color(116, 51, 35, 255), layout);
     });
     this.drawMetaFlowButton(overlay, "ModesBack", HULEBU_META_FLOW_UI.common.secondaryButton, "返回大厅", 195, 786, 164, 48, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
   }
