@@ -177,7 +177,7 @@ const HULEBU_META_PROGRESS_STORAGE_KEY = "hulebu-cocos-meta-progress";
 const HULEBU_META_PROFILE_STORAGE_KEY = "hulebu-cocos-meta-profile";
 const HULEBU_ACHIEVEMENTS_STORAGE_KEY = "hulebu-cocos-achievements";
 const HULEBU_ACCOUNT_PROGRESS_ENDPOINT = "/api/games/hulebu/progress";
-const HULEBU_BOARD_REVISION = "tutorial-pointer-2026-07-08";
+const HULEBU_BOARD_REVISION = "overlap-eight-percent-2026-08-11";
 const HULEBU_ACHIEVEMENTS: Array<{ id: HulebuAchievementId; title: string; description: string; hint: string }> = [
   { id: "mainline-first-clear", title: "主线首通", description: "完成一轮主线通关。", hint: "把 20 关主线打穿一次。" },
   { id: "boss-hulebu-king", title: "胡了卜王", description: "击破第 20 关终章 Boss。", hint: "在主线终章拿下胡了卜王。" },
@@ -806,7 +806,7 @@ export class GameSceneController extends Component {
   private ensureLayerReferences(): void {
     this.boardLayer = this.boardLayer ?? this.findComponent("BoardRoot", BoardLayerBinder);
     this.slotLayer = this.slotLayer ?? this.findComponent("SlotRoot", SlotLayerBinder);
-    this.meldRiverLayer = this.meldRiverLayer ?? this.findComponent("MeldRiverRoot", MeldRiverLayerBinder);
+    this.meldRiverLayer = this.meldRiverLayer ?? this.ensureMeldRiverLayer();
     this.comboBar = this.comboBar ?? this.findComponent("ComboRoot", ComboBarBinder);
     this.hud = this.hud ?? this.findComponent("HudRoot", HudBinder);
     this.rewardOverlay = this.rewardOverlay ?? this.node.getChildByName("RewardOverlay");
@@ -816,6 +816,18 @@ export class GameSceneController extends Component {
     this.boardLayer?.setTileClickHandler((tileId) => this.handleTileClick(tileId));
     this.slotLayer?.setSlotClickHandler((slotIndex) => this.handleSlotClick(slotIndex));
     this.comboBar?.setComboClickHandler((combo) => this.handleComboClick(combo));
+  }
+
+  private ensureMeldRiverLayer(): MeldRiverLayerBinder {
+    const root = this.ensureChild(this.node, "MeldRiverRoot");
+    root.active = true;
+    root.layer = this.node.layer;
+    root.setPosition(0, 0, 0);
+    const boardRoot = this.node.getChildByName("BoardRoot");
+    if (boardRoot) {
+      root.setSiblingIndex(Math.min(this.node.children.length - 1, boardRoot.getSiblingIndex() + 1));
+    }
+    return root.getComponent(MeldRiverLayerBinder) ?? root.addComponent(MeldRiverLayerBinder);
   }
 
   private handleTileClick(tileId: string): void {

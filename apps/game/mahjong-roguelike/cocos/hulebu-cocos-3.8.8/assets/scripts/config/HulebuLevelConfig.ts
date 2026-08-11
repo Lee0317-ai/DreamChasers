@@ -161,7 +161,7 @@ export const HULEBU_EVENT_LEVEL_ORDERS = new Set([6, 8, 10, 14, 18]);
 export const HULEBU_BOSS_LEVEL_ORDERS = new Set([10, 20]);
 export const HULEBU_ENDLESS_START_ORDER = 21;
 export const HULEBU_ADVANCED_START_ORDER = 31;
-export const HULEBU_COCOS_STACK_OVERLAP_THRESHOLD = 0.001;
+export const HULEBU_COCOS_STACK_OVERLAP_THRESHOLD = 0.08;
 const HULEBU_GRAPH_COCOS_CENTER = { x: 310, y: 180 };
 const HULEBU_GRAPH_COCOS_MAX_SPAN = { x: 320, y: 360 };
 const HULEBU_COCOS_TILE_SIZE = { width: 32, height: 43 };
@@ -1229,7 +1229,7 @@ function rebuildCocosBlockers(tiles: HulebuLevelTileConfig[]): HulebuLevelTileCo
       .filter((candidate) => (
         candidate.id !== tile.id
         && candidate.layer > tile.layer
-        && getCocosTileOverlapRatio(tile, candidate) > HULEBU_COCOS_STACK_OVERLAP_THRESHOLD
+        && getCocosTileOverlapRatio(tile, candidate) >= HULEBU_COCOS_STACK_OVERLAP_THRESHOLD
       ))
       .map((candidate) => candidate.id)
       .sort(),

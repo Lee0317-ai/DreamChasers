@@ -25,7 +25,7 @@ const TILE_TOP_SIDE_COLOR = new Color(10, 79, 64, 255);
 const TILE_TOP_FACE_COLOR = new Color(255, 252, 242, 255);
 const TILE_ACTIVE_SPRITE_COLOR = new Color(255, 255, 255, 255);
 const TILE_LOW_LAYER_OPACITY = 210;
-const TILE_LOCK_OVERLAP_THRESHOLD = 0.001;
+const TILE_LOCK_OVERLAP_THRESHOLD = 0.08;
 type BoardPointerEvent = EventTouch | EventMouse;
 type CanvasPointerEvent = MouseEvent | PointerEvent | TouchEvent;
 
@@ -289,7 +289,7 @@ export class BoardLayerBinder extends Component {
         return false;
       }
       const candidateRect = this.getTileEventRect(candidateModel);
-      return Boolean(candidateRect && this.getOverlapRatio(tileRect, candidateRect) > TILE_LOCK_OVERLAP_THRESHOLD);
+      return Boolean(candidateRect && this.getOverlapRatio(tileRect, candidateRect) >= TILE_LOCK_OVERLAP_THRESHOLD);
     });
   }
 

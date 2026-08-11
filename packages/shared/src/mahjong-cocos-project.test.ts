@@ -521,7 +521,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("handleBoardPointerEnd");
     expect(boardLayerBinder).toContain("this.tileClickHandler?.(");
     expect(boardLayerBinder).toContain("bindTileClick");
-    expect(boardLayerBinder).toContain("TILE_LOCK_OVERLAP_THRESHOLD = 0.001");
+    expect(boardLayerBinder).toContain("TILE_LOCK_OVERLAP_THRESHOLD = 0.08");
+    expect(boardLayerBinder).toContain("getOverlapRatio(tileRect, candidateRect) >= TILE_LOCK_OVERLAP_THRESHOLD");
     expect(boardLayerBinder).toContain("isTileCoveredByHigherTile");
     expect(boardLayerBinder).toContain("const selectable = model.interactable && !model.dimmed");
     expect(boardLayerBinder).toContain("this.applyTileVisual(node, model");
@@ -600,6 +601,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(meldRiverLayerBinder).toContain("openMelds.slice(0, 4)");
     expect(meldRiverLayerBinder).toContain("River");
     expect(meldRiverLayerBinder).toContain("补杠");
+    expect(gameSceneController).toContain("ensureMeldRiverLayer");
+    expect(gameSceneController).toContain("root.addComponent(MeldRiverLayerBinder)");
   });
 
   test("contains a target-concept visual shell for the Cocos first screen", () => {
@@ -1221,7 +1224,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("const HULEBU_META_PROFILE_STORAGE_KEY = \"hulebu-cocos-meta-profile\"");
     expect(gameSceneController).toContain("const HULEBU_ACHIEVEMENTS_STORAGE_KEY = \"hulebu-cocos-achievements\"");
     expect(gameSceneController).toContain("const HULEBU_ACCOUNT_PROGRESS_ENDPOINT = \"/api/games/hulebu/progress\"");
-    expect(gameSceneController).toContain("const HULEBU_BOARD_REVISION = \"tutorial-pointer-2026-07-08\"");
+    expect(gameSceneController).toContain("const HULEBU_BOARD_REVISION = \"overlap-eight-percent-2026-08-11\"");
     expect(gameSceneController).toContain("const HULEBU_ACHIEVEMENTS");
     expect(gameSceneController).toContain("interface HulebuActiveRunSnapshot");
     expect(gameSceneController).toContain("boardRevision: string;");
@@ -1841,7 +1844,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(levelConfig).toContain("targetTileCount");
     expect(levelConfig).toContain("maxStackDepth");
     expect(levelConfig).toContain("honorWeight");
-    expect(levelConfig).toContain("HULEBU_COCOS_STACK_OVERLAP_THRESHOLD = 0.001");
+    expect(levelConfig).toContain("HULEBU_COCOS_STACK_OVERLAP_THRESHOLD = 0.08");
     expect(levelConfig).toContain("export const HULEBU_LEVEL_ONE_CONFIG");
     expect(levelConfig).not.toContain("createSixTilePengMountain");
     expect(levelConfig).not.toContain("p1a");
@@ -1878,7 +1881,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
           .filter((candidate) => (
             candidate.id !== tile.id
             && candidate.layer > tile.layer
-            && getTileOverlapRatio(tile, candidate) > 0.001
+            && getTileOverlapRatio(tile, candidate) >= 0.08
             && !tile.blockedBy.includes(candidate.id)
           ))
           .map((candidate) => `${level.id}:${tile.id}->${candidate.id}`)
