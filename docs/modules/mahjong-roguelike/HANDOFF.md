@@ -433,3 +433,5 @@ T266 已锁定 formal v1 `settlement` 底图的正文安全区。顶部莲花和
 T267 已确认正式场景没有预制 `MeldRiverRoot`，后续必须保留 `ensureMeldRiverLayer()` 的动态创建和 `BoardRoot + 1` sibling 层级，不能退回只查找组件。牌面锁定统一使用 8% 覆盖面积：配置层 `HULEBU_COCOS_STACK_OVERLAP_THRESHOLD` 和表现层 `TILE_LOCK_OVERLAP_THRESHOLD` 必须保持 `0.08` 且使用 `>=`；改动该口径时同步升级 `HULEBU_BOARD_REVISION`。
 
 T269 已将 `playing.comboChoosing` 的表现改为局部候选菜单。候选必须继续锚定 `hu / gang / peng / chi / bugang` 对应按钮并向上排列；不要恢复 `OverlayBackdrop`、大面板、标题或返回按钮。精确 candidate key、刷新恢复和状态机保持不变；同一组合按钮再次点击负责取消并回到 `playing.idle`。production build ID 为 `c83d581d3274-20260811T085237Z`。
+
+T270 已把已碰牌池改为左下 `OpenMeldPoolEntry` 入口和向上展开的 `OpenMeldPoolBackdrop`。后续必须保留默认收起和 `openMeldCount` 可见节点门禁，避免旧副露缓存重新显示；副露数据仍只来自 `openMeldNodes`。记牌器展开态使用深绿高对比面板；组合候选上限为 3，继续纵向锚定对应动作按钮。production build ID 为 `13e50a661257-20260811T092740Z`。

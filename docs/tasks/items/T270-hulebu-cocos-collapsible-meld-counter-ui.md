@@ -2,7 +2,7 @@
 
 - 任务编号：T270
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 来源：Lee 指出已碰牌池应在左下角通过按钮展开，记牌器浅色内容看不清，组合候选最多 3 个。
 - 目标：收敛竖屏局内两个信息浮层和组合候选数量。
 - 允许修改：`MeldRiverLayerBinder.ts`、`GameSceneController.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、T270 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档。
@@ -15,4 +15,4 @@
 - 2026-08-11：任务登记并由 Lee 领取，完成现状定位。
 - 2026-08-11：已碰牌池改为左下角入口按钮，默认收起并向上展开；展开只激活当前实际副露节点。
 - 2026-08-11：记牌器展开面板改为深绿高对比配色；组合候选限制为最多 3 个。
-- 2026-08-11：共享 Cocos 结构测试 40 项、Cocos TypeScript 和 `git diff --check` 通过；待精确提交 production build。
+- 2026-08-11：共享 Cocos 结构测试 40 项、Cocos TypeScript、精确提交 production build、verify-only、5 条 HTTP smoke 和 `git diff --check` 全部通过；build ID `13e50a661257-20260811T092740Z`。
