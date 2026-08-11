@@ -305,6 +305,7 @@ export class GameSceneController extends Component {
   private readonly counterTouchEndHandler = (event: EventTouch): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly counterMouseUpHandler = (event: EventMouse): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly metaFlowTouchEndHandler = (event: EventTouch): void => this.handleMetaFlowInputEnd(event.getUILocation());
+  private readonly metaFlowMouseUpHandler = (event: EventMouse): void => this.handleMetaFlowInputEnd(event.getUILocation());
   private counterExpanded = false;
   private lastCounterToggleAt = 0;
   private currentLevelIndex = 0;
@@ -2704,8 +2705,10 @@ export class GameSceneController extends Component {
     overlay.setPosition(new Vec3(0, 0, 100));
     overlay.setSiblingIndex(this.node.children.length - 1);
     this.metaFlowHitAreas = [];
-    overlay.off(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
-    overlay.on(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
+    input.off(Input.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
+    input.off(Input.EventType.MOUSE_UP, this.metaFlowMouseUpHandler, this);
+    input.on(Input.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
+    input.on(Input.EventType.MOUSE_UP, this.metaFlowMouseUpHandler, this);
     overlay.children.slice().forEach((child) => {
       child.removeFromParent();
       child.destroy();
