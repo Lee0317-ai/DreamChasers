@@ -511,7 +511,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain('node.displayZone === "loose"');
     expect(boardLayerBinder).toContain("震落牌区");
     expect(boardLayerBinder).toContain("drawLooseTileZone");
-    expect(boardLayerBinder).toContain("tileRoot.setSiblingIndex(this.node.children.length - 1)");
+    expect(boardLayerBinder).toContain("LooseTilePool");
+    expect(boardLayerBinder).toContain("const targetRoot = isLoose ? looseRoot : root");
+    expect(boardLayerBinder).toContain("looseRoot.setSiblingIndex(this.node.children.length - 1)");
     expect(boardLayerBinder).toContain("setTileClickHandler");
     expect(boardLayerBinder).toContain("this.node.on(Node.EventType.TOUCH_END, this.handleBoardPointerEnd, this)");
     expect(boardLayerBinder).toContain("this.node.on(Node.EventType.MOUSE_UP, this.handleBoardPointerEnd, this)");

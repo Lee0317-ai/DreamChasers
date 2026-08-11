@@ -34,6 +34,7 @@ export class BoardLayerBinder extends Component {
   @property(Node)
   tilePool: Node | null = null;
 
+  private looseTilePool: Node | null = null;
   private tileClickHandler: ((tileId: string) => void) | null = null;
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
   private readonly pendingSpriteKeys = new WeakMap<Node, string>();
@@ -61,16 +62,31 @@ export class BoardLayerBinder extends Component {
   applyBoardNodes(nodes: HulebuBoardNodeModel[]): void {
     const layout = resolveHulebuRuntimeLayout();
     const root = this.ensureTilePool();
+    const looseRoot = this.ensureLooseTilePool();
     this.ensureBoardHitArea();
     root.active = true;
-    this.drawLooseTileZone(nodes, layout, root);
+    looseRoot.active = true;
+    this.drawLooseTileZone(nodes, layout, looseRoot);
     this.currentTiles.length = 0;
     root.children.forEach((child) => {
       child.active = false;
     });
+    looseRoot.children.forEach((child) => {
+      child.active = false;
+    });
 
-    nodes.forEach((model, index) => {
-      const child = root.children[index] ?? this.createTileNode(root, layout.scale);
+    let mountainIndex = 0;
+    let looseIndex = 0;
+    nodes.forEach((model) => {
+      const isLoose = model.displayZone === "loose";
+      const targetRoot = isLoose ? looseRoot : root;
+      const index = isLoose ? looseIndex : mountainIndex;
+      const child = targetRoot.children[index] ?? this.createTileNode(targetRoot, layout.scale);
+      if (isLoose) {
+        looseIndex += 1;
+      } else {
+        mountainIndex += 1;
+      }
       child.name = model.name;
       child.active = true;
       child.setPosition(
@@ -100,10 +116,23 @@ export class BoardLayerBinder extends Component {
     return root;
   }
 
+  private ensureLooseTilePool(): Node {
+    const existing = this.looseTilePool ?? this.node.getChildByName("LooseTilePool");
+    if (existing) {
+      this.looseTilePool = existing;
+      return existing;
+    }
+    const root = new Node("LooseTilePool");
+    root.layer = this.node.layer;
+    this.node.addChild(root);
+    this.looseTilePool = root;
+    return root;
+  }
+
   private drawLooseTileZone(
     nodes: HulebuBoardNodeModel[],
     layout: ReturnType<typeof resolveHulebuRuntimeLayout>,
-    tileRoot: Node,
+    looseRoot: Node,
   ): void {
     const looseNodes = nodes.filter((node) => node.displayZone === "loose");
     const panel = this.node.getChildByName("ShakeLoosePoolBackdrop") ?? new Node("ShakeLoosePoolBackdrop");
@@ -157,8 +186,8 @@ export class BoardLayerBinder extends Component {
     label.horizontalAlign = Label.HorizontalAlign.CENTER;
     label.verticalAlign = Label.VerticalAlign.CENTER;
     label.color = new Color(250, 226, 171, 255);
-    panel.setSiblingIndex(Math.max(0, tileRoot.getSiblingIndex()));
-    tileRoot.setSiblingIndex(this.node.children.length - 1);
+    panel.setSiblingIndex(Math.max(0, looseRoot.getSiblingIndex()));
+    looseRoot.setSiblingIndex(this.node.children.length - 1);
   }
 
   private createTileNode(parent: Node, scale = 1): Node {
