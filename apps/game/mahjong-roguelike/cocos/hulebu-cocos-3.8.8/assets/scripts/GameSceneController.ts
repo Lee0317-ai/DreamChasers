@@ -2722,10 +2722,10 @@ export class GameSceneController extends Component {
     }
 
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
-    const topY = layout.height - pointer.y;
+    const yCandidates = [pointer.y, layout.height - pointer.y];
     const hit = [...this.metaFlowHitAreas].reverse().find((area) => (
       Math.abs(pointer.x - area.centerX) <= area.halfWidth
-      && Math.abs(topY - area.centerY) <= area.halfHeight
+      && yCandidates.some((candidate) => Math.abs(candidate - area.centerY) <= area.halfHeight)
     ));
     hit?.handler();
   }
