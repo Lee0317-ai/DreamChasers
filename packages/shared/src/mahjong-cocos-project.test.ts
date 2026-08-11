@@ -341,7 +341,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(settlementFlow).toContain("this.awardMetaCoinsForRun()");
     expect(settlementFlow.indexOf("if (!this.commitActiveRun())")).toBeLessThan(settlementFlow.indexOf("this.awardMetaCoinsForRun()"));
     expect(settlementFlow).toContain("if (!isNewSettlement)");
-    expect(controllerText).toContain("this.createOverlayButton(overlay, \"ContinueButton\", \"回到局外\", 0, -54, () => this.returnToLobby())");
+    expect(controllerText).toContain('HULEBU_META_FLOW_UI.result.primaryButton, "回到大厅"');
   });
 
   test("keeps Cocos runtime imports inside the Creator project", () => {
@@ -481,10 +481,10 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("REWARD_CHOICE_CARD_GAP = 112");
     expect(formalUiCatalog).toContain("modals/combo-choice/spriteFrame");
     expect(formalUiCatalog).toContain("modals/settlement/spriteFrame");
-    expect(gameSceneController).toContain("CLEAR_OVERLAY_PANEL_BG_SPRITE");
-    expect(gameSceneController).toContain("`本层得分 ${score}`");
-    expect(gameSceneController).toContain("layout, 320, 220, CLEAR_OVERLAY_PANEL_BG_SPRITE");
-    expect(gameSceneController).toContain('"OverlayTitle", title, 20, new Color(35, 76, 57, 255), 0');
+    expect(gameSceneController).toContain("HULEBU_META_FLOW_UI.result.victorySeal");
+    expect(gameSceneController).toContain("HULEBU_META_FLOW_UI.result.victoryTitle");
+    expect(gameSceneController).toContain("`本层得分  ${score}`");
+    expect(gameSceneController).toContain('"ClearTitleText", title');
     expect(gameSceneController).toContain('tutorialFinished ? "回到大厅" : this.tutorialReplayMode ? "下一步" : "继续"');
     expect(gameSceneController).toContain("overlay.setSiblingIndex(this.node.children.length - 1)");
     expect(gameSceneController).toContain("this.rewardOverlay.setSiblingIndex(this.node.children.length - 1)");
@@ -614,6 +614,45 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(meldRiverLayerBinder).toContain("补杠");
     expect(gameSceneController).toContain("ensureMeldRiverLayer");
     expect(gameSceneController).toContain("root.addComponent(MeldRiverLayerBinder)");
+  });
+
+  test("integrates the approved portrait meta-flow UI into the Cocos runtime", () => {
+    const metaFlowRoot = path.join(cocosRoot, "assets/resources/ui/formal-v1/meta-flow");
+    const catalogText = readText("assets/scripts/assets/HulebuMetaFlowUiCatalog.ts");
+    const controllerText = readText("assets/scripts/GameSceneController.ts");
+    const pngFiles: string[] = [];
+    const collectPng = (directory: string): void => {
+      for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const fullPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+          collectPng(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith(".png")) {
+          pngFiles.push(fullPath);
+        }
+      }
+    };
+
+    collectPng(metaFlowRoot);
+    expect(pngFiles).toHaveLength(40);
+    for (const file of pngFiles) {
+      expect(readPngInfo(file).colorType, path.relative(metaFlowRoot, file)).toBe(6);
+    }
+
+    expect(catalogText).toContain('HULEBU_META_FLOW_UI_VERSION = "hulebu-meta-flow-components-v1"');
+    expect(catalogText).toContain('sprite("title/title-brand-plaque")');
+    expect(catalogText).toContain('sprite("lobby/entry-main-journey")');
+    expect(catalogText).toContain('sprite("modes/mode-entry-panel")');
+    expect(catalogText).toContain('sprite("map/node-current")');
+    expect(catalogText).toContain('sprite("result/seal-victory")');
+    expect(catalogText).toContain('sprite("result/seal-failure")');
+    expect(controllerText).toContain("private showTitleOverlay(): void");
+    expect(controllerText).toContain("private showLobbyOverlay(): void");
+    expect(controllerText).toContain("private showModeSelectionOverlay(): void");
+    expect(controllerText).toContain("private showMainlineMapOverlay(): void");
+    expect(controllerText).toContain("this.showTitleOverlay()");
+    expect(controllerText).toContain("this.showMainlineMapOverlay()");
+    expect(controllerText).toContain("this.showModeSelectionOverlay()");
+    expect(controllerText).toContain("HULEBU_META_FLOW_UI.result.primaryButton");
   });
 
   test("contains a target-concept visual shell for the Cocos first screen", () => {
@@ -1146,7 +1185,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("this.applyMetaUpgrades({ [axis]:");
     expect(gameSceneController).toContain("this.gamePhase = \"meta\"");
     expect(gameSceneController).toContain("铜钱 ${this.metaCoins} / 点击升级，下一局生效");
-    expect(gameSceneController).toContain("获得铜钱 ${HULEBU_RUN_COMPLETE_META_COIN_REWARD}");
+    expect(gameSceneController).toContain("铜钱 +${HULEBU_RUN_COMPLETE_META_COIN_REWARD}");
     expect(gameSceneController).toContain("满级");
 
     const layout = { width: 390, height: 844, cssWidth: 390, cssHeight: 844, scale: 1 };
@@ -1247,7 +1286,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(runtimeText).toContain("流 ${this.runArchetype.label}");
     expect(bootstrapText).toContain("runArchetype?: HulebuRunArchetypeState");
     expect(bootstrapText).toContain("runArchetype,");
-    expect(gameSceneController).toContain("type HulebuGamePhase = \"lobby\" | \"meta\" | \"collection\" | \"advanced\" | \"advancedAbility\" | \"playing\" | \"cleared\" | \"reward\" | \"event\" | \"archetype\"");
+    expect(gameSceneController).toContain("type HulebuGamePhase = \"title\" | \"lobby\" | \"modes\" | \"map\"");
     expect(gameSceneController).toContain("HULEBU_RUN_ARCHETYPES");
     expect(gameSceneController).toContain("private pendingRunProfile: HulebuRunProfile | null = null");
     expect(gameSceneController).toContain("private runArchetype: HulebuRunArchetypeState = createHulebuRunArchetypeState()");
@@ -1360,8 +1399,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("drawLobbyModeChoices(overlay)");
     expect(gameSceneController).toContain("LobbyMode_Resume");
     expect(gameSceneController).toContain("LobbyMode_Mainline");
-    expect(gameSceneController).toContain("LobbyMode_Endless");
-    expect(gameSceneController).toContain("LobbyMode_Daily");
+    expect(gameSceneController).toContain('id: "endless"');
+    expect(gameSceneController).toContain('id: "daily"');
     expect(gameSceneController).toContain("LobbyMode_Collection");
     expect(gameSceneController).toContain("drawCollectionSummary(overlay)");
     expect(gameSceneController).toContain("writeOverlaySummaryLine(");
@@ -1503,11 +1542,11 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(levelConfigText).toContain("displayName: \"西风场\"");
     expect(levelConfigText).toContain("displayName: \"北风场\"");
     expect(gameSceneController).toContain("createHulebuAdvancedRunProfile");
-    expect(gameSceneController).toContain("type HulebuGamePhase = \"lobby\" | \"meta\" | \"collection\" | \"advanced\" | \"advancedAbility\" | \"playing\" | \"cleared\" | \"reward\" | \"event\" | \"archetype\"");
+    expect(gameSceneController).toContain("type HulebuGamePhase = \"title\" | \"lobby\" | \"modes\" | \"map\"");
     expect(gameSceneController).toContain("startAdvancedRun(tier: HulebuAdvancedRunTier)");
     expect(gameSceneController).toContain("showAdvancedRunOverlay()");
     expect(gameSceneController).toContain("drawAdvancedRunChoices(overlay)");
-    expect(gameSceneController).toContain("LobbyMode_Advanced");
+    expect(gameSceneController).toContain('id: "advanced"');
     expect(gameSceneController).toContain("AdvancedRun_East");
     expect(gameSceneController).toContain("AdvancedRun_South");
     expect(gameSceneController).toContain("AdvancedRun_West");
