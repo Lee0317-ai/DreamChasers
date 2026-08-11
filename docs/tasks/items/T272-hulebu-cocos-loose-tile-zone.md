@@ -2,7 +2,7 @@
 
 - 任务编号：T272
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 来源：Lee 确认删除余牌下方四个静态点，并要求为杠、补杠、胡震落的牌提供专门区域。
 - 目标：消除无意义进度暗示，并让震落牌不再覆盖原牌山。
 - 允许修改：`GameSceneController.ts`、`HulebuRuntimeState.ts`、`HulebuSceneModel.ts`、`BoardLayerBinder.ts`、`HulebuPortraitLayout.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、T272 分片、麻将模块文档、当天进展/完成记录及 docs:sync 主文档。
@@ -14,4 +14,4 @@
 
 - 2026-08-11：任务登记并由 Lee 领取，确认震落牌目前仍混在 `boardNodes` 中。
 - 2026-08-11：已移除余牌下方四个静态圆点；震落牌带 `displayZone: "loose"` 并排入独立托盘，普通牌山不再计算震落坐标。
-- 2026-08-11：共享 Cocos 测试 40 项、Cocos TypeScript 和 `git diff --check` 通过；待精确提交 production build。
+- 2026-08-11：共享 Cocos 测试 40 项、Cocos TypeScript、精确提交 production build、verify-only、5 条 HTTP smoke 和 `git diff --check` 全部通过；build ID `fd6d1e39c26f-20260811T105137Z`。
