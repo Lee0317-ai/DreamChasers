@@ -437,3 +437,5 @@ T269 已将 `playing.comboChoosing` 的表现改为局部候选菜单。候选�
 T270 已把已碰牌池改为左下 `OpenMeldPoolEntry` 入口和向上展开的 `OpenMeldPoolBackdrop`。后续必须保留默认收起和 `openMeldCount` 可见节点门禁，避免旧副露缓存重新显示；副露数据仍只来自 `openMeldNodes`。记牌器展开态使用深绿高对比面板；组合候选上限为 3，继续纵向锚定对应动作按钮。production build ID 为 `13e50a661257-20260811T092740Z`。
 
 T272 已把震落 blocker 从普通牌山布局中分离。`HulebuRuntimeState.toSceneModel()` 通过配置几何差异标记 `displayZone: "loose"`，以 5 列网格定位；`BoardLayerBinder` 绘制 `ShakeLoosePoolBackdrop`，但震落牌仍在原 `TilePool` 内，因此点击、槽位和组合逻辑不变。普通牌山拟合只能使用 `mountainTiles`，不要重新把震落坐标计入包围盒。余牌下方 `ProgressDot_*` 已删除。production build ID 为 `fd6d1e39c26f-20260811T105137Z`。
+
+T276 已把此前只有配置的前五关教学补成可见运行时体验。`TutorialGuidePanel` 挂在 `ToolOverlayRoot`，根据 `currentDisplayLevelOrder`、已占槽位和可执行组合生成动态文案；它没有 `BlockInputEvents`，展开记牌器或进入流程弹层时自动隐藏。大厅 `LobbyMode_Tutorial` 会启动 `tutorialReplayMode`，该模式的 `commitActiveRun()` 直接返回且不覆盖原存档，第五关完成或中途退出后回大厅重新加载原 active run。后续不要把教学重玩改成先清空 active run，也不要给教学条增加全屏遮罩。production build ID 为 `dec5351f0057-20260811T144015Z`。
