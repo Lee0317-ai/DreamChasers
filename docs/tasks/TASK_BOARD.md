@@ -373,5 +373,5 @@
 | T263 | P0 | 胡了卜 Cocos 牌背点击穿透修复 | Lee | 已完成 | T262 | `BoardLayerBinder.ts`、`packages/shared/src/mahjong-cocos-project.test.ts`、T263 分片、麻将模块文档、当天进展/完成记录及 `npm run docs:sync` 自动生成主文档 | 未填写 |
 | T264 | 未填写 | 胡了卜 Cocos 通关弹层视觉优化 | Lee | 已完成 | 未填写 | 未填写 | `npm run test -w packages/shared -- mahjong-cocos-project`；`npx tsc -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.domain.json`；精确提交 production build；verify-only；Chrome `390×844` 通关弹层目检与继续按钮验证；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check`。 |
 | T265 | 未填写 | 胡了卜 Cocos 顶部 HUD、记牌器与已碰牌池优化 | Lee | 已完成 | 未填写 | 未填写 | `npm run test -w packages/shared -- mahjong-cocos-project`；Cocos TypeScript；精确提交 production build；verify-only；竖屏 production HUD/记牌器/已碰牌池目检；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check`。 |
-| T266 | 未填写 | 胡了卜 Cocos 通关弹层标题避让 | Lee | 进行中 | 未填写 | 未填写 | 共享 Cocos 测试；Cocos TypeScript；精确提交 production build；verify-only；竖屏 production 通关弹层目检；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check`。 |
+| T266 | 未填写 | 胡了卜 Cocos 通关弹层标题避让 | Lee | 已完成 | 未填写 | 未填写 | 共享 Cocos 测试；Cocos TypeScript；精确提交 production build；verify-only；竖屏 production 通关弹层目检；`npm run docs:sync`；UTF-8 无 BOM；`git diff --check`。 |
 <!-- DOCS_SYNC_TASKS_END -->
