@@ -652,6 +652,10 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("TILE_LOCKED_FACE_COLOR");
     expect(boardLayerBinder).toContain("handleBoardPointerEnd");
     expect(boardLayerBinder).toContain("blocker.enabled = false");
+    expect(boardLayerBinder).toContain("node.activeInHierarchy && this.getTileEventRect(model).contains(uiPoint)");
+    expect(boardLayerBinder).toContain("const siblingDelta = right.node.getSiblingIndex() - left.node.getSiblingIndex()");
+    expect(boardLayerBinder).toContain("if (!this.isTileCurrentlySelectable(hitTile.node, hitTile.model, uiPoint))");
+    expect(boardLayerBinder).toContain("return true;");
     expect(slotLayerBinder).toContain("WOOD_SLOT_FILL");
     expect(slotLayerBinder).toContain("HAND_SLOTS_SPRITE_PATH");
     expect(formalUiCatalog).toContain("ui/formal-v1/board/hand-slots/spriteFrame");

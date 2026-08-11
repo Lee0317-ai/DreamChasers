@@ -314,14 +314,18 @@ export class BoardLayerBinder extends Component {
 
   private selectTileAtUiPoint(uiPoint: Vec2): boolean {
     const hitTile = this.currentTiles
-      .filter(({ node, model }) => this.isTileCurrentlySelectable(node, model, uiPoint))
+      .filter(({ node, model }) => node.activeInHierarchy && this.getTileEventRect(model).contains(uiPoint))
       .sort((left, right) => {
-        const layerDelta = right.model.zIndex - left.model.zIndex;
-        return layerDelta !== 0 ? layerDelta : right.node.getSiblingIndex() - left.node.getSiblingIndex();
+        const siblingDelta = right.node.getSiblingIndex() - left.node.getSiblingIndex();
+        return siblingDelta !== 0 ? siblingDelta : right.model.zIndex - left.model.zIndex;
       })[0];
 
     if (!hitTile) {
       return false;
+    }
+
+    if (!this.isTileCurrentlySelectable(hitTile.node, hitTile.model, uiPoint)) {
+      return true;
     }
 
     if (!this.acceptPointerSelection()) {
