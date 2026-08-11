@@ -592,6 +592,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(meldRiverLayerBinder).toContain("class MeldRiverLayerBinder extends Component");
     expect(meldRiverLayerBinder).toContain("applyMeldRiverNodes");
     expect(meldRiverLayerBinder).toContain("OpenMeld");
+    expect(meldRiverLayerBinder).toContain("OpenMeldPoolBackdrop");
+    expect(meldRiverLayerBinder).toContain("已碰牌池");
+    expect(meldRiverLayerBinder).toContain("openMelds.slice(0, 4)");
     expect(meldRiverLayerBinder).toContain("River");
     expect(meldRiverLayerBinder).toContain("补杠");
   });
@@ -619,6 +622,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("zones.topPlaqueY - scaleLayoutValue(58");
     expect(gameSceneController).toContain("drawTileCounterOverlay");
     expect(gameSceneController).toContain("CounterExpandedPanel");
+    expect(gameSceneController).toContain("panelHalfWidth = scaleLayoutValue(171, layout.scale)");
     expect(gameSceneController).toContain("drawCounterEntry");
     expect(gameSceneController).toContain('root.getChildByName("CounterPlaque")');
     expect(gameSceneController).toContain("hud.tileCounter.suits.forEach");
@@ -633,8 +637,14 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("input.on(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this)");
     expect(gameSceneController).toContain("handleCounterInputEnd(event.getUILocation())");
     expect(gameSceneController).toContain("ProgressPlaque");
+    expect(gameSceneController).toContain("ProgressPlaque: HULEBU_FORMAL_UI_SPRITES.hud.tileCounter");
+    expect(gameSceneController).toContain("DynamicLevelFace");
+    expect(gameSceneController).toContain("DynamicScoreFace");
+    expect(gameSceneController).toContain("DynamicProgressFace");
+    expect(gameSceneController).toContain("ExitButton");
+    expect(gameSceneController).toContain("node.on(Node.EventType.TOUCH_END, this.returnToLobby, this)");
     expect(gameSceneController).toContain("zones.topPlaqueY - scaleLayoutValue(58, layout.scale)");
-    expect(gameSceneController).toContain("scaleLayoutValue(318, layout.scale)");
+    expect(gameSceneController).toContain("scaleLayoutValue(274, layout.scale)");
     expect(gameSceneController).toContain("hud.bossText ? hud.bossText : hud.boardRemainingText");
     expect(gameSceneController).toContain("ToolButton_Wash");
     expect(gameSceneController).toContain("ToolButton_Undo");

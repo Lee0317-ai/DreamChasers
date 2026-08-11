@@ -11,13 +11,13 @@ import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 
 const { ccclass, property } = _decorator;
-const MELD_WIDTH = 132;
-const MELD_HEIGHT = 66;
+const MELD_WIDTH = 82;
+const MELD_HEIGHT = 56;
 const RIVER_CELL_WIDTH = 46;
 const RIVER_CELL_HEIGHT = 62;
 const GAP = 7;
-const MELD_TILE_WIDTH = 28;
-const MELD_TILE_HEIGHT = 38;
+const MELD_TILE_WIDTH = 19;
+const MELD_TILE_HEIGHT = 27;
 const RIVER_TILE_WIDTH = 36;
 const RIVER_TILE_HEIGHT = 48;
 const PANEL_FILL = new Color(248, 238, 220, 242);
@@ -46,19 +46,61 @@ export class MeldRiverLayerBinder extends Component {
 
   private applyOpenMelds(openMelds: HulebuOpenMeldNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
     const y = resolveHulebuPortraitZones(layout).meldY;
-    const startX = Math.round(layout.width / 2 - scaleLayoutValue(122, layout.scale));
+    const visibleMelds = openMelds.slice(0, 4);
+    const totalWidth = visibleMelds.length * MELD_WIDTH + Math.max(0, visibleMelds.length - 1) * GAP;
+    const poolWidth = Math.max(150, Math.min(366, totalWidth + 20));
+    this.drawOpenMeldPool(y, poolWidth, visibleMelds.length, layout);
+    const startX = Math.round(layout.width / 2 - scaleLayoutValue(totalWidth / 2 - MELD_WIDTH / 2, layout.scale));
     this.meldNodes.forEach((node) => {
       node.active = false;
     });
 
-    openMelds.forEach((meld, index) => {
+    visibleMelds.forEach((meld, index) => {
       const node = this.meldNodes[index] ?? this.ensureNode("OpenMeld", index, MELD_WIDTH, MELD_HEIGHT, layout.scale);
       this.meldNodes[index] = node;
       node.name = meld.name;
       node.active = true;
-      node.setPosition(new Vec3(centerLayoutX(startX + index * scaleLayoutValue(MELD_WIDTH + GAP, layout.scale), layout), centerLayoutY(y, layout), 0));
+      node.setPosition(new Vec3(
+        centerLayoutX(startX + index * scaleLayoutValue(MELD_WIDTH + GAP, layout.scale), layout),
+        centerLayoutY(y - scaleLayoutValue(8, layout.scale), layout),
+        0,
+      ));
       this.drawMeld(node, meld, layout.scale);
     });
+  }
+
+  private drawOpenMeldPool(
+    y: number,
+    width: number,
+    meldCount: number,
+    layout: ReturnType<typeof resolveHulebuRuntimeLayout>,
+  ): void {
+    const panel = this.node.getChildByName("OpenMeldPoolBackdrop") ?? new Node("OpenMeldPoolBackdrop");
+    panel.layer = this.node.layer;
+    if (!panel.parent) {
+      this.node.addChild(panel);
+    }
+    panel.active = true;
+    panel.setPosition(new Vec3(0, centerLayoutY(y, layout), -1));
+    panel.setSiblingIndex(0);
+    const transform = panel.getComponent(UITransform) ?? panel.addComponent(UITransform);
+    transform.setContentSize(scaleLayoutValue(width, layout.scale), scaleLayoutValue(82, layout.scale));
+    const graphics = panel.getComponent(Graphics) ?? panel.addComponent(Graphics);
+    graphics.clear();
+    graphics.fillColor = new Color(7, 64, 50, 224);
+    graphics.strokeColor = PANEL_STROKE;
+    graphics.lineWidth = scaleLayoutValue(2, layout.scale);
+    graphics.roundRect(-transform.width / 2, -transform.height / 2, transform.width, transform.height, scaleLayoutValue(8, layout.scale));
+    graphics.fill();
+    graphics.stroke();
+
+    const title = this.ensureLabel(panel, "Title");
+    title.string = meldCount > 0 ? "已碰牌池" : "已碰牌池 · 暂无";
+    title.fontSize = scaleLayoutValue(11, layout.scale);
+    title.lineHeight = scaleLayoutValue(14, layout.scale);
+    title.color = new Color(250, 226, 171, 255);
+    title.node.setPosition(new Vec3(0, scaleLayoutValue(31, layout.scale), 2));
+    title.node.getComponent(UITransform)?.setContentSize(transform.width, scaleLayoutValue(18, layout.scale));
   }
 
   private applyRiver(riverNodes: HulebuRiverNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
@@ -111,8 +153,8 @@ export class MeldRiverLayerBinder extends Component {
     badgeLabel.fontSize = scaleLayoutValue(12, scale);
     badgeLabel.lineHeight = scaleLayoutValue(15, scale);
     badgeLabel.color = BADGE_TEXT;
-    badgeLabel.node.setPosition(new Vec3(0, scaleLayoutValue(18, scale), 2));
-    badgeLabel.node.getComponent(UITransform)?.setContentSize(scaleLayoutValue(56, scale), scaleLayoutValue(18, scale));
+    badgeLabel.node.setPosition(new Vec3(0, scaleLayoutValue(15, scale), 2));
+    badgeLabel.node.getComponent(UITransform)?.setContentSize(scaleLayoutValue(44, scale), scaleLayoutValue(16, scale));
     this.drawBadge(node, badgeLabel.node, scale);
 
     const fallbackLabel = this.ensureLabel(node, "FallbackLabel");
@@ -120,14 +162,14 @@ export class MeldRiverLayerBinder extends Component {
     fallbackLabel.fontSize = scaleLayoutValue(11, scale);
     fallbackLabel.lineHeight = scaleLayoutValue(14, scale);
     fallbackLabel.color = LABEL_TEXT;
-    fallbackLabel.node.setPosition(new Vec3(0, scaleLayoutValue(-17, scale), 3));
-    fallbackLabel.node.getComponent(UITransform)?.setContentSize(scaleLayoutValue(96, scale), scaleLayoutValue(18, scale));
+    fallbackLabel.node.setPosition(new Vec3(0, scaleLayoutValue(-16, scale), 3));
+    fallbackLabel.node.getComponent(UITransform)?.setContentSize(scaleLayoutValue(72, scale), scaleLayoutValue(16, scale));
 
     const occupiedTiles = Math.max(0, Math.min(4, meld.count));
     for (let index = 0; index < 4; index += 1) {
       const tileNode = this.ensureTileArtNode(node, "MeldTile", index, MELD_TILE_WIDTH, MELD_TILE_HEIGHT, scale);
       tileNode.active = index < occupiedTiles;
-      tileNode.setPosition(new Vec3(scaleLayoutValue((index - (occupiedTiles - 1) / 2) * 24, scale), scaleLayoutValue(-2, scale), 1));
+      tileNode.setPosition(new Vec3(scaleLayoutValue((index - (occupiedTiles - 1) / 2) * 18, scale), scaleLayoutValue(-6, scale), 1));
       if (index < occupiedTiles) {
         this.applyTileSprite(tileNode, meld.prefabKey, meld.label, scale, fallbackLabel);
       }
@@ -168,8 +210,8 @@ export class MeldRiverLayerBinder extends Component {
     if (!graphics) {
       graphics = badgeNode.addComponent(Graphics);
     }
-    const width = scaleLayoutValue(56, scale);
-    const height = scaleLayoutValue(18, scale);
+    const width = scaleLayoutValue(44, scale);
+    const height = scaleLayoutValue(16, scale);
     graphics.clear();
     graphics.fillColor = BADGE_FILL;
     graphics.strokeColor = PANEL_STROKE;
