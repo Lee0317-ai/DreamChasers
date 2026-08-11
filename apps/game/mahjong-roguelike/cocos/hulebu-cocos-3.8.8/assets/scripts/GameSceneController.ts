@@ -2852,7 +2852,6 @@ export class GameSceneController extends Component {
       layout,
     );
 
-    this.drawProgressDots(root, layout);
   }
 
   private applyShellHud(hud: HulebuHudModel): void {
@@ -3202,28 +3201,6 @@ export class GameSceneController extends Component {
       scaleLayoutValue(17, layout.scale),
       new Color(250, 226, 171, 255),
     ).node.setSiblingIndex(mask.children.length - 1);
-  }
-
-  private drawProgressDots(root: Node, layout: RuntimeLayout): void {
-    const y = resolveHulebuPortraitZones(layout).progressDotY;
-    const startX = scaleLayoutValue(276, layout.scale);
-    const gap = scaleLayoutValue(24, layout.scale);
-    for (let index = 0; index < 4; index += 1) {
-      const dot = this.drawRoundedPanel(
-        root,
-        `ProgressDot_${index}`,
-        startX + index * gap,
-        y,
-        scaleLayoutValue(13, layout.scale),
-        scaleLayoutValue(13, layout.scale),
-        scaleLayoutValue(7, layout.scale),
-        index === 0 ? JADE_FILL : new Color(218, 187, 137, 255),
-        PLAQUE_STROKE,
-        scaleLayoutValue(2, layout.scale),
-        layout,
-      );
-      dot.setSiblingIndex(root.children.length - 1);
-    }
   }
 
   private drawRightToolButtons(root: Node, layout: RuntimeLayout, tableRect: { centerX: number; centerY: number; width: number; height: number }): void {

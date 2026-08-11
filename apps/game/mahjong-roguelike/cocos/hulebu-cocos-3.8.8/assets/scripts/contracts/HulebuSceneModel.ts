@@ -17,6 +17,7 @@ export interface HulebuBoardNodeModel {
   sourcePackage?: string;
   stackDepth?: number;
   visualScale?: number;
+  displayZone?: "mountain" | "loose";
 }
 
 export interface HulebuCellNodeModel {

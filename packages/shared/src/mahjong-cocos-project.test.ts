@@ -502,10 +502,15 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).not.toContain("Math.max(1, layout.scale ?? 1)");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("fittedBoardScale");
     expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("boardTiles.length <= 48 ? 0.92");
-    expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("visualScale: boardVisualScale");
+    expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain("visualScale: isLoose ? 1 : boardVisualScale");
+    expect(readText("assets/scripts/runtime/HulebuRuntimeState.ts")).toContain('displayZone: isLoose ? "loose" : "mountain"');
     expect(gameSceneController).toContain("centerLayoutY");
 
     expect(boardLayerBinder).toContain("createTileNode");
+    expect(boardLayerBinder).toContain("ShakeLoosePoolBackdrop");
+    expect(boardLayerBinder).toContain('node.displayZone === "loose"');
+    expect(boardLayerBinder).toContain("震落牌区");
+    expect(boardLayerBinder).toContain("drawLooseTileZone");
     expect(boardLayerBinder).toContain("setTileClickHandler");
     expect(boardLayerBinder).toContain("this.node.on(Node.EventType.TOUCH_END, this.handleBoardPointerEnd, this)");
     expect(boardLayerBinder).toContain("this.node.on(Node.EventType.MOUSE_UP, this.handleBoardPointerEnd, this)");
@@ -617,6 +622,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const slotLayerBinder = readText("assets/scripts/SlotLayerBinder.ts");
     const hudBinder = readText("assets/scripts/HudBinder.ts");
     const formalUiCatalog = readText("assets/scripts/assets/HulebuFormalUiCatalog.ts");
+    const portraitLayout = readText("assets/scripts/bootstrap/HulebuPortraitLayout.ts");
 
     expect(gameSceneController).toContain("VisualShellRoot");
     expect(gameSceneController).toContain("GreenTableFelt");
@@ -651,6 +657,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("input.on(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this)");
     expect(gameSceneController).toContain("handleCounterInputEnd(event.getUILocation())");
     expect(gameSceneController).toContain("ProgressPlaque");
+    expect(gameSceneController).not.toContain("ProgressDot_");
+    expect(gameSceneController).not.toContain("drawProgressDots");
+    expect(portraitLayout).not.toContain("progressDotY");
     expect(gameSceneController).toContain("ProgressPlaque: HULEBU_FORMAL_UI_SPRITES.hud.tileCounter");
     expect(gameSceneController).toContain("DynamicLevelFace");
     expect(gameSceneController).toContain("DynamicScoreFace");
@@ -2375,7 +2384,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
       HulebuRuntimeState: new (level: unknown) => {
         executeComboByKey: (candidateKey: string | null) => boolean;
         toSceneModel: (layout: { width: number; height: number; cssWidth: number; cssHeight: number; scale: number }) => {
-          boardNodes: Array<{ tileId: string; interactable: boolean; dimmed: boolean; position: { x: number; y: number } }>;
+          boardNodes: Array<{ tileId: string; interactable: boolean; dimmed: boolean; displayZone?: string; position: { x: number; y: number } }>;
           comboControls: Array<{ combo: string; candidateKey: string | null; interactable: boolean }>;
           hud: { slotStatusText: string };
         };
@@ -2420,6 +2429,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(sceneModel.boardNodes.find((node) => node.tileId === "lower-b")?.interactable).toBe(true);
     expect(sceneModel.boardNodes.find((node) => node.tileId === "top-a")?.interactable).toBe(true);
     expect(sceneModel.boardNodes.find((node) => node.tileId === "top-a")?.position.y).toBeGreaterThan(0);
+    expect(sceneModel.boardNodes.filter((node) => node.displayZone === "loose")).toHaveLength(2);
+    expect(sceneModel.boardNodes.filter((node) => node.displayZone === "loose").every((node) => node.interactable)).toBe(true);
+    expect(new Set(sceneModel.boardNodes.filter((node) => node.displayZone === "loose").map((node) => node.position.x)).size).toBe(2);
 
     const fullSlotLevel = {
       ...gangLevel,

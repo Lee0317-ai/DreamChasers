@@ -14,6 +14,7 @@ import {
   type HulebuTileSuit,
   type HulebuToolType,
 } from "../config/HulebuLevelConfig";
+import { resolveHulebuPortraitZones } from "../bootstrap/HulebuPortraitLayout";
 
 interface HulebuRuntimeTile extends HulebuLevelTileConfig {
   location: "board" | "slot" | "reserve" | "river" | "removed";
@@ -566,8 +567,19 @@ export class HulebuRuntimeState {
     const boardCenterX = scaleLayoutValue(screenWidth / 2, layoutScale);
     const boardCenterY = scaleLayoutValue(screenHeight * 0.56, layoutScale);
     const boardTiles = this.tiles.filter((tile) => tile.location === "board");
-    const boardXs = boardTiles.length > 0 ? boardTiles.map((tile) => tile.x) : [configCenterX];
-    const boardYs = boardTiles.length > 0 ? boardTiles.map((tile) => tile.y) : [configCenterY];
+    const configuredTilesById = new Map(this.level.tiles.map((tile) => [tile.id, tile]));
+    const isLooseTile = (tile: HulebuRuntimeTile): boolean => {
+      const configuredTile = configuredTilesById.get(tile.id);
+      return Boolean(configuredTile)
+        && (tile.x !== configuredTile!.x || tile.y !== configuredTile!.y || tile.layer !== configuredTile!.layer);
+    };
+    const mountainTiles = boardTiles.filter((tile) => !isLooseTile(tile));
+    const looseTiles = boardTiles
+      .filter(isLooseTile)
+      .sort((left, right) => left.y - right.y || left.x - right.x || left.id.localeCompare(right.id));
+    const looseIndexById = new Map(looseTiles.map((tile, index) => [tile.id, index]));
+    const boardXs = mountainTiles.length > 0 ? mountainTiles.map((tile) => tile.x) : [configCenterX];
+    const boardYs = mountainTiles.length > 0 ? mountainTiles.map((tile) => tile.y) : [configCenterY];
     const configWidth = Math.max(1, Math.max(...boardXs) - Math.min(...boardXs));
     const configHeight = Math.max(1, Math.max(...boardYs) - Math.min(...boardYs));
     const fittedBoardScale = Math.min(
@@ -577,27 +589,44 @@ export class HulebuRuntimeState {
     const densityScaleFloor = boardTiles.length <= 48 ? 0.92 : boardTiles.length <= 96 ? 0.78 : 0.62;
     const boardScale = Math.min(1.05, Math.max(densityScaleFloor, fittedBoardScale)) * layoutScale;
     const boardVisualScale = Math.min(1.45, Math.max(1, boardScale / (0.62 * layoutScale)));
+    const portraitZones = resolveHulebuPortraitZones({
+      width: layout.width,
+      height: layout.height,
+      cssHeight: layout.cssHeight ?? screenHeight,
+      scale: layoutScale,
+    });
+    const looseStartX = scaleLayoutValue(screenWidth - 210, layoutScale);
+    const looseStartY = portraitZones.meldY - scaleLayoutValue(8, layoutScale);
 
     return {
       boardNodes: boardTiles
-        .sort((a, b) => a.layer - b.layer || a.id.localeCompare(b.id))
+        .sort((a, b) => Number(isLooseTile(a)) - Number(isLooseTile(b)) || a.layer - b.layer || a.id.localeCompare(b.id))
         .map((tile) => {
-          const blocked = this.isTileBlocked(tile.id);
+          const looseIndex = looseIndexById.get(tile.id);
+          const isLoose = looseIndex !== undefined;
+          const blocked = isLoose ? false : this.isTileBlocked(tile.id);
+          const looseColumn = isLoose ? looseIndex % 5 : 0;
+          const looseRow = isLoose ? Math.floor(looseIndex / 5) : 0;
           return {
             name: `Tile_${tile.id}`,
             tileId: tile.id,
             label: this.getTileLabel(tile),
             position: {
-              x: Math.round(boardCenterX + (tile.x - configCenterX) * boardScale),
-              y: Math.round(boardCenterY - (tile.y - configCenterY) * boardScale),
+              x: isLoose
+                ? looseStartX + scaleLayoutValue(looseColumn * 40, layoutScale)
+                : Math.round(boardCenterX + (tile.x - configCenterX) * boardScale),
+              y: isLoose
+                ? looseStartY + scaleLayoutValue(looseRow * 48, layoutScale)
+                : Math.round(boardCenterY - (tile.y - configCenterY) * boardScale),
             },
-            zIndex: tile.layer * 100,
+            zIndex: isLoose ? 1000 + looseIndex : tile.layer * 100,
             interactable: !blocked,
             dimmed: blocked,
             prefabKey: `tile.${tile.suit}.${tile.rank}`,
             sourcePackage: this.level.id,
-            stackDepth: tile.layer + 1,
-            visualScale: boardVisualScale,
+            stackDepth: isLoose ? 1 : tile.layer + 1,
+            visualScale: isLoose ? 1 : boardVisualScale,
+            displayZone: isLoose ? "loose" : "mountain",
           };
         }),
       slotNodes: this.createCells("Slot", this.slot, this.level.defaults.slotLimit),

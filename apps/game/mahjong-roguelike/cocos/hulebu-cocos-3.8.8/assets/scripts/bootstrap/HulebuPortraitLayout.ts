@@ -7,7 +7,6 @@ export interface HulebuPortraitLayoutInput {
 
 export interface HulebuPortraitZones {
   topPlaqueY: number;
-  progressDotY: number;
   slotY: number;
   reserveY: number;
   comboY: number;
@@ -33,7 +32,6 @@ export function resolveHulebuPortraitZones(layout: HulebuPortraitLayoutInput): H
 
   return {
     topPlaqueY,
-    progressDotY: topPlaqueY - scaled(30, scale),
     slotY,
     reserveY,
     comboY,

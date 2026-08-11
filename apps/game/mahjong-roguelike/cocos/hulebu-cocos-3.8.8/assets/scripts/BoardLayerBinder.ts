@@ -60,9 +60,10 @@ export class BoardLayerBinder extends Component {
 
   applyBoardNodes(nodes: HulebuBoardNodeModel[]): void {
     const layout = resolveHulebuRuntimeLayout();
-    const root = this.tilePool ?? this.node.getChildByName("TilePool") ?? this.node;
+    const root = this.ensureTilePool();
     this.ensureBoardHitArea();
     root.active = true;
+    this.drawLooseTileZone(nodes, layout, root);
     this.currentTiles.length = 0;
     root.children.forEach((child) => {
       child.active = false;
@@ -84,6 +85,79 @@ export class BoardLayerBinder extends Component {
       this.applyTileVisual(node, model, layout.scale * (model.visualScale ?? 1), selectable);
       this.bindTileClick(node);
     });
+  }
+
+  private ensureTilePool(): Node {
+    const existing = this.tilePool ?? this.node.getChildByName("TilePool");
+    if (existing) {
+      this.tilePool = existing;
+      return existing;
+    }
+    const root = new Node("TilePool");
+    root.layer = this.node.layer;
+    this.node.addChild(root);
+    this.tilePool = root;
+    return root;
+  }
+
+  private drawLooseTileZone(
+    nodes: HulebuBoardNodeModel[],
+    layout: ReturnType<typeof resolveHulebuRuntimeLayout>,
+    tileRoot: Node,
+  ): void {
+    const looseNodes = nodes.filter((node) => node.displayZone === "loose");
+    const panel = this.node.getChildByName("ShakeLoosePoolBackdrop") ?? new Node("ShakeLoosePoolBackdrop");
+    panel.layer = this.node.layer;
+    if (!panel.parent) {
+      this.node.addChild(panel);
+    }
+    panel.active = looseNodes.length > 0;
+    if (looseNodes.length === 0) {
+      return;
+    }
+
+    const tileWidth = scaleLayoutValue(TILE_WIDTH, layout.scale);
+    const tileHeight = scaleLayoutValue(TILE_HEIGHT, layout.scale);
+    const xs = looseNodes.map((node) => node.position.x);
+    const ys = looseNodes.map((node) => node.position.y);
+    const width = Math.max(
+      scaleLayoutValue(72, layout.scale),
+      Math.max(...xs) - Math.min(...xs) + tileWidth + scaleLayoutValue(18, layout.scale),
+    );
+    const height = Math.max(
+      scaleLayoutValue(78, layout.scale),
+      Math.max(...ys) - Math.min(...ys) + tileHeight + scaleLayoutValue(30, layout.scale),
+    );
+    const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const centerY = (Math.min(...ys) + Math.max(...ys)) / 2 + scaleLayoutValue(6, layout.scale);
+    panel.setPosition(new Vec3(centerLayoutX(centerX, layout), centerLayoutY(centerY, layout), -10));
+    const transform = panel.getComponent(UITransform) ?? panel.addComponent(UITransform);
+    transform.setContentSize(width, height);
+    const graphics = panel.getComponent(Graphics) ?? panel.addComponent(Graphics);
+    graphics.clear();
+    graphics.fillColor = new Color(7, 64, 50, 205);
+    graphics.strokeColor = TILE_STROKE_COLOR;
+    graphics.lineWidth = scaleLayoutValue(2, layout.scale);
+    graphics.roundRect(-width / 2, -height / 2, width, height, scaleLayoutValue(8, layout.scale));
+    graphics.fill();
+    graphics.stroke();
+
+    const labelNode = panel.getChildByName("Title") ?? new Node("Title");
+    labelNode.layer = panel.layer;
+    if (!labelNode.parent) {
+      panel.addChild(labelNode);
+    }
+    labelNode.setPosition(new Vec3(0, height / 2 - scaleLayoutValue(11, layout.scale), 1));
+    const labelTransform = labelNode.getComponent(UITransform) ?? labelNode.addComponent(UITransform);
+    labelTransform.setContentSize(width, scaleLayoutValue(18, layout.scale));
+    const label = labelNode.getComponent(Label) ?? labelNode.addComponent(Label);
+    label.string = `震落牌区 ${looseNodes.length}`;
+    label.fontSize = scaleLayoutValue(11, layout.scale);
+    label.lineHeight = scaleLayoutValue(14, layout.scale);
+    label.horizontalAlign = Label.HorizontalAlign.CENTER;
+    label.verticalAlign = Label.VerticalAlign.CENTER;
+    label.color = new Color(250, 226, 171, 255);
+    panel.setSiblingIndex(Math.max(0, tileRoot.getSiblingIndex()));
   }
 
   private createTileNode(parent: Node, scale = 1): Node {
