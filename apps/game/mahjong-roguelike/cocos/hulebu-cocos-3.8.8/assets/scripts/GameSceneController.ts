@@ -251,6 +251,14 @@ interface HulebuAccountProgressRecord {
   activeRun: Record<string, unknown> | null;
 }
 
+interface HulebuMetaFlowHitArea {
+  centerX: number;
+  centerY: number;
+  halfWidth: number;
+  halfHeight: number;
+  handler: () => void;
+}
+
 @ccclass("GameSceneController")
 export class GameSceneController extends Component {
   @property(BoardLayerBinder)
@@ -296,6 +304,7 @@ export class GameSceneController extends Component {
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
   private readonly counterTouchEndHandler = (event: EventTouch): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly counterMouseUpHandler = (event: EventMouse): void => this.handleCounterInputEnd(event.getUILocation());
+  private readonly metaFlowTouchEndHandler = (event: EventTouch): void => this.handleMetaFlowInputEnd(event.getUILocation());
   private counterExpanded = false;
   private lastCounterToggleAt = 0;
   private currentLevelIndex = 0;
@@ -324,6 +333,7 @@ export class GameSceneController extends Component {
   private suppressAccountSyncPush = false;
   private activeRunStorageBlocked = false;
   private tutorialReplayMode = false;
+  private metaFlowHitAreas: HulebuMetaFlowHitArea[] = [];
 
   private createActiveRunSaveService(storage: StoragePort): SaveService<HulebuActiveRunSnapshot> {
     return new SaveService({
@@ -2693,11 +2703,28 @@ export class GameSceneController extends Component {
     overlay.layer = this.node.layer;
     overlay.setPosition(new Vec3(0, 0, 100));
     overlay.setSiblingIndex(this.node.children.length - 1);
+    this.metaFlowHitAreas = [];
+    overlay.off(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
+    overlay.on(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
     overlay.children.slice().forEach((child) => {
       child.removeFromParent();
       child.destroy();
     });
     return overlay;
+  }
+
+  private handleMetaFlowInputEnd(pointer: { x: number; y: number }): void {
+    if (this.gamePhase !== "title" && this.gamePhase !== "lobby" && this.gamePhase !== "modes" && this.gamePhase !== "map") {
+      return;
+    }
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const topY = layout.height - pointer.y;
+    const hit = [...this.metaFlowHitAreas].reverse().find((area) => (
+      Math.abs(pointer.x - area.centerX) <= area.halfWidth
+      && Math.abs(topY - area.centerY) <= area.halfHeight
+    ));
+    hit?.handler();
   }
 
   private hideFlowOverlay(): void {
@@ -2914,10 +2941,13 @@ export class GameSceneController extends Component {
     textColor = new Color(255, 242, 204, 255),
   ): Node {
     const node = this.drawMetaFlowSprite(root, name, spritePath, x, y, width, height, layout, sliced);
-    const button = node.getComponent(Button) ?? node.addComponent(Button);
-    button.transition = Button.Transition.NONE;
-    node.off(Node.EventType.TOUCH_END);
-    node.on(Node.EventType.TOUCH_END, handler, this);
+    this.metaFlowHitAreas.push({
+      centerX: scaleLayoutValue(x, layout.scale),
+      centerY: scaleLayoutValue(y, layout.scale),
+      halfWidth: scaleLayoutValue(width / 2, layout.scale),
+      halfHeight: scaleLayoutValue(height / 2, layout.scale),
+      handler,
+    });
     this.drawMetaFlowChildLabel(node, "Label", text, 0, 5, width - 24, Math.max(26, height - 18), 16, textColor, layout);
     return node;
   }
