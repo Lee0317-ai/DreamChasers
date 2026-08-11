@@ -485,7 +485,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("`本层得分 ${score}`");
     expect(gameSceneController).toContain("layout, 320, 220, CLEAR_OVERLAY_PANEL_BG_SPRITE");
     expect(gameSceneController).toContain('"OverlayTitle", title, 20, new Color(35, 76, 57, 255), 0');
-    expect(gameSceneController).toContain('"ContinueButton", "继续", 0, -84');
+    expect(gameSceneController).toContain('tutorialFinished ? "回到大厅" : this.tutorialReplayMode ? "下一步" : "继续"');
     expect(gameSceneController).toContain("overlay.setSiblingIndex(this.node.children.length - 1)");
     expect(gameSceneController).toContain("this.rewardOverlay.setSiblingIndex(this.node.children.length - 1)");
     expect(gameSceneController).toContain("backdrop.getComponent(BlockInputEvents) ?? backdrop.addComponent(BlockInputEvents)");
@@ -623,6 +623,10 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const hudBinder = readText("assets/scripts/HudBinder.ts");
     const formalUiCatalog = readText("assets/scripts/assets/HulebuFormalUiCatalog.ts");
     const portraitLayout = readText("assets/scripts/bootstrap/HulebuPortraitLayout.ts");
+    const tutorialGuideFlow = gameSceneController.slice(
+      gameSceneController.indexOf("private drawTutorialGuide("),
+      gameSceneController.indexOf("private resolveTutorialGuideCopy("),
+    );
 
     expect(gameSceneController).toContain("VisualShellRoot");
     expect(gameSceneController).toContain("GreenTableFelt");
@@ -660,6 +664,18 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).not.toContain("ProgressDot_");
     expect(gameSceneController).not.toContain("drawProgressDots");
     expect(portraitLayout).not.toContain("progressDotY");
+    expect(gameSceneController).toContain("HULEBU_TUTORIAL_LEVEL_COUNT = 5");
+    expect(gameSceneController).toContain("TutorialGuidePanel");
+    expect(gameSceneController).toContain("resolveTutorialGuideCopy");
+    expect(gameSceneController).toContain('availableCombos.has("peng")');
+    expect(gameSceneController).toContain('availableCombos.has("chi")');
+    expect(gameSceneController).toContain('availableCombos.has("gang")');
+    expect(gameSceneController).toContain("LobbyMode_Tutorial");
+    expect(gameSceneController).toContain("新手教学");
+    expect(gameSceneController).toContain("tutorialReplayMode");
+    expect(gameSceneController).toContain("if (this.tutorialReplayMode) {\n      return true;\n    }");
+    expect(gameSceneController).toContain("this.tutorialReplayMode = false;\n    this.detachRuntimeState();");
+    expect(tutorialGuideFlow).not.toContain("BlockInputEvents");
     expect(gameSceneController).toContain("ProgressPlaque: HULEBU_FORMAL_UI_SPRITES.hud.tileCounter");
     expect(gameSceneController).toContain("DynamicLevelFace");
     expect(gameSceneController).toContain("DynamicScoreFace");

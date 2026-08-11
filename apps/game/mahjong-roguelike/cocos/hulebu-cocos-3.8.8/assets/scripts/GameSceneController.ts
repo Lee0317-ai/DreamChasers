@@ -178,6 +178,14 @@ const HULEBU_META_PROFILE_STORAGE_KEY = "hulebu-cocos-meta-profile";
 const HULEBU_ACHIEVEMENTS_STORAGE_KEY = "hulebu-cocos-achievements";
 const HULEBU_ACCOUNT_PROGRESS_ENDPOINT = "/api/games/hulebu/progress";
 const HULEBU_BOARD_REVISION = "overlap-eight-percent-2026-08-11";
+const HULEBU_TUTORIAL_LEVEL_COUNT = 5;
+const HULEBU_TUTORIAL_TITLES = [
+  "选牌与碰",
+  "顺子与吃",
+  "四张与杠",
+  "多组合选择",
+  "满槽救场",
+] as const;
 const HULEBU_ACHIEVEMENTS: Array<{ id: HulebuAchievementId; title: string; description: string; hint: string }> = [
   { id: "mainline-first-clear", title: "主线首通", description: "完成一轮主线通关。", hint: "把 20 关主线打穿一次。" },
   { id: "boss-hulebu-king", title: "胡了卜王", description: "击破第 20 关终章 Boss。", hint: "在主线终章拿下胡了卜王。" },
@@ -314,6 +322,7 @@ export class GameSceneController extends Component {
   private accountSyncTimer: ReturnType<typeof setTimeout> | null = null;
   private suppressAccountSyncPush = false;
   private activeRunStorageBlocked = false;
+  private tutorialReplayMode = false;
 
   private createActiveRunSaveService(storage: StoragePort): SaveService<HulebuActiveRunSnapshot> {
     return new SaveService({
@@ -720,6 +729,7 @@ export class GameSceneController extends Component {
   }
 
   returnToLobby(): void {
+    this.tutorialReplayMode = false;
     this.detachRuntimeState();
     this.pendingRunProfile = null;
     this.selectedAdvancedAbility = null;
@@ -756,6 +766,7 @@ export class GameSceneController extends Component {
   }
 
   resumeActiveRun(): void {
+    this.tutorialReplayMode = false;
     const snapshot = this.activeRunSnapshot ?? this.loadActiveRunSnapshot();
     if (!snapshot) {
       this.showLobbyOverlay();
@@ -1080,6 +1091,15 @@ export class GameSceneController extends Component {
       return;
     }
 
+    if (this.tutorialReplayMode) {
+      if (this.currentDisplayLevelOrder >= HULEBU_TUTORIAL_LEVEL_COUNT) {
+        this.returnToLobby();
+        return;
+      }
+      this.startLevel(this.currentDisplayLevelOrder + 1);
+      return;
+    }
+
     if (this.runtimeState && HULEBU_REWARD_LEVEL_ORDERS.has(this.getDisplayLevelOrderForFlow())) {
       this.pendingRewardLevelIndex = this.currentDisplayLevelOrder + 1;
       this.gamePhase = "reward";
@@ -1095,7 +1115,11 @@ export class GameSceneController extends Component {
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const level = this.runtimeState?.getLevelConfig();
-    const title = `${this.getRunModeLabel()}第 ${this.currentDisplayLevelOrder} 层通关`;
+    const tutorialFinished = this.tutorialReplayMode
+      && this.currentDisplayLevelOrder >= HULEBU_TUTORIAL_LEVEL_COUNT;
+    const title = tutorialFinished
+      ? "新手教学完成"
+      : `${this.getRunModeLabel()}第 ${this.currentDisplayLevelOrder} 层通关`;
     const subtitle = level ? `${level.name} · ${level.subtitle}` : "牌山已清空";
     const score = stripHudPrefix(this.latestSceneModel?.hud.scoreText ?? "分 0", "分");
 
@@ -1103,7 +1127,16 @@ export class GameSceneController extends Component {
     this.writeOverlayLabel(overlay, "OverlayTitle", title, 20, new Color(35, 76, 57, 255), 0);
     this.writeOverlayLabel(overlay, "OverlayScore", `本层得分 ${score}`, 16, new Color(111, 69, 34, 255), -28);
     this.writeOverlayLabel(overlay, "OverlaySubtitle", subtitle, 12, new Color(111, 86, 58, 255), -51);
-    this.createOverlayButton(overlay, "ContinueButton", "继续", 0, -84, () => this.continueAfterClear(), 142, 40);
+    this.createOverlayButton(
+      overlay,
+      "ContinueButton",
+      tutorialFinished ? "回到大厅" : this.tutorialReplayMode ? "下一步" : "继续",
+      0,
+      -84,
+      () => this.continueAfterClear(),
+      142,
+      40,
+    );
   }
 
   private showRewardOverlay(): void {
@@ -1330,10 +1363,11 @@ export class GameSceneController extends Component {
   }
 
   private showLobbyOverlay(): void {
+    this.hideTutorialGuide();
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     this.gamePhase = "lobby";
-    this.drawOverlayPanel(overlay, layout, 338, 360);
+    this.drawOverlayPanel(overlay, layout, 338, 424);
     this.writeOverlayLabel(overlay, "OverlayTitle", "胡了卜", 24, new Color(255, 246, 216, 255), 132);
     this.writeOverlayLabel(
       overlay,
@@ -1563,6 +1597,7 @@ export class GameSceneController extends Component {
     this.createOverlayButton(overlay, "LobbyMode_Advanced", "高阶", 0, -96, () => this.showAdvancedRunOverlay(), 300, 40, this.getAdvancedProgressText());
     this.createOverlayButton(overlay, "LobbyMode_Upgrade", "升级", -78, -144, () => this.showMetaUpgradeOverlay(), 144, 40);
     this.createOverlayButton(overlay, "LobbyMode_Collection", "生涯", 78, -144, () => this.showCollectionOverlay(), 144, 40);
+    this.createOverlayButton(overlay, "LobbyMode_Tutorial", "新手教学", 0, -190, () => this.startTutorialReplay(), 300, 32);
   }
 
   private drawAdvancedRunChoices(overlay: Node): void {
@@ -1716,6 +1751,7 @@ export class GameSceneController extends Component {
   }
 
   private startRunWithProfile(profile: HulebuRunProfile): void {
+    this.tutorialReplayMode = false;
     this.detachRuntimeState();
     this.runStateMachine = new RunStateMachine("bossIntro");
     this.gameCoordinator = new GameCoordinator(this.runStateMachine);
@@ -1741,6 +1777,21 @@ export class GameSceneController extends Component {
     this.eventSeenLevelOrders.clear();
     this.pendingRunProfile = null;
     this.startNextLevel(profile.startOrder);
+  }
+
+  private startTutorialReplay(): void {
+    this.tutorialReplayMode = true;
+    this.detachRuntimeState();
+    this.runStateMachine = new RunStateMachine("bossIntro");
+    this.gameCoordinator = new GameCoordinator(this.runStateMachine);
+    this.runProfile = HULEBU_MAINLINE_RUN_PROFILE;
+    this.pendingRunProfile = null;
+    this.selectedAdvancedAbility = null;
+    this.runRewards = createHulebuRunRewardState();
+    this.levelEventModifiers = createHulebuLevelModifierState();
+    this.eventSeenLevelOrders.clear();
+    this.runArchetype = createHulebuRunArchetypeState("peng");
+    this.startLevel(1);
   }
 
   private resumeRuntimeSnapshot(snapshot: HulebuActiveRunSnapshot): void {
@@ -1846,6 +1897,9 @@ export class GameSceneController extends Component {
   }
 
   private commitActiveRun(): boolean {
+    if (this.tutorialReplayMode) {
+      return true;
+    }
     if (this.activeRunStorageBlocked) {
       console.warn("[Hulebu] active run storage is blocked; refusing to overwrite unreadable primary bytes");
       return false;
@@ -2548,6 +2602,7 @@ export class GameSceneController extends Component {
   }
 
   private prepareFlowOverlay(): Node {
+    this.hideTutorialGuide();
     const overlay = this.rewardOverlay ?? this.ensureChild(this.node, "RewardOverlay");
     this.rewardOverlay = overlay;
     overlay.active = true;
@@ -2868,6 +2923,130 @@ export class GameSceneController extends Component {
     this.updateCounterPlaque(toolRoot);
     this.drawTileCounterOverlay(toolRoot, hud);
     this.updateShellToolBadges(toolRoot, hud.toolText);
+    this.drawTutorialGuide(toolRoot, this.latestSceneModel);
+  }
+
+  private drawTutorialGuide(root: Node, sceneModel: HulebuCocosSceneModel | null): void {
+    const copy = this.resolveTutorialGuideCopy(sceneModel);
+    const existing = root.getChildByName("TutorialGuidePanel");
+    if (!copy || this.counterExpanded) {
+      if (existing) {
+        existing.active = false;
+      }
+      return;
+    }
+
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const zones = resolveHulebuPortraitZones(layout);
+    const panel = this.drawRoundedPanel(
+      root,
+      "TutorialGuidePanel",
+      layout.width / 2,
+      zones.topPlaqueY - scaleLayoutValue(126, layout.scale),
+      scaleLayoutValue(Math.min(326, layout.cssWidth - 28), layout.scale),
+      scaleLayoutValue(66, layout.scale),
+      scaleLayoutValue(12, layout.scale),
+      new Color(6, 66, 51, 244),
+      new Color(231, 187, 91, 255),
+      scaleLayoutValue(3, layout.scale),
+      layout,
+    );
+    panel.active = true;
+    panel.setSiblingIndex(root.children.length - 1);
+
+    const title = this.writeShellLabel(
+      panel,
+      "TutorialTitle",
+      copy.title,
+      scaleLayoutValue(12, layout.scale),
+      new Color(250, 222, 154, 255),
+      scaleLayoutValue(16, layout.scale),
+    );
+    title.node.getComponent(UITransform)?.setContentSize(
+      scaleLayoutValue(300, layout.scale),
+      scaleLayoutValue(20, layout.scale),
+    );
+    const body = this.writeShellLabel(
+      panel,
+      "TutorialBody",
+      copy.body,
+      scaleLayoutValue(11, layout.scale),
+      new Color(255, 248, 226, 255),
+      -scaleLayoutValue(14, layout.scale),
+    );
+    body.node.getComponent(UITransform)?.setContentSize(
+      scaleLayoutValue(302, layout.scale),
+      scaleLayoutValue(34, layout.scale),
+    );
+  }
+
+  private resolveTutorialGuideCopy(
+    sceneModel: HulebuCocosSceneModel | null,
+  ): { title: string; body: string } | null {
+    if (!sceneModel
+      || this.gamePhase !== "playing"
+      || this.runProfile.mode !== "mainline"
+      || this.currentDisplayLevelOrder < 1
+      || this.currentDisplayLevelOrder > HULEBU_TUTORIAL_LEVEL_COUNT) {
+      return null;
+    }
+
+    const levelOrder = this.currentDisplayLevelOrder;
+    const occupiedSlots = sceneModel.slotNodes.filter((slot) => slot.occupied).length;
+    const availableCombos = new Set(
+      sceneModel.comboControls.filter((control) => control.interactable).map((control) => control.combo),
+    );
+    const title = `新手 ${levelOrder}/${HULEBU_TUTORIAL_LEVEL_COUNT} · ${HULEBU_TUTORIAL_TITLES[levelOrder - 1]}`;
+
+    if (levelOrder === 1) {
+      return {
+        title,
+        body: availableCombos.has("peng")
+          ? "三张相同牌已经凑齐，点击下方发光的“碰”。"
+          : occupiedSlots === 0
+            ? "先点击亮起的正面牌；牌背和被压住的牌暂时不能选。"
+            : `槽位已有 ${occupiedSlots}/3 张，继续找相同牌，再手动点“碰”。`,
+      };
+    }
+    if (levelOrder === 2) {
+      return {
+        title,
+        body: availableCombos.has("chi")
+          ? "同花色连续三张已经凑齐，点击下方发光的“吃”。"
+          : `选择同花色的连续点数，当前槽位 ${occupiedSlots}/3 张。`,
+      };
+    }
+    if (levelOrder === 3) {
+      return {
+        title,
+        body: availableCombos.has("gang")
+          ? "四张相同牌已齐，点击“杠”获得更高收益。"
+          : availableCombos.has("peng")
+            ? "已经可以碰，但先别点；再找第 4 张相同牌完成“杠”。"
+            : `继续收集四张相同牌，当前槽位 ${occupiedSlots}/4 张。`,
+      };
+    }
+    if (levelOrder === 4) {
+      return {
+        title,
+        body: availableCombos.size > 1
+          ? "多个动作已点亮，先选动作；同类多组会在按钮上方出现。"
+          : "观察槽位和发光动作，吃、碰同时可用时选择更合适的一组。",
+      };
+    }
+    return {
+      title,
+      body: occupiedSlots >= 6
+        ? "槽位快满了：优先执行发光组合，必要时使用洗牌或撤回。"
+        : "留意 8 格槽位，先消除再补牌，不要让无关孤张占满。",
+    };
+  }
+
+  private hideTutorialGuide(): void {
+    const panel = this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME)?.getChildByName("TutorialGuidePanel");
+    if (panel) {
+      panel.active = false;
+    }
   }
 
   private toggleTileCounterOverlay(): void {
