@@ -847,6 +847,11 @@ export class GameSceneController extends Component {
       return;
     }
 
+    if (this.runStateMachine.phase === "playing.comboChoosing" && this.pendingComboChoice?.combo === combo) {
+      this.closeComboChoiceOverlay();
+      return;
+    }
+
     this.applyCoordinatorResult(this.gameCoordinator.dispatch({ type: "combo.execute", combo }));
   }
 
@@ -1183,19 +1188,7 @@ export class GameSceneController extends Component {
 
     this.pendingComboChoice = { combo, options };
     const overlay = this.prepareFlowOverlay();
-    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
-    this.drawOverlayPanel(overlay, layout, 334, 268);
-    this.writeOverlayLabel(overlay, "OverlayTitle", `选择${this.getComboDisplayName(combo)}组合`, 20, new Color(255, 246, 216, 255), 96);
-    this.writeOverlayLabel(
-      overlay,
-      "OverlaySubtitle",
-      "同类组合存在多组，点选本次要发动的一组",
-      13,
-      new Color(232, 207, 166, 255),
-      66,
-    );
-    this.drawComboChoiceOptions(overlay, options);
-    this.createOverlayButton(overlay, "ComboChoice_Back", "返回", 0, -106, () => this.closeComboChoiceOverlay(), 126, 36);
+    this.drawComboChoiceOptions(overlay, combo, options);
   }
 
   private restorePendingComboChoiceOverlay(pendingCombo: PendingComboContext | null): void {
@@ -1219,27 +1212,40 @@ export class GameSceneController extends Component {
     );
   }
 
-  private drawComboChoiceOptions(overlay: Node, options: HulebuRuntimeComboCandidateOption[]): void {
+  private drawComboChoiceOptions(
+    overlay: Node,
+    combo: HulebuComboType,
+    options: HulebuRuntimeComboCandidateOption[],
+  ): void {
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const anchor = this.resolveComboChoiceMenuAnchor(combo, layout);
     const visibleOptions = options.slice(0, 4);
-    const startY = visibleOptions.length > 2 ? 30 : 16;
     visibleOptions.forEach((option, index) => {
-      const row = Math.floor(index / 2);
-      const column = index % 2;
-      const x = visibleOptions.length === 1 ? 0 : column === 0 ? -78 : 78;
-      const y = startY - row * 58;
       const labels = option.labels.join(" ");
       const button = this.createOverlayButton(
         overlay,
         `ComboChoice_${index}`,
         labels || this.getComboDisplayName(option.type),
-        x,
-        y,
+        anchor.x,
+        anchor.y + 56 + index * 56,
         () => this.executeComboCandidateOption(option),
         142,
         50,
       );
       this.drawComboChoiceTilePreview(button, option);
     });
+  }
+
+  private resolveComboChoiceMenuAnchor(combo: HulebuComboType, layout: RuntimeLayout): { x: number; y: number } {
+    const comboOrder: HulebuComboType[] = ["hu", "gang", "peng", "chi", "bugang"];
+    const comboIndex = Math.max(0, comboOrder.indexOf(combo));
+    const rawX = -142 + comboIndex * 71;
+    const maxX = Math.max(0, layout.cssWidth / 2 - 77);
+    const comboY = resolveHulebuPortraitZones(layout).comboY;
+    return {
+      x: Math.max(-maxX, Math.min(maxX, rawX)),
+      y: (comboY - layout.height / 2) / layout.scale,
+    };
   }
 
   private drawComboChoiceTilePreview(button: Node, option: HulebuRuntimeComboCandidateOption): void {

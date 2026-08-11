@@ -2765,7 +2765,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(sceneModel.hud.coinsText).toContain("铜钱 26");
   });
 
-  test("supports Cocos combo candidate choice overlay before resolving multi-option combos", async () => {
+  test("supports an inline Cocos combo candidate menu before resolving multi-option combos", async () => {
     const runtimeStatePath = "assets/scripts/runtime/HulebuRuntimeState.ts";
     const gameSceneController = readText("assets/scripts/GameSceneController.ts");
     const runtimeText = readText(runtimeStatePath);
@@ -2775,11 +2775,22 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("pendingComboChoice");
     expect(gameSceneController).toContain("showComboChoiceOverlay");
     expect(gameSceneController).toContain("drawComboChoiceOptions");
+    expect(gameSceneController).toContain("resolveComboChoiceMenuAnchor");
     expect(gameSceneController).toContain("executeComboCandidateOption");
     expect(gameSceneController).toContain('dispatch({ type: "combo.execute", combo })');
     expect(gameSceneController).toContain('dispatch({ type: "combo.choose", candidateId: option.key })');
-    expect(gameSceneController).toContain("ComboChoice_Back");
+    expect(gameSceneController).not.toContain("ComboChoice_Back");
     expect(gameSceneController).toContain("ComboChoiceTileArt");
+
+    const inlineMenuFlow = gameSceneController.slice(
+      gameSceneController.indexOf("private showComboChoiceOverlay("),
+      gameSceneController.indexOf("private restorePendingComboChoiceOverlay("),
+    );
+    expect(inlineMenuFlow).not.toContain("drawOverlayPanel");
+    expect(inlineMenuFlow).not.toContain("writeOverlayLabel");
+    expect(inlineMenuFlow).toContain("this.drawComboChoiceOptions(overlay, combo, options)");
+    expect(gameSceneController).toContain("anchor.y + 56 + index * 56");
+    expect(gameSceneController).toContain('this.pendingComboChoice?.combo === combo');
 
     const runtimeModule = await import(pathToFileURL(path.join(cocosRoot, runtimeStatePath)).href) as {
       HulebuRuntimeState: new (level: unknown) => {
