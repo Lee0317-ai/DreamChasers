@@ -89,8 +89,9 @@ export class BoardLayerBinder extends Component {
       }
       child.name = model.name;
       child.active = true;
+      const renderZ = isLoose ? index + 1 : model.zIndex;
       child.setPosition(
-        new Vec3(centerLayoutX(model.position.x, layout), centerLayoutY(model.position.y, layout), model.zIndex),
+        new Vec3(centerLayoutX(model.position.x, layout), centerLayoutY(model.position.y, layout), renderZ),
       );
       child.setSiblingIndex(index);
       this.currentTiles.push({ node: child, model });
