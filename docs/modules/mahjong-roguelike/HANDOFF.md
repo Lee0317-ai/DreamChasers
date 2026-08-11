@@ -429,3 +429,5 @@ T264 已把通关反馈从共用三选一底板改为独立 `settlement` 底板�
 T265 已把顶部正式 HUD 改成“底图负责金边、动态内容面负责文字和数值”。formal v1 关卡、分数、记牌器图片都含烘焙示例值，后续禁止直接再叠 Label；必须保留 `DynamicLevelFace / DynamicScoreFace / DynamicProgressFace` 覆盖示例值，并在 `applyTopPlaqueSprite()` 成功后清空节点 Graphics fallback。记牌器展开位置不再读取牌山 bbox，而是固定在 `CounterPlaque` 下方。已碰牌池只消费 `openMeldNodes`，补杠仍由 runtime 副露状态识别，不要为 UI 另建第二份碰牌记录。
 
 T266 已锁定 formal v1 `settlement` 底图的正文安全区。顶部莲花和流苏会占用面板中心上方区域，通关标题必须保持在 y=`0` 或更低，得分/说明/按钮继续使用 `-28 / -51 / -84`；不要再把标题恢复到旧 y=`46`。
+
+T267 已确认正式场景没有预制 `MeldRiverRoot`，后续必须保留 `ensureMeldRiverLayer()` 的动态创建和 `BoardRoot + 1` sibling 层级，不能退回只查找组件。牌面锁定统一使用 8% 覆盖面积：配置层 `HULEBU_COCOS_STACK_OVERLAP_THRESHOLD` 和表现层 `TILE_LOCK_OVERLAP_THRESHOLD` 必须保持 `0.08` 且使用 `>=`；改动该口径时同步升级 `HULEBU_BOARD_REVISION`。
