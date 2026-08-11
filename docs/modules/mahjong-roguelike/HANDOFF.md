@@ -419,3 +419,5 @@ T259 已把 Cocos 正式局内页收敛到固定竖屏布局。后续不要重�
 T260 已把被遮挡牌的显示态与点击态收敛为同一个 `selectable` 判定。后续不要只依据配置里的 `model.interactable` 点亮牌面，也不要移除 Sprite 请求键中的 `active / locked` 状态，否则异步加载可能再次把暗牌恢复为亮牌。分数和紧凑记牌器均通过贴图上方的动态值层显示，禁止重新叠加多行 `Label` 或四门长串；记牌器展开详情仍由既有 `CounterExpandedPanel` 承担。
 
 T261 已锁定正式八条和 fallback 叠层口径。八条唯一正确来源是 v7 已确认的上下 `W/M` 形 `tile_bamboo_08.png`，不要再由 formal 构建脚本生成 `2×4` 版本。`BoardLayerBinder` 与 `ComboBarBinder` 的程序化 Graphics 只用于正式 Sprite 加载前或加载失败时的 fallback；加载成功后必须清空。动作按钮资源需要保留透明异形外轮廓，不要重新裁成整块深色矩形。
+
+T262 已完成分数、记牌器和锁牌牌背收口。分数动态数字必须直接叠在正式分数底图上，不要恢复 `DynamicScoreMask`；紧凑记牌器只显示“记牌器”，34 牌详情继续放在 `ToolOverlayRoot/CounterExpandedPanel`，并保持万、条、筒、字四行完整。锁牌统一使用 formal v1 `tile.back -> back-default`，恢复可点后再显示真实牌面；不要用灰色真实牌面代替牌背。production build ID 为 `11b6581eb2e2-20260811T035723Z`。
