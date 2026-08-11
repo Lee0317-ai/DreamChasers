@@ -466,8 +466,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("artNode.setPosition(new Vec3(0, 0, 0))");
     expect(gameSceneController).toContain("this.applyShellHud(sceneModel.hud)");
     expect(gameSceneController).toContain("TOOL_OVERLAY_ROOT_NAME");
-    expect(gameSceneController).toContain("this.drawRightToolButtons(this.ensureToolOverlayRoot(), layout, tableRect)");
-    expect(gameSceneController).toContain("this.updateShellToolBadges(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud.toolText)");
+    expect(gameSceneController).toContain("this.drawRightToolButtons(toolRoot, layout, tableRect)");
+    expect(gameSceneController).toContain("const toolRoot = this.ensureToolOverlayRoot()");
+    expect(gameSceneController).toContain("this.updateShellToolBadges(toolRoot, hud.toolText)");
     expect(gameSceneController).toContain("parseToolCounts(toolText)");
     expect(gameSceneController).toContain("ToolButton_Wash\", counts.wash");
     expect(gameSceneController).toContain("ToolButton_Undo\", counts.undo");
@@ -514,8 +515,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("isTileCoveredByHigherTile");
     expect(boardLayerBinder).toContain("const selectable = model.interactable && !model.dimmed");
     expect(boardLayerBinder).toContain("this.applyTileVisual(node, model");
-    expect(boardLayerBinder).toContain("TILE_LOCKED_SPRITE_COLOR");
-    expect(boardLayerBinder).toContain("sprite.color = selectable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR");
+    expect(boardLayerBinder).toContain('selectable ? model.prefabKey : "tile.back"');
+    expect(boardLayerBinder).toContain("sprite.color = TILE_ACTIVE_SPRITE_COLOR");
     expect(boardLayerBinder).toContain("isTileCurrentlySelectable");
     expect(boardLayerBinder).toContain("getBoardPointerUiLocation");
     expect(boardLayerBinder).toContain("getTileEventRect");
@@ -603,15 +604,27 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("CounterPlaque");
     expect(gameSceneController).toContain("counterExpanded");
     expect(gameSceneController).toContain("updateScorePlaque");
-    expect(gameSceneController).toContain("DynamicScoreMask");
+    expect(gameSceneController).toContain("DynamicScoreValue");
+    expect(gameSceneController).toContain('oldMask?.destroy()');
     expect(gameSceneController).toContain("updateCounterPlaque");
     expect(gameSceneController).toContain("DynamicCounterMask");
-    expect(gameSceneController).toContain("`×${total}`");
+    expect(gameSceneController).toContain('"记牌器"');
     expect(gameSceneController).toContain("zones.topPlaqueY - scaleLayoutValue(58");
     expect(gameSceneController).toContain("drawTileCounterOverlay");
     expect(gameSceneController).toContain("CounterExpandedPanel");
+    expect(gameSceneController).toContain("drawCounterEntry");
+    expect(gameSceneController).toContain('root.getChildByName("CounterPlaque")');
+    expect(gameSceneController).toContain("hud.tileCounter.suits.forEach");
+    expect(gameSceneController).toContain("suit.tiles.forEach");
     expect(gameSceneController).toContain("BlockInputEvents");
     expect(gameSceneController).toContain("toggleTileCounterOverlay");
+    expect(gameSceneController).toContain("lastCounterToggleAt");
+    expect(gameSceneController).toContain("toolRoot.setSiblingIndex(this.node.children.length - 1)");
+    expect(gameSceneController).toContain("panel.setSiblingIndex(root.children.length - 1)");
+    expect(gameSceneController).toContain("target.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this)");
+    expect(gameSceneController).toContain("input.on(Input.EventType.TOUCH_END, this.counterTouchEndHandler, this)");
+    expect(gameSceneController).toContain("input.on(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this)");
+    expect(gameSceneController).toContain("handleCounterInputEnd(event.getUILocation())");
     expect(gameSceneController).toContain("ProgressPlaque");
     expect(gameSceneController).toContain("zones.topPlaqueY - scaleLayoutValue(58, layout.scale)");
     expect(gameSceneController).toContain("scaleLayoutValue(318, layout.scale)");
@@ -635,6 +648,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("TILE_SIDE_COLOR");
     expect(boardLayerBinder).toContain("drawTileFace");
     expect(boardLayerBinder).toContain("TILE_LOW_LAYER_OPACITY");
+    expect(boardLayerBinder).toContain('selectable ? model.prefabKey : "tile.back"');
     expect(boardLayerBinder).toContain("TILE_LOCKED_FACE_COLOR");
     expect(boardLayerBinder).toContain("handleBoardPointerEnd");
     expect(boardLayerBinder).toContain("blocker.enabled = false");
@@ -2061,6 +2075,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const boardLayerBinder = readText("assets/scripts/BoardLayerBinder.ts");
 
     expect(catalog).toContain("HULEBU_TILE_SPRITE_FRAME_PATHS");
+    expect(catalog).toContain('"tile.back": getHulebuFormalMahjongSpritePath("back-default")');
     expect(catalog).toContain("loadTileSpriteFrame");
     expect(catalog).toContain("resources.load");
     expect(catalog).toContain("SpriteFrame");

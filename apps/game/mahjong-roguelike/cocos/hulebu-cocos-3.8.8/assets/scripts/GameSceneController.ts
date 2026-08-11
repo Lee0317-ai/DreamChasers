@@ -1,4 +1,4 @@
-import { _decorator, BlockInputEvents, Button, Camera, Canvas, Color, Component, Graphics, Label, Layers, Node, resources, Sprite, SpriteFrame, sys, UITransform, Vec3 } from "cc";
+import { _decorator, BlockInputEvents, Button, Camera, Canvas, Color, Component, EventMouse, EventTouch, Graphics, input, Input, Label, Layers, Node, resources, Sprite, SpriteFrame, sys, UITransform, Vec3 } from "cc";
 import { DEBUG } from "cc/env";
 import { BoardLayerBinder } from "./BoardLayerBinder";
 import { ComboBarBinder } from "./ComboBarBinder";
@@ -283,7 +283,10 @@ export class GameSceneController extends Component {
   };
   private readonly activeRunSaveService: SaveService<HulebuActiveRunSnapshot> = this.createActiveRunSaveService(this.activeRunStorage);
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
+  private readonly counterTouchEndHandler = (event: EventTouch): void => this.handleCounterInputEnd(event.getUILocation());
+  private readonly counterMouseUpHandler = (event: EventMouse): void => this.handleCounterInputEnd(event.getUILocation());
   private counterExpanded = false;
+  private lastCounterToggleAt = 0;
   private currentLevelIndex = 0;
   private currentDisplayLevelOrder = 1;
   private runProfile: HulebuRunProfile = HULEBU_MAINLINE_RUN_PROFILE;
@@ -542,6 +545,7 @@ export class GameSceneController extends Component {
   start(): void {
     this.exposeBrowserDebugApi();
     const visibleSize = this.ensureCanvasHost();
+    this.bindCounterInputEvents();
     this.latestLayout = visibleSize;
     this.ensureVisualShell(visibleSize);
     this.ensureLayerReferences();
@@ -573,6 +577,10 @@ export class GameSceneController extends Component {
     if (this.autoLoadSampleScene) {
       this.applySceneModel(createHulebuSampleSceneModelForLayout(visibleSize));
     }
+  }
+
+  onDestroy(): void {
+    this.unbindCounterInputEvents();
   }
 
   applySceneModel(sceneModel: HulebuCocosSceneModel): void {
@@ -2686,7 +2694,9 @@ export class GameSceneController extends Component {
 
     this.drawGreenTableFelt(shellRoot, layout);
     this.drawTopPlaques(shellRoot, layout, levelOrder, tableRect);
-    this.drawRightToolButtons(this.ensureToolOverlayRoot(), layout, tableRect);
+    const toolRoot = this.ensureToolOverlayRoot();
+    this.drawCounterEntry(toolRoot, layout);
+    this.drawRightToolButtons(toolRoot, layout, tableRect);
   }
 
   private resolveTableRect(layout: RuntimeLayout): { centerX: number; centerY: number; width: number; height: number; top: number; bottom: number } {
@@ -2711,6 +2721,30 @@ export class GameSceneController extends Component {
     toolRoot.layer = this.node.layer;
     toolRoot.setSiblingIndex(this.node.children.length - 1);
     return toolRoot;
+  }
+
+  private drawCounterEntry(root: Node, layout: RuntimeLayout): void {
+    const zones = resolveHulebuPortraitZones(layout);
+    this.drawTopPlaque(
+      root,
+      "CounterPlaque",
+      scaleLayoutValue(82, layout.scale),
+      zones.topPlaqueY - scaleLayoutValue(58, layout.scale),
+      162,
+      52,
+      "",
+      layout,
+    );
+    const target = root.getChildByName("CounterPlaque");
+    if (!target) {
+      return;
+    }
+    target.active = true;
+    target.getComponent(Button) ?? target.addComponent(Button);
+    target.off(Node.EventType.TOUCH_END);
+    target.off(Button.EventType.CLICK);
+    target.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this);
+    target.setSiblingIndex(root.children.length - 1);
   }
 
   private drawGreenTableFelt(root: Node, layout: RuntimeLayout): void {
@@ -2775,16 +2809,6 @@ export class GameSceneController extends Component {
     this.drawTopPlaque(root, "ScorePlaque", scaleLayoutValue(195, layout.scale), y, 100, 52, "分数\n0", layout);
     this.drawTopPlaque(
       root,
-      "CounterPlaque",
-      scaleLayoutValue(82, layout.scale),
-      zones.topPlaqueY - scaleLayoutValue(58, layout.scale),
-      162,
-      52,
-      "",
-      layout,
-    );
-    this.drawTopPlaque(
-      root,
       "ProgressPlaque",
       scaleLayoutValue(318, layout.scale),
       y,
@@ -2805,22 +2829,50 @@ export class GameSceneController extends Component {
     }
 
     this.updateScorePlaque(shellRoot, stripHudPrefix(hud.scoreText, "分"));
-    this.updateCounterPlaque(shellRoot, hud.tileCounter.total);
     this.updateShellPlaqueText(
       shellRoot,
       "ProgressPlaque",
       hud.bossText ? hud.bossText : hud.boardRemainingText,
       15,
     );
-    this.drawTileCounterOverlay(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud);
-    this.updateShellToolBadges(this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME) ?? shellRoot, hud.toolText);
+    const toolRoot = this.ensureToolOverlayRoot();
+    this.drawCounterEntry(toolRoot, this.latestLayout ?? resolveHulebuRuntimeLayout());
+    this.updateCounterPlaque(toolRoot);
+    this.drawTileCounterOverlay(toolRoot, hud);
+    this.updateShellToolBadges(toolRoot, hud.toolText);
   }
 
   private toggleTileCounterOverlay(): void {
+    const now = Date.now();
+    if (now - this.lastCounterToggleAt < 100) {
+      return;
+    }
+    this.lastCounterToggleAt = now;
     this.counterExpanded = !this.counterExpanded;
     if (this.latestSceneModel) {
       this.applyShellHud(this.latestSceneModel.hud);
     }
+  }
+
+  private bindCounterInputEvents(): void {
+    input.on(Input.EventType.TOUCH_END, this.counterTouchEndHandler, this);
+    input.on(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this);
+  }
+
+  private unbindCounterInputEvents(): void {
+    input.off(Input.EventType.TOUCH_END, this.counterTouchEndHandler, this);
+    input.off(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this);
+  }
+
+  private handleCounterInputEnd(pointer: { x: number; y: number }): void {
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    const centerX = scaleLayoutValue(82, layout.scale);
+    const centerY = resolveHulebuPortraitZones(layout).topPlaqueY - scaleLayoutValue(58, layout.scale);
+    if (Math.abs(pointer.x - centerX) > scaleLayoutValue(81, layout.scale)
+      || Math.abs(pointer.y - centerY) > scaleLayoutValue(26, layout.scale)) {
+      return;
+    }
+    this.toggleTileCounterOverlay();
   }
 
   private drawTileCounterOverlay(root: Node, hud: HulebuHudModel): void {
@@ -2840,7 +2892,7 @@ export class GameSceneController extends Component {
       layout,
     );
     panel.active = this.counterExpanded;
-    panel.setSiblingIndex(0);
+    panel.setSiblingIndex(root.children.length - 1);
     panel.getComponent(BlockInputEvents) ?? panel.addComponent(BlockInputEvents);
     panel.getComponent(Button) ?? panel.addComponent(Button);
     panel.off(Node.EventType.TOUCH_END);
@@ -2850,7 +2902,7 @@ export class GameSceneController extends Component {
     this.writeShellLabel(
       panel,
       "Title",
-      `记牌器  ${hud.tileCounter.total}`,
+      "记牌器",
       scaleLayoutValue(14, layout.scale),
       PLAQUE_TEXT,
       scaleLayoutValue(98, layout.scale),
@@ -2861,7 +2913,7 @@ export class GameSceneController extends Component {
       const label = this.writeShellLabel(
         panel,
         `SuitLabel_${suit.suit}`,
-        `${suit.label}${suit.total}`,
+        suit.label,
         scaleLayoutValue(12, layout.scale),
         PLAQUE_TEXT,
       );
@@ -2907,18 +2959,15 @@ export class GameSceneController extends Component {
     rowY: number,
     layout: RuntimeLayout,
   ): void {
-    const cell = this.drawRoundedPanel(
-      panel,
-      `CounterTile_${tile.prefabKey}`,
+    const cell = this.ensureChild(panel, `CounterTile_${tile.prefabKey}`);
+    cell.setPosition(new Vec3(
       -scaleLayoutValue(122, layout.scale) + tileIndex * scaleLayoutValue(31, layout.scale),
       rowY,
-      scaleLayoutValue(25, layout.scale),
-      scaleLayoutValue(34, layout.scale),
-      scaleLayoutValue(4, layout.scale),
-      tile.count > 0 ? new Color(255, 249, 235, 255) : new Color(205, 196, 182, 210),
-      new Color(112, 82, 49, 190),
-      scaleLayoutValue(1, layout.scale),
-    );
+      1,
+    ));
+    const cellTransform = cell.getComponent(UITransform) ?? cell.addComponent(UITransform);
+    cellTransform.setContentSize(scaleLayoutValue(25, layout.scale), scaleLayoutValue(38, layout.scale));
+    cell.getComponent(Graphics)?.clear();
     cell.active = true;
     cell.layer = panel.layer;
 
@@ -2945,10 +2994,12 @@ export class GameSceneController extends Component {
       cell,
       "Count",
       String(tile.count),
-      scaleLayoutValue(9, layout.scale),
-      tile.count > 0 ? PLAQUE_TEXT : new Color(126, 116, 105, 255),
-      -scaleLayoutValue(12, layout.scale),
+      scaleLayoutValue(10, layout.scale),
+      tile.count > 0 ? new Color(255, 244, 209, 255) : new Color(158, 150, 136, 255),
+      -scaleLayoutValue(14, layout.scale),
     );
+    const countTransform = countLabel.node.getComponent(UITransform) ?? countLabel.node.addComponent(UITransform);
+    countTransform.setContentSize(scaleLayoutValue(24, layout.scale), scaleLayoutValue(12, layout.scale));
     countLabel.node.setSiblingIndex(cell.children.length - 1);
   }
 
@@ -2971,13 +3022,13 @@ export class GameSceneController extends Component {
     this.drawScorePlaqueValue(plaque, value, layout);
   }
 
-  private updateCounterPlaque(root: Node, total: number): void {
+  private updateCounterPlaque(root: Node): void {
     const plaque = root.getChildByName("CounterPlaque");
     if (!plaque) {
       return;
     }
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
-    this.drawCounterPlaqueValue(plaque, total, layout);
+    this.drawCounterPlaqueValue(plaque, layout);
   }
 
   private updateShellToolBadges(root: Node, toolText: string): void {
@@ -3035,60 +3086,44 @@ export class GameSceneController extends Component {
     if (name === "ScorePlaque") {
       this.drawScorePlaqueValue(node, "0", layout);
     } else if (name === "CounterPlaque") {
-      this.drawCounterPlaqueValue(node, 0, layout);
+      this.drawCounterPlaqueValue(node, layout);
     } else {
       this.writeShellLabel(node, "Label", text, scaleLayoutValue(15, layout.scale), PLAQUE_TEXT);
-    }
-    if (name === "CounterPlaque") {
-      node.getComponent(Button) ?? node.addComponent(Button);
-      node.off(Node.EventType.TOUCH_END);
-      node.off(Button.EventType.CLICK);
-      node.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this);
     }
   }
 
   private drawScorePlaqueValue(plaque: Node, value: string, layout: RuntimeLayout): void {
-    const mask = this.drawRoundedPanel(
-      plaque,
-      "DynamicScoreMask",
-      0,
-      -scaleLayoutValue(8, layout.scale),
-      scaleLayoutValue(66, layout.scale),
-      scaleLayoutValue(25, layout.scale),
-      scaleLayoutValue(4, layout.scale),
-      new Color(244, 224, 184, 255),
-      new Color(244, 224, 184, 255),
-      0,
-    );
-    mask.setSiblingIndex(plaque.children.length - 1);
+    const oldMask = plaque.getChildByName("DynamicScoreMask");
+    oldMask?.destroy();
     this.writeShellLabel(
-      mask,
-      "Value",
+      plaque,
+      "DynamicScoreValue",
       value,
       scaleLayoutValue(18, layout.scale),
       new Color(18, 86, 65, 255),
-    ).node.setSiblingIndex(mask.children.length - 1);
+      -scaleLayoutValue(8, layout.scale),
+    ).node.setSiblingIndex(plaque.children.length - 1);
   }
 
-  private drawCounterPlaqueValue(plaque: Node, total: number, layout: RuntimeLayout): void {
+  private drawCounterPlaqueValue(plaque: Node, layout: RuntimeLayout): void {
     const mask = this.drawRoundedPanel(
       plaque,
       "DynamicCounterMask",
-      scaleLayoutValue(31, layout.scale),
       0,
-      scaleLayoutValue(78, layout.scale),
-      scaleLayoutValue(32, layout.scale),
-      scaleLayoutValue(4, layout.scale),
-      new Color(8, 68, 52, 255),
-      new Color(8, 68, 52, 255),
       0,
+      scaleLayoutValue(144, layout.scale),
+      scaleLayoutValue(38, layout.scale),
+      scaleLayoutValue(8, layout.scale),
+      new Color(8, 68, 52, 255),
+      new Color(202, 156, 73, 255),
+      scaleLayoutValue(1, layout.scale),
     );
     mask.setSiblingIndex(plaque.children.length - 1);
     this.writeShellLabel(
       mask,
       "Value",
-      `×${total}`,
-      scaleLayoutValue(20, layout.scale),
+      "记牌器",
+      scaleLayoutValue(17, layout.scale),
       new Color(250, 226, 171, 255),
     ).node.setSiblingIndex(mask.children.length - 1);
   }

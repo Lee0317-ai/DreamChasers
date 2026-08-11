@@ -2,6 +2,7 @@ import { resources, SpriteFrame } from "cc";
 import { getHulebuFormalMahjongSpritePath } from "./HulebuFormalUiCatalog";
 
 export const HULEBU_TILE_SPRITE_FRAME_PATHS: Record<string, string> = {
+  "tile.back": getHulebuFormalMahjongSpritePath("back-default"),
   ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tiao.${index + 1}`, getHulebuFormalMahjongSpritePath(`bamboo-${String(index + 1).padStart(2, "0")}`)])),
   ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tong.${index + 1}`, getHulebuFormalMahjongSpritePath(`dot-${String(index + 1).padStart(2, "0")}`)])),
   ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.wan.${index + 1}`, getHulebuFormalMahjongSpritePath(`wan-${String(index + 1).padStart(2, "0")}`)])),

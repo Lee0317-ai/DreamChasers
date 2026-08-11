@@ -24,8 +24,7 @@ const TILE_TOP_STROKE_GLOW = new Color(244, 192, 74, 255);
 const TILE_TOP_SIDE_COLOR = new Color(10, 79, 64, 255);
 const TILE_TOP_FACE_COLOR = new Color(255, 252, 242, 255);
 const TILE_ACTIVE_SPRITE_COLOR = new Color(255, 255, 255, 255);
-const TILE_LOCKED_SPRITE_COLOR = new Color(48, 61, 54, 255);
-const TILE_LOW_LAYER_OPACITY = 58;
+const TILE_LOW_LAYER_OPACITY = 210;
 const TILE_LOCK_OVERLAP_THRESHOLD = 0.001;
 type BoardPointerEvent = EventTouch | EventMouse;
 type CanvasPointerEvent = MouseEvent | PointerEvent | TouchEvent;
@@ -147,12 +146,12 @@ export class BoardLayerBinder extends Component {
     const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
     sprite.sizeMode = Sprite.SizeMode.CUSTOM;
     sprite.spriteFrame = null;
-    sprite.color = selectable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
+    sprite.color = TILE_ACTIVE_SPRITE_COLOR;
     artNode.active = false;
     label.node.active = true;
 
-    const tileKey = model.prefabKey;
-    const spriteRequestKey = `${tileKey}:${selectable ? "active" : "locked"}`;
+    const tileKey = selectable ? model.prefabKey : "tile.back";
+    const spriteRequestKey = `${model.prefabKey}:${selectable ? "face" : "back"}`;
     this.pendingSpriteKeys.set(node, spriteRequestKey);
     this.tileSpriteCatalog.loadTileSpriteFrame(tileKey, (spriteFrame: SpriteFrame | null) => {
       if (this.pendingSpriteKeys.get(node) !== spriteRequestKey || !spriteFrame) {
@@ -163,7 +162,7 @@ export class BoardLayerBinder extends Component {
         return;
       }
       this.clearProgrammaticTileFace(node);
-      sprite.color = selectable ? TILE_ACTIVE_SPRITE_COLOR : TILE_LOCKED_SPRITE_COLOR;
+      sprite.color = TILE_ACTIVE_SPRITE_COLOR;
       artNode.active = true;
       label.node.active = false;
     });
