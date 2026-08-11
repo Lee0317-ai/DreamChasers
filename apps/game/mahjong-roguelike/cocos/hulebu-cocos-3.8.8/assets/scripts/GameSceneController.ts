@@ -1375,12 +1375,14 @@ export class GameSceneController extends Component {
     this.gamePhase = "title";
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "TitleBrand", HULEBU_META_FLOW_UI.title.brandPlaque, 195, 122, 292, 104, layout, true);
+    this.drawMetaFlowLabel(overlay, "TitleName", "胡了卜", 195, 122, 250, 42, 30, new Color(255, 235, 181, 255), layout);
     this.drawMetaFlowSprite(overlay, "TitleSeal", HULEBU_META_FLOW_UI.title.jadeSeal, 195, 230, 88, 88, layout);
     this.drawMetaFlowLabel(overlay, "TitleTagline", "一局一局，把牌山打成自己的路", 195, 316, 340, 34, 15, new Color(244, 220, 169, 255), layout);
     this.drawMetaFlowButton(overlay, "TitleGuest", HULEBU_META_FLOW_UI.common.primaryButton, "游客试玩", 195, 438, 248, 58, () => this.showLobbyOverlay(), layout, true);
-    this.drawMetaFlowButton(overlay, "TitleAccount", HULEBU_META_FLOW_UI.common.secondaryButton, "账号登录", 195, 510, 248, 52, () => this.showLobbyOverlay(), layout, true);
+    this.drawMetaFlowButton(overlay, "TitleAccount", HULEBU_META_FLOW_UI.common.secondaryButton, "账号登录", 195, 510, 248, 52, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
     this.drawMetaFlowSprite(overlay, "TitleNote", HULEBU_META_FLOW_UI.common.notePanel, 195, 626, 300, 72, layout, true);
     this.drawMetaFlowLabel(overlay, "TitleNoteText", "当前版本支持游客本地档案，进入后可随时继续", 195, 626, 270, 38, 11, new Color(99, 66, 39, 255), layout);
   }
@@ -1390,8 +1392,10 @@ export class GameSceneController extends Component {
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     this.gamePhase = "lobby";
+    this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "LobbyBrand", HULEBU_META_FLOW_UI.title.brandPlaque, 132, 78, 210, 76, layout, true);
+    this.drawMetaFlowLabel(overlay, "LobbyBrandText", "胡了卜", 132, 78, 174, 28, 20, new Color(255, 236, 185, 255), layout);
     this.drawMetaFlowSprite(overlay, "LobbyCurrency", HULEBU_META_FLOW_UI.lobby.currencyPlaque, 319, 78, 112, 62, layout, true);
     this.drawMetaFlowSprite(overlay, "LobbyAvatar", HULEBU_META_FLOW_UI.lobby.avatarFrame, 47, 78, 52, 52, layout);
     this.drawMetaFlowLabel(overlay, "LobbyAccount", this.accountSyncMessage.replace(/^账号：/, ""), 112, 110, 180, 20, 10, new Color(237, 214, 169, 255), layout);
@@ -1404,6 +1408,7 @@ export class GameSceneController extends Component {
     this.gamePhase = "modes";
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "ModesTitle", HULEBU_META_FLOW_UI.title.brandPlaque, 195, 84, 246, 82, layout, true);
     this.drawMetaFlowLabel(overlay, "ModesTitleText", "选择模式", 195, 84, 220, 28, 20, new Color(255, 236, 187, 255), layout);
@@ -1422,13 +1427,14 @@ export class GameSceneController extends Component {
       this.drawMetaFlowChildSprite(card, "ModeTag", HULEBU_META_FLOW_UI.modes.stateTag, 124, 23, 64, 22, layout, true);
       this.drawMetaFlowChildLabel(card, "ModeTagText", mode.id === "main" ? "进行中" : "可进入", 124, 23, 58, 18, 9, new Color(255, 238, 189, 255), layout);
     });
-    this.drawMetaFlowButton(overlay, "ModesBack", HULEBU_META_FLOW_UI.common.secondaryButton, "返回大厅", 195, 786, 164, 48, () => this.showLobbyOverlay(), layout, true);
+    this.drawMetaFlowButton(overlay, "ModesBack", HULEBU_META_FLOW_UI.common.secondaryButton, "返回大厅", 195, 786, 164, 48, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
   }
 
   private showMainlineMapOverlay(): void {
     this.gamePhase = "map";
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "MapChapter", HULEBU_META_FLOW_UI.map.chapterPlaque, 195, 76, 282, 70, layout, true);
     this.drawMetaFlowLabel(overlay, "MapChapterText", "第一章 · 东风初试", 195, 76, 250, 26, 18, new Color(255, 239, 195, 255), layout);
@@ -1459,7 +1465,7 @@ export class GameSceneController extends Component {
       }
     });
     this.drawMetaFlowLabel(overlay, "MapHint", "点击当前节点开始本局，完成后解锁下一层", 195, 680, 340, 28, 11, new Color(238, 215, 170, 255), layout);
-    this.drawMetaFlowButton(overlay, "MapBack", HULEBU_META_FLOW_UI.common.secondaryButton, "返回大厅", 195, 786, 164, 48, () => this.showLobbyOverlay(), layout, true);
+    this.drawMetaFlowButton(overlay, "MapBack", HULEBU_META_FLOW_UI.common.secondaryButton, "返回大厅", 195, 786, 164, 48, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
   }
 
   private showMetaUpgradeOverlay(): void {
@@ -2847,7 +2853,7 @@ export class GameSceneController extends Component {
     node.layer = root.layer;
     node.setPosition(new Vec3(
       centerLayoutX(scaleLayoutValue(x, layout.scale), layout),
-      centerLayoutY(scaleLayoutValue(y, layout.scale), layout),
+      centerLayoutY(layout.height - scaleLayoutValue(y, layout.scale), layout),
       1,
     ));
     const uiTransform = node.getComponent(UITransform) ?? node.addComponent(UITransform);
@@ -2906,13 +2912,14 @@ export class GameSceneController extends Component {
     handler: () => void,
     layout: RuntimeLayout,
     sliced = false,
+    textColor = new Color(255, 242, 204, 255),
   ): Node {
     const node = this.drawMetaFlowSprite(root, name, spritePath, x, y, width, height, layout, sliced);
     const button = node.getComponent(Button) ?? node.addComponent(Button);
     button.transition = Button.Transition.NONE;
     node.off(Button.EventType.CLICK);
     node.on(Button.EventType.CLICK, handler, this);
-    this.drawMetaFlowChildLabel(node, "Label", text, 0, 5, width - 24, Math.max(26, height - 18), 16, new Color(255, 242, 204, 255), layout);
+    this.drawMetaFlowChildLabel(node, "Label", text, 0, 5, width - 24, Math.max(26, height - 18), 16, textColor, layout);
     return node;
   }
 
@@ -2932,7 +2939,7 @@ export class GameSceneController extends Component {
     node.layer = root.layer;
     node.setPosition(new Vec3(
       centerLayoutX(scaleLayoutValue(x, layout.scale), layout),
-      centerLayoutY(scaleLayoutValue(y, layout.scale), layout),
+      centerLayoutY(layout.height - scaleLayoutValue(y, layout.scale), layout),
       3,
     ));
     return this.configureMetaFlowLabel(node, text, width, height, fontSize, color, layout);
@@ -3016,6 +3023,7 @@ export class GameSceneController extends Component {
   }
 
   private ensureVisualShell(layout: RuntimeLayout, levelOrder = 1): void {
+    this.setGameplayPresentationVisible(true);
     const shellRoot = this.ensureChild(this.node, SHELL_ROOT_NAME);
     shellRoot.active = true;
     shellRoot.layer = this.node.layer;
@@ -3029,6 +3037,32 @@ export class GameSceneController extends Component {
     this.drawCounterEntry(toolRoot, layout);
     this.drawRightToolButtons(toolRoot, layout, tableRect);
     this.drawExitButton(toolRoot, layout);
+  }
+
+  private setGameplayPresentationVisible(visible: boolean): void {
+    const shellRoot = this.node.getChildByName(SHELL_ROOT_NAME);
+    const toolRoot = this.node.getChildByName(TOOL_OVERLAY_ROOT_NAME);
+    if (shellRoot) {
+      shellRoot.active = visible;
+    }
+    if (toolRoot) {
+      toolRoot.active = visible;
+    }
+    if (this.boardLayer) {
+      this.boardLayer.node.active = visible;
+    }
+    if (this.slotLayer) {
+      this.slotLayer.node.active = visible;
+    }
+    if (this.meldRiverLayer) {
+      this.meldRiverLayer.node.active = visible;
+    }
+    if (this.comboBar) {
+      this.comboBar.node.active = visible;
+    }
+    if (this.hud) {
+      this.hud.node.active = false;
+    }
   }
 
   private resolveTableRect(layout: RuntimeLayout): { centerX: number; centerY: number; width: number; height: number; top: number; bottom: number } {

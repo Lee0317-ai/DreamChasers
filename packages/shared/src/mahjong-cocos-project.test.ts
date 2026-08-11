@@ -653,6 +653,9 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).toContain("this.showMainlineMapOverlay()");
     expect(controllerText).toContain("this.showModeSelectionOverlay()");
     expect(controllerText).toContain("HULEBU_META_FLOW_UI.result.primaryButton");
+    expect(controllerText).toContain("centerLayoutY(layout.height - scaleLayoutValue(y, layout.scale), layout)");
+    expect(controllerText).toContain("this.setGameplayPresentationVisible(false)");
+    expect(controllerText).toContain("private setGameplayPresentationVisible(visible: boolean): void");
   });
 
   test("contains a target-concept visual shell for the Cocos first screen", () => {
