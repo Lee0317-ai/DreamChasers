@@ -1398,7 +1398,6 @@ export class GameSceneController extends Component {
     this.drawMetaFlowLabel(overlay, "LobbyBrandText", "胡了卜", 132, 78, 174, 28, 20, new Color(255, 236, 185, 255), layout);
     this.drawMetaFlowSprite(overlay, "LobbyCurrency", HULEBU_META_FLOW_UI.lobby.currencyPlaque, 319, 78, 112, 62, layout, true);
     this.drawMetaFlowSprite(overlay, "LobbyAvatar", HULEBU_META_FLOW_UI.lobby.avatarFrame, 47, 78, 52, 52, layout);
-    this.drawMetaFlowLabel(overlay, "LobbyAccount", this.accountSyncMessage.replace(/^账号：/, ""), 112, 110, 180, 20, 10, new Color(237, 214, 169, 255), layout);
     this.drawMetaFlowLabel(overlay, "LobbyCoins", `${this.metaCoins} 铜钱`, 319, 78, 92, 24, 12, new Color(80, 48, 26, 255), layout);
     this.drawMetaFlowLabel(overlay, "LobbyTitle", "局外大厅", 195, 151, 240, 28, 20, new Color(255, 236, 187, 255), layout);
     this.drawLobbyModeChoices(overlay);
@@ -2917,8 +2916,8 @@ export class GameSceneController extends Component {
     const node = this.drawMetaFlowSprite(root, name, spritePath, x, y, width, height, layout, sliced);
     const button = node.getComponent(Button) ?? node.addComponent(Button);
     button.transition = Button.Transition.NONE;
-    node.off(Button.EventType.CLICK);
-    node.on(Button.EventType.CLICK, handler, this);
+    node.off(Node.EventType.TOUCH_END);
+    node.on(Node.EventType.TOUCH_END, handler, this);
     this.drawMetaFlowChildLabel(node, "Label", text, 0, 5, width - 24, Math.max(26, height - 18), 16, textColor, layout);
     return node;
   }

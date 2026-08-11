@@ -656,6 +656,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(controllerText).toContain("centerLayoutY(layout.height - scaleLayoutValue(y, layout.scale), layout)");
     expect(controllerText).toContain("this.setGameplayPresentationVisible(false)");
     expect(controllerText).toContain("private setGameplayPresentationVisible(visible: boolean): void");
+    expect(controllerText).toContain("node.on(Node.EventType.TOUCH_END, handler, this)");
   });
 
   test("contains a target-concept visual shell for the Cocos first screen", () => {
