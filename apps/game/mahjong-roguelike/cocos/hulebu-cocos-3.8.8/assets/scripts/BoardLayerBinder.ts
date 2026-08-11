@@ -158,6 +158,7 @@ export class BoardLayerBinder extends Component {
     label.verticalAlign = Label.VerticalAlign.CENTER;
     label.color = new Color(250, 226, 171, 255);
     panel.setSiblingIndex(Math.max(0, tileRoot.getSiblingIndex()));
+    tileRoot.setSiblingIndex(this.node.children.length - 1);
   }
 
   private createTileNode(parent: Node, scale = 1): Node {
