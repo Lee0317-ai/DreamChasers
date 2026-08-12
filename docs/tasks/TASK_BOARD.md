@@ -389,4 +389,5 @@
 | T279 | 未填写 | 未命名任务 | Lee | 已完成 | 未填写 | 未填写 | - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json` |
 | T280 | 未填写 | 未命名任务 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
 | T281 | 未填写 | 未命名任务 | Lee | 未填写 | 未填写 | 未填写 | 未填写 |
+| T282 | 未填写 | 未命名任务 | Lee | 未填写 | 未填写 | 未填写 | 未填写 |
 <!-- DOCS_SYNC_TASKS_END -->
