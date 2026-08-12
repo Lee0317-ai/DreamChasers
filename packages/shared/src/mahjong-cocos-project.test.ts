@@ -483,7 +483,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(formalUiCatalog).toContain("modals/settlement/spriteFrame");
     expect(gameSceneController).toContain("HULEBU_META_FLOW_UI.result.victorySeal");
     expect(gameSceneController).toContain("HULEBU_META_FLOW_UI.result.victoryTitle");
-    expect(gameSceneController).toContain("`本层得分  ${score}`");
+    expect(gameSceneController).toContain('"ClearStatScoreLabel"');
+    expect(gameSceneController).toContain('"ClearStatScoreValue", score');
     expect(gameSceneController).toContain('"ClearTitleText", title');
     expect(gameSceneController).toContain('tutorialFinished ? "回到大厅" : this.tutorialReplayMode ? "下一步" : "继续"');
     expect(gameSceneController).toContain("overlay.setSiblingIndex(this.node.children.length - 1)");
@@ -879,6 +880,12 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("private refreshRuntimeScene");
     expect(gameSceneController).toContain('event.type === "level.cleared"');
     expect(gameSceneController).toContain("this.showClearOverlay()");
+    expect(gameSceneController).toContain("this.setGameplayPresentationVisible(false);");
+    expect(gameSceneController).toContain("this.drawMetaFlowBackdrop(overlay, layout, true)");
+    expect(gameSceneController).toContain('"ClearStatScoreLabel"');
+    expect(gameSceneController).toContain('"ClearStatLevelLabel"');
+    expect(gameSceneController).toContain('"ClearStatBoardLabel"');
+    expect(gameSceneController).toContain('&& this.gamePhase !== "cleared"');
     expect(gameSceneController).toContain("continueAfterClear");
     expect(gameSceneController).toContain("startNextLevel");
     expect(gameSceneController).toContain("this.ensureVisualShell(layout, this.runtimeState.getLevelOrder())");

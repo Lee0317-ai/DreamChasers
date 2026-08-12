@@ -1132,6 +1132,7 @@ export class GameSceneController extends Component {
 
   private showClearOverlay(): void {
     this.gamePhase = "cleared";
+    this.setGameplayPresentationVisible(false);
     const overlay = this.prepareFlowOverlay();
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     const level = this.runtimeState?.getLevelConfig();
@@ -1139,27 +1140,48 @@ export class GameSceneController extends Component {
       && this.currentDisplayLevelOrder >= HULEBU_TUTORIAL_LEVEL_COUNT;
     const title = tutorialFinished
       ? "新手教学完成"
-      : `${this.getRunModeLabel()}第 ${this.currentDisplayLevelOrder} 层通关`;
+      : `第 ${this.currentDisplayLevelOrder} 层通关`;
     const subtitle = level ? `${level.name} · ${level.subtitle}` : "牌山已清空";
     const score = stripHudPrefix(this.latestSceneModel?.hud.scoreText ?? "分 0", "分");
+    const levelText = `${this.currentDisplayLevelOrder}`;
 
-    this.drawMetaFlowBackdrop(overlay, layout);
-    this.drawMetaFlowSprite(overlay, "ClearSeal", HULEBU_META_FLOW_UI.result.victorySeal, 195, 244, 112, 112, layout);
-    this.drawMetaFlowSprite(overlay, "ClearTitle", HULEBU_META_FLOW_UI.result.victoryTitle, 195, 344, 304, 82, layout, true);
-    this.drawMetaFlowLabel(overlay, "ClearTitleText", title, 195, 344, 260, 32, 20, new Color(255, 238, 190, 255), layout);
-    this.drawMetaFlowSprite(overlay, "ClearStats", HULEBU_META_FLOW_UI.result.statPlaque, 195, 436, 250, 80, layout);
-    this.drawMetaFlowLabel(overlay, "ClearScore", `本层得分  ${score}`, 195, 426, 220, 24, 15, new Color(94, 59, 31, 255), layout);
-    this.drawMetaFlowLabel(overlay, "ClearSubtitle", subtitle, 195, 454, 220, 22, 11, new Color(111, 86, 58, 255), layout);
-    this.drawMetaFlowSprite(overlay, "ClearRibbon", HULEBU_META_FLOW_UI.result.unlockRibbon, 195, 524, 270, 52, layout, true);
-    this.drawMetaFlowLabel(overlay, "ClearRibbonText", tutorialFinished ? "新手流程已完成" : "下一层已经开启", 195, 524, 230, 22, 12, new Color(255, 239, 196, 255), layout);
+    this.drawMetaFlowBackdrop(overlay, layout, true);
+    this.drawRoundedPanel(
+      overlay,
+      "ClearPanel",
+      layout.width / 2,
+      layout.height / 2,
+      scaleLayoutValue(348, layout.scale),
+      scaleLayoutValue(626, layout.scale),
+      scaleLayoutValue(24, layout.scale),
+      new Color(5, 53, 43, 238),
+      new Color(214, 166, 76, 255),
+      scaleLayoutValue(2, layout.scale),
+      layout,
+    ).setSiblingIndex(2);
+    this.drawMetaFlowSprite(overlay, "ClearSeal", HULEBU_META_FLOW_UI.result.victorySeal, 195, 158, 92, 92, layout);
+    this.drawMetaFlowLabel(overlay, "ClearSealText", "胜", 195, 158, 60, 52, 30, new Color(33, 96, 68, 255), layout);
+    this.drawMetaFlowSprite(overlay, "ClearTitle", HULEBU_META_FLOW_UI.result.victoryTitle, 195, 256, 300, 76, layout, true);
+    this.drawMetaFlowLabel(overlay, "ClearTitleText", title, 195, 256, 260, 30, 19, new Color(255, 238, 190, 255), layout);
+    this.drawMetaFlowLabel(overlay, "ClearSubtitle", subtitle, 195, 316, 280, 22, 11, new Color(231, 204, 150, 255), layout);
+    this.drawMetaFlowSprite(overlay, "ClearStats", HULEBU_META_FLOW_UI.result.statPlaque, 195, 390, 300, 78, layout);
+    const statColor = new Color(94, 59, 31, 255);
+    this.drawMetaFlowLabel(overlay, "ClearStatScoreLabel", "本层得分", 108, 377, 78, 16, 10, statColor, layout);
+    this.drawMetaFlowLabel(overlay, "ClearStatScoreValue", score, 108, 404, 78, 22, 16, statColor, layout);
+    this.drawMetaFlowLabel(overlay, "ClearStatLevelLabel", "关卡", 195, 377, 78, 16, 10, statColor, layout);
+    this.drawMetaFlowLabel(overlay, "ClearStatLevelValue", levelText, 195, 404, 78, 22, 16, statColor, layout);
+    this.drawMetaFlowLabel(overlay, "ClearStatBoardLabel", "牌山", 282, 377, 78, 16, 10, statColor, layout);
+    this.drawMetaFlowLabel(overlay, "ClearStatBoardValue", "已清空", 282, 404, 78, 22, 14, statColor, layout);
+    this.drawMetaFlowSprite(overlay, "ClearRibbon", HULEBU_META_FLOW_UI.result.unlockRibbon, 195, 478, 286, 54, layout, true);
+    this.drawMetaFlowLabel(overlay, "ClearRibbonText", tutorialFinished ? "新手流程已完成" : "下一层已经开启", 195, 478, 238, 22, 12, statColor, layout);
     this.drawMetaFlowButton(
       overlay,
       "ContinueButton",
       HULEBU_META_FLOW_UI.result.primaryButton,
       tutorialFinished ? "回到大厅" : this.tutorialReplayMode ? "下一步" : "继续",
       195,
-      616,
-      184,
+      578,
+      210,
       52,
       () => this.continueAfterClear(),
       layout,
@@ -2740,7 +2762,7 @@ export class GameSceneController extends Component {
   }
 
   private handleMetaFlowInputEnd(pointer: { x: number; y: number }): void {
-    if (this.gamePhase !== "title" && this.gamePhase !== "lobby" && this.gamePhase !== "modes" && this.gamePhase !== "map") {
+    if (this.gamePhase !== "title" && this.gamePhase !== "lobby" && this.gamePhase !== "modes" && this.gamePhase !== "map" && this.gamePhase !== "cleared") {
       return;
     }
 
@@ -2871,15 +2893,17 @@ export class GameSceneController extends Component {
     return node;
   }
 
-  private drawMetaFlowBackdrop(overlay: Node, layout: RuntimeLayout): void {
+  private drawMetaFlowBackdrop(overlay: Node, layout: RuntimeLayout, fillViewport = false): void {
+    const sceneWidth = fillViewport ? layout.cssWidth : 390;
+    const sceneHeight = fillViewport ? layout.cssHeight : 844;
     const scene = this.drawMetaFlowSprite(
       overlay,
       "MetaFlowScene",
       HULEBU_SCENE_BACKGROUND_SPRITE,
-      195,
-      422,
-      390,
-      844,
+      sceneWidth / 2,
+      sceneHeight / 2,
+      sceneWidth,
+      sceneHeight,
       layout,
     );
     scene.setSiblingIndex(0);
