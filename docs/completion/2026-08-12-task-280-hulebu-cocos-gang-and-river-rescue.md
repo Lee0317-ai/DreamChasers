@@ -17,5 +17,5 @@
   - `npm run game:hulebu:build`
   - `npm run game:hulebu:verify-build`
   - `git diff --check`
-- 验证结果：TypeScript 通过；Cocos 回归测试 43/43 通过。exact-commit 构建需在提交后运行，当前工作树因正式输入未提交而被构建脚本拒绝。
-- 遗留问题：尚未完成提交后浏览器点击验证。
+- 验证结果：TypeScript 通过；Cocos 回归测试 43/43 通过；exact-commit 构建与 verify-only 通过，构建 ID `6e9c64e1dd67-20260812T023806Z`；浏览器竖屏页面无控制台错误，右侧“河牌”文字按钮可见。
+- 遗留问题：无。
