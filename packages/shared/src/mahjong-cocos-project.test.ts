@@ -740,6 +740,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("formatLevelLabel");
     expect(gameSceneController).toContain("drawToolButton");
     expect(gameSceneController).toContain("TOOL_BUTTON_SPRITES");
+    expect(gameSceneController).toContain('label: "河牌"');
+    expect(gameSceneController).not.toContain("ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint");
     expect(formalUiCatalog).toContain("ui/formal-v1/tools/shuffle-normal/spriteFrame");
     expect(formalUiCatalog).toContain("ui/formal-v1/tools/undo-normal/spriteFrame");
     expect(formalUiCatalog).toContain("ui/formal-v1/tools/hint-normal/spriteFrame");
@@ -2433,6 +2435,49 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     ]);
   });
 
+  test("exposes gang when four identical Cocos slot tiles are available", async () => {
+    const runtimeModule = await import(pathToFileURL(path.join(cocosRoot, "assets/scripts/runtime/HulebuRuntimeState.ts")).href) as {
+      HulebuRuntimeState: new (level: unknown) => {
+        toSceneModel: (layout: { width: number; height: number; cssWidth: number; cssHeight: number; scale: number }) => {
+          comboControls: Array<{ combo: string; candidateKey: string | null; interactable: boolean }>;
+          hud: { slotStatusText: string };
+        };
+        executeComboByKey: (candidateKey: string | null) => boolean;
+      };
+    };
+    const level = {
+      id: "gang-candidate-test",
+      order: 3,
+      name: "杠测试",
+      subtitle: "四张相同牌",
+      rewardPool: [],
+      defaults: {
+        slotLimit: 8,
+        reserveLimit: 1,
+        shields: 0,
+        firstProtect: false,
+        tools: { shuffle: 0, undo: 0, discard: 1, vision: 0 },
+      },
+      initialSlotOrder: ["a", "b", "c", "d"],
+      initialReserveOrder: [],
+      tiles: [
+        { id: "a", suit: "tiao", rank: 4, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+        { id: "b", suit: "tiao", rank: 4, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+        { id: "c", suit: "tiao", rank: 4, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+        { id: "d", suit: "tiao", rank: 4, x: 0, y: 0, layer: 0, blockedBy: [], location: "slot" },
+        { id: "board", suit: "wan", rank: 1, x: 10, y: 10, layer: 0, blockedBy: [], location: "board" },
+      ],
+    };
+    const runtimeState = new runtimeModule.HulebuRuntimeState(level);
+    const sceneModel = runtimeState.toSceneModel({ width: 390, height: 844, cssWidth: 390, cssHeight: 844, scale: 1 });
+    const gang = sceneModel.comboControls.find((control) => control.combo === "gang");
+
+    expect(gang?.interactable).toBe(true);
+    expect(gang?.candidateKey).toContain("gang");
+    expect(sceneModel.hud.slotStatusText).toBe("可消除");
+    expect(runtimeState.executeComboByKey(gang?.candidateKey ?? null)).toBe(true);
+  });
+
   test("shakes loose blocker tiles after kong and keeps full-slot river rescue available", async () => {
     const runtimeStatePath = "assets/scripts/runtime/HulebuRuntimeState.ts";
     const runtimeText = readText(runtimeStatePath);
@@ -2441,7 +2486,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(runtimeText).toContain("HU_SHAKE_LOOSE_COUNT");
     expect(runtimeText).toContain("openMountainByAction");
     expect(runtimeText).toContain("shakeLooseMountainTile");
-    expect(runtimeText).toContain("可打牌入河");
+    expect(runtimeText).toContain("点击河牌救场");
 
     const runtimeModule = await import(pathToFileURL(path.join(cocosRoot, runtimeStatePath)).href) as {
       HulebuRuntimeState: new (level: unknown) => {
@@ -2513,7 +2558,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
       ],
     };
     const fullSlotState = new runtimeModule.HulebuRuntimeState(fullSlotLevel);
-    expect(fullSlotState.toSceneModel(layout).hud.slotStatusText).toContain("打牌入河");
+    expect(fullSlotState.toSceneModel(layout).hud.slotStatusText).toContain("点击河牌救场");
   });
 
   test("supports Cocos shuffle and undo tool interactions", async () => {

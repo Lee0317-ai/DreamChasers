@@ -838,7 +838,7 @@ export class HulebuRuntimeState {
       return "可消除";
     }
     if (this.slot.length >= this.level.defaults.slotLimit) {
-      return this.canUseRiverDiscard() ? "槽位已满，可打牌入河" : "槽位已满";
+      return this.canUseRiverDiscard() ? "槽位已满：点击河牌救场" : "槽位已满：请先消除组合";
     }
     return `槽位 ${this.slot.length}/${this.level.defaults.slotLimit}`;
   }

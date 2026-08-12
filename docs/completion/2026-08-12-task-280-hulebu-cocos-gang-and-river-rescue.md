@@ -1,0 +1,21 @@
+# T280 胡了卜 Cocos 杠候选与满槽河牌救场
+
+- 任务编号：T280
+- 负责人：Lee
+- 修改文件：
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/GameSceneController.ts`
+  - `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`
+  - `packages/shared/src/mahjong-cocos-project.test.ts`
+  - `docs/tasks/items/T280-hulebu-cocos-gang-and-river-rescue.md`
+- 实现内容：
+  - 河牌工具显示为“河牌”，移除提示图标覆盖。
+  - 满槽状态增加河牌救场提示，并同步新手第三关文案。
+  - 锁定四张相同牌能生成并执行“杠”候选的回归测试。
+- 验证命令：
+  - `npx tsc --noEmit -p apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/tsconfig.json`
+  - `npm exec -w packages/shared vitest -- run mahjong-cocos-project --reporter=dot`
+  - `npm run game:hulebu:build`
+  - `npm run game:hulebu:verify-build`
+  - `git diff --check`
+- 验证结果：TypeScript 通过；Cocos 回归测试 43/43 通过。exact-commit 构建需在提交后运行，当前工作树因正式输入未提交而被构建脚本拒绝。
+- 遗留问题：尚未完成提交后浏览器点击验证。

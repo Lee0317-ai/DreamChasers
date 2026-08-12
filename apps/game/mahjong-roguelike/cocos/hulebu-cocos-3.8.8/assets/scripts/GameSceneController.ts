@@ -115,7 +115,6 @@ const REWARD_CHOICE_CARD_GAP = 112;
 const TOOL_BUTTON_SPRITES: Record<string, string> = {
   ToolButton_Wash: HULEBU_FORMAL_UI_SPRITES.tools.shuffle,
   ToolButton_Undo: HULEBU_FORMAL_UI_SPRITES.tools.undo,
-  ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint,
 };
 const TOP_PLAQUE_SPRITES: Record<string, string> = {
   LevelPlaque: HULEBU_FORMAL_UI_SPRITES.hud.levelBadge,
@@ -3378,7 +3377,7 @@ export class GameSceneController extends Component {
           : availableCombos.has("peng")
             ? "已经可以碰，但先别点；再找第 4 张相同牌完成“杠”。"
             : occupiedSlots >= 4
-              ? "有无关牌占位时，点右侧“打牌”，再点槽内那张牌移入牌河。"
+              ? "槽位快满时，点右侧“河牌”，再点槽内牌移入牌河。"
               : `继续收集四张相同牌，当前槽位 ${occupiedSlots}/4 张。`,
       };
     }
@@ -3744,7 +3743,7 @@ export class GameSceneController extends Component {
     const tools = [
       { name: "ToolButton_Wash", label: "洗牌", count: "3", offset: 1, handler: () => this.useShuffleTool() },
       { name: "ToolButton_Undo", label: "撤回", count: "3", offset: 0, handler: () => this.useUndoTool() },
-      { name: "ToolButton_Hint", label: "打牌", count: "3", offset: -1, handler: () => this.startDiscardSelection() },
+      { name: "ToolButton_Hint", label: "河牌", count: "3", offset: -1, handler: () => this.startDiscardSelection() },
     ];
 
     tools.forEach((tool) => {
