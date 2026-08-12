@@ -3767,7 +3767,7 @@ export class GameSceneController extends Component {
     const tools = [
       { name: "ToolButton_Wash", label: "洗牌", count: "3", offset: 1, handler: () => this.useShuffleTool() },
       { name: "ToolButton_Undo", label: "撤回", count: "3", offset: 0, handler: () => this.useUndoTool() },
-      { name: "ToolButton_Hint", label: "河牌", count: "3", offset: -1, handler: () => this.startDiscardSelection() },
+      { name: "ToolButton_Hint", label: "弃牌", count: "3", offset: -1, handler: () => this.startDiscardSelection() },
     ];
 
     tools.forEach((tool) => {

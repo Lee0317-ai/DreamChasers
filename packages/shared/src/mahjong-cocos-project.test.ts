@@ -741,7 +741,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("formatLevelLabel");
     expect(gameSceneController).toContain("drawToolButton");
     expect(gameSceneController).toContain("TOOL_BUTTON_SPRITES");
-    expect(gameSceneController).toContain('label: "河牌"');
+    expect(gameSceneController).toContain('label: "弃牌"');
     expect(gameSceneController).not.toContain("ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint");
     expect(formalUiCatalog).toContain("ui/formal-v1/tools/shuffle-normal/spriteFrame");
     expect(formalUiCatalog).toContain("ui/formal-v1/tools/undo-normal/spriteFrame");
@@ -2998,7 +2998,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(slotBinder).toContain("DISCARD_SLOT_STROKE");
 
     expect(riverBinder).toContain("node.active = true");
-    expect(riverBinder).toContain('`牌河 ${occupiedCount}/${capacity} · 右侧“打牌”可移入`');
-    expect(riverBinder).toContain('`牌河 ${occupiedCount}/${capacity} · 请选择槽内一张牌`');
+    expect(riverBinder).toContain('`河牌救场 ${occupiedCount}/${capacity} · 点右侧“弃牌”后选择`');
+    expect(riverBinder).toContain('`河牌救场 ${occupiedCount}/${capacity} · 点下方槽内牌移入`');
   });
 });

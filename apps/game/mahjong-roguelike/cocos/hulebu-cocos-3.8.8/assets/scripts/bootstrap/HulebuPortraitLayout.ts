@@ -26,8 +26,8 @@ export function resolveHulebuPortraitZones(layout: HulebuPortraitLayoutInput): H
   const slotY = scaled(Math.max(64, layout.cssHeight * 0.07), scale);
   const reserveY = slotY + scaled(62, scale);
   const comboY = slotY + scaled(130, scale);
-  const riverY = comboY + scaled(62, scale);
-  const meldY = riverY + scaled(62, scale);
+  const riverY = comboY + scaled(52, scale);
+  const meldY = riverY + scaled(76, scale);
   const topPlaqueY = layout.height - scaled(58, scale);
 
   return {

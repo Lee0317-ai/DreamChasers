@@ -14,7 +14,7 @@ const { ccclass, property } = _decorator;
 const MELD_WIDTH = 82;
 const MELD_HEIGHT = 56;
 const RIVER_CELL_WIDTH = 46;
-const RIVER_CELL_HEIGHT = 62;
+const RIVER_CELL_HEIGHT = 54;
 const GAP = 7;
 const MELD_TILE_WIDTH = 19;
 const MELD_TILE_HEIGHT = 27;
@@ -228,9 +228,9 @@ export class MeldRiverLayerBinder extends Component {
 
     const label = this.ensureLabel(status, "Label");
     label.string = this.discardSelectionActive
-      ? `牌河 ${occupiedCount}/${capacity} · 请选择槽内一张牌`
-      : `牌河 ${occupiedCount}/${capacity} · 右侧“打牌”可移入`;
-    label.fontSize = scaleLayoutValue(10, layout.scale);
+      ? `河牌救场 ${occupiedCount}/${capacity} · 点下方槽内牌移入`
+      : `河牌救场 ${occupiedCount}/${capacity} · 点右侧“弃牌”后选择`;
+    label.fontSize = scaleLayoutValue(9, layout.scale);
     label.lineHeight = scaleLayoutValue(13, layout.scale);
     label.color = new Color(255, 237, 191, 255);
     label.node.getComponent(UITransform)?.setContentSize(transform.width, transform.height);
