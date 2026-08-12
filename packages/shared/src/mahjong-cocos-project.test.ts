@@ -1239,14 +1239,14 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const state = new runtimeModule.HulebuRuntimeState(level, undefined, undefined, metaUpgrades);
     let sceneModel = state.toSceneModel(layout);
     expect(sceneModel.reserveNodes).toHaveLength(3);
-    expect(sceneModel.riverNodes).toHaveLength(5);
+    expect(sceneModel.riverNodes).toHaveLength(2);
     expect(sceneModel.hud.coinsText).toContain("铜钱 30");
     expect(sceneModel.hud.coinsText).toContain("护 2");
     expect(sceneModel.hud.toolText).toContain("洗 2");
     expect(sceneModel.hud.toolText).toContain("撤 2");
     expect(sceneModel.hud.toolText).toContain("打 2");
     expect(sceneModel.hud.toolText).toContain("看 4");
-    expect(sceneModel.hud.toolText).toContain("河 5");
+    expect(sceneModel.hud.toolText).toContain("河 2");
 
     expect(state.discardSlotTile(0)).toBe(true);
     sceneModel = state.toSceneModel(layout);
@@ -2377,6 +2377,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const runtimeText = readText(runtimeStatePath);
 
     expect(runtimeText).toContain("riverLimit");
+    expect(runtimeText).toContain("const DEFAULT_RIVER_LIMIT = 2");
+    expect(runtimeText).toContain("Math.min(2, DEFAULT_RIVER_LIMIT + this.metaUpgrades.riverBonus)");
     expect(runtimeText).toContain("openMelds");
     expect(runtimeText).toContain("discardSlotTile");
     expect(runtimeText).toContain("applySupplementalGang");
@@ -2424,7 +2426,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
 
     expect(runtimeState.discardSlotTile(3)).toBe(true);
     let sceneModel = runtimeState.toSceneModel(layout);
-    expect(sceneModel.riverNodes.map((node) => node.tileId)).toEqual(["slot-d", null, null]);
+    expect(sceneModel.riverNodes.map((node) => node.tileId)).toEqual(["slot-d", null]);
 
     const peng = sceneModel.comboControls.find((control) => control.combo === "peng");
     expect(peng?.interactable).toBe(true);

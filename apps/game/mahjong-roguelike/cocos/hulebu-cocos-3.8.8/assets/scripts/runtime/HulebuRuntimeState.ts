@@ -133,7 +133,7 @@ const HONOR_LABELS: Record<number, string> = {
 const COMBO_TYPES: HulebuComboType[] = ["hu", "gang", "peng", "chi", "bugang"];
 const BOSS_PROGRESS_COMBO_TYPES: HulebuComboType[] = ["hu", "gang", "peng", "chi", "bugang"];
 const BOSS_PROGRESS_SUITS: HulebuTileSuit[] = ["wan", "tiao", "tong", "honor"];
-const DEFAULT_RIVER_LIMIT = 3;
+const DEFAULT_RIVER_LIMIT = 2;
 const KONG_SHAKE_LOOSE_COUNT = 2;
 const HU_SHAKE_LOOSE_COUNT = 3;
 const LOOSE_TILE_START_X = 210;
@@ -383,7 +383,7 @@ export class HulebuRuntimeState {
     }));
     this.slot = [...level.initialSlotOrder];
     this.reserve = [...level.initialReserveOrder];
-    this.riverLimit = DEFAULT_RIVER_LIMIT + this.metaUpgrades.riverBonus;
+    this.riverLimit = Math.min(2, DEFAULT_RIVER_LIMIT + this.metaUpgrades.riverBonus);
     this.tools = this.createEffectiveTools();
     this.coins = this.runRewards.startingCoins
       + this.levelModifiers.coinBonus
