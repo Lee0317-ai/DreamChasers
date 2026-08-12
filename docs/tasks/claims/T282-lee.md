@@ -2,6 +2,7 @@
 
 - 任务：T282 河牌区限制为两格
 - 负责人：Lee
-- 状态：进行中
+- 状态：已完成
 - 领取时间：2026-08-12
 - 修改范围：`apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/scripts/runtime/HulebuRuntimeState.ts`、对应测试与 T282 文档。
+- 验证：共享测试 43/43、Cocos TypeScript、production build、verify-only、`git diff --check`。
