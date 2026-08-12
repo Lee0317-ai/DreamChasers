@@ -18,6 +18,8 @@ const CELL_GAP = 5;
 const WOOD_SLOT_FILL = new Color(67, 42, 29, 255);
 const WOOD_SLOT_STROKE = new Color(154, 97, 57, 255);
 const OCCUPIED_SLOT_FILL = new Color(255, 249, 236, 255);
+const DISCARD_SLOT_FILL = new Color(255, 237, 174, 255);
+const DISCARD_SLOT_STROKE = new Color(241, 181, 55, 255);
 const HAND_SLOTS_SPRITE_PATH = HULEBU_FORMAL_UI_SPRITES.board.handSlots;
 
 interface SlotLayout {
@@ -41,9 +43,14 @@ export class SlotLayerBinder extends Component {
   private readonly slotTouchHandlers = new WeakMap<Node, () => void>();
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
   private readonly pendingSpriteKeys = new WeakMap<Node, string>();
+  private discardSelectionActive = false;
 
   setSlotClickHandler(handler: ((slotIndex: number) => void) | null): void {
     this.slotClickHandler = handler;
+  }
+
+  setDiscardSelectionActive(active: boolean): void {
+    this.discardSelectionActive = active;
   }
 
   applySlotNodes(slotModels: HulebuCellNodeModel[], reserveModels: HulebuCellNodeModel[]): void {
@@ -120,7 +127,7 @@ export class SlotLayerBinder extends Component {
       node.active = true;
       const cellX = layout.centerX + index * (cellWidth + cellGap) - width / 2 + cellWidth / 2;
       node.setPosition(new Vec3(centerLayoutX(cellX, layout), centerLayoutY(y, layout), 0));
-      this.applyCellVisual(node, model, scale);
+      this.applyCellVisual(node, model, scale, prefix);
       this.bindCellClick(node, model, prefix);
       const label = this.ensureCellLabel(node, scale);
       this.configureLabel(label, scale);
@@ -162,9 +169,9 @@ export class SlotLayerBinder extends Component {
     }
 
     const button = node.getComponent(Button) ?? node.addComponent(Button);
-    button.interactable = prefix === "Slot" && model.occupied;
+    button.interactable = prefix === "Slot" && model.occupied && this.discardSelectionActive;
     const handler = (): void => {
-      if (prefix !== "Slot" || !model.occupied) {
+      if (prefix !== "Slot" || !model.occupied || !this.discardSelectionActive) {
         return;
       }
 
@@ -176,7 +183,12 @@ export class SlotLayerBinder extends Component {
     this.slotTouchHandlers.set(node, handler);
   }
 
-  private applyCellVisual(node: Node, model: HulebuCellNodeModel, scale: number): void {
+  private applyCellVisual(
+    node: Node,
+    model: HulebuCellNodeModel,
+    scale: number,
+    prefix: "Slot" | "Reserve",
+  ): void {
     const cellWidth = scaleLayoutValue(CELL_WIDTH, scale);
     const cellHeight = scaleLayoutValue(CELL_HEIGHT, scale);
     const uiTransform = node.getComponent(UITransform) ?? node.addComponent(UITransform);
@@ -184,9 +196,12 @@ export class SlotLayerBinder extends Component {
 
     const graphics = node.getComponent(Graphics) ?? node.addComponent(Graphics);
     graphics.clear();
-    graphics.fillColor = model.occupied ? OCCUPIED_SLOT_FILL : WOOD_SLOT_FILL;
-    graphics.strokeColor = model.occupied ? new Color(191, 133, 67, 255) : WOOD_SLOT_STROKE;
-    graphics.lineWidth = scaleLayoutValue(3, scale);
+    const isDiscardTarget = prefix === "Slot" && model.occupied && this.discardSelectionActive;
+    graphics.fillColor = isDiscardTarget ? DISCARD_SLOT_FILL : model.occupied ? OCCUPIED_SLOT_FILL : WOOD_SLOT_FILL;
+    graphics.strokeColor = isDiscardTarget
+      ? DISCARD_SLOT_STROKE
+      : model.occupied ? new Color(191, 133, 67, 255) : WOOD_SLOT_STROKE;
+    graphics.lineWidth = scaleLayoutValue(isDiscardTarget ? 5 : 3, scale);
     graphics.roundRect(-cellWidth / 2, -cellHeight / 2, cellWidth, cellHeight, scaleLayoutValue(6, scale));
     graphics.fill();
     graphics.stroke();

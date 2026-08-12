@@ -25,6 +25,7 @@ const MELD_ENTRY_HEIGHT = 36;
 const PANEL_FILL = new Color(248, 238, 220, 242);
 const PANEL_STROKE = new Color(188, 146, 86, 235);
 const PANEL_EMPTY_FILL = new Color(110, 88, 66, 165);
+const DISCARD_SELECTION_STROKE = new Color(241, 181, 55, 255);
 const BADGE_FILL = new Color(43, 117, 89, 240);
 const BADGE_TEXT = new Color(255, 248, 236, 255);
 const LABEL_TEXT = new Color(56, 42, 30, 255);
@@ -41,6 +42,11 @@ export class MeldRiverLayerBinder extends Component {
   private readonly pendingSpriteKeys = new WeakMap<Node, string>();
   private meldPoolExpanded = false;
   private openMeldCount = 0;
+  private discardSelectionActive = false;
+
+  setDiscardSelectionActive(active: boolean): void {
+    this.discardSelectionActive = active;
+  }
 
   applyMeldRiverNodes(openMelds: HulebuOpenMeldNodeModel[], riverNodes: HulebuRiverNodeModel[]): void {
     const layout = resolveHulebuRuntimeLayout();
@@ -172,8 +178,10 @@ export class MeldRiverLayerBinder extends Component {
 
   private applyRiver(riverNodes: HulebuRiverNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
     const y = resolveHulebuPortraitZones(layout).riverY;
+    const occupiedCount = riverNodes.filter((river) => river.occupied).length;
     const totalWidth = riverNodes.length * RIVER_CELL_WIDTH + Math.max(0, riverNodes.length - 1) * GAP;
     const startX = Math.round(layout.width / 2 - scaleLayoutValue(totalWidth / 2 - RIVER_CELL_WIDTH / 2, layout.scale));
+    this.drawRiverStatus(y, occupiedCount, riverNodes.length, layout);
     this.riverNodes.forEach((node) => {
       node.active = false;
     });
@@ -182,10 +190,50 @@ export class MeldRiverLayerBinder extends Component {
       const node = this.riverNodes[index] ?? this.ensureNode("River", index, RIVER_CELL_WIDTH, RIVER_CELL_HEIGHT, layout.scale);
       this.riverNodes[index] = node;
       node.name = river.name;
-      node.active = river.occupied;
+      node.active = true;
       node.setPosition(new Vec3(centerLayoutX(startX + index * scaleLayoutValue(RIVER_CELL_WIDTH + GAP, layout.scale), layout), centerLayoutY(y, layout), 0));
       this.drawRiverCell(node, river, layout.scale);
     });
+  }
+
+  private drawRiverStatus(
+    y: number,
+    occupiedCount: number,
+    capacity: number,
+    layout: ReturnType<typeof resolveHulebuRuntimeLayout>,
+  ): void {
+    const status = this.node.getChildByName("RiverStatus") ?? new Node("RiverStatus");
+    status.layer = this.node.layer;
+    if (!status.parent) {
+      this.node.addChild(status);
+    }
+    status.active = true;
+    status.setPosition(new Vec3(
+      centerLayoutX(layout.width / 2, layout),
+      centerLayoutY(y + scaleLayoutValue(43, layout.scale), layout),
+      1,
+    ));
+    const transform = status.getComponent(UITransform) ?? status.addComponent(UITransform);
+    transform.setContentSize(scaleLayoutValue(228, layout.scale), scaleLayoutValue(26, layout.scale));
+    const graphics = status.getComponent(Graphics) ?? status.addComponent(Graphics);
+    graphics.clear();
+    graphics.fillColor = this.discardSelectionActive
+      ? new Color(116, 76, 25, 244)
+      : new Color(7, 64, 50, 230);
+    graphics.strokeColor = this.discardSelectionActive ? DISCARD_SELECTION_STROKE : PANEL_STROKE;
+    graphics.lineWidth = scaleLayoutValue(2, layout.scale);
+    graphics.roundRect(-transform.width / 2, -transform.height / 2, transform.width, transform.height, scaleLayoutValue(8, layout.scale));
+    graphics.fill();
+    graphics.stroke();
+
+    const label = this.ensureLabel(status, "Label");
+    label.string = this.discardSelectionActive
+      ? `牌河 ${occupiedCount}/${capacity} · 请选择槽内一张牌`
+      : `牌河 ${occupiedCount}/${capacity} · 右侧“打牌”可移入`;
+    label.fontSize = scaleLayoutValue(10, layout.scale);
+    label.lineHeight = scaleLayoutValue(13, layout.scale);
+    label.color = new Color(255, 237, 191, 255);
+    label.node.getComponent(UITransform)?.setContentSize(transform.width, transform.height);
   }
 
   private ensureNode(prefix: string, index: number, width: number, height: number, scale: number): Node {

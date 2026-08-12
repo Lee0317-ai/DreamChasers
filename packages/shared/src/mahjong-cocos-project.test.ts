@@ -2925,4 +2925,24 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(state.executeComboByKey(chiOptions[1].key)).toBe(true);
     expect(state.toSceneModel(layout).slotNodes.map((node) => node.label).filter(Boolean)).toEqual(["1万"]);
   });
+
+  test("keeps river guidance visible and preserves square lobby entries", () => {
+    const controller = readText("assets/scripts/GameSceneController.ts");
+    const slotBinder = readText("assets/scripts/SlotLayerBinder.ts");
+    const riverBinder = readText("assets/scripts/MeldRiverLayerBinder.ts");
+
+    expect(controller).toContain('const discardSelectionActive = this.runStateMachine.phase === "playing.discardChoosing"');
+    expect(controller).toContain('body: "点击下方金色描边的槽内牌，移出误选牌并腾出位置。"');
+    expect(controller).toContain("const iconSize = 146");
+    expect(controller).toContain("iconSize, iconSize");
+    expect(controller).toContain('"MetaFlowScene"');
+
+    expect(slotBinder).toContain("setDiscardSelectionActive(active: boolean)");
+    expect(slotBinder).toContain("model.occupied && this.discardSelectionActive");
+    expect(slotBinder).toContain("DISCARD_SLOT_STROKE");
+
+    expect(riverBinder).toContain("node.active = true");
+    expect(riverBinder).toContain('`牌河 ${occupiedCount}/${capacity} · 右侧“打牌”可移入`');
+    expect(riverBinder).toContain('`牌河 ${occupiedCount}/${capacity} · 请选择槽内一张牌`');
+  });
 });

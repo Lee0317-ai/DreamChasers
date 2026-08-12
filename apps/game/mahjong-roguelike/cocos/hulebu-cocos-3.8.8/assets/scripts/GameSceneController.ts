@@ -611,7 +611,10 @@ export class GameSceneController extends Component {
     this.bindInputHandlers();
     this.latestSceneModel = sceneModel;
     this.boardLayer?.applyBoardNodes(sceneModel.boardNodes);
+    const discardSelectionActive = this.runStateMachine.phase === "playing.discardChoosing";
+    this.slotLayer?.setDiscardSelectionActive(discardSelectionActive);
     this.slotLayer?.applySlotNodes(sceneModel.slotNodes, sceneModel.reserveNodes);
+    this.meldRiverLayer?.setDiscardSelectionActive(discardSelectionActive);
     this.meldRiverLayer?.applyMeldRiverNodes(sceneModel.openMeldNodes, sceneModel.riverNodes);
     this.comboBar?.applyComboControls(sceneModel.comboControls);
     this.applyShellHud(sceneModel.hud);
@@ -986,6 +989,7 @@ export class GameSceneController extends Component {
 
   private applyCoordinatorResult(result: CoordinatorResult): void {
     let openedFlowOverlay = false;
+    let openedDiscardSelection = false;
     for (const event of result.events) {
       if (event.type === "combo.choice.required") {
         this.showComboChoiceOverlay(event.combo, [...event.candidates]);
@@ -996,10 +1000,16 @@ export class GameSceneController extends Component {
         this.showClearOverlay();
         openedFlowOverlay = true;
       }
+      if (event.type === "discard.choice.required") {
+        openedDiscardSelection = true;
+      }
     }
 
     if (result.changed && result.snapshot && this.runtimeState) {
       this.refreshRuntimeScene();
+    }
+    if (openedDiscardSelection && this.latestSceneModel) {
+      this.applySceneModel(this.latestSceneModel);
     }
     if (openedFlowOverlay && this.rewardOverlay?.active) {
       this.rewardOverlay.setSiblingIndex(this.node.children.length - 1);
@@ -1409,7 +1419,7 @@ export class GameSceneController extends Component {
     this.drawMetaFlowSprite(overlay, "LobbyCurrency", HULEBU_META_FLOW_UI.lobby.currencyPlaque, 319, 78, 112, 62, layout, true);
     this.drawMetaFlowSprite(overlay, "LobbyAvatar", HULEBU_META_FLOW_UI.lobby.avatarFrame, 47, 78, 52, 52, layout);
     this.drawMetaFlowLabel(overlay, "LobbyCoins", `${this.metaCoins} 铜钱`, 319, 78, 92, 24, 12, new Color(80, 48, 26, 255), layout);
-    this.drawMetaFlowLabel(overlay, "LobbyTitle", "局外大厅", 195, 151, 240, 28, 20, new Color(255, 236, 187, 255), layout);
+    this.drawMetaFlowLabel(overlay, "LobbyTitle", "选一条路，继续这局牌", 195, 151, 300, 28, 16, new Color(255, 236, 187, 255), layout);
     this.drawLobbyModeChoices(overlay);
   }
 
@@ -1681,15 +1691,34 @@ export class GameSceneController extends Component {
   private drawLobbyModeChoices(overlay: Node): void {
     const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
     if (this.activeRunSnapshot) {
-      const resume = this.drawMetaFlowButton(overlay, "LobbyMode_Resume", HULEBU_META_FLOW_UI.lobby.continuePanel, "继续本轮", 195, 216, 344, 72, () => this.resumeActiveRun(), layout, true);
-      this.drawMetaFlowChildLabel(resume, "ResumeMeta", `${this.runProfile.displayName} · 第 ${this.activeRunSnapshot.currentDisplayLevelOrder} 层`, 0, -21, 280, 20, 10, new Color(83, 57, 31, 255), layout);
+      const resume = this.drawMetaFlowButton(overlay, "LobbyMode_Resume", HULEBU_META_FLOW_UI.lobby.continuePanel, "继续本轮", 195, 208, 320, 64, () => this.resumeActiveRun(), layout, true, new Color(83, 57, 31, 255));
+      this.drawMetaFlowChildLabel(resume, "ResumeMeta", `${this.runProfile.displayName} · 第 ${this.activeRunSnapshot.currentDisplayLevelOrder} 层`, 0, -18, 260, 18, 10, new Color(83, 57, 31, 255), layout);
     }
-    const firstY = this.activeRunSnapshot ? 316 : 242;
-    this.drawMetaFlowButton(overlay, "LobbyMode_Mainline", HULEBU_META_FLOW_UI.lobby.mainEntry, "主线闯关", 195, firstY, 344, 78, () => this.showMainlineMapOverlay(), layout);
-    this.drawMetaFlowButton(overlay, "LobbyMode_AllModes", HULEBU_META_FLOW_UI.lobby.modesEntry, "各种模式", 195, firstY + 92, 344, 78, () => this.showModeSelectionOverlay(), layout);
-    this.drawMetaFlowButton(overlay, "LobbyMode_Collection", HULEBU_META_FLOW_UI.lobby.collectionEntry, "成就图鉴", 104, firstY + 190, 166, 86, () => this.showCollectionOverlay(), layout);
-    this.drawMetaFlowButton(overlay, "LobbyMode_Upgrade", HULEBU_META_FLOW_UI.lobby.growthEntry, "局外成长", 286, firstY + 190, 166, 86, () => this.showMetaUpgradeOverlay(), layout);
-    this.drawMetaFlowButton(overlay, "LobbyMode_Tutorial", HULEBU_META_FLOW_UI.common.primaryButton, "新手教学", 195, firstY + 286, 214, 50, () => this.startTutorialReplay(), layout, true);
+    const firstY = this.activeRunSnapshot ? 330 : 260;
+    const iconSize = 146;
+    const entries = [
+      { name: "LobbyMode_Mainline", sprite: HULEBU_META_FLOW_UI.lobby.mainEntry, label: "主线闯关", x: 105, y: firstY, handler: () => this.showMainlineMapOverlay() },
+      { name: "LobbyMode_AllModes", sprite: HULEBU_META_FLOW_UI.lobby.modesEntry, label: "各种模式", x: 285, y: firstY, handler: () => this.showModeSelectionOverlay() },
+      { name: "LobbyMode_Collection", sprite: HULEBU_META_FLOW_UI.lobby.collectionEntry, label: "成就图鉴", x: 105, y: firstY + 178, handler: () => this.showCollectionOverlay() },
+      { name: "LobbyMode_Upgrade", sprite: HULEBU_META_FLOW_UI.lobby.growthEntry, label: "局外成长", x: 285, y: firstY + 178, handler: () => this.showMetaUpgradeOverlay() },
+    ];
+    entries.forEach((entry) => {
+      const button = this.drawMetaFlowButton(overlay, entry.name, entry.sprite, "", entry.x, entry.y, iconSize, iconSize, entry.handler, layout);
+      const labelBack = this.drawRoundedPanel(
+        button,
+        "LabelBack",
+        0,
+        -scaleLayoutValue(55, layout.scale),
+        scaleLayoutValue(108, layout.scale),
+        scaleLayoutValue(30, layout.scale),
+        scaleLayoutValue(12, layout.scale),
+        new Color(5, 57, 45, 238),
+        new Color(231, 187, 91, 255),
+        scaleLayoutValue(2, layout.scale),
+      );
+      this.drawMetaFlowChildLabel(labelBack, "Label", entry.label, 0, 0, 96, 24, 13, new Color(255, 238, 194, 255), layout);
+    });
+    this.drawMetaFlowButton(overlay, "LobbyMode_Tutorial", HULEBU_META_FLOW_UI.common.primaryButton, "重玩新手", 195, firstY + 284, 188, 48, () => this.startTutorialReplay(), layout, true);
     this.drawMetaFlowSprite(overlay, "LobbyBottomNav", HULEBU_META_FLOW_UI.lobby.bottomNav, 195, 800, 354, 54, layout, true);
     this.drawMetaFlowLabel(overlay, "LobbyBottomNavText", "大厅    模式    图鉴    成长", 195, 800, 320, 24, 11, new Color(255, 232, 182, 255), layout);
   }
@@ -2844,6 +2873,17 @@ export class GameSceneController extends Component {
   }
 
   private drawMetaFlowBackdrop(overlay: Node, layout: RuntimeLayout): void {
+    const scene = this.drawMetaFlowSprite(
+      overlay,
+      "MetaFlowScene",
+      HULEBU_SCENE_BACKGROUND_SPRITE,
+      195,
+      422,
+      390,
+      844,
+      layout,
+    );
+    scene.setSiblingIndex(0);
     const backdrop = this.drawRoundedPanel(
       overlay,
       "MetaFlowBackdrop",
@@ -2852,15 +2892,15 @@ export class GameSceneController extends Component {
       layout.width,
       layout.height,
       0,
-      new Color(5, 27, 23, 222),
-      new Color(5, 27, 23, 222),
+      new Color(3, 31, 25, 156),
+      new Color(3, 31, 25, 156),
       0,
       layout,
     );
     backdrop.getComponent(BlockInputEvents) ?? backdrop.addComponent(BlockInputEvents);
     backdrop.off(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
     backdrop.on(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
-    backdrop.setSiblingIndex(0);
+    backdrop.setSiblingIndex(1);
   }
 
   private drawMetaFlowSprite(
@@ -3246,11 +3286,11 @@ export class GameSceneController extends Component {
     const panel = this.drawRoundedPanel(
       root,
       "TutorialGuidePanel",
-      layout.width / 2,
-      zones.topPlaqueY - scaleLayoutValue(126, layout.scale),
-      scaleLayoutValue(Math.min(326, layout.cssWidth - 28), layout.scale),
-      scaleLayoutValue(66, layout.scale),
-      scaleLayoutValue(12, layout.scale),
+      scaleLayoutValue(82, layout.scale),
+      zones.topPlaqueY - scaleLayoutValue(116, layout.scale),
+      scaleLayoutValue(160, layout.scale),
+      scaleLayoutValue(58, layout.scale),
+      scaleLayoutValue(10, layout.scale),
       new Color(6, 66, 51, 244),
       new Color(231, 187, 91, 255),
       scaleLayoutValue(3, layout.scale),
@@ -3263,25 +3303,25 @@ export class GameSceneController extends Component {
       panel,
       "TutorialTitle",
       copy.title,
-      scaleLayoutValue(12, layout.scale),
+      scaleLayoutValue(10, layout.scale),
       new Color(250, 222, 154, 255),
-      scaleLayoutValue(16, layout.scale),
+      scaleLayoutValue(15, layout.scale),
     );
     title.node.getComponent(UITransform)?.setContentSize(
-      scaleLayoutValue(300, layout.scale),
-      scaleLayoutValue(20, layout.scale),
+      scaleLayoutValue(146, layout.scale),
+      scaleLayoutValue(18, layout.scale),
     );
     const body = this.writeShellLabel(
       panel,
       "TutorialBody",
       copy.body,
-      scaleLayoutValue(11, layout.scale),
+      scaleLayoutValue(9, layout.scale),
       new Color(255, 248, 226, 255),
-      -scaleLayoutValue(14, layout.scale),
+      -scaleLayoutValue(12, layout.scale),
     );
     body.node.getComponent(UITransform)?.setContentSize(
-      scaleLayoutValue(302, layout.scale),
-      scaleLayoutValue(34, layout.scale),
+      scaleLayoutValue(146, layout.scale),
+      scaleLayoutValue(30, layout.scale),
     );
   }
 
@@ -3302,6 +3342,13 @@ export class GameSceneController extends Component {
       sceneModel.comboControls.filter((control) => control.interactable).map((control) => control.combo),
     );
     const title = `新手 ${levelOrder}/${HULEBU_TUTORIAL_LEVEL_COUNT} · ${HULEBU_TUTORIAL_TITLES[levelOrder - 1]}`;
+
+    if (this.runStateMachine.phase === "playing.discardChoosing") {
+      return {
+        title: "打入牌河",
+        body: "点击下方金色描边的槽内牌，移出误选牌并腾出位置。",
+      };
+    }
 
     if (levelOrder === 1) {
       return {
@@ -3328,7 +3375,9 @@ export class GameSceneController extends Component {
           ? "四张相同牌已齐，点击“杠”获得更高收益。"
           : availableCombos.has("peng")
             ? "已经可以碰，但先别点；再找第 4 张相同牌完成“杠”。"
-            : `继续收集四张相同牌，当前槽位 ${occupiedSlots}/4 张。`,
+            : occupiedSlots >= 4
+              ? "有无关牌占位时，点右侧“打牌”，再点槽内那张牌移入牌河。"
+              : `继续收集四张相同牌，当前槽位 ${occupiedSlots}/4 张。`,
       };
     }
     if (levelOrder === 4) {
