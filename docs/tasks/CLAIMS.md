@@ -684,4 +684,5 @@
 | T280 | 未命名任务 | 未填写 | 已完成 | 未填写 | Cocos runtime/controller/combo binder、共享测试和 T280 文档。 | Cocos TypeScript、共享 Cocos 测试、exact-commit build、verify-only、浏览器竖屏验收、`git diff --check`。 | 未填写 |
 | T281 | 未命名任务 | 未填写 | 已完成 | 2026-08-12 | 未填写 | 未填写 | 未填写 |
 | T282 | 未命名任务 | 未填写 | 已完成 | 2026-08-12 | 未填写 | 未填写 | 未填写 |
+| T283 | 未命名任务 | 未填写 | 已完成 | 2026-08-12 | 未填写 | 未填写 | 未填写 |
 <!-- DOCS_SYNC_CLAIMS_END -->
