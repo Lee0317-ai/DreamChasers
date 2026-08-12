@@ -3319,6 +3319,8 @@ export class GameSceneController extends Component {
       new Color(255, 248, 226, 255),
       -scaleLayoutValue(12, layout.scale),
     );
+    body.overflow = Label.Overflow.SHRINK;
+    body.enableWrapText = true;
     body.node.getComponent(UITransform)?.setContentSize(
       scaleLayoutValue(146, layout.scale),
       scaleLayoutValue(30, layout.scale),

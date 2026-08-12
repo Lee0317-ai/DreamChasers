@@ -2933,6 +2933,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
 
     expect(controller).toContain('const discardSelectionActive = this.runStateMachine.phase === "playing.discardChoosing"');
     expect(controller).toContain('body: "点击下方金色描边的槽内牌，移出误选牌并腾出位置。"');
+    expect(controller).toContain("body.overflow = Label.Overflow.SHRINK");
+    expect(controller).toContain("body.enableWrapText = true");
     expect(controller).toContain("const iconSize = 146");
     expect(controller).toContain("iconSize, iconSize");
     expect(controller).toContain('"MetaFlowScene"');
