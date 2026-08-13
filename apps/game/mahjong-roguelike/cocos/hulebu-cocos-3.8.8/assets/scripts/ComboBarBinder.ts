@@ -70,7 +70,9 @@ export class ComboBarBinder extends Component {
 
       const label = node.getComponentInChildren(Label);
       if (label) {
-        label.string = `${COMBO_LABELS[control.combo]} ${control.badgeText}`;
+        label.string = control.badgeText
+          ? `${COMBO_LABELS[control.combo]}\n${control.badgeText} 个组合`
+          : COMBO_LABELS[control.combo];
       }
 
       this.drawButton(node, control.interactable, layout.scale);
@@ -128,8 +130,8 @@ export class ComboBarBinder extends Component {
     label.node.setPosition(new Vec3(0, 0, 0));
     const labelTransform = label.node.getComponent(UITransform) ?? label.node.addComponent(UITransform);
     labelTransform.setContentSize(scaleLayoutValue(COMBO_WIDTH, scale), scaleLayoutValue(COMBO_HEIGHT, scale));
-    label.fontSize = scaleLayoutValue(16, scale);
-    label.lineHeight = scaleLayoutValue(20, scale);
+    label.fontSize = scaleLayoutValue(15, scale);
+    label.lineHeight = scaleLayoutValue(18, scale);
     label.horizontalAlign = Label.HorizontalAlign.CENTER;
     label.verticalAlign = Label.VerticalAlign.CENTER;
     label.color = new Color(255, 249, 236, 255);
@@ -141,7 +143,7 @@ export class ComboBarBinder extends Component {
     const height = scaleLayoutValue(COMBO_HEIGHT, scale);
     const graphics = node.getComponent(Graphics) ?? node.addComponent(Graphics);
     graphics.clear();
-    graphics.fillColor = interactable ? new Color(31, 139, 107, 255) : new Color(98, 88, 78, 255);
+    graphics.fillColor = interactable ? new Color(7, 78, 58, 255) : new Color(76, 73, 67, 255);
     graphics.strokeColor = interactable ? new Color(244, 197, 96, 255) : new Color(130, 118, 104, 255);
     graphics.lineWidth = scaleLayoutValue(3, scale);
     graphics.roundRect(-width / 2, -height / 2, width, height, scaleLayoutValue(6, scale));

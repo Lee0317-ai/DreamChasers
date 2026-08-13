@@ -178,15 +178,16 @@ export class MeldRiverLayerBinder extends Component {
 
   private applyRiver(riverNodes: HulebuRiverNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
     const y = resolveHulebuPortraitZones(layout).riverY;
-    const occupiedCount = riverNodes.filter((river) => river.occupied).length;
-    const totalWidth = riverNodes.length * RIVER_CELL_WIDTH + Math.max(0, riverNodes.length - 1) * GAP;
+    const visibleRiverNodes = riverNodes.filter((river) => river.occupied);
+    const occupiedCount = visibleRiverNodes.length;
+    const totalWidth = visibleRiverNodes.length * RIVER_CELL_WIDTH + Math.max(0, visibleRiverNodes.length - 1) * GAP;
     const startX = Math.round(layout.width / 2 - scaleLayoutValue(totalWidth / 2 - RIVER_CELL_WIDTH / 2, layout.scale));
     this.drawRiverStatus(y, occupiedCount, riverNodes.length, layout);
     this.riverNodes.forEach((node) => {
       node.active = false;
     });
 
-    riverNodes.forEach((river, index) => {
+    visibleRiverNodes.forEach((river, index) => {
       const node = this.riverNodes[index] ?? this.ensureNode("River", index, RIVER_CELL_WIDTH, RIVER_CELL_HEIGHT, layout.scale);
       this.riverNodes[index] = node;
       node.name = river.name;

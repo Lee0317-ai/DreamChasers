@@ -3837,6 +3837,9 @@ export class GameSceneController extends Component {
       node.on(Button.EventType.CLICK, handler, this);
     }
     const labelNode = this.writeShellLabel(node, "Label", label, scaleLayoutValue(12, layout.scale), new Color(255, 246, 216, 255), -8).node;
+    if (name === "ToolButton_Hint") {
+      this.writeShellLabel(node, "HelperLabel", "救场", scaleLayoutValue(8, layout.scale), new Color(250, 219, 156, 255), 10);
+    }
     this.applyToolButtonSprite(node, name, layout, labelNode);
     const badge = this.ensureChild(node, "Badge");
     badge.setPosition(new Vec3(scaleLayoutValue(20, layout.scale), -scaleLayoutValue(21, layout.scale), 0));
