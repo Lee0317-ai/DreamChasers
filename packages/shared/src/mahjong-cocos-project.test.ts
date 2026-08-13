@@ -2997,11 +2997,12 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(slotBinder).toContain("model.occupied && this.discardSelectionActive");
     expect(slotBinder).toContain("DISCARD_SLOT_STROKE");
 
-    expect(riverBinder).toContain("node.active = true");
-    expect(riverBinder).toContain("const visibleRiverNodes = riverNodes.filter((river) => river.occupied)");
-    expect(riverBinder).toContain("visibleRiverNodes.forEach((river, index) =>");
-    expect(riverBinder).toContain('`河牌救场 ${occupiedCount}/${capacity} · 点右侧“弃牌”后选择`');
-    expect(riverBinder).toContain('`河牌救场 ${occupiedCount}/${capacity} · 点下方槽内牌移入`');
+   expect(riverBinder).toContain("node.active = true");
+    expect(riverBinder).not.toContain("visibleRiverNodes.forEach((river, index) =>");
+    expect(slotBinder).toContain("applyRiverNodes(riverModels: HulebuRiverNodeModel[])");
+    expect(controller).toContain("this.slotLayer?.applyRiverNodes(sceneModel.riverNodes)");
+   expect(riverBinder).toContain('`河牌救场 ${occupiedCount}/${capacity} · 点右侧“弃牌”后选择`');
+    expect(riverBinder).toContain('`河牌救场 ${occupiedCount}/${capacity} · 点下方手牌移入河牌格`');
     expect(controller).toContain('"HelperLabel", "救场"');
     expect(readText("assets/scripts/ComboBarBinder.ts")).toContain('`${COMBO_LABELS[control.combo]}\\n${control.badgeText} 个组合`');
   });

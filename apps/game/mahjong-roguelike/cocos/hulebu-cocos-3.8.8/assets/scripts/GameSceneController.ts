@@ -612,7 +612,8 @@ export class GameSceneController extends Component {
     this.boardLayer?.applyBoardNodes(sceneModel.boardNodes);
     const discardSelectionActive = this.runStateMachine.phase === "playing.discardChoosing";
     this.slotLayer?.setDiscardSelectionActive(discardSelectionActive);
-    this.slotLayer?.applySlotNodes(sceneModel.slotNodes, sceneModel.reserveNodes);
+    this.slotLayer?.applySlotNodes(sceneModel.slotNodes, []);
+    this.slotLayer?.applyRiverNodes(sceneModel.riverNodes);
     this.meldRiverLayer?.setDiscardSelectionActive(discardSelectionActive);
     this.meldRiverLayer?.applyMeldRiverNodes(sceneModel.openMeldNodes, sceneModel.riverNodes);
     this.comboBar?.applyComboControls(sceneModel.comboControls);

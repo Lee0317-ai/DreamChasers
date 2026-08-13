@@ -13,13 +13,9 @@ import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 const { ccclass, property } = _decorator;
 const MELD_WIDTH = 82;
 const MELD_HEIGHT = 56;
-const RIVER_CELL_WIDTH = 46;
-const RIVER_CELL_HEIGHT = 54;
 const GAP = 7;
 const MELD_TILE_WIDTH = 19;
 const MELD_TILE_HEIGHT = 27;
-const RIVER_TILE_WIDTH = 36;
-const RIVER_TILE_HEIGHT = 48;
 const MELD_ENTRY_WIDTH = 122;
 const MELD_ENTRY_HEIGHT = 36;
 const PANEL_FILL = new Color(248, 238, 220, 242);
@@ -178,23 +174,12 @@ export class MeldRiverLayerBinder extends Component {
 
   private applyRiver(riverNodes: HulebuRiverNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {
     const y = resolveHulebuPortraitZones(layout).riverY;
-    const visibleRiverNodes = riverNodes.filter((river) => river.occupied);
-    const occupiedCount = visibleRiverNodes.length;
-    const totalWidth = visibleRiverNodes.length * RIVER_CELL_WIDTH + Math.max(0, visibleRiverNodes.length - 1) * GAP;
-    const startX = Math.round(layout.width / 2 - scaleLayoutValue(totalWidth / 2 - RIVER_CELL_WIDTH / 2, layout.scale));
+    const occupiedCount = riverNodes.filter((river) => river.occupied).length;
     this.drawRiverStatus(y, occupiedCount, riverNodes.length, layout);
     this.riverNodes.forEach((node) => {
       node.active = false;
     });
 
-    visibleRiverNodes.forEach((river, index) => {
-      const node = this.riverNodes[index] ?? this.ensureNode("River", index, RIVER_CELL_WIDTH, RIVER_CELL_HEIGHT, layout.scale);
-      this.riverNodes[index] = node;
-      node.name = river.name;
-      node.active = true;
-      node.setPosition(new Vec3(centerLayoutX(startX + index * scaleLayoutValue(RIVER_CELL_WIDTH + GAP, layout.scale), layout), centerLayoutY(y, layout), 0));
-      this.drawRiverCell(node, river, layout.scale);
-    });
   }
 
   private drawRiverStatus(
@@ -229,7 +214,7 @@ export class MeldRiverLayerBinder extends Component {
 
     const label = this.ensureLabel(status, "Label");
     label.string = this.discardSelectionActive
-      ? `河牌救场 ${occupiedCount}/${capacity} · 点下方槽内牌移入`
+      ? `河牌救场 ${occupiedCount}/${capacity} · 点下方手牌移入河牌格`
       : `河牌救场 ${occupiedCount}/${capacity} · 点右侧“弃牌”后选择`;
     label.fontSize = scaleLayoutValue(9, layout.scale);
     label.lineHeight = scaleLayoutValue(13, layout.scale);
@@ -289,35 +274,6 @@ export class MeldRiverLayerBinder extends Component {
       if (index < occupiedTiles) {
         this.applyTileSprite(tileNode, meld.prefabKey, meld.label, scale, fallbackLabel);
       }
-    }
-  }
-
-  private drawRiverCell(node: Node, river: HulebuRiverNodeModel, scale: number): void {
-    const uiTransform = node.getComponent(UITransform);
-    const graphics = node.getComponent(Graphics) ?? node.addComponent(Graphics);
-    const width = uiTransform?.width ?? scaleLayoutValue(RIVER_CELL_WIDTH, scale);
-    const height = uiTransform?.height ?? scaleLayoutValue(RIVER_CELL_HEIGHT, scale);
-    graphics.clear();
-    graphics.fillColor = river.occupied ? PANEL_FILL : PANEL_EMPTY_FILL;
-    graphics.strokeColor = PANEL_STROKE;
-    graphics.lineWidth = scaleLayoutValue(2, scale);
-    graphics.roundRect(-width / 2, -height / 2, width, height, scaleLayoutValue(5, scale));
-    graphics.fill();
-    graphics.stroke();
-
-    const fallbackLabel = this.ensureLabel(node, "FallbackLabel");
-    fallbackLabel.fontSize = scaleLayoutValue(11, scale);
-    fallbackLabel.lineHeight = scaleLayoutValue(14, scale);
-    fallbackLabel.color = river.occupied ? LABEL_TEXT : BADGE_TEXT;
-    fallbackLabel.string = river.occupied ? (river.label ?? "") : "空";
-    fallbackLabel.node.setPosition(new Vec3(0, river.occupied ? scaleLayoutValue(-20, scale) : 0, 3));
-    fallbackLabel.node.getComponent(UITransform)?.setContentSize(scaleLayoutValue(width, 1), scaleLayoutValue(16, scale));
-
-    const tileNode = this.ensureTileArtNode(node, "RiverTile", 0, RIVER_TILE_WIDTH, RIVER_TILE_HEIGHT, scale);
-    tileNode.active = river.occupied;
-    tileNode.setPosition(new Vec3(0, scaleLayoutValue(4, scale), 1));
-    if (river.occupied) {
-      this.applyTileSprite(tileNode, river.prefabKey, river.label ?? "", scale, fallbackLabel);
     }
   }
 

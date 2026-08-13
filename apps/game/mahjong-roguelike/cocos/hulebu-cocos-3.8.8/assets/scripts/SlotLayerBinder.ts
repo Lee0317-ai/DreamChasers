@@ -5,7 +5,7 @@ import {
   resolveHulebuRuntimeLayout,
   scaleLayoutValue,
 } from "./bootstrap/HulebuSampleSceneModel";
-import type { HulebuCellNodeModel } from "./contracts/HulebuSceneModel";
+import type { HulebuCellNodeModel, HulebuRiverNodeModel } from "./contracts/HulebuSceneModel";
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
@@ -67,6 +67,27 @@ export class SlotLayerBinder extends Component {
     );
   }
 
+  /** 河牌复用底部原备用槽位置；河牌不再在牌桌上方重复绘制。 */
+  applyRiverNodes(riverModels: HulebuRiverNodeModel[]): void {
+    const layout = this.getVisibleLayout();
+    const cells: HulebuCellNodeModel[] = riverModels.map((river) => ({
+      name: river.name,
+      index: river.index,
+      tileId: river.tileId,
+      label: river.label,
+      occupied: river.occupied,
+      prefabKey: river.prefabKey,
+    }));
+    this.applyCells(
+      "River",
+      this.node.getChildByName("ReserveRoot") ?? this.node,
+      this.reserveNodes,
+      cells,
+      layout.reserveY,
+      layout,
+    );
+  }
+
   private applySlotTrayArt(layout: SlotLayout): void {
     const trayNode = this.ensureSlotTrayArtNode(layout);
     const sprite = trayNode.getComponent(Sprite) ?? trayNode.addComponent(Sprite);
@@ -107,7 +128,7 @@ export class SlotLayerBinder extends Component {
   }
 
   private applyCells(
-    prefix: "Slot" | "Reserve",
+    prefix: "Slot" | "Reserve" | "River",
     root: Node,
     nodes: Node[],
     models: HulebuCellNodeModel[],
@@ -119,6 +140,11 @@ export class SlotLayerBinder extends Component {
     const cellGap = scaleLayoutValue(CELL_GAP, scale);
     const width = models.length * cellWidth + Math.max(0, models.length - 1) * cellGap;
 
+    nodes.forEach((node, index) => {
+      if (index >= models.length) {
+        node.active = false;
+      }
+    });
     models.forEach((model, index) => {
       const node = nodes[index] ?? this.ensureCellNode(root, prefix, index, scale);
       nodes[index] = node;
@@ -138,7 +164,7 @@ export class SlotLayerBinder extends Component {
     });
   }
 
-  private ensureCellNode(root: Node, prefix: "Slot" | "Reserve", index: number, scale: number): Node {
+  private ensureCellNode(root: Node, prefix: "Slot" | "Reserve" | "River", index: number, scale: number): Node {
     const existing = root.getChildByName(`${prefix}_${index}`);
     if (existing) {
       return existing;
@@ -161,7 +187,7 @@ export class SlotLayerBinder extends Component {
     return node;
   }
 
-  private bindCellClick(node: Node, model: HulebuCellNodeModel, prefix: "Slot" | "Reserve"): void {
+  private bindCellClick(node: Node, model: HulebuCellNodeModel, prefix: "Slot" | "Reserve" | "River"): void {
     const existing = this.slotTouchHandlers.get(node);
     if (existing) {
       node.off(Node.EventType.TOUCH_END, existing, this);
@@ -187,7 +213,7 @@ export class SlotLayerBinder extends Component {
     node: Node,
     model: HulebuCellNodeModel,
     scale: number,
-    prefix: "Slot" | "Reserve",
+    prefix: "Slot" | "Reserve" | "River",
   ): void {
     const cellWidth = scaleLayoutValue(CELL_WIDTH, scale);
     const cellHeight = scaleLayoutValue(CELL_HEIGHT, scale);
