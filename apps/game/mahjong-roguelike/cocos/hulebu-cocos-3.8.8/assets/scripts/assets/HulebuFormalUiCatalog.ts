@@ -1,62 +1,65 @@
-export const HULEBU_FORMAL_UI_VERSION = "hulebu-formal-ui-v1";
+import { HULEBU_V3_UI_SPRITES, HULEBU_V3_UI_VERSION } from "./HulebuV3UiCatalog";
+
+export const HULEBU_FORMAL_UI_VERSION = HULEBU_V3_UI_VERSION;
 
 export const HULEBU_FORMAL_UI_SPRITES = {
-  background: "ui/formal-v1/background/scene-emerald-v1/spriteFrame",
+  background: HULEBU_V3_UI_SPRITES.backgrounds.gameplay,
   hud: {
-    levelBadge: "ui/formal-v1/hud/level-badge/spriteFrame",
-    scoreBadge: "ui/formal-v1/hud/score-badge/spriteFrame",
-    tileCounter: "ui/formal-v1/hud/tile-counter/spriteFrame",
+    levelBadge: HULEBU_V3_UI_SPRITES.hud.level,
+    scoreBadge: HULEBU_V3_UI_SPRITES.hud.score,
+    tileCounter: HULEBU_V3_UI_SPRITES.hud.remaining,
+    counterToggle: HULEBU_V3_UI_SPRITES.hud.counterToggle,
   },
   board: {
-    discardSlots: "ui/formal-v1/board/discard-slots/spriteFrame",
-    handSlots: "ui/formal-v1/board/hand-slots/spriteFrame",
+    discardSlots: HULEBU_V3_UI_SPRITES.playfield.looseDropZone,
+    handSlots: HULEBU_V3_UI_SPRITES.playfield.handSlot,
   },
   actions: {
     chi: {
-      normal: "ui/formal-v1/actions/chi-normal/spriteFrame",
-      active: "ui/formal-v1/actions/chi-active/spriteFrame",
-      disabled: "ui/formal-v1/actions/chi-disabled/spriteFrame",
+      normal: HULEBU_V3_UI_SPRITES.actions.chi,
+      active: HULEBU_V3_UI_SPRITES.actions.chi,
+      disabled: HULEBU_V3_UI_SPRITES.actions.chi,
     },
     peng: {
-      normal: "ui/formal-v1/actions/peng-normal/spriteFrame",
-      active: "ui/formal-v1/actions/peng-active/spriteFrame",
-      disabled: "ui/formal-v1/actions/peng-disabled/spriteFrame",
+      normal: HULEBU_V3_UI_SPRITES.actions.peng,
+      active: HULEBU_V3_UI_SPRITES.actions.peng,
+      disabled: HULEBU_V3_UI_SPRITES.actions.peng,
     },
     gang: {
-      normal: "ui/formal-v1/actions/gang-normal/spriteFrame",
-      active: "ui/formal-v1/actions/gang-active/spriteFrame",
-      disabled: "ui/formal-v1/actions/gang-disabled/spriteFrame",
+      normal: HULEBU_V3_UI_SPRITES.actions.gang,
+      active: HULEBU_V3_UI_SPRITES.actions.gang,
+      disabled: HULEBU_V3_UI_SPRITES.actions.gang,
     },
     hu: {
-      normal: "ui/formal-v1/actions/hu-normal/spriteFrame",
-      active: "ui/formal-v1/actions/hu-active/spriteFrame",
-      disabled: "ui/formal-v1/actions/hu-disabled/spriteFrame",
+      normal: HULEBU_V3_UI_SPRITES.actions.hu,
+      active: HULEBU_V3_UI_SPRITES.actions.hu,
+      disabled: HULEBU_V3_UI_SPRITES.actions.hu,
     },
     bugang: {
-      normal: "ui/formal-v1/actions/bugang-normal/spriteFrame",
-      active: "ui/formal-v1/actions/bugang-active/spriteFrame",
-      disabled: "ui/formal-v1/actions/bugang-disabled/spriteFrame",
+      normal: HULEBU_V3_UI_SPRITES.actions.bugang,
+      active: HULEBU_V3_UI_SPRITES.actions.bugang,
+      disabled: HULEBU_V3_UI_SPRITES.actions.bugang,
     },
   },
   tools: {
-    shuffle: "ui/formal-v1/tools/shuffle-normal/spriteFrame",
-    undo: "ui/formal-v1/tools/undo-normal/spriteFrame",
-    hint: "ui/formal-v1/tools/hint-normal/spriteFrame",
-    buff: "ui/formal-v1/tools/buff-normal/spriteFrame",
-    counter: "ui/formal-v1/tools/counter-normal/spriteFrame",
+    shuffle: HULEBU_V3_UI_SPRITES.tools.shuffle,
+    undo: HULEBU_V3_UI_SPRITES.tools.undo,
+    hint: HULEBU_V3_UI_SPRITES.tools.discard,
+    buff: HULEBU_V3_UI_SPRITES.icons.amulet,
+    counter: HULEBU_V3_UI_SPRITES.hud.counterToggle,
   },
   cards: {
-    combo: "ui/formal-v1/cards/reward-combo/spriteFrame",
-    score: "ui/formal-v1/cards/reward-score/spriteFrame",
-    slot: "ui/formal-v1/cards/reward-slot/spriteFrame",
-    wind: "ui/formal-v1/cards/wind-template/spriteFrame",
+    combo: HULEBU_V3_UI_SPRITES.cards.reward,
+    score: HULEBU_V3_UI_SPRITES.cards.reward,
+    slot: HULEBU_V3_UI_SPRITES.cards.upgrade,
+    wind: HULEBU_V3_UI_SPRITES.cards.event,
   },
   modals: {
-    comboChoice: "ui/formal-v1/modals/combo-choice/spriteFrame",
-    pause: "ui/formal-v1/modals/pause/spriteFrame",
-    settings: "ui/formal-v1/modals/settings/spriteFrame",
-    settlement: "ui/formal-v1/modals/settlement/spriteFrame",
-    tutorial: "ui/formal-v1/modals/tutorial/spriteFrame",
+    comboChoice: HULEBU_V3_UI_SPRITES.panels.comboChoice,
+    pause: HULEBU_V3_UI_SPRITES.panels.pause,
+    settings: HULEBU_V3_UI_SPRITES.panels.settings,
+    settlement: HULEBU_V3_UI_SPRITES.panels.resultStats,
+    tutorial: HULEBU_V3_UI_SPRITES.misc.tutorialFrame,
   },
 } as const;
 

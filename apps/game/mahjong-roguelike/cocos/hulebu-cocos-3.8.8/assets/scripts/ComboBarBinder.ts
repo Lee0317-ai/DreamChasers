@@ -174,6 +174,9 @@ export class ComboBarBinder extends Component {
       if (!safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
         return;
       }
+      sprite.color = control.interactable
+        ? Color.WHITE
+        : new Color(112, 112, 112, 190);
       this.clearProgrammaticButton(node);
       artNode.active = true;
       if (label) {

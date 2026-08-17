@@ -9,6 +9,7 @@ import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { HULEBU_META_FLOW_UI } from "./assets/HulebuMetaFlowUiCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
+import { HULEBU_V3_UI_SPRITES } from "./assets/HulebuV3UiCatalog";
 import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 import { GameCoordinator, type CoordinatorResult } from "./application/GameCoordinator";
 import { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from "./content/ContentRepository";
@@ -80,7 +81,7 @@ import type {
 
 const { ccclass, property } = _decorator;
 type RuntimeLayout = Required<HulebuLayoutSize>;
-type HulebuGamePhase = "title" | "lobby" | "modes" | "map" | "meta" | "collection" | "advanced" | "advancedAbility" | "playing" | "cleared" | "reward" | "event" | "archetype";
+type HulebuGamePhase = "title" | "lobby" | "modes" | "map" | "meta" | "collection" | "advanced" | "advancedAbility" | "playing" | "cleared" | "failed" | "reward" | "event" | "archetype";
 type HulebuResumableRunPhase = "playing" | "cleared" | "reward" | "event" | "advancedAbility" | "archetype" | "settlement";
 type HulebuMetaUpgradeAxis = keyof HulebuMetaUpgradeState;
 type HulebuAccountSyncState = "local" | "syncing" | "ready" | "guest" | "error";
@@ -115,12 +116,13 @@ const REWARD_CHOICE_CARD_GAP = 112;
 const TOOL_BUTTON_SPRITES: Record<string, string> = {
   ToolButton_Wash: HULEBU_FORMAL_UI_SPRITES.tools.shuffle,
   ToolButton_Undo: HULEBU_FORMAL_UI_SPRITES.tools.undo,
+  ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint,
 };
 const TOP_PLAQUE_SPRITES: Record<string, string> = {
   LevelPlaque: HULEBU_FORMAL_UI_SPRITES.hud.levelBadge,
   ScorePlaque: HULEBU_FORMAL_UI_SPRITES.hud.scoreBadge,
   ProgressPlaque: HULEBU_FORMAL_UI_SPRITES.hud.tileCounter,
-  CounterPlaque: HULEBU_FORMAL_UI_SPRITES.hud.tileCounter,
+  CounterPlaque: HULEBU_FORMAL_UI_SPRITES.hud.counterToggle,
 };
 const HULEBU_SCENE_BACKGROUND_SPRITE = HULEBU_FORMAL_UI_SPRITES.background;
 const OVERLAY_PANEL_BG_SPRITE = HULEBU_FORMAL_UI_SPRITES.modals.comboChoice;
@@ -1000,6 +1002,11 @@ export class GameSceneController extends Component {
         this.showClearOverlay();
         openedFlowOverlay = true;
       }
+      if (event.type === "level.failed") {
+        this.gamePhase = "failed";
+        this.showFailureOverlay();
+        openedFlowOverlay = true;
+      }
       if (event.type === "discard.choice.required") {
         openedDiscardSelection = true;
       }
@@ -1188,6 +1195,22 @@ export class GameSceneController extends Component {
       layout,
       true,
     );
+  }
+
+  private showFailureOverlay(): void {
+    this.gamePhase = "failed";
+    this.setGameplayPresentationVisible(false);
+    const overlay = this.prepareFlowOverlay();
+    const layout = this.latestLayout ?? resolveHulebuRuntimeLayout();
+    this.drawMetaFlowBackdrop(overlay, layout, true);
+    this.drawMetaFlowSprite(overlay, "FailureSeal", HULEBU_META_FLOW_UI.result.failureSeal, 195, 178, 92, 92, layout);
+    this.drawMetaFlowLabel(overlay, "FailureSealText", "败", 195, 178, 60, 52, 30, new Color(120, 58, 38, 255), layout);
+    this.drawMetaFlowSprite(overlay, "FailureTitle", HULEBU_META_FLOW_UI.result.failureTitle, 195, 278, 300, 76, layout, true);
+    this.drawMetaFlowLabel(overlay, "FailureTitleText", "本关失败", 195, 278, 260, 30, 19, new Color(255, 238, 190, 255), layout);
+    this.drawMetaFlowLabel(overlay, "FailureSubtitle", "牌槽已满，且没有可用组合或弃牌空间", 195, 344, 310, 22, 11, new Color(231, 204, 150, 255), layout);
+    this.drawMetaFlowSprite(overlay, "FailureSuggestion", HULEBU_META_FLOW_UI.result.suggestionPanel, 195, 420, 300, 78, layout, true);
+    this.drawMetaFlowLabel(overlay, "FailureSuggestionText", "调整牌序后再试一次", 195, 420, 250, 22, 12, new Color(94, 59, 31, 255), layout);
+    this.drawMetaFlowButton(overlay, "FailureRestartButton", HULEBU_META_FLOW_UI.result.primaryButton, "重新开始", 195, 548, 210, 52, () => this.restartRun(), layout, true);
   }
 
   private showRewardOverlay(): void {
@@ -1420,9 +1443,9 @@ export class GameSceneController extends Component {
     this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "TitleBrand", HULEBU_META_FLOW_UI.title.brandPlaque, 195, 122, 292, 104, layout, true);
-    this.drawMetaFlowLabel(overlay, "TitleName", "胡了卜", 195, 122, 250, 42, 30, new Color(255, 235, 181, 255), layout);
+    this.drawMetaFlowLabel(overlay, "TitleName", "胡了卜", 195, 122, 250, 42, 30, new Color(47, 102, 72, 255), layout);
     this.drawMetaFlowSprite(overlay, "TitleSeal", HULEBU_META_FLOW_UI.title.jadeSeal, 195, 230, 88, 88, layout);
-    this.drawMetaFlowLabel(overlay, "TitleTagline", "一局一局，把牌山打成自己的路", 195, 316, 340, 34, 15, new Color(244, 220, 169, 255), layout);
+    this.drawMetaFlowLabel(overlay, "TitleTagline", "一局一局，把牌山打成自己的路", 195, 316, 340, 34, 15, new Color(92, 58, 40, 255), layout);
     this.drawMetaFlowButton(overlay, "TitleGuest", HULEBU_META_FLOW_UI.common.primaryButton, "游客试玩", 195, 438, 248, 58, () => this.showLobbyOverlay(), layout, true);
     this.drawMetaFlowButton(overlay, "TitleAccount", HULEBU_META_FLOW_UI.common.secondaryButton, "账号登录", 195, 510, 248, 52, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
     this.drawMetaFlowSprite(overlay, "TitleNote", HULEBU_META_FLOW_UI.common.notePanel, 195, 626, 300, 72, layout, true);
@@ -1437,11 +1460,11 @@ export class GameSceneController extends Component {
     this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "LobbyBrand", HULEBU_META_FLOW_UI.title.brandPlaque, 132, 78, 210, 76, layout, true);
-    this.drawMetaFlowLabel(overlay, "LobbyBrandText", "胡了卜", 132, 78, 174, 28, 20, new Color(255, 236, 185, 255), layout);
+    this.drawMetaFlowLabel(overlay, "LobbyBrandText", "胡了卜", 132, 78, 174, 28, 20, new Color(47, 102, 72, 255), layout);
     this.drawMetaFlowSprite(overlay, "LobbyCurrency", HULEBU_META_FLOW_UI.lobby.currencyPlaque, 319, 78, 112, 62, layout, true);
     this.drawMetaFlowSprite(overlay, "LobbyAvatar", HULEBU_META_FLOW_UI.lobby.avatarFrame, 47, 78, 52, 52, layout);
     this.drawMetaFlowLabel(overlay, "LobbyCoins", `${this.metaCoins} 铜钱`, 319, 78, 92, 24, 12, new Color(80, 48, 26, 255), layout);
-    this.drawMetaFlowLabel(overlay, "LobbyTitle", "选一条路，继续这局牌", 195, 151, 300, 28, 16, new Color(255, 236, 187, 255), layout);
+    this.drawMetaFlowLabel(overlay, "LobbyTitle", "选一条路，继续这局牌", 195, 151, 300, 28, 16, new Color(92, 58, 40, 255), layout);
     this.drawLobbyModeChoices(overlay);
   }
 
@@ -1452,7 +1475,7 @@ export class GameSceneController extends Component {
     this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "ModesTitle", HULEBU_META_FLOW_UI.title.brandPlaque, 195, 84, 246, 82, layout, true);
-    this.drawMetaFlowLabel(overlay, "ModesTitleText", "选择模式", 195, 84, 220, 28, 20, new Color(255, 236, 187, 255), layout);
+    this.drawMetaFlowLabel(overlay, "ModesTitleText", "选择模式", 195, 84, 220, 28, 20, new Color(47, 102, 72, 255), layout);
     const modes: Array<{ id: string; title: string; detail: string; icon: string; handler: () => void; locked?: boolean }> = [
       { id: "main", title: "主线闯关", detail: "五章二十层，逐步解锁", icon: HULEBU_META_FLOW_UI.modes.mainIcon, handler: () => this.showMainlineMapOverlay() },
       { id: "endless", title: "无尽牌山", detail: this.getEndlessProgressText(), icon: HULEBU_META_FLOW_UI.modes.endlessIcon, handler: () => this.startEndlessRun() },
@@ -1478,7 +1501,7 @@ export class GameSceneController extends Component {
     this.setGameplayPresentationVisible(false);
     this.drawMetaFlowBackdrop(overlay, layout);
     this.drawMetaFlowSprite(overlay, "MapChapter", HULEBU_META_FLOW_UI.map.chapterPlaque, 195, 76, 282, 70, layout, true);
-    this.drawMetaFlowLabel(overlay, "MapChapterText", "第一章 · 东风初试", 195, 76, 250, 26, 18, new Color(255, 239, 195, 255), layout);
+    this.drawMetaFlowLabel(overlay, "MapChapterText", "第一章 · 东风初试", 195, 76, 250, 26, 18, new Color(47, 102, 72, 255), layout);
     this.drawMetaFlowSprite(overlay, "MapStars", HULEBU_META_FLOW_UI.map.starProgress, 195, 132, 180, 40, layout);
     this.drawMetaFlowLabel(overlay, "MapStarsText", `进度 ${Math.min(5, this.metaProgress.bestMainlineLevel)}/5`, 195, 132, 160, 22, 11, new Color(95, 62, 32, 255), layout);
     const points = [
@@ -1500,12 +1523,12 @@ export class GameSceneController extends Component {
       const unlocked = index === 0 || this.metaProgress.bestMainlineLevel >= index;
       const nodePath = index === 0 ? HULEBU_META_FLOW_UI.map.nodeCurrent : unlocked ? HULEBU_META_FLOW_UI.map.nodeNormal : HULEBU_META_FLOW_UI.map.nodeLocked;
       const node = this.drawMetaFlowButton(overlay, `MapNode_${index + 1}`, nodePath, `${index + 1}`, point.x, point.y, 68, 68, unlocked ? () => this.startMainlineRun() : () => undefined, layout, false);
-      this.drawMetaFlowChildLabel(node, "NodeNumber", `${index + 1}`, 0, -2, 56, 40, 19, unlocked ? new Color(255, 244, 204, 255) : new Color(140, 129, 111, 255), layout);
+      this.drawMetaFlowChildLabel(node, "NodeNumber", `${index + 1}`, 0, -2, 56, 40, 19, unlocked ? new Color(92, 58, 40, 255) : new Color(140, 129, 111, 255), layout);
       if (index < 3) {
         this.drawMetaFlowChildSprite(node, "NodeStar", index < this.metaProgress.bestMainlineLevel ? HULEBU_META_FLOW_UI.map.starFilled : HULEBU_META_FLOW_UI.map.starEmpty, 0, -31, 18, 18, layout);
       }
     });
-    this.drawMetaFlowLabel(overlay, "MapHint", "点击当前节点开始本局，完成后解锁下一层", 195, 680, 340, 28, 11, new Color(238, 215, 170, 255), layout);
+    this.drawMetaFlowLabel(overlay, "MapHint", "点击当前节点开始本局，完成后解锁下一层", 195, 680, 340, 28, 11, new Color(92, 58, 40, 255), layout);
     this.drawMetaFlowButton(overlay, "MapBack", HULEBU_META_FLOW_UI.common.secondaryButton, "返回大厅", 195, 786, 164, 48, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
   }
 
@@ -2763,7 +2786,7 @@ export class GameSceneController extends Component {
   }
 
   private handleMetaFlowInputEnd(pointer: { x: number; y: number }): void {
-    if (this.gamePhase !== "title" && this.gamePhase !== "lobby" && this.gamePhase !== "modes" && this.gamePhase !== "map" && this.gamePhase !== "cleared") {
+    if (this.gamePhase !== "title" && this.gamePhase !== "lobby" && this.gamePhase !== "modes" && this.gamePhase !== "map" && this.gamePhase !== "cleared" && this.gamePhase !== "failed") {
       return;
     }
 
@@ -2900,7 +2923,7 @@ export class GameSceneController extends Component {
     const scene = this.drawMetaFlowSprite(
       overlay,
       "MetaFlowScene",
-      HULEBU_SCENE_BACKGROUND_SPRITE,
+      this.resolveMetaFlowBackgroundSprite(),
       sceneWidth / 2,
       sceneHeight / 2,
       sceneWidth,
@@ -2908,6 +2931,7 @@ export class GameSceneController extends Component {
       layout,
     );
     scene.setSiblingIndex(0);
+    const backdropColor = this.resolveMetaFlowBackdropColor();
     const backdrop = this.drawRoundedPanel(
       overlay,
       "MetaFlowBackdrop",
@@ -2916,8 +2940,8 @@ export class GameSceneController extends Component {
       layout.width,
       layout.height,
       0,
-      new Color(3, 31, 25, 156),
-      new Color(3, 31, 25, 156),
+      backdropColor,
+      backdropColor,
       0,
       layout,
     );
@@ -2925,6 +2949,26 @@ export class GameSceneController extends Component {
     backdrop.off(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
     backdrop.on(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
     backdrop.setSiblingIndex(1);
+  }
+
+  private resolveMetaFlowBackgroundSprite(): string {
+    if (this.gamePhase === "title" || this.gamePhase === "lobby") {
+      return HULEBU_V3_UI_SPRITES.backgrounds.titleLobby;
+    }
+    if (this.gamePhase === "cleared" || this.gamePhase === "failed" || this.gamePhase === "reward") {
+      return HULEBU_V3_UI_SPRITES.backgrounds.result;
+    }
+    if (this.gamePhase === "playing") {
+      return HULEBU_V3_UI_SPRITES.backgrounds.gameplay;
+    }
+    return HULEBU_V3_UI_SPRITES.backgrounds.map;
+  }
+
+  private resolveMetaFlowBackdropColor(): Color {
+    if (this.gamePhase === "cleared" || this.gamePhase === "failed" || this.gamePhase === "reward") {
+      return new Color(35, 28, 36, 150);
+    }
+    return new Color(255, 247, 236, 18);
   }
 
   private drawMetaFlowSprite(
@@ -3485,6 +3529,13 @@ export class GameSceneController extends Component {
     panel.off(Node.EventType.TOUCH_END);
     panel.off(Button.EventType.CLICK);
     panel.on(Node.EventType.TOUCH_END, this.toggleTileCounterOverlay, this);
+    this.applyOverlayPanelSprite(
+      panel,
+      layout,
+      342,
+      238,
+      HULEBU_V3_UI_SPRITES.hud.counterPanel,
+    );
 
     this.writeShellLabel(
       panel,

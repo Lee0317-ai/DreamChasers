@@ -539,6 +539,13 @@ export class HulebuRuntimeState {
     return this.isBoardCleared() && this.isBossGoalComplete();
   }
 
+  isDeadlocked(): boolean {
+    return !this.isBoardCleared()
+      && this.slot.length >= this.level.defaults.slotLimit
+      && this.getComboCandidates().length === 0
+      && !this.canUseRiverDiscard();
+  }
+
   getLevelConfig(): HulebuRuntimeLevelConfig {
     return this.level;
   }

@@ -139,6 +139,8 @@ export class GameSession {
     const events: DomainEvent[] = [event];
     if (!wasCleared && this.runtime.isLevelCleared()) {
       events.push({ type: "level.cleared" });
+    } else if (this.runtime.isDeadlocked()) {
+      events.push({ type: "level.failed", reason: "deadlock" });
     }
     return {
       accepted: true,

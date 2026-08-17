@@ -460,7 +460,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("TOP_PLAQUE_SPRITES");
     expect(gameSceneController).toContain("applyTopPlaqueSprite");
     expect(gameSceneController).toContain("HULEBU_SCENE_BACKGROUND_SPRITE");
-    expect(formalUiCatalog).toContain("ui/formal-v1/background/scene-emerald-v1/spriteFrame");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.backgrounds.gameplay");
     expect(gameSceneController).toContain("applySceneBackgroundSprite");
     expect(gameSceneController).toContain("SceneBackgroundArt");
     expect(gameSceneController).toContain("artNode.setPosition(new Vec3(0, 0, 0))");
@@ -473,14 +473,13 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("ToolButton_Wash\", counts.wash");
     expect(gameSceneController).toContain("ToolButton_Undo\", counts.undo");
     expect(gameSceneController).toContain("ToolButton_Hint\", counts.discard");
-    expect(formalUiCatalog).toContain("reward-combo");
-    expect(formalUiCatalog).toContain("reward-score");
-    expect(formalUiCatalog).toContain("reward-slot");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.cards.reward");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.cards.upgrade");
     expect(gameSceneController).toContain("REWARD_CHOICE_CARD_WIDTH = 106");
     expect(gameSceneController).toContain("REWARD_CHOICE_CARD_HEIGHT = 120");
     expect(gameSceneController).toContain("REWARD_CHOICE_CARD_GAP = 112");
-    expect(formalUiCatalog).toContain("modals/combo-choice/spriteFrame");
-    expect(formalUiCatalog).toContain("modals/settlement/spriteFrame");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.panels.comboChoice");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.panels.resultStats");
     expect(gameSceneController).toContain("HULEBU_META_FLOW_UI.result.victorySeal");
     expect(gameSceneController).toContain("HULEBU_META_FLOW_UI.result.victoryTitle");
     expect(gameSceneController).toContain('"ClearStatScoreLabel"');
@@ -574,8 +573,8 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
 
     expect(comboBarBinder).toContain("ensureComboButton");
     expect(comboBarBinder).toContain("COMBO_BUTTON_SPRITES");
-    expect(formalUiCatalog).toContain("ui/formal-v1/actions/hu-active/spriteFrame");
-    expect(formalUiCatalog).toContain("ui/formal-v1/actions/gang-normal/spriteFrame");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.actions.hu");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.actions.gang");
     expect(comboBarBinder).toContain("applyComboSprite");
     expect(comboBarBinder).toContain("ComboArt");
     expect(comboBarBinder).toContain("clearProgrammaticButton");
@@ -643,13 +642,13 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
       expect(readPngInfo(file).colorType, path.relative(metaFlowRoot, file)).toBe(6);
     }
 
-    expect(catalogText).toContain('HULEBU_META_FLOW_UI_VERSION = "hulebu-meta-flow-components-v1"');
-    expect(catalogText).toContain('sprite("title/title-brand-plaque")');
-    expect(catalogText).toContain('sprite("lobby/entry-main-journey")');
-    expect(catalogText).toContain('sprite("modes/mode-entry-panel")');
-    expect(catalogText).toContain('sprite("map/node-current")');
-    expect(catalogText).toContain('sprite("result/seal-victory")');
-    expect(catalogText).toContain('sprite("result/seal-failure")');
+    expect(catalogText).toContain("HULEBU_META_FLOW_UI_VERSION = HULEBU_V3_UI_VERSION");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.misc.titleBrand");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.cards.mode");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.modes.mainline");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.map.reward");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.misc.victorySeal");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.misc.failureSeal");
     expect(controllerText).toContain("private showTitleOverlay(): void");
     expect(controllerText).toContain("private showLobbyOverlay(): void");
     expect(controllerText).toContain("private showModeSelectionOverlay(): void");
@@ -742,10 +741,10 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(gameSceneController).toContain("drawToolButton");
     expect(gameSceneController).toContain("TOOL_BUTTON_SPRITES");
     expect(gameSceneController).toContain('label: "弃牌"');
-    expect(gameSceneController).not.toContain("ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint");
-    expect(formalUiCatalog).toContain("ui/formal-v1/tools/shuffle-normal/spriteFrame");
-    expect(formalUiCatalog).toContain("ui/formal-v1/tools/undo-normal/spriteFrame");
-    expect(formalUiCatalog).toContain("ui/formal-v1/tools/hint-normal/spriteFrame");
+    expect(gameSceneController).toContain("ToolButton_Hint: HULEBU_FORMAL_UI_SPRITES.tools.hint");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.tools.shuffle");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.tools.undo");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.tools.discard");
     expect(gameSceneController).toContain("applyToolButtonSprite");
     expect(gameSceneController).toContain("ToolArt");
     expect(gameSceneController).not.toContain("if (this.isLatestSceneTileBlocked(tileId))");
@@ -764,15 +763,15 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(boardLayerBinder).toContain("return true;");
     expect(slotLayerBinder).toContain("WOOD_SLOT_FILL");
     expect(slotLayerBinder).toContain("HAND_SLOTS_SPRITE_PATH");
-    expect(formalUiCatalog).toContain("ui/formal-v1/board/hand-slots/spriteFrame");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.playfield.handSlot");
     expect(slotLayerBinder).toContain("SlotTrayArt");
     expect(slotLayerBinder).toContain("hideSlotTrayArt()");
     expect(slotLayerBinder).not.toContain("this.applySlotTrayArt(layout);");
     expect(slotLayerBinder).toContain("resources.load");
     expect(hudBinder).toContain("HUD_BADGE_SPRITES");
-    expect(formalUiCatalog).toContain("ui/formal-v1/hud/tile-counter/spriteFrame");
-    expect(formalUiCatalog).toContain("ui/formal-v1/hud/level-badge/spriteFrame");
-    expect(formalUiCatalog).toContain("ui/formal-v1/hud/score-badge/spriteFrame");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.hud.remaining");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.hud.level");
+    expect(formalUiCatalog).toContain("HULEBU_V3_UI_SPRITES.hud.score");
     expect(hudBinder).toContain("HudBadgeArt");
     expect(hudBinder).toContain("resources.load");
   });
@@ -2191,7 +2190,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     const boardLayerBinder = readText("assets/scripts/BoardLayerBinder.ts");
 
     expect(catalog).toContain("HULEBU_TILE_SPRITE_FRAME_PATHS");
-    expect(catalog).toContain('"tile.back": getHulebuFormalMahjongSpritePath("back-default")');
+    expect(catalog).toContain('"tile.back": getHulebuV3TileSpritePath("tile-back")');
     expect(catalog).toContain("loadTileSpriteFrame");
     expect(catalog).toContain("resources.load");
     expect(catalog).toContain("SpriteFrame");
@@ -2326,6 +2325,86 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     );
     expect(actionBuilder).toContain("image = extract_enclosed(");
     expect(actionBuilder).toContain('[("rounded", (12, 12, 248, 170), 38)]');
+  });
+
+  test("imports and catalogs the complete hulebu UI v3 resource pack", () => {
+    const resourceRoot = path.join(cocosRoot, "assets/resources/ui/hulebu");
+    const componentRoot = path.join(resourceRoot, "component-pack-v3");
+    const backgroundRoot = path.join(resourceRoot, "backgrounds");
+    const tileRoot = path.join(resourceRoot, "tiles-v3");
+    const collectPngFiles = (root: string): string[] => {
+      if (!fs.existsSync(root)) return [];
+      return fs.readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+        const entryPath = path.join(root, entry.name);
+        return entry.isDirectory()
+          ? collectPngFiles(entryPath)
+          : entry.name.endsWith(".png") ? [entryPath] : [];
+      });
+    };
+
+    const componentFiles = collectPngFiles(componentRoot);
+    const backgroundFiles = collectPngFiles(backgroundRoot);
+    const tileFiles = collectPngFiles(tileRoot);
+
+    expect(componentFiles).toHaveLength(63);
+    expect(backgroundFiles).toHaveLength(5);
+    expect(tileFiles).toHaveLength(35);
+
+    for (const filePath of componentFiles) {
+      expect(readPngInfo(filePath).colorType, path.relative(cocosRoot, filePath)).toBe(6);
+    }
+    for (const filePath of backgroundFiles) {
+      expect(readPngInfo(filePath), path.relative(cocosRoot, filePath)).toMatchObject({
+        width: 1024,
+        height: 1536,
+      });
+    }
+    for (const filePath of tileFiles) {
+      expect(readPngInfo(filePath), path.relative(cocosRoot, filePath)).toMatchObject({
+        width: 1024,
+        height: 1024,
+        colorType: 6,
+      });
+    }
+
+    const v3Catalog = readText("assets/scripts/assets/HulebuV3UiCatalog.ts");
+    const formalCatalog = readText("assets/scripts/assets/HulebuFormalUiCatalog.ts");
+    const metaFlowCatalog = readText("assets/scripts/assets/HulebuMetaFlowUiCatalog.ts");
+    const tileCatalog = readText("assets/scripts/assets/HulebuTileSpriteCatalog.ts");
+    const gameSceneController = readText("assets/scripts/GameSceneController.ts");
+    const comboBarBinder = readText("assets/scripts/ComboBarBinder.ts");
+    const slotLayerBinder = readText("assets/scripts/SlotLayerBinder.ts");
+    const meldRiverLayerBinder = readText("assets/scripts/MeldRiverLayerBinder.ts");
+    const meldEntrySection = meldRiverLayerBinder.slice(
+      meldRiverLayerBinder.indexOf("private drawOpenMeldEntry("),
+      meldRiverLayerBinder.indexOf("private readonly toggleOpenMeldPool"),
+    );
+    const meldPoolSection = meldRiverLayerBinder.slice(
+      meldRiverLayerBinder.indexOf("private drawOpenMeldPool("),
+      meldRiverLayerBinder.indexOf("private applyMeldPoolSprite("),
+    );
+    const metaBackdropSection = gameSceneController.slice(
+      gameSceneController.indexOf("private drawMetaFlowBackdrop("),
+      gameSceneController.indexOf("private resolveMetaFlowBackgroundSprite("),
+    );
+
+    expect(v3Catalog).toContain('const base = "ui/hulebu"');
+    expect(v3Catalog).toContain('sprite("component-pack-v3/actions/action-chi")');
+    expect(v3Catalog).toContain('sprite("backgrounds/gameplay")');
+    expect(v3Catalog).toContain('sprite(`tiles-v3/${fileName}`)');
+    expect(formalCatalog).toContain("HULEBU_V3_UI_SPRITES");
+    expect(metaFlowCatalog).toContain("HULEBU_V3_UI_SPRITES");
+    expect(tileCatalog).toContain("getHulebuV3TileSpritePath");
+    expect(gameSceneController).toContain("resolveMetaFlowBackgroundSprite");
+    expect(gameSceneController).toContain("resolveMetaFlowBackdropColor");
+    expect(metaBackdropSection).toContain("const backdropColor = this.resolveMetaFlowBackdropColor()");
+    expect(gameSceneController).toContain("HULEBU_V3_UI_SPRITES.hud.counterPanel");
+    expect(gameSceneController).toContain('new Color(92, 58, 40, 255), layout);');
+    expect(comboBarBinder).toContain("sprite.color = control.interactable");
+    expect(slotLayerBinder).toContain("HandSlotArt");
+    expect(meldRiverLayerBinder).toContain("HULEBU_V3_UI_SPRITES.playfield.meldPool");
+    expect(meldEntrySection).not.toContain("applyMeldPoolSprite");
+    expect(meldPoolSection).toContain("this.applyMeldPoolSprite(panel, transform.width, transform.height)");
   });
 
   test("archives v6 non-tile UI resources for Cocos visual pass", () => {

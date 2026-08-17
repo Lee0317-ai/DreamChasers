@@ -36,6 +36,7 @@ export type DomainEvent =
   | { type: "flow.paused" }
   | { type: "flow.resumed" }
   | { type: "level.cleared" }
+  | { type: "level.failed"; reason: "deadlock" }
   | { type: "command.rejected"; commandType: GameCommand["type"]; reason: string };
 
 export interface CommandResult {

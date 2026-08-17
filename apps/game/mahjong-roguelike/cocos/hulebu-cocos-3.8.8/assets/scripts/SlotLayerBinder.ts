@@ -231,6 +231,33 @@ export class SlotLayerBinder extends Component {
     graphics.roundRect(-cellWidth / 2, -cellHeight / 2, cellWidth, cellHeight, scaleLayoutValue(6, scale));
     graphics.fill();
     graphics.stroke();
+    this.applyHandSlotSprite(node, scale, isDiscardTarget);
+  }
+
+  private applyHandSlotSprite(node: Node, scale: number, highlighted: boolean): void {
+    let artNode = node.getChildByName("HandSlotArt");
+    if (!artNode) {
+      artNode = new Node("HandSlotArt");
+      artNode.layer = node.layer;
+      node.addChild(artNode);
+    }
+
+    const uiTransform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    uiTransform.setContentSize(scaleLayoutValue(CELL_WIDTH, scale), scaleLayoutValue(CELL_HEIGHT, scale));
+    artNode.setPosition(new Vec3(0, 0, 0));
+    artNode.setSiblingIndex(0);
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    sprite.color = highlighted ? new Color(255, 231, 160, 255) : Color.WHITE;
+    artNode.active = false;
+
+    resources.load(HAND_SLOTS_SPRITE_PATH, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame || !safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      node.getComponent(Graphics)?.clear();
+      artNode.active = true;
+    });
   }
 
   private applyCellSprite(node: Node, model: HulebuCellNodeModel, scale: number, label: Label): void {

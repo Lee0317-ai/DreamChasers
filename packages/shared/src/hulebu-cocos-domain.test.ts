@@ -1083,6 +1083,32 @@ describe("Hulebu Cocos domain session", () => {
     expect(unavailableDiscard.canUseDiscardTool()).toBe(false);
   });
 
+  test("transitions to failed when the slot, river, and discard escape are exhausted", () => {
+    const level = createLevel({
+      slotLimit: 3,
+      discard: 0,
+      initialSlotOrder: ["slot-a", "slot-b"],
+      tiles: [
+        createTile("slot-a", "wan", 1, "slot"),
+        createTile("slot-b", "tong", 2, "slot"),
+        createTile("board-a", "tiao", 7),
+        createTile("board-b", "wan", 8),
+        createTile("river-a", "wan", 9, "river"),
+        createTile("river-b", "tong", 9, "river"),
+      ],
+    });
+    const runtime = new HulebuRuntimeState(level);
+    const session = new GameSession(runtime);
+    const coordinator = new GameCoordinator();
+    coordinator.attachSession(session);
+
+    const result = coordinator.dispatch({ type: "tile.select", tileId: "board-a" });
+
+    expect(result.accepted).toBe(true);
+    expect(result.events).toContainEqual({ type: "level.failed", reason: "deadlock" });
+    expect(result.phase).toBe("failed");
+  });
+
   test("keeps the domain and runtime import graph free of Cocos runtime modules", () => {
     const entries = [
       "assets/scripts/domain/GameContracts.ts",

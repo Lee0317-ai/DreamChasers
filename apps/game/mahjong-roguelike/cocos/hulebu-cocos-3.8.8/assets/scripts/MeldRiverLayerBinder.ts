@@ -1,4 +1,4 @@
-import { _decorator, BlockInputEvents, Button, Color, Component, Graphics, Label, Node, Sprite, SpriteFrame, UITransform, Vec3 } from "cc";
+import { _decorator, BlockInputEvents, Button, Color, Component, Graphics, Label, Node, resources, Sprite, SpriteFrame, UITransform, Vec3 } from "cc";
 import {
   centerLayoutX,
   centerLayoutY,
@@ -9,6 +9,7 @@ import type { HulebuOpenMeldNodeModel, HulebuRiverNodeModel } from "./contracts/
 import { HulebuTileSpriteCatalog } from "./assets/HulebuTileSpriteCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
+import { HULEBU_V3_UI_SPRITES } from "./assets/HulebuV3UiCatalog";
 
 const { ccclass, property } = _decorator;
 const MELD_WIDTH = 82;
@@ -108,7 +109,6 @@ export class MeldRiverLayerBinder extends Component {
     graphics.roundRect(-transform.width / 2, -transform.height / 2, transform.width, transform.height, scaleLayoutValue(8, layout.scale));
     graphics.fill();
     graphics.stroke();
-
     const label = this.ensureLabel(entry, "Label");
     label.string = `已碰牌池 ${meldCount}  ${this.meldPoolExpanded ? "收起" : "展开"}`;
     label.fontSize = scaleLayoutValue(11, layout.scale);
@@ -162,6 +162,7 @@ export class MeldRiverLayerBinder extends Component {
     graphics.roundRect(-transform.width / 2, -transform.height / 2, transform.width, transform.height, scaleLayoutValue(8, layout.scale));
     graphics.fill();
     graphics.stroke();
+    this.applyMeldPoolSprite(panel, transform.width, transform.height);
 
     const title = this.ensureLabel(panel, "Title");
     title.string = meldCount > 0 ? "已碰牌池" : "已碰牌池 · 暂无";
@@ -170,6 +171,29 @@ export class MeldRiverLayerBinder extends Component {
     title.color = new Color(250, 226, 171, 255);
     title.node.setPosition(new Vec3(0, scaleLayoutValue(31, layout.scale), 2));
     title.node.getComponent(UITransform)?.setContentSize(transform.width, scaleLayoutValue(18, layout.scale));
+  }
+
+  private applyMeldPoolSprite(panel: Node, width: number, height: number): void {
+    let artNode = panel.getChildByName("MeldPoolArt");
+    if (!artNode) {
+      artNode = new Node("MeldPoolArt");
+      artNode.layer = panel.layer;
+      panel.addChild(artNode);
+    }
+    const transform = artNode.getComponent(UITransform) ?? artNode.addComponent(UITransform);
+    transform.setContentSize(width, height);
+    artNode.setPosition(new Vec3(0, 0, 0));
+    artNode.setSiblingIndex(0);
+    const sprite = artNode.getComponent(Sprite) ?? artNode.addComponent(Sprite);
+    sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+    artNode.active = false;
+    resources.load(HULEBU_V3_UI_SPRITES.playfield.meldPool, SpriteFrame, (error, spriteFrame) => {
+      if (error || !spriteFrame || !safeApplySpriteFrame(artNode, sprite, spriteFrame)) {
+        return;
+      }
+      panel.getComponent(Graphics)?.clear();
+      artNode.active = true;
+    });
   }
 
   private applyRiver(riverNodes: HulebuRiverNodeModel[], layout: ReturnType<typeof resolveHulebuRuntimeLayout>): void {

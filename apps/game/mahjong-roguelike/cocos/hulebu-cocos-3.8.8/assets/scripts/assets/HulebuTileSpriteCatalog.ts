@@ -1,18 +1,18 @@
 import { resources, SpriteFrame } from "cc";
-import { getHulebuFormalMahjongSpritePath } from "./HulebuFormalUiCatalog";
+import { getHulebuV3TileSpritePath } from "./HulebuV3UiCatalog";
 
 export const HULEBU_TILE_SPRITE_FRAME_PATHS: Record<string, string> = {
-  "tile.back": getHulebuFormalMahjongSpritePath("back-default"),
-  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tiao.${index + 1}`, getHulebuFormalMahjongSpritePath(`bamboo-${String(index + 1).padStart(2, "0")}`)])),
-  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tong.${index + 1}`, getHulebuFormalMahjongSpritePath(`dot-${String(index + 1).padStart(2, "0")}`)])),
-  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.wan.${index + 1}`, getHulebuFormalMahjongSpritePath(`wan-${String(index + 1).padStart(2, "0")}`)])),
-  "tile.honor.1": getHulebuFormalMahjongSpritePath("honor-east"),
-  "tile.honor.2": getHulebuFormalMahjongSpritePath("honor-south"),
-  "tile.honor.3": getHulebuFormalMahjongSpritePath("honor-west"),
-  "tile.honor.4": getHulebuFormalMahjongSpritePath("honor-north"),
-  "tile.honor.5": getHulebuFormalMahjongSpritePath("honor-red"),
-  "tile.honor.6": getHulebuFormalMahjongSpritePath("honor-green"),
-  "tile.honor.7": getHulebuFormalMahjongSpritePath("honor-white"),
+  "tile.back": getHulebuV3TileSpritePath("tile-back"),
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tiao.${index + 1}`, getHulebuV3TileSpritePath(`tiao-${String(index + 1).padStart(2, "0")}`)])),
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.tong.${index + 1}`, getHulebuV3TileSpritePath(`tong-${String(index + 1).padStart(2, "0")}`)])),
+  ...Object.fromEntries(Array.from({ length: 9 }, (_, index) => [`tile.wan.${index + 1}`, getHulebuV3TileSpritePath(`wan-${String(index + 1).padStart(2, "0")}`)])),
+  "tile.honor.1": getHulebuV3TileSpritePath("honor-east"),
+  "tile.honor.2": getHulebuV3TileSpritePath("honor-south"),
+  "tile.honor.3": getHulebuV3TileSpritePath("honor-west"),
+  "tile.honor.4": getHulebuV3TileSpritePath("honor-north"),
+  "tile.honor.5": getHulebuV3TileSpritePath("honor-red"),
+  "tile.honor.6": getHulebuV3TileSpritePath("honor-green"),
+  "tile.honor.7": getHulebuV3TileSpritePath("honor-white"),
 };
 
 const HULEBU_LEGACY_TILE_SPRITE_FRAME_PATHS: Record<string, string> = {

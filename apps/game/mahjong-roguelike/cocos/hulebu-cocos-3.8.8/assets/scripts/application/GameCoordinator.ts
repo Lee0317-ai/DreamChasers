@@ -242,6 +242,8 @@ export class GameCoordinator {
       this.requireTransition(
         result.events.some((event) => event.type === "level.cleared")
           ? "encounterCleared"
+          : result.events.some((event) => event.type === "level.failed")
+            ? "failed"
           : "playing.idle",
       );
     } else {
