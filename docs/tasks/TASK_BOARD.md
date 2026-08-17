@@ -391,4 +391,11 @@
 | T281 | 未填写 | 未命名任务 | Lee | 未填写 | 未填写 | 未填写 | 未填写 |
 | T282 | 未填写 | 未命名任务 | Lee | 未填写 | 未填写 | 未填写 | 未填写 |
 | T283 | 未填写 | 未命名任务 | Lee | 未填写 | 未填写 | 未填写 | 未填写 |
+| T284 | 未填写 | 未命名任务 | Lee | 未填写 | 未填写 | 未填写 | 未填写 |
+| T285 | P0 | 胡了卜弃牌交互 UI 设计资源 | Lee | 已完成 | 未填写 | `output/hulebu-ui-assets/hulebu-discard-ui-v1/**`、本任务分片、领取分片、`docs/tasks/CHANGE_INTAKE.md`、`docs/tasks/NEXT_ID.md`、当天进展、模块进展、完成记录及 docs:sync 主文档。 | 未填写 |
+| T286 | 未填写 | 胡了卜死局失败提示 | Lee | 已完成 | 未填写 | 未填写 | 未填写 |
+| T287 | P0 | 胡了卜完整 UI 全新视觉方向概念图 | Lee | 进行中 | 未填写 | `output/hulebu-complete-ui-redesign-v1/**`、`output/hulebu-ui-design-v2/**`、本任务分片、领取分片、`docs/tasks/CHANGE_INTAKE.md`、当天进展、麻将模块进展、完成记录及 docs:sync 主文档。 | 未填写 |
+| T288 | P1 | 优化 Grok 生图 CDN 下载与自动重试 | Lee | 已完成 | 未填写 | `/Users/lee/.codex/skills/grok-image-generator/SKILL.md`、`/Users/lee/.codex/skills/grok-image-generator/scripts/**`、本任务分片、领取分片、`docs/tasks/CHANGE_INTAKE.md`、`docs/tasks/NEXT_ID.md`。 | 未填写 |
+| T289 | P1 | 胡了卜侧视重力牌塔原型验证 | Lee | 已放弃（2026-08-17 Lee 决定放弃侧视图方案，回退俯视堆叠） | 无（未修改现有玩法代码） | `apps/game/mahjong-roguelike/prototypes/side-view/**`（新增目录，已废弃保留）、本任务分片、领取分片、`docs/tasks/CHANGE_INTAKE.md`、`docs/tasks/NEXT_ID.md`、`docs/tasks/TASK_BOARD.md`（追加行）、当天进展、麻将模块 `PROGRESS.md`。 | 未填写 |
+| T290 | P0 | 胡了卜 UI v3 正式接入 Cocos | Lee | 已完成 | 未填写 | `apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/hulebu/**`、`assets/scripts/assets/**`、UI Binder、`GameSceneController.ts`、相关共享测试、T290 任务/领取/完成记录、麻将模块进展和当天进展。 | 资源数量检查、`npx vitest run packages/shared/src/hulebu-cocos-project.test.ts packages/shared/src/hulebu-cocos-domain.test.ts`、`npm run game:hulebu:verify-build`、`npm run game:hulebu:build`、竖屏浏览器截图检查。 |
 <!-- DOCS_SYNC_TASKS_END -->
