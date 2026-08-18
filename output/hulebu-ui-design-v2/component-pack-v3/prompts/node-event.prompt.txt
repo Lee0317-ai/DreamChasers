@@ -1,0 +1,1 @@
+Restyle this single event Mahjong map node as an independent transparent asset. Preserve a round node with a blank center and a small spark or question-mark-like event emblem, but do not render text. Match the approved warm ivory, mint green, coral pink, rounded clay-like material. No numbers, no path, no background, no mascot, transparent background, straight front view.

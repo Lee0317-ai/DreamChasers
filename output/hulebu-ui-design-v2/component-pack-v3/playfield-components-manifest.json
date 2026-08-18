@@ -1,0 +1,44 @@
+{
+  "assets": [
+    {
+      "name": "counter-toggle",
+      "size": [
+        320,
+        170
+      ],
+      "repeatable": false
+    },
+    {
+      "name": "counter-panel",
+      "size": [
+        900,
+        280
+      ],
+      "repeatable": false
+    },
+    {
+      "name": "meld-pool-panel",
+      "size": [
+        620,
+        250
+      ],
+      "repeatable": false
+    },
+    {
+      "name": "loose-drop-zone",
+      "size": [
+        620,
+        250
+      ],
+      "repeatable": false
+    },
+    {
+      "name": "hand-slot",
+      "size": [
+        150,
+        220
+      ],
+      "repeatable": true
+    }
+  ]
+}

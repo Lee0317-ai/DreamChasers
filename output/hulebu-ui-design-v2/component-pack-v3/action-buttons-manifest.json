@@ -1,0 +1,59 @@
+{
+  "assets": [
+    {
+      "name": "action-hu",
+      "size": [
+        512,
+        512
+      ],
+      "anchor": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "action-gang",
+      "size": [
+        512,
+        512
+      ],
+      "anchor": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "action-peng",
+      "size": [
+        512,
+        512
+      ],
+      "anchor": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "action-chi",
+      "size": [
+        512,
+        512
+      ],
+      "anchor": [
+        256,
+        256
+      ]
+    },
+    {
+      "name": "action-bugang",
+      "size": [
+        768,
+        512
+      ],
+      "anchor": [
+        384,
+        256
+      ]
+    }
+  ]
+}

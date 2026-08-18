@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: portrait mobile game gameplay background layer
+Primary request: create a clean cute Mahjong tile-matching game tabletop background.
+Scene/backdrop: a large soft warm-ivory circular playfield subtly inset into a blush-pink tabletop, with a mint-green edge ring, small lotus leaves and rounded garden details only at the far corners. The lower portion is a clean open tabletop area reserved for separately rendered hand-slot components.
+Composition/framing: portrait 1024 by 1536; central circular playfield must be empty and clean for a stacked Mahjong mountain; leave clear top HUD and bottom open tabletop areas.
+Style/medium: polished 2D mobile-game background with soft clay-like painted volume, clean readable shapes.
+Color palette: blush pink, mint green, warm ivory, small coral accents.
+Constraints: no UI panels, no buttons, no built-in hand slots, no slot row, no text, no numbers, no mascot, no Mahjong tiles, no watermark.

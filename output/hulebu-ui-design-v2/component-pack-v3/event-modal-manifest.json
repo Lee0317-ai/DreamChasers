@@ -1,0 +1,46 @@
+{
+  "assets": [
+    {
+      "name": "event-card",
+      "size": [
+        340,
+        480
+      ]
+    },
+    {
+      "name": "upgrade-card",
+      "size": [
+        340,
+        480
+      ]
+    },
+    {
+      "name": "pause-panel",
+      "size": [
+        560,
+        700
+      ]
+    },
+    {
+      "name": "settings-panel",
+      "size": [
+        560,
+        700
+      ]
+    },
+    {
+      "name": "tag-risk",
+      "size": [
+        240,
+        90
+      ]
+    },
+    {
+      "name": "tag-reward",
+      "size": [
+        240,
+        90
+      ]
+    }
+  ]
+}

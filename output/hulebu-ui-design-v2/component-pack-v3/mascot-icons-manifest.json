@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "name": "mascot-idle",
+      "size": [
+        320,
+        400
+      ]
+    },
+    {
+      "name": "mascot-guide",
+      "size": [
+        320,
+        400
+      ]
+    },
+    {
+      "name": "mascot-happy",
+      "size": [
+        320,
+        400
+      ]
+    },
+    {
+      "name": "mascot-think",
+      "size": [
+        320,
+        400
+      ]
+    },
+    {
+      "name": "mascot-failed",
+      "size": [
+        320,
+        400
+      ]
+    },
+    {
+      "name": "icon-coin",
+      "size": [
+        160,
+        160
+      ]
+    },
+    {
+      "name": "icon-amulet",
+      "size": [
+        160,
+        160
+      ]
+    },
+    {
+      "name": "icon-star",
+      "size": [
+        160,
+        160
+      ]
+    }
+  ]
+}

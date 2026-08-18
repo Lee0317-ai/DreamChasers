@@ -1,0 +1,86 @@
+{
+  "name": "hulebu-lobby-flow-formal-v1",
+  "version": 1,
+  "task": "T271",
+  "designViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "visualBasis": [
+    "T268 complete UI flow prototype",
+    "hulebu-formal-ui-v1",
+    "emerald lacquer, antique gold, warm ivory, deep walnut, restrained cinnabar"
+  ],
+  "runtimePolicy": {
+    "mastersAreDirectRuntimeAssets": false,
+    "runtimeTextOverlayRequired": true,
+    "existingFormalV1MustRemainUnchanged": true,
+    "nextStep": "Extract approved component families into transparent PNG assets and register Cocos SpriteFrame keys."
+  },
+  "masters": [
+    {
+      "key": "master.titleLogin",
+      "path": "masters/title-login-v1.png",
+      "width": 853,
+      "height": 1844,
+      "review": "approved-direction",
+      "runtimeText": ["title", "guestPlay", "accountLogin", "platformLogin", "saveNote"]
+    },
+    {
+      "key": "master.lobby",
+      "path": "masters/lobby-v1.png",
+      "width": 852,
+      "height": 1846,
+      "review": "approved-direction",
+      "runtimeText": ["profile", "currencies", "continueRun", "entryLabels", "bottomNavigation"]
+    },
+    {
+      "key": "master.modeSelect",
+      "path": "masters/mode-select-v1.png",
+      "width": 853,
+      "height": 1844,
+      "review": "approved-direction",
+      "runtimeText": ["pageTitle", "modeNames", "modeDescriptions", "modeStates"]
+    },
+    {
+      "key": "master.levelMap",
+      "path": "masters/level-map-v1.png",
+      "width": 853,
+      "height": 1844,
+      "review": "approved-direction",
+      "runtimeText": ["chapterTitle", "starProgress", "levelNumbers", "bossState"]
+    },
+    {
+      "key": "master.resultVictory",
+      "path": "masters/result-victory-v1.png",
+      "width": 852,
+      "height": 1846,
+      "review": "approved-direction",
+      "runtimeText": ["resultSeal", "title", "summary", "stats", "unlock", "actions"]
+    },
+    {
+      "key": "master.resultFailure",
+      "path": "masters/result-failure-v1.png",
+      "width": 768,
+      "height": 1664,
+      "review": "approved-direction",
+      "runtimeText": ["resultSeal", "title", "reason", "suggestion", "saveNote", "actions"]
+    }
+  ],
+  "preview": {
+    "path": "previews/contact-sheet-v1.png",
+    "width": 690,
+    "height": 1000
+  },
+  "reuseFromFormalV1": [
+    "background.scene.emerald",
+    "modals.tutorial",
+    "modals.pause",
+    "modals.settings",
+    "modals.settlement",
+    "cards.rewardCombo",
+    "cards.rewardScore",
+    "cards.rewardSlot",
+    "tiles.mahjong.*"
+  ]
+}

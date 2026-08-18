@@ -1,0 +1,1 @@
+Restyle this single Mahjong roguelike confirm button as an independent transparent asset. A chunky rounded pill button shell in warm coral-pink with mint-green thickness and a blank center area for a runtime label. No text, no symbols, no mascot, transparent background, straight front view.

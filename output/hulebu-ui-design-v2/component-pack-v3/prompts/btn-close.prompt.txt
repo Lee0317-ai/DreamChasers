@@ -1,0 +1,1 @@
+Restyle this single Mahjong roguelike close button as an independent transparent asset. A small round chunky button shell in warm coral-pink with a blank circular center for a runtime icon. No cross mark, no text, no mascot, transparent background, straight front view.

@@ -1,0 +1,729 @@
+{
+  "name": "hulebu-mode-map-components-v1",
+  "version": 1,
+  "task": "T274",
+  "encoding": "UTF-8 without BOM",
+  "runtime": "Cocos Creator",
+  "sourcePolicy": {
+    "generatedSheetsAreRuntimeAssets": false,
+    "componentPngsAreRuntimeCandidates": true,
+    "runtimeTextOverlayRequired": true,
+    "keyedBackgroundRemoved": true
+  },
+  "componentCount": 17,
+  "components": [
+    {
+      "key": "meta.mode.entryPanel",
+      "label": "Mode entry panel",
+      "path": "components/modes/mode-entry-panel.png",
+      "source": "master-sources/mode-panels-sheet-v1.png",
+      "sourceCrop": [
+        45,
+        95,
+        1490,
+        610
+      ],
+      "sampledKeyColor": "#FB04FA",
+      "width": 1380,
+      "height": 352,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 330,
+        "right": 170,
+        "top": 105,
+        "bottom": 105
+      },
+      "states": [
+        "normal",
+        "active",
+        "locked"
+      ],
+      "stateStrategy": "runtime-tint-and-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 79009,
+        "partialPixels": 4178,
+        "opaquePixels": 402573,
+        "transparentRatio": 0.16265,
+        "alphaBbox": [
+          18,
+          18,
+          1362,
+          334
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "00d611fd4b7d043582587e4bfef449b32c3733a21e67955f22a1202b627e487d"
+    },
+    {
+      "key": "meta.mode.stateTag",
+      "label": "Mode state tag",
+      "path": "components/modes/mode-state-tag.png",
+      "source": "master-sources/mode-panels-sheet-v1.png",
+      "sourceCrop": [
+        350,
+        625,
+        1190,
+        930
+      ],
+      "sampledKeyColor": "#FB04FA",
+      "width": 730,
+      "height": 187,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 105,
+        "right": 105,
+        "top": 48,
+        "bottom": 48
+      },
+      "states": [
+        "normal",
+        "active",
+        "locked",
+        "claimable"
+      ],
+      "stateStrategy": "runtime-tint-and-label",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 38827,
+        "partialPixels": 1977,
+        "opaquePixels": 95706,
+        "transparentRatio": 0.284426,
+        "alphaBbox": [
+          18,
+          18,
+          712,
+          169
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "f1bf5b44209eaa2b314c04c898af17559493dc6f960ec95c686d418c750dd0c5"
+    },
+    {
+      "key": "meta.mode.mainIcon",
+      "label": "Main mode",
+      "path": "components/modes/icon-main.png",
+      "source": "master-sources/mode-badges-sheet-v1.png",
+      "sourceCrop": [
+        6,
+        6,
+        506,
+        506
+      ],
+      "sampledKeyColor": "#F404F8",
+      "width": 466,
+      "height": 466,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "active"
+      ],
+      "stateStrategy": "runtime-highlight-overlay",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 74866,
+        "partialPixels": 1541,
+        "opaquePixels": 140749,
+        "transparentRatio": 0.344757,
+        "alphaBbox": [
+          22,
+          18,
+          444,
+          448
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "8d52378373fa1266f58bb867b34f4513da13504762bb537e9bd0391c17b9ea65"
+    },
+    {
+      "key": "meta.mode.endlessIcon",
+      "label": "Endless mode",
+      "path": "components/modes/icon-endless.png",
+      "source": "master-sources/mode-badges-sheet-v1.png",
+      "sourceCrop": [
+        515,
+        6,
+        1021,
+        506
+      ],
+      "sampledKeyColor": "#F504F8",
+      "width": 467,
+      "height": 467,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "active"
+      ],
+      "stateStrategy": "runtime-highlight-overlay",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 75399,
+        "partialPixels": 1490,
+        "opaquePixels": 141200,
+        "transparentRatio": 0.345726,
+        "alphaBbox": [
+          22,
+          18,
+          444,
+          449
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "5d2c542c0ef8776e64c0c467038276251e3a6b848ef090b8c95f84480cb6e8cc"
+    },
+    {
+      "key": "meta.mode.dailyIcon",
+      "label": "Daily mode",
+      "path": "components/modes/icon-daily.png",
+      "source": "master-sources/mode-badges-sheet-v1.png",
+      "sourceCrop": [
+        1024,
+        6,
+        1530,
+        506
+      ],
+      "sampledKeyColor": "#F504F8",
+      "width": 468,
+      "height": 468,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "claimable"
+      ],
+      "stateStrategy": "runtime-badge-overlay",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 75190,
+        "partialPixels": 1549,
+        "opaquePixels": 142285,
+        "transparentRatio": 0.343296,
+        "alphaBbox": [
+          22,
+          18,
+          446,
+          450
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "cf9aef12510533f16120ee26dfe6f7f54f7759e47bad733d3357340f24b99b57"
+    },
+    {
+      "key": "meta.mode.advancedIcon",
+      "label": "Advanced mode",
+      "path": "components/modes/icon-advanced.png",
+      "source": "master-sources/mode-badges-sheet-v1.png",
+      "sourceCrop": [
+        6,
+        518,
+        506,
+        1018
+      ],
+      "sampledKeyColor": "#F404F8",
+      "width": 463,
+      "height": 463,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "locked",
+        "unlocked"
+      ],
+      "stateStrategy": "runtime-lock-overlay",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 73024,
+        "partialPixels": 1556,
+        "opaquePixels": 139789,
+        "transparentRatio": 0.340646,
+        "alphaBbox": [
+          20,
+          18,
+          442,
+          445
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "2b076d4a9bf800f72403a5513015f48decdfa19402ee09c79657b2a3d74c9fbd"
+    },
+    {
+      "key": "meta.mode.collectionIcon",
+      "label": "Collection mode",
+      "path": "components/modes/icon-collection.png",
+      "source": "master-sources/mode-badges-sheet-v1.png",
+      "sourceCrop": [
+        515,
+        518,
+        1021,
+        1018
+      ],
+      "sampledKeyColor": "#F404F8",
+      "width": 465,
+      "height": 465,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "claimable"
+      ],
+      "stateStrategy": "runtime-badge-overlay",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 74013,
+        "partialPixels": 1545,
+        "opaquePixels": 140667,
+        "transparentRatio": 0.342296,
+        "alphaBbox": [
+          21,
+          18,
+          443,
+          447
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "1e84345c79f06edd3d658156bf7df02bf59b334e8c1f75b8695e78670c7ac309"
+    },
+    {
+      "key": "meta.map.chapterPlaque",
+      "label": "Chapter plaque",
+      "path": "components/map/chapter-plaque.png",
+      "source": "master-sources/map-panels-sheet-v1.png",
+      "sourceCrop": [
+        8,
+        65,
+        850,
+        475
+      ],
+      "sampledKeyColor": "#F804F8",
+      "width": 807,
+      "height": 287,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 112,
+        "right": 112,
+        "top": 62,
+        "bottom": 62
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 78293,
+        "partialPixels": 1897,
+        "opaquePixels": 151419,
+        "transparentRatio": 0.33804,
+        "alphaBbox": [
+          18,
+          18,
+          789,
+          269
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "2d957d62a13b6e576082519aa9e9e5ceaa7e0fedd01d3f2f96186fe0435f91ac"
+    },
+    {
+      "key": "meta.map.starProgress",
+      "label": "Star progress plaque",
+      "path": "components/map/star-progress-plaque.png",
+      "source": "master-sources/map-panels-sheet-v1.png",
+      "sourceCrop": [
+        850,
+        65,
+        1528,
+        475
+      ],
+      "sampledKeyColor": "#F804F8",
+      "width": 566,
+      "height": 269,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 63586,
+        "partialPixels": 1900,
+        "opaquePixels": 86768,
+        "transparentRatio": 0.417631,
+        "alphaBbox": [
+          18,
+          18,
+          548,
+          251
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "7a3955d6a8ccd1a841a70dd562730c676539f974009388f53a0b61e2a4ade97c"
+    },
+    {
+      "key": "meta.map.chapterSwitch",
+      "label": "Chapter switch",
+      "path": "components/map/chapter-switch-frame.png",
+      "source": "master-sources/map-panels-sheet-v1.png",
+      "sourceCrop": [
+        8,
+        515,
+        850,
+        935
+      ],
+      "sampledKeyColor": "#F804F8",
+      "width": 830,
+      "height": 270,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 77767,
+        "partialPixels": 2024,
+        "opaquePixels": 144309,
+        "transparentRatio": 0.347019,
+        "alphaBbox": [
+          18,
+          18,
+          812,
+          252
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "0f7a573103ff46ad199a769dff793791ef26b0bccaa4f31d40c6b9d56c219ae5"
+    },
+    {
+      "key": "meta.map.pathSegment",
+      "label": "Curved path",
+      "path": "components/map/path-segment-curved.png",
+      "source": "master-sources/map-panels-sheet-v1.png",
+      "sourceCrop": [
+        850,
+        430,
+        1528,
+        970
+      ],
+      "sampledKeyColor": "#F805F8",
+      "width": 559,
+      "height": 386,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 140481,
+        "partialPixels": 1598,
+        "opaquePixels": 73695,
+        "transparentRatio": 0.651056,
+        "alphaBbox": [
+          18,
+          18,
+          541,
+          368
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "d8b85be98e127ec52c52f0ee11786df13426b04b96a506020e1feb54db33237d"
+    },
+    {
+      "key": "meta.map.node.normal",
+      "label": "Normal node",
+      "path": "components/map/node-normal.png",
+      "source": "master-sources/map-nodes-sheet-v1.png",
+      "sourceCrop": [
+        6,
+        6,
+        506,
+        506
+      ],
+      "sampledKeyColor": "#F404D6",
+      "width": 406,
+      "height": 406,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "available",
+        "completed"
+      ],
+      "stateStrategy": "runtime-star-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 79759,
+        "partialPixels": 849,
+        "opaquePixels": 84228,
+        "transparentRatio": 0.483869,
+        "alphaBbox": [
+          28,
+          18,
+          377,
+          388
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "0691a18376f9e60b7c2a2bd99fe37c6304ea10c7df599e0125997666dc08dcb2"
+    },
+    {
+      "key": "meta.map.node.current",
+      "label": "Current node",
+      "path": "components/map/node-current.png",
+      "source": "master-sources/map-nodes-sheet-v1.png",
+      "sourceCrop": [
+        515,
+        6,
+        1021,
+        506
+      ],
+      "sampledKeyColor": "#F504D7",
+      "width": 454,
+      "height": 454,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "active"
+      ],
+      "stateStrategy": "runtime-pulse",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 110064,
+        "partialPixels": 1344,
+        "opaquePixels": 94708,
+        "transparentRatio": 0.533991,
+        "alphaBbox": [
+          50,
+          18,
+          403,
+          436
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "6d009ffe6ad82c329d68519f76f57dab70ab32ed7832cc5382889576c52c1a45"
+    },
+    {
+      "key": "meta.map.node.locked",
+      "label": "Locked node",
+      "path": "components/map/node-locked.png",
+      "source": "master-sources/map-nodes-sheet-v1.png",
+      "sourceCrop": [
+        1024,
+        6,
+        1530,
+        506
+      ],
+      "sampledKeyColor": "#F504D7",
+      "width": 405,
+      "height": 405,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "locked"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 79505,
+        "partialPixels": 753,
+        "opaquePixels": 83767,
+        "transparentRatio": 0.484713,
+        "alphaBbox": [
+          30,
+          18,
+          375,
+          387
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "dd1046ea8f1f258336683520c4b9b5caa8ebdec7df18116aab7ebef47ce0e1ab"
+    },
+    {
+      "key": "meta.map.node.boss",
+      "label": "Boss node",
+      "path": "components/map/node-boss.png",
+      "source": "master-sources/map-nodes-sheet-v1.png",
+      "sourceCrop": [
+        6,
+        518,
+        506,
+        1018
+      ],
+      "sampledKeyColor": "#F404D7",
+      "width": 477,
+      "height": 477,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "locked",
+        "available",
+        "completed"
+      ],
+      "stateStrategy": "runtime-tint-and-star-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 94716,
+        "partialPixels": 1834,
+        "opaquePixels": 130979,
+        "transparentRatio": 0.416281,
+        "alphaBbox": [
+          18,
+          33,
+          459,
+          443
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "fbdb53f1bfef37046f59e806bd415306db980cc806ab9589120636cea097c2bc"
+    },
+    {
+      "key": "meta.map.star.empty",
+      "label": "Empty star",
+      "path": "components/map/star-empty.png",
+      "source": "master-sources/map-nodes-sheet-v1.png",
+      "sourceCrop": [
+        515,
+        518,
+        1021,
+        1018
+      ],
+      "sampledKeyColor": "#F404D7",
+      "width": 399,
+      "height": 399,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "empty"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 92268,
+        "partialPixels": 1022,
+        "opaquePixels": 65911,
+        "transparentRatio": 0.579569,
+        "alphaBbox": [
+          18,
+          23,
+          381,
+          375
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "cef5c657db5b638378b59bb83df9255e3a50f974200fc1d87a6453f0bfe4b913"
+    },
+    {
+      "key": "meta.map.star.filled",
+      "label": "Filled star",
+      "path": "components/map/star-filled.png",
+      "source": "master-sources/map-nodes-sheet-v1.png",
+      "sourceCrop": [
+        1024,
+        518,
+        1530,
+        1018
+      ],
+      "sampledKeyColor": "#F504D7",
+      "width": 399,
+      "height": 399,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "filled"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 92323,
+        "partialPixels": 1028,
+        "opaquePixels": 65850,
+        "transparentRatio": 0.579915,
+        "alphaBbox": [
+          18,
+          24,
+          381,
+          375
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "01b6c5ad4ab56f97280b4a0976acfffd080082b0cb1674d245c8ebc5d9b5e0d5"
+    }
+  ],
+  "preview": {
+    "path": "preview/contact-sheet-v1.png",
+    "width": 1534,
+    "height": 1412
+  }
+}

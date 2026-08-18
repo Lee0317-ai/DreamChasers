@@ -1,0 +1,370 @@
+{
+  "pipeline": "new cute shell + existing hulebu tile faces",
+  "tile_size": [
+    125,
+    170
+  ],
+  "count": 36,
+  "items": [
+    {
+      "name": "wan-01",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-01.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-02",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-02.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-03",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-03.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-04",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-04.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-05",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-05.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-06",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-06.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-07",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-07.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-08",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-08.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "wan-09",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-09.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-01",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-01.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-02",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-02.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-03",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-03.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-04",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-04.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-05",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-05.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-06",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-06.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-07",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-07.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-08",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-08.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tiao-09",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-09.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-01",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-01.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-02",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-02.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-03",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-03.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-04",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-04.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-05",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-05.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-06",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-06.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-07",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-07.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-08",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-08.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tong-09",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-09.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-east",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-east.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-south",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-south.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-west",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-west.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-north",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-north.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-red",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-red.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-green",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-green.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "honor-white",
+      "source_face": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-white.png",
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tile-back",
+      "source_face": null,
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    },
+    {
+      "name": "tile-highlight-shell",
+      "source_face": null,
+      "shell": "new-cute-shell-v1",
+      "size": [
+        125,
+        170
+      ],
+      "anchor": "center"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "assets": [
+    {
+      "name": "tool-shuffle",
+      "size": [
+        180,
+        180
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "tool-undo",
+      "size": [
+        180,
+        180
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "tool-discard",
+      "size": [
+        180,
+        180
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "tool-vision",
+      "size": [
+        180,
+        180
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "hud-level",
+      "size": [
+        320,
+        120
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "hud-score",
+      "size": [
+        320,
+        120
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "hud-remaining",
+      "size": [
+        420,
+        120
+      ],
+      "runtimeText": true
+    },
+    {
+      "name": "hud-boss",
+      "size": [
+        680,
+        120
+      ],
+      "runtimeText": true
+    }
+  ]
+}

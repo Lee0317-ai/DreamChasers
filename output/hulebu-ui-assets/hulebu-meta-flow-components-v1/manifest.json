@@ -1,0 +1,630 @@
+{
+  "name": "hulebu-meta-flow-components-v1",
+  "version": 1,
+  "task": "T273",
+  "encoding": "UTF-8 without BOM",
+  "runtime": "Cocos Creator",
+  "sourcePolicy": {
+    "generatedSheetsAreRuntimeAssets": false,
+    "componentPngsAreRuntimeCandidates": true,
+    "runtimeTextOverlayRequired": true,
+    "keyedBackgroundRemoved": true
+  },
+  "componentCount": 14,
+  "components": [
+    {
+      "key": "meta.title.brandPlaque",
+      "label": "Title plaque",
+      "path": "components/title/title-brand-plaque.png",
+      "source": "master-sources/title-common-sheet-v1.png",
+      "sourceCrop": [
+        8,
+        165,
+        580,
+        466
+      ],
+      "sampledKeyColor": "#F406E0",
+      "width": 575,
+      "height": 206,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 104,
+        "right": 104,
+        "top": 46,
+        "bottom": 46
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 35011,
+        "partialPixels": 826,
+        "opaquePixels": 82613,
+        "transparentRatio": 0.295576,
+        "alphaBbox": [
+          18,
+          18,
+          557,
+          188
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "9387fdbe0df63fd9cce63423c7050092fc95aa4972e131964856f6621078a9ba"
+    },
+    {
+      "key": "meta.title.jadeSeal",
+      "label": "Jade seal",
+      "path": "components/title/title-jade-seal.png",
+      "source": "master-sources/title-common-sheet-v1.png",
+      "sourceCrop": [
+        570,
+        110,
+        970,
+        510
+      ],
+      "sampledKeyColor": "#F506E0",
+      "width": 371,
+      "height": 371,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 59973,
+        "partialPixels": 1073,
+        "opaquePixels": 76595,
+        "transparentRatio": 0.43572,
+        "alphaBbox": [
+          22,
+          18,
+          349,
+          353
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "806745b9a3f7a171f86343279aa4d90239ea9e56472cf91641f4470bf46268ed"
+    },
+    {
+      "key": "meta.title.primaryButton",
+      "label": "Primary button",
+      "path": "components/common/button-primary-blank.png",
+      "source": "master-sources/title-common-sheet-v1.png",
+      "sourceCrop": [
+        955,
+        170,
+        1528,
+        455
+      ],
+      "sampledKeyColor": "#F406E0",
+      "width": 550,
+      "height": 194,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 104,
+        "right": 104,
+        "top": 42,
+        "bottom": 42
+      },
+      "states": [
+        "normal",
+        "pressed",
+        "disabled"
+      ],
+      "stateStrategy": "runtime-tint-and-scale",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 32549,
+        "partialPixels": 334,
+        "opaquePixels": 73817,
+        "transparentRatio": 0.305052,
+        "alphaBbox": [
+          18,
+          18,
+          532,
+          176
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "facdd77eff6de4259dc9cb35b28e40875d1d7ecd2c114953808d747cf120c898"
+    },
+    {
+      "key": "meta.title.secondaryButton",
+      "label": "Secondary button",
+      "path": "components/common/button-secondary-blank.png",
+      "source": "master-sources/title-common-sheet-v1.png",
+      "sourceCrop": [
+        8,
+        545,
+        558,
+        836
+      ],
+      "sampledKeyColor": "#F505E0",
+      "width": 523,
+      "height": 217,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 96,
+        "right": 96,
+        "top": 42,
+        "bottom": 42
+      },
+      "states": [
+        "normal",
+        "pressed",
+        "disabled"
+      ],
+      "stateStrategy": "runtime-tint-and-scale",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 34644,
+        "partialPixels": 1180,
+        "opaquePixels": 77667,
+        "transparentRatio": 0.305258,
+        "alphaBbox": [
+          18,
+          18,
+          505,
+          199
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "c57b751adba74e559e3f1e0c14485f5f2952b9593b8af0093ec4f2b931c6cf60"
+    },
+    {
+      "key": "meta.title.saveNotePanel",
+      "label": "Note panel",
+      "path": "components/common/note-panel-blank.png",
+      "source": "master-sources/title-common-sheet-v1.png",
+      "sourceCrop": [
+        535,
+        545,
+        1045,
+        842
+      ],
+      "sampledKeyColor": "#F405DF",
+      "width": 466,
+      "height": 247,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 46,
+        "right": 46,
+        "top": 42,
+        "bottom": 42
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 24524,
+        "partialPixels": 1044,
+        "opaquePixels": 89534,
+        "transparentRatio": 0.213063,
+        "alphaBbox": [
+          18,
+          18,
+          448,
+          229
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "1edb1aad4e855719355c563942118e51d8c84f2ff37b487afba74a33d15a1b53"
+    },
+    {
+      "key": "meta.lobby.avatarFrame",
+      "label": "Avatar frame",
+      "path": "components/lobby/avatar-frame.png",
+      "source": "master-sources/lobby-panels-sheet-v1.png",
+      "sourceCrop": [
+        8,
+        8,
+        468,
+        503
+      ],
+      "sampledKeyColor": "#F204F1",
+      "width": 409,
+      "height": 409,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 76294,
+        "partialPixels": 1529,
+        "opaquePixels": 89458,
+        "transparentRatio": 0.456083,
+        "alphaBbox": [
+          25,
+          18,
+          383,
+          391
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "8255d55a911436799f7289b854297e41a8a0507d66188eb6677053e95c93d176"
+    },
+    {
+      "key": "meta.lobby.currencyPlaque",
+      "label": "Currency plaque",
+      "path": "components/lobby/currency-plaque.png",
+      "source": "master-sources/lobby-panels-sheet-v1.png",
+      "sourceCrop": [
+        484,
+        8,
+        972,
+        503
+      ],
+      "sampledKeyColor": "#F204F1",
+      "width": 492,
+      "height": 166,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 86,
+        "right": 86,
+        "top": 38,
+        "bottom": 38
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 39026,
+        "partialPixels": 1579,
+        "opaquePixels": 41067,
+        "transparentRatio": 0.477838,
+        "alphaBbox": [
+          18,
+          18,
+          474,
+          148
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "f9a2095c1cd837575a8ab967102c0391d33eb316d4c3766f1d673554e1f06666"
+    },
+    {
+      "key": "meta.lobby.continuePanel",
+      "label": "Continue panel",
+      "path": "components/lobby/continue-panel.png",
+      "source": "master-sources/lobby-panels-sheet-v1.png",
+      "sourceCrop": [
+        988,
+        8,
+        1528,
+        503
+      ],
+      "sampledKeyColor": "#F304F2",
+      "width": 551,
+      "height": 247,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 92,
+        "right": 92,
+        "top": 64,
+        "bottom": 64
+      },
+      "states": [
+        "default",
+        "active"
+      ],
+      "stateStrategy": "runtime-highlight-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 44399,
+        "partialPixels": 2063,
+        "opaquePixels": 89635,
+        "transparentRatio": 0.326231,
+        "alphaBbox": [
+          18,
+          18,
+          533,
+          229
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "5339bcb1f53edca8467e2d5344c97da555880aeaaf885f6d5035efe5974be024"
+    },
+    {
+      "key": "meta.lobby.progressTrack",
+      "label": "Progress track",
+      "path": "components/lobby/progress-track.png",
+      "source": "master-sources/lobby-panels-sheet-v1.png",
+      "sourceCrop": [
+        8,
+        520,
+        468,
+        1016
+      ],
+      "sampledKeyColor": "#F204F1",
+      "width": 470,
+      "height": 99,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 104,
+        "right": 104,
+        "top": 22,
+        "bottom": 22
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 24254,
+        "partialPixels": 1257,
+        "opaquePixels": 21019,
+        "transparentRatio": 0.521255,
+        "alphaBbox": [
+          18,
+          18,
+          452,
+          81
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "f330e903f3b54e5906a66a475483cdb4853b8e3469af248af06fedb3004378c5"
+    },
+    {
+      "key": "meta.lobby.bottomNav",
+      "label": "Bottom navigation",
+      "path": "components/lobby/bottom-nav-frame.png",
+      "source": "master-sources/lobby-panels-sheet-v1.png",
+      "sourceCrop": [
+        484,
+        520,
+        972,
+        1016
+      ],
+      "sampledKeyColor": "#F203F2",
+      "width": 524,
+      "height": 196,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 74,
+        "right": 74,
+        "top": 54,
+        "bottom": 54
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 43985,
+        "partialPixels": 1438,
+        "opaquePixels": 57281,
+        "transparentRatio": 0.42827,
+        "alphaBbox": [
+          18,
+          18,
+          506,
+          178
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "0187b8c6d9fd22075718d64b4e9f1674924b56e5371c8bac8e0628a3bee8d5bd"
+    },
+    {
+      "key": "meta.lobby.entry.main",
+      "label": "Main journey",
+      "path": "components/lobby/entry-main-journey.png",
+      "source": "master-sources/lobby-badges-sheet-v1.png",
+      "sourceCrop": [
+        6,
+        6,
+        621,
+        621
+      ],
+      "sampledKeyColor": "#F005EA",
+      "width": 581,
+      "height": 581,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "notice"
+      ],
+      "stateStrategy": "runtime-badge-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 128705,
+        "partialPixels": 1768,
+        "opaquePixels": 207088,
+        "transparentRatio": 0.381279,
+        "alphaBbox": [
+          34,
+          18,
+          547,
+          563
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "f5adf845e10448cef3a8adae421aea3f9d953d499e1d06f5ba5b7ec13c271133"
+    },
+    {
+      "key": "meta.lobby.entry.modes",
+      "label": "Modes",
+      "path": "components/lobby/entry-modes.png",
+      "source": "master-sources/lobby-badges-sheet-v1.png",
+      "sourceCrop": [
+        633,
+        6,
+        1248,
+        621
+      ],
+      "sampledKeyColor": "#F005EA",
+      "width": 581,
+      "height": 581,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "notice"
+      ],
+      "stateStrategy": "runtime-badge-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 128288,
+        "partialPixels": 1759,
+        "opaquePixels": 207514,
+        "transparentRatio": 0.380044,
+        "alphaBbox": [
+          33,
+          18,
+          547,
+          563
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "76a1c3caec1d0ab1f838df548bc0a082aedcf4d2274451cf6288fc3da878fdd7"
+    },
+    {
+      "key": "meta.lobby.entry.collection",
+      "label": "Collection",
+      "path": "components/lobby/entry-collection.png",
+      "source": "master-sources/lobby-badges-sheet-v1.png",
+      "sourceCrop": [
+        6,
+        633,
+        621,
+        1248
+      ],
+      "sampledKeyColor": "#F005EA",
+      "width": 581,
+      "height": 581,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "claimable"
+      ],
+      "stateStrategy": "runtime-badge-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 129032,
+        "partialPixels": 1795,
+        "opaquePixels": 206734,
+        "transparentRatio": 0.382248,
+        "alphaBbox": [
+          34,
+          18,
+          547,
+          563
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "c2343442f672e92b9f7afe3b56c1ae3f0602166fed5cd22b7e80b0bd6faa7dce"
+    },
+    {
+      "key": "meta.lobby.entry.growth",
+      "label": "Growth",
+      "path": "components/lobby/entry-growth.png",
+      "source": "master-sources/lobby-badges-sheet-v1.png",
+      "sourceCrop": [
+        633,
+        633,
+        1248,
+        1248
+      ],
+      "sampledKeyColor": "#F004EA",
+      "width": 582,
+      "height": 582,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "normal",
+        "affordable"
+      ],
+      "stateStrategy": "runtime-badge-overlay",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 128764,
+        "partialPixels": 1766,
+        "opaquePixels": 208194,
+        "transparentRatio": 0.380144,
+        "alphaBbox": [
+          34,
+          18,
+          548,
+          564
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "8803397f9c0651e8582c6954c707af96a936251b08e40521a17167c9a91c5b3c"
+    }
+  ],
+  "preview": {
+    "path": "preview/contact-sheet-v1.png",
+    "width": 1534,
+    "height": 1148
+  }
+}

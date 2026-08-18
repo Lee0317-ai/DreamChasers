@@ -1,0 +1,1 @@
+Restyle this single Mahjong roguelike tutorial highlight frame as an independent transparent asset. A chunky rounded-corner frame with a fully hollow see-through center, dashed ivory and coral-pink border, and small soft shadow lugs at the corners. No text, no arrows, no hands, no mascot, transparent background including the hollow center, straight front view.

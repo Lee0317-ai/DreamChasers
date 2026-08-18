@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: portrait mobile game level-map background layer
+Primary request: create a cute top-down whimsical garden map background for a Mahjong roguelike.
+Scene/backdrop: blush-pink ground with mint-green ponds, rounded stepping stones, soft flower borders and subtle garden paths only around the outer perimeter.
+Composition/framing: portrait 1024 by 1536; keep the central area broadly open and low-detail for runtime map paths and level nodes; no paths or nodes baked into the center.
+Style/medium: polished 2D mobile-game background with soft clay-like painted volume, clean readable shapes.
+Color palette: blush pink, mint green, warm ivory, small coral accents.
+Constraints: no UI panels, no buttons, no text, no numbers, no mascot, no Mahjong tiles, no watermark.

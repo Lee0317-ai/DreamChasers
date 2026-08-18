@@ -1,0 +1,914 @@
+{
+  "tiles": [
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-east.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-east.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        180,
+        57,
+        842,
+        953
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        680,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-green.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-green.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        223,
+        99,
+        1032,
+        1164
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        699,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-north.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-north.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        219,
+        68,
+        1038,
+        1183
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        676,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-red.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-red.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        251,
+        77,
+        1004,
+        1158
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        641,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-south.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-south.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        136,
+        18,
+        886,
+        1005
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        699,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-west.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-west.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        219,
+        87,
+        1035,
+        1161
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        699,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/honor-white.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/honor-white.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        270,
+        88,
+        985,
+        1150
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        619,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-01.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-01.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        246,
+        32,
+        1008,
+        1222
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        589,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-02.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-02.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        251,
+        47,
+        1004,
+        1205
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        598,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-03.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-03.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        198,
+        36,
+        825,
+        987
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        607,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-04.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-04.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        259,
+        60,
+        995,
+        1172
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        609,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-05.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-05.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        244,
+        32,
+        1010,
+        1221
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        593,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-06.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-06.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        210,
+        39,
+        818,
+        985
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        591,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-07.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-07.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        208,
+        37,
+        816,
+        985
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        590,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-08.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-08.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        220,
+        39,
+        803,
+        970
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        576,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tiao-09.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tiao-09.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        260,
+        70,
+        994,
+        1198
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        599,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tile-back.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tile-back.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        202,
+        26,
+        1052,
+        1225
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        652,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-01.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-01.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        261,
+        19,
+        993,
+        1225
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        558,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-02.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-02.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        228,
+        5,
+        1027,
+        1235
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        598,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-03.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-03.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        201,
+        18,
+        819,
+        1000
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        579,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-04.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-04.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        241,
+        32,
+        1013,
+        1211
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        602,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-05.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-05.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        194,
+        24,
+        831,
+        998
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        602,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-06.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-06.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        194,
+        11,
+        830,
+        1002
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        590,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-07.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-07.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        215,
+        10,
+        811,
+        1009
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        549,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-08.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-08.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        197,
+        0,
+        831,
+        1018
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        573,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/tong-09.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/tong-09.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        216,
+        29,
+        1040,
+        1211
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        641,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-01.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-01.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        203,
+        20,
+        821,
+        988
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        587,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-02.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-02.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        199,
+        23,
+        826,
+        989
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        597,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-03.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-03.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        221,
+        33,
+        1033,
+        1220
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        629,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-04.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-04.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        195,
+        10,
+        831,
+        1003
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        589,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-05.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-05.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        195,
+        25,
+        830,
+        991
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        605,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-06.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-06.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        257,
+        40,
+        998,
+        1213
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        581,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-07.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-07.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        271,
+        63,
+        983,
+        1176
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        589,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-08.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-08.png",
+      "sourceSize": [
+        1024,
+        1024
+      ],
+      "sourceBBox": [
+        156,
+        15,
+        868,
+        1001
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        664,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    },
+    {
+      "source": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/images/wan-09.png",
+      "output": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/normalized/wan-09.png",
+      "sourceSize": [
+        1254,
+        1254
+      ],
+      "sourceBBox": [
+        241,
+        32,
+        1014,
+        1222
+      ],
+      "outputSize": [
+        1024,
+        1024
+      ],
+      "contentSize": [
+        598,
+        920
+      ],
+      "anchor": [
+        512,
+        512
+      ]
+    }
+  ]
+}

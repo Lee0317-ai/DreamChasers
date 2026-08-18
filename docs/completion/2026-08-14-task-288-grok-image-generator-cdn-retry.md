@@ -1,0 +1,32 @@
+# T288 完成记录：优化 Grok 生图 CDN 下载与自动重试
+
+- 任务编号：T288
+- 负责人：Lee
+- 修改文件：
+  - `/Users/lee/.codex/skills/grok-image-generator/SKILL.md`
+  - `/Users/lee/.codex/skills/grok-image-generator/scripts/generate_grok_image.py`
+  - `/Users/lee/.codex/skills/grok-image-generator/scripts/test_generate_grok_image.py`
+  - `docs/tasks/items/T288-grok-image-generator-cdn-retry.md`
+  - `docs/tasks/claims/T288-lee.md`
+  - `docs/tasks/CHANGE_INTAKE.md`
+  - `docs/tasks/NEXT_ID.md`
+  - `docs/progress/2026-08-14-lee.md`
+- 实现内容：
+  - 信任 PPTOKEN 当前返回的 `aiba-media.org` 图片 CDN 及其子域名。
+  - 自动拒绝回环、私网、非 HTTPS 和未知域名图片地址。
+  - 对不可下载响应默认自动重试 4 次，可通过 `--response-attempts` 调整。
+  - 更新技能说明，移除下次人工临时判断的必要。
+- 验证命令：
+  - `python3 /Users/lee/.codex/skills/grok-image-generator/scripts/test_generate_grok_image.py`
+  - `python3 /Users/lee/.codex/skills/grok-image-generator/scripts/generate_grok_image.py --dry-run --prompt "small pink carrot mascot, clean 2D game asset, no text" --out /tmp/grok-image-generator-dry-run.png`
+  - 真实 Grok 生图命令，使用 `--response-attempts 4`。
+  - `python3 /Users/lee/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/lee/.codex/skills/grok-image-generator`
+  - `git diff --check`
+- 验证结果：
+  - 6/6 单元测试通过。
+  - `--dry-run` 通过。
+  - 真实生成自动跳过不可下载响应并成功落盘。
+  - 技能结构校验通过。
+  - 未在本次新增文件中发现 API Key。
+  - 无 BOM，`git diff --check` 通过。
+- 遗留问题：PPTOKEN 服务仍可能间歇返回回环地址，脚本已自动处理；如果 4 次均失败，仍需检查服务端或密钥状态。

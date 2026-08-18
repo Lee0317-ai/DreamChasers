@@ -1,0 +1,179 @@
+{
+  "jobs": [
+    {
+      "name": "wan-01",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-01.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-01.prompt.txt"
+    },
+    {
+      "name": "wan-02",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-02.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-02.prompt.txt"
+    },
+    {
+      "name": "wan-03",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-03.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-03.prompt.txt"
+    },
+    {
+      "name": "wan-04",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-04.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-04.prompt.txt"
+    },
+    {
+      "name": "wan-05",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-05.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-05.prompt.txt"
+    },
+    {
+      "name": "wan-06",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-06.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-06.prompt.txt"
+    },
+    {
+      "name": "wan-07",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-07.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-07.prompt.txt"
+    },
+    {
+      "name": "wan-08",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-08.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-08.prompt.txt"
+    },
+    {
+      "name": "wan-09",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/wan/wan-09.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/wan-09.prompt.txt"
+    },
+    {
+      "name": "tiao-01",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-01.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-01.prompt.txt"
+    },
+    {
+      "name": "tiao-02",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-02.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-02.prompt.txt"
+    },
+    {
+      "name": "tiao-03",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-03.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-03.prompt.txt"
+    },
+    {
+      "name": "tiao-04",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-04.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-04.prompt.txt"
+    },
+    {
+      "name": "tiao-05",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-05.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-05.prompt.txt"
+    },
+    {
+      "name": "tiao-06",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-06.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-06.prompt.txt"
+    },
+    {
+      "name": "tiao-07",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-07.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-07.prompt.txt"
+    },
+    {
+      "name": "tiao-08",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-08.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-08.prompt.txt"
+    },
+    {
+      "name": "tiao-09",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tiao/tiao-09.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tiao-09.prompt.txt"
+    },
+    {
+      "name": "tong-01",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-01.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-01.prompt.txt"
+    },
+    {
+      "name": "tong-02",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-02.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-02.prompt.txt"
+    },
+    {
+      "name": "tong-03",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-03.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-03.prompt.txt"
+    },
+    {
+      "name": "tong-04",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-04.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-04.prompt.txt"
+    },
+    {
+      "name": "tong-05",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-05.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-05.prompt.txt"
+    },
+    {
+      "name": "tong-06",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-06.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-06.prompt.txt"
+    },
+    {
+      "name": "tong-07",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-07.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-07.prompt.txt"
+    },
+    {
+      "name": "tong-08",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-08.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-08.prompt.txt"
+    },
+    {
+      "name": "tong-09",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/numbered/tong/tong-09.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tong-09.prompt.txt"
+    },
+    {
+      "name": "honor-east",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-east.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-east.prompt.txt"
+    },
+    {
+      "name": "honor-south",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-south.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-south.prompt.txt"
+    },
+    {
+      "name": "honor-west",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-west.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-west.prompt.txt"
+    },
+    {
+      "name": "honor-north",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-north.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-north.prompt.txt"
+    },
+    {
+      "name": "honor-red",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-red.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-red.prompt.txt"
+    },
+    {
+      "name": "honor-green",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-green.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-green.prompt.txt"
+    },
+    {
+      "name": "honor-white",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/mahjong-tiles/tiles/honors/honor-white.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/honor-white.prompt.txt"
+    },
+    {
+      "name": "tile-back",
+      "source": "apps/game/mahjong-roguelike/cocos/hulebu-cocos-3.8.8/assets/resources/ui/formal-v1/tiles/mahjong/back-default.png",
+      "prompt": "output/hulebu-ui-design-v2/tile-pack-v1/generated-v3/prompts/tile-back.prompt.txt"
+    }
+  ]
+}

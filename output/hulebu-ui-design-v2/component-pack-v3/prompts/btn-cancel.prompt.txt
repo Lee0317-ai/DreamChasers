@@ -1,0 +1,1 @@
+Restyle this single Mahjong roguelike cancel button as an independent transparent asset. A chunky rounded pill button shell in soft mint-green with ivory thickness and a blank center area for a runtime label. No text, no symbols, no mascot, transparent background, straight front view.

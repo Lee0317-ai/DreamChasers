@@ -1,0 +1,229 @@
+{
+  "version": "tile-pack-v3",
+  "status": "candidate-for-review",
+  "generator": "PPTOKEN gpt-image-2 edit",
+  "canvas": "1024x1024",
+  "format": "RGBA PNG",
+  "assetCount": 35,
+  "assets": [
+    {
+      "name": "wan-01",
+      "raw": "images/wan-01.png",
+      "normalized": "normalized/wan-01.png",
+      "prompt": "prompts/wan-01.prompt.txt"
+    },
+    {
+      "name": "wan-02",
+      "raw": "images/wan-02.png",
+      "normalized": "normalized/wan-02.png",
+      "prompt": "prompts/wan-02.prompt.txt"
+    },
+    {
+      "name": "wan-03",
+      "raw": "images/wan-03.png",
+      "normalized": "normalized/wan-03.png",
+      "prompt": "prompts/wan-03.prompt.txt"
+    },
+    {
+      "name": "wan-04",
+      "raw": "images/wan-04.png",
+      "normalized": "normalized/wan-04.png",
+      "prompt": "prompts/wan-04.prompt.txt"
+    },
+    {
+      "name": "wan-05",
+      "raw": "images/wan-05.png",
+      "normalized": "normalized/wan-05.png",
+      "prompt": "prompts/wan-05.prompt.txt"
+    },
+    {
+      "name": "wan-06",
+      "raw": "images/wan-06.png",
+      "normalized": "normalized/wan-06.png",
+      "prompt": "prompts/wan-06.prompt.txt"
+    },
+    {
+      "name": "wan-07",
+      "raw": "images/wan-07.png",
+      "normalized": "normalized/wan-07.png",
+      "prompt": "prompts/wan-07.prompt.txt"
+    },
+    {
+      "name": "wan-08",
+      "raw": "images/wan-08.png",
+      "normalized": "normalized/wan-08.png",
+      "prompt": "prompts/wan-08.prompt.txt"
+    },
+    {
+      "name": "wan-09",
+      "raw": "images/wan-09.png",
+      "normalized": "normalized/wan-09.png",
+      "prompt": "prompts/wan-09.prompt.txt"
+    },
+    {
+      "name": "tiao-01",
+      "raw": "images/tiao-01.png",
+      "normalized": "normalized/tiao-01.png",
+      "prompt": "prompts/tiao-01.prompt.txt"
+    },
+    {
+      "name": "tiao-02",
+      "raw": "images/tiao-02.png",
+      "normalized": "normalized/tiao-02.png",
+      "prompt": "prompts/tiao-02.prompt.txt"
+    },
+    {
+      "name": "tiao-03",
+      "raw": "images/tiao-03.png",
+      "normalized": "normalized/tiao-03.png",
+      "prompt": "prompts/tiao-03.prompt.txt"
+    },
+    {
+      "name": "tiao-04",
+      "raw": "images/tiao-04.png",
+      "normalized": "normalized/tiao-04.png",
+      "prompt": "prompts/tiao-04.prompt.txt"
+    },
+    {
+      "name": "tiao-05",
+      "raw": "images/tiao-05.png",
+      "normalized": "normalized/tiao-05.png",
+      "prompt": "prompts/tiao-05.prompt.txt"
+    },
+    {
+      "name": "tiao-06",
+      "raw": "images/tiao-06.png",
+      "normalized": "normalized/tiao-06.png",
+      "prompt": "prompts/tiao-06.prompt.txt"
+    },
+    {
+      "name": "tiao-07",
+      "raw": "images/tiao-07.png",
+      "normalized": "normalized/tiao-07.png",
+      "prompt": "prompts/tiao-07.prompt.txt"
+    },
+    {
+      "name": "tiao-08",
+      "raw": "images/tiao-08.png",
+      "normalized": "normalized/tiao-08.png",
+      "prompt": "prompts/tiao-08.prompt.txt"
+    },
+    {
+      "name": "tiao-09",
+      "raw": "images/tiao-09.png",
+      "normalized": "normalized/tiao-09.png",
+      "prompt": "prompts/tiao-09.prompt.txt"
+    },
+    {
+      "name": "tong-01",
+      "raw": "images/tong-01.png",
+      "normalized": "normalized/tong-01.png",
+      "prompt": "prompts/tong-01.prompt.txt"
+    },
+    {
+      "name": "tong-02",
+      "raw": "images/tong-02.png",
+      "normalized": "normalized/tong-02.png",
+      "prompt": "prompts/tong-02.prompt.txt"
+    },
+    {
+      "name": "tong-03",
+      "raw": "images/tong-03.png",
+      "normalized": "normalized/tong-03.png",
+      "prompt": "prompts/tong-03.prompt.txt"
+    },
+    {
+      "name": "tong-04",
+      "raw": "images/tong-04.png",
+      "normalized": "normalized/tong-04.png",
+      "prompt": "prompts/tong-04.prompt.txt"
+    },
+    {
+      "name": "tong-05",
+      "raw": "images/tong-05.png",
+      "normalized": "normalized/tong-05.png",
+      "prompt": "prompts/tong-05.prompt.txt"
+    },
+    {
+      "name": "tong-06",
+      "raw": "images/tong-06.png",
+      "normalized": "normalized/tong-06.png",
+      "prompt": "prompts/tong-06.prompt.txt"
+    },
+    {
+      "name": "tong-07",
+      "raw": "images/tong-07.png",
+      "normalized": "normalized/tong-07.png",
+      "prompt": "prompts/tong-07.prompt.txt"
+    },
+    {
+      "name": "tong-08",
+      "raw": "images/tong-08.png",
+      "normalized": "normalized/tong-08.png",
+      "prompt": "prompts/tong-08.prompt.txt"
+    },
+    {
+      "name": "tong-09",
+      "raw": "images/tong-09.png",
+      "normalized": "normalized/tong-09.png",
+      "prompt": "prompts/tong-09.prompt.txt"
+    },
+    {
+      "name": "honor-east",
+      "raw": "images/honor-east.png",
+      "normalized": "normalized/honor-east.png",
+      "prompt": "prompts/honor-east.prompt.txt"
+    },
+    {
+      "name": "honor-south",
+      "raw": "images/honor-south.png",
+      "normalized": "normalized/honor-south.png",
+      "prompt": "prompts/honor-south.prompt.txt"
+    },
+    {
+      "name": "honor-west",
+      "raw": "images/honor-west.png",
+      "normalized": "normalized/honor-west.png",
+      "prompt": "prompts/honor-west.prompt.txt"
+    },
+    {
+      "name": "honor-north",
+      "raw": "images/honor-north.png",
+      "normalized": "normalized/honor-north.png",
+      "prompt": "prompts/honor-north.prompt.txt"
+    },
+    {
+      "name": "honor-red",
+      "raw": "images/honor-red.png",
+      "normalized": "normalized/honor-red.png",
+      "prompt": "prompts/honor-red.prompt.txt"
+    },
+    {
+      "name": "honor-green",
+      "raw": "images/honor-green.png",
+      "normalized": "normalized/honor-green.png",
+      "prompt": "prompts/honor-green.prompt.txt"
+    },
+    {
+      "name": "honor-white",
+      "raw": "images/honor-white.png",
+      "normalized": "normalized/honor-white.png",
+      "prompt": "prompts/honor-white.prompt.txt"
+    },
+    {
+      "name": "tile-back",
+      "raw": "images/tile-back.png",
+      "normalized": "normalized/tile-back.png",
+      "prompt": "prompts/tile-back.prompt.txt"
+    }
+  ],
+  "rejected": [
+    "images/rejected/honor-white-extra-frame.png",
+    "images/rejected/tiao-05-ambiguous-count.png",
+    "images/rejected/tiao-07-ambiguous-count.png",
+    "images/rejected/tiao-08-ambiguous-count.png",
+    "images/rejected/tiao-08-independent-columns-misread.png",
+    "images/rejected/tiao-08-wm-wide-v2.png",
+    "images/rejected/tong-01-grid-artifact.png"
+  ]
+}

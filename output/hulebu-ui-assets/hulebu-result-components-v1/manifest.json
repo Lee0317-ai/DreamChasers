@@ -1,0 +1,415 @@
+{
+  "name": "hulebu-result-components-v1",
+  "version": 1,
+  "task": "T275",
+  "encoding": "UTF-8 without BOM",
+  "runtime": "Cocos Creator",
+  "sourcePolicy": {
+    "generatedSheetsAreRuntimeAssets": false,
+    "componentPngsAreRuntimeCandidates": true,
+    "runtimeTextOverlayRequired": true,
+    "keyedBackgroundRemoved": true
+  },
+  "componentCount": 9,
+  "components": [
+    {
+      "key": "meta.result.seal.victory",
+      "label": "Victory seal",
+      "path": "components/result/seal-victory.png",
+      "source": "master-sources/result-seals-sheet-v1.png",
+      "sourceCrop": [
+        20,
+        60,
+        760,
+        940
+      ],
+      "sampledKeyColor": "#FB00FC",
+      "width": 763,
+      "height": 763,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "victory"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 256631,
+        "partialPixels": 1197,
+        "opaquePixels": 324341,
+        "transparentRatio": 0.440819,
+        "alphaBbox": [
+          60,
+          18,
+          702,
+          745
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "8983fd5ba17686c2b0d6f90e6d277a9e41fdcb68ef398f6dfe8969ee85e1583b"
+    },
+    {
+      "key": "meta.result.seal.failure",
+      "label": "Failure seal",
+      "path": "components/result/seal-failure.png",
+      "source": "master-sources/result-seals-sheet-v1.png",
+      "sourceCrop": [
+        775,
+        60,
+        1518,
+        940
+      ],
+      "sampledKeyColor": "#FC00FD",
+      "width": 710,
+      "height": 710,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "failure"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": false,
+      "alpha": {
+        "transparentPixels": 176140,
+        "partialPixels": 612,
+        "opaquePixels": 327348,
+        "transparentRatio": 0.349415,
+        "alphaBbox": [
+          34,
+          18,
+          676,
+          692
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "e2a1694d21e261cadee4d3d28d98f7f956c67650aeb0b6828a6a33952bc1fed2"
+    },
+    {
+      "key": "meta.result.titlePlaque.victory",
+      "label": "Victory title plaque",
+      "path": "components/result/title-plaque-victory.png",
+      "source": "master-sources/result-panels-sheet-v1.png",
+      "sourceCrop": [
+        5,
+        55,
+        775,
+        445
+      ],
+      "sampledKeyColor": "#F701EE",
+      "width": 769,
+      "height": 287,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 110,
+        "right": 110,
+        "top": 62,
+        "bottom": 62
+      },
+      "states": [
+        "victory"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 94314,
+        "partialPixels": 2036,
+        "opaquePixels": 124353,
+        "transparentRatio": 0.427334,
+        "alphaBbox": [
+          18,
+          18,
+          751,
+          269
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "b88556ddae56d6c342753ab2586b912509f037356378617bfb45e7951fde0ac3"
+    },
+    {
+      "key": "meta.result.titlePlaque.failure",
+      "label": "Failure title plaque",
+      "path": "components/result/title-plaque-failure.png",
+      "source": "master-sources/result-panels-sheet-v1.png",
+      "sourceCrop": [
+        770,
+        55,
+        1530,
+        445
+      ],
+      "sampledKeyColor": "#F801EE",
+      "width": 766,
+      "height": 235,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 110,
+        "right": 110,
+        "top": 62,
+        "bottom": 62
+      },
+      "states": [
+        "failure"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 62048,
+        "partialPixels": 1710,
+        "opaquePixels": 116252,
+        "transparentRatio": 0.344692,
+        "alphaBbox": [
+          18,
+          18,
+          748,
+          217
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "856dadde7953ded840ade1c037ee2a3decbb95cbf68c0cda81b1e67467013282"
+    },
+    {
+      "key": "meta.result.suggestionPanel",
+      "label": "Suggestion panel",
+      "path": "components/result/suggestion-panel.png",
+      "source": "master-sources/result-panels-sheet-v1.png",
+      "sourceCrop": [
+        5,
+        420,
+        775,
+        690
+      ],
+      "sampledKeyColor": "#F702EE",
+      "width": 755,
+      "height": 206,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 190,
+        "right": 82,
+        "top": 46,
+        "bottom": 46
+      },
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 39174,
+        "partialPixels": 1567,
+        "opaquePixels": 114789,
+        "transparentRatio": 0.251874,
+        "alphaBbox": [
+          18,
+          18,
+          737,
+          188
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "2a61fff43449da18037fa14ff10e49e5b062b8af1724a1fc386fbc346acb22a8"
+    },
+    {
+      "key": "meta.result.statPlaque",
+      "label": "Statistics plaque",
+      "path": "components/result/stat-plaque.png",
+      "source": "master-sources/result-panels-sheet-v1.png",
+      "sourceCrop": [
+        770,
+        420,
+        1530,
+        690
+      ],
+      "sampledKeyColor": "#F702EE",
+      "width": 759,
+      "height": 206,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "simple",
+      "nineSlice": null,
+      "states": [
+        "default"
+      ],
+      "stateStrategy": "single-sprite",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 39834,
+        "partialPixels": 1406,
+        "opaquePixels": 115114,
+        "transparentRatio": 0.254768,
+        "alphaBbox": [
+          18,
+          18,
+          741,
+          188
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "7e804124b567b543229d43e7a7ff2735f7ec13424763a7728251eadbeb75ca6a"
+    },
+    {
+      "key": "meta.result.unlockRibbon",
+      "label": "Unlock ribbon",
+      "path": "components/result/unlock-ribbon.png",
+      "source": "master-sources/result-panels-sheet-v1.png",
+      "sourceCrop": [
+        5,
+        680,
+        775,
+        955
+      ],
+      "sampledKeyColor": "#F701EE",
+      "width": 747,
+      "height": 246,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 120,
+        "right": 120,
+        "top": 54,
+        "bottom": 54
+      },
+      "states": [
+        "default",
+        "claimable"
+      ],
+      "stateStrategy": "runtime-highlight-and-badge",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 98967,
+        "partialPixels": 1586,
+        "opaquePixels": 83209,
+        "transparentRatio": 0.538561,
+        "alphaBbox": [
+          18,
+          18,
+          729,
+          228
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "68957de8ae973b142017113a83124b832eaef2853ee6cac6f6aa62f674dd11a4"
+    },
+    {
+      "key": "meta.result.primaryButton",
+      "label": "Result primary button",
+      "path": "components/result/button-primary.png",
+      "source": "master-sources/result-buttons-sheet-v1.png",
+      "sourceCrop": [
+        90,
+        75,
+        1445,
+        485
+      ],
+      "sampledKeyColor": "#FA01FE",
+      "width": 1282,
+      "height": 327,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 130,
+        "right": 130,
+        "top": 62,
+        "bottom": 62
+      },
+      "states": [
+        "normal",
+        "pressed",
+        "disabled"
+      ],
+      "stateStrategy": "runtime-tint-and-scale",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 84714,
+        "partialPixels": 1613,
+        "opaquePixels": 332887,
+        "transparentRatio": 0.202078,
+        "alphaBbox": [
+          18,
+          18,
+          1264,
+          309
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "6227764919456bbd8c195aa61cc87df2989065fa1683934569c27c495b8d5d53"
+    },
+    {
+      "key": "meta.result.secondaryButton",
+      "label": "Result secondary button",
+      "path": "components/result/button-secondary.png",
+      "source": "master-sources/result-buttons-sheet-v1.png",
+      "sourceCrop": [
+        90,
+        520,
+        1445,
+        935
+      ],
+      "sampledKeyColor": "#FA00FE",
+      "width": 1282,
+      "height": 326,
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "spriteMode": "sliced",
+      "nineSlice": {
+        "left": 130,
+        "right": 130,
+        "top": 62,
+        "bottom": 62
+      },
+      "states": [
+        "normal",
+        "pressed"
+      ],
+      "stateStrategy": "runtime-tint-and-scale",
+      "runtimeTextRequired": true,
+      "alpha": {
+        "transparentPixels": 85904,
+        "partialPixels": 467,
+        "opaquePixels": 331561,
+        "transparentRatio": 0.205545,
+        "alphaBbox": [
+          18,
+          18,
+          1264,
+          308
+        ],
+        "cornersTransparent": true
+      },
+      "sha256": "a83dded36be1f168595043fc7537dbbe059c77747e5c18c11464d705918fc65e"
+    }
+  ],
+  "preview": {
+    "path": "preview/contact-sheet-v1.png",
+    "width": 1322,
+    "height": 962
+  }
+}

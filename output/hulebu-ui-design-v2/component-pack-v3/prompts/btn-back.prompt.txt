@@ -1,0 +1,1 @@
+Restyle this single Mahjong roguelike back button as an independent transparent asset. A small round chunky button shell in soft mint-green with a blank circular center for a runtime icon. No arrow, no text, no mascot, transparent background, straight front view.

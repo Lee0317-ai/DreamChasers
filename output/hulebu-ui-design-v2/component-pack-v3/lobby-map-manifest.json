@@ -1,0 +1,53 @@
+{
+  "assets": [
+    {
+      "name": "avatar-frame",
+      "size": [
+        240,
+        240
+      ],
+      "derived": false
+    },
+    {
+      "name": "currency-plaque",
+      "size": [
+        360,
+        120
+      ],
+      "derived": false
+    },
+    {
+      "name": "bottom-nav-frame",
+      "size": [
+        900,
+        170
+      ],
+      "derived": false
+    },
+    {
+      "name": "chapter-plaque",
+      "size": [
+        520,
+        140
+      ],
+      "derived": false
+    },
+    {
+      "name": "path-segment",
+      "size": [
+        320,
+        160
+      ],
+      "derived": false
+    },
+    {
+      "name": "star-progress",
+      "size": [
+        420,
+        140
+      ],
+      "derived": true,
+      "source": "chapter-plaque"
+    }
+  ]
+}

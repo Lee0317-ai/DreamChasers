@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "name": "mode-mainline",
+      "size": [
+        280,
+        280
+      ]
+    },
+    {
+      "name": "mode-daily",
+      "size": [
+        280,
+        280
+      ]
+    },
+    {
+      "name": "mode-endless",
+      "size": [
+        280,
+        280
+      ]
+    },
+    {
+      "name": "mode-advanced",
+      "size": [
+        280,
+        280
+      ]
+    },
+    {
+      "name": "node-normal",
+      "size": [
+        190,
+        190
+      ]
+    },
+    {
+      "name": "node-event",
+      "size": [
+        190,
+        190
+      ]
+    },
+    {
+      "name": "node-reward",
+      "size": [
+        190,
+        190
+      ]
+    },
+    {
+      "name": "node-boss",
+      "size": [
+        230,
+        230
+      ]
+    }
+  ]
+}

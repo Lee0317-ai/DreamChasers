@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: portrait mobile game result and reward background layer
+Primary request: create a gentle celebratory blush-pink garden backdrop for a cute Mahjong roguelike result screen.
+Scene/backdrop: soft drifting mint leaves, small coral flower petals and rounded garden lantern silhouettes around the outer edges, with warm ivory glow in the central area.
+Composition/framing: portrait 1024 by 1536; broad empty center for result seals, reward cards and buttons; no busy focal object.
+Style/medium: polished 2D mobile-game background with soft clay-like painted volume, clean readable shapes.
+Color palette: blush pink, mint green, warm ivory, small coral accents.
+Constraints: no UI panels, no buttons, no text, no numbers, no mascot, no Mahjong tiles, no watermark.

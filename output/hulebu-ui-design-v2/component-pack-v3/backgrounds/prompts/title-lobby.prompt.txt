@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: portrait mobile game login and lobby background layer
+Primary request: create a soft whimsical pink-and-mint garden courtyard background for a cute Mahjong roguelike.
+Scene/backdrop: bright blush-pink sky, soft mint clouds, gentle curved garden steps, small lotus leaves and rounded stone lantern silhouettes near the lower edges.
+Composition/framing: portrait 1024 by 1536; large uncluttered empty space in the upper center for a title plaque and in the middle for menu components; detail stays around edges and bottom.
+Style/medium: polished 2D mobile-game background with soft clay-like painted volume, clean readable shapes.
+Color palette: blush pink, mint green, warm ivory, small coral accents.
+Constraints: no UI panels, no buttons, no text, no numbers, no mascot, no Mahjong tiles, no watermark.

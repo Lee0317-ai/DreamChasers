@@ -1,0 +1,1055 @@
+{
+  "source_note": "Grok returned JPEG bytes with .png extension; normalized to PNG, then foreground-cut with estimated background alpha.",
+  "items": [
+    {
+      "name": "action_hu_normal",
+      "source": "core-action-buttons.png",
+      "box": [
+        52,
+        226,
+        273,
+        335
+      ],
+      "size": [
+        221,
+        109
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "action_gang_normal",
+      "source": "core-action-buttons.png",
+      "box": [
+        287,
+        226,
+        508,
+        335
+      ],
+      "size": [
+        221,
+        109
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "action_peng_normal",
+      "source": "core-action-buttons.png",
+      "box": [
+        760,
+        226,
+        984,
+        335
+      ],
+      "size": [
+        224,
+        109
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "action_chi_normal",
+      "source": "core-action-buttons.png",
+      "box": [
+        52,
+        389,
+        273,
+        501
+      ],
+      "size": [
+        221,
+        112
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "action_bugang_normal",
+      "source": "core-action-buttons.png",
+      "box": [
+        760,
+        554,
+        983,
+        664
+      ],
+      "size": [
+        223,
+        110
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tool_shuffle_normal",
+      "source": "core-tool-buttons.png",
+      "box": [
+        273,
+        182,
+        477,
+        250
+      ],
+      "size": [
+        204,
+        68
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        248,
+        248,
+        248
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "tool_undo_normal",
+      "source": "core-tool-buttons.png",
+      "box": [
+        273,
+        408,
+        477,
+        476
+      ],
+      "size": [
+        204,
+        68
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        248,
+        248,
+        248
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "tool_discard_normal",
+      "source": "core-tool-buttons.png",
+      "box": [
+        273,
+        716,
+        477,
+        784
+      ],
+      "size": [
+        204,
+        68
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        248,
+        248,
+        248
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_idle",
+      "source": "mascot-emotes.png",
+      "box": [
+        76,
+        56,
+        240,
+        297
+      ],
+      "size": [
+        164,
+        241
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_happy",
+      "source": "mascot-emotes.png",
+      "box": [
+        297,
+        55,
+        506,
+        297
+      ],
+      "size": [
+        209,
+        242
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_think",
+      "source": "mascot-emotes.png",
+      "box": [
+        563,
+        56,
+        722,
+        298
+      ],
+      "size": [
+        159,
+        242
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_guide",
+      "source": "mascot-emotes.png",
+      "box": [
+        793,
+        57,
+        986,
+        298
+      ],
+      "size": [
+        193,
+        241
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_nervous",
+      "source": "mascot-emotes.png",
+      "box": [
+        1040,
+        58,
+        1200,
+        298
+      ],
+      "size": [
+        160,
+        240
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_failed",
+      "source": "mascot-emotes.png",
+      "box": [
+        76,
+        380,
+        239,
+        622
+      ],
+      "size": [
+        163,
+        242
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_celebrate",
+      "source": "mascot-emotes.png",
+      "box": [
+        299,
+        381,
+        506,
+        622
+      ],
+      "size": [
+        207,
+        241
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_counter",
+      "source": "mascot-emotes.png",
+      "box": [
+        564,
+        382,
+        721,
+        623
+      ],
+      "size": [
+        157,
+        241
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_flag",
+      "source": "mascot-emotes.png",
+      "box": [
+        745,
+        381,
+        981,
+        622
+      ],
+      "size": [
+        236,
+        241
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "mascot_map_node",
+      "source": "mascot-emotes.png",
+      "box": [
+        1041,
+        384,
+        1200,
+        633
+      ],
+      "size": [
+        159,
+        249
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        249,
+        249,
+        247
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "tile_face_generic",
+      "source": "mahjong-tile-components.png",
+      "box": [
+        66,
+        211,
+        164,
+        341
+      ],
+      "size": [
+        98,
+        130
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tile_back_green",
+      "source": "mahjong-tile-components.png",
+      "box": [
+        650,
+        210,
+        748,
+        341
+      ],
+      "size": [
+        98,
+        131
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tile_face_hu_highlight",
+      "source": "mahjong-tile-components.png",
+      "box": [
+        880,
+        206,
+        987,
+        345
+      ],
+      "size": [
+        107,
+        139
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tile_back_dimmed",
+      "source": "mahjong-tile-components.png",
+      "box": [
+        183,
+        378,
+        281,
+        509
+      ],
+      "size": [
+        98,
+        131
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tile_face_partial",
+      "source": "mahjong-tile-components.png",
+      "box": [
+        417,
+        538,
+        515,
+        668
+      ],
+      "size": [
+        98,
+        130
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "card_reward_blank",
+      "source": "reward-event-cards.png",
+      "box": [
+        52,
+        94,
+        344,
+        270
+      ],
+      "size": [
+        292,
+        176
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "card_event_blank",
+      "source": "reward-event-cards.png",
+      "box": [
+        52,
+        346,
+        342,
+        454
+      ],
+      "size": [
+        290,
+        108
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "card_meta_upgrade_blank",
+      "source": "reward-event-cards.png",
+      "box": [
+        411,
+        346,
+        624,
+        628
+      ],
+      "size": [
+        213,
+        282
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "button_upgrade",
+      "source": "reward-event-cards.png",
+      "box": [
+        701,
+        364,
+        912,
+        441
+      ],
+      "size": [
+        211,
+        77
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "badge_coin",
+      "source": "reward-event-cards.png",
+      "box": [
+        740,
+        488,
+        872,
+        620
+      ],
+      "size": [
+        132,
+        132
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tag_risk",
+      "source": "reward-event-cards.png",
+      "box": [
+        56,
+        512,
+        154,
+        555
+      ],
+      "size": [
+        98,
+        43
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "tag_reward",
+      "source": "reward-event-cards.png",
+      "box": [
+        241,
+        512,
+        339,
+        555
+      ],
+      "size": [
+        98,
+        43
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        255,
+        255
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "lobby_button_start",
+      "source": "lobby-map-components.png",
+      "box": [
+        58,
+        141,
+        358,
+        239
+      ],
+      "size": [
+        300,
+        98
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "lobby_button_continue",
+      "source": "lobby-map-components.png",
+      "box": [
+        58,
+        259,
+        358,
+        357
+      ],
+      "size": [
+        300,
+        98
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "map_node_normal",
+      "source": "lobby-map-components.png",
+      "box": [
+        461,
+        136,
+        581,
+        232
+      ],
+      "size": [
+        120,
+        96
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "map_node_reward",
+      "source": "lobby-map-components.png",
+      "box": [
+        592,
+        312,
+        697,
+        424
+      ],
+      "size": [
+        105,
+        112
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "map_node_event",
+      "source": "lobby-map-components.png",
+      "box": [
+        818,
+        276,
+        929,
+        426
+      ],
+      "size": [
+        111,
+        150
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "map_node_boss",
+      "source": "lobby-map-components.png",
+      "box": [
+        1062,
+        262,
+        1175,
+        440
+      ],
+      "size": [
+        113,
+        178
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "map_node_locked",
+      "source": "lobby-map-components.png",
+      "box": [
+        499,
+        530,
+        561,
+        610
+      ],
+      "size": [
+        62,
+        80
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "chapter_plaque",
+      "source": "lobby-map-components.png",
+      "box": [
+        680,
+        47,
+        991,
+        156
+      ],
+      "size": [
+        311,
+        109
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        246,
+        246,
+        246
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "counter_panel_blank",
+      "source": "tile-counter-components.png",
+      "box": [
+        62,
+        240,
+        451,
+        467
+      ],
+      "size": [
+        389,
+        227
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        249,
+        239
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "counter_row_cells",
+      "source": "tile-counter-components.png",
+      "box": [
+        523,
+        268,
+        823,
+        347
+      ],
+      "size": [
+        300,
+        79
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        249,
+        239
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "counter_total_plaque",
+      "source": "tile-counter-components.png",
+      "box": [
+        536,
+        424,
+        794,
+        506
+      ],
+      "size": [
+        258,
+        82
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        249,
+        239
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "counter_key_highlight",
+      "source": "tile-counter-components.png",
+      "box": [
+        906,
+        112,
+        1207,
+        190
+      ],
+      "size": [
+        301,
+        78
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        255,
+        249,
+        239
+      ],
+      "threshold": 22
+    },
+    {
+      "name": "slot_empty_cell",
+      "source": "slot-river-components.png",
+      "box": [
+        62,
+        98,
+        138,
+        216
+      ],
+      "size": [
+        76,
+        118
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "slot_occupied_cell",
+      "source": "slot-river-components.png",
+      "box": [
+        816,
+        98,
+        892,
+        216
+      ],
+      "size": [
+        76,
+        118
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "slot_danger_cell",
+      "source": "slot-river-components.png",
+      "box": [
+        66,
+        295,
+        166,
+        420
+      ],
+      "size": [
+        100,
+        125
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "slot_discard_highlight",
+      "source": "slot-river-components.png",
+      "box": [
+        651,
+        291,
+        893,
+        424
+      ],
+      "size": [
+        242,
+        133
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "river_empty_panel",
+      "source": "slot-river-components.png",
+      "box": [
+        74,
+        543,
+        285,
+        628
+      ],
+      "size": [
+        211,
+        85
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "river_partial_panel",
+      "source": "slot-river-components.png",
+      "box": [
+        314,
+        525,
+        525,
+        628
+      ],
+      "size": [
+        211,
+        103
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "river_full_panel",
+      "source": "slot-river-components.png",
+      "box": [
+        549,
+        520,
+        759,
+        628
+      ],
+      "size": [
+        210,
+        108
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    },
+    {
+      "name": "meld_pool_entry",
+      "source": "slot-river-components.png",
+      "box": [
+        1027,
+        547,
+        1208,
+        627
+      ],
+      "size": [
+        181,
+        80
+      ],
+      "anchor": "center",
+      "bg_estimate": [
+        40,
+        40,
+        40
+      ],
+      "threshold": 24
+    }
+  ]
+}

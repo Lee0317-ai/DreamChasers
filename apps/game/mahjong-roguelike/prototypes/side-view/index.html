@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>胡了卜侧视原型</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #5a2a2a;
+        --muted: #8a6262;
+        --jade: #1f8a70;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: linear-gradient(180deg, #ffd9d3 0%, #ffc2ba 46%, #f7abb0 100%);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      .app {
+        max-width: 430px;
+        margin: 0 auto;
+        padding: 8px 8px 24px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 6px 4px 6px;
+      }
+
+      .topbar strong { font-size: 17px; }
+      .topbar span { font-size: 12px; color: var(--muted); }
+      .topbar .spacer { flex: 1; }
+
+      .topbar button {
+        border: 1px solid #b88245;
+        background: #fff5ec;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .hud {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        padding: 2px 0 8px;
+        font-size: 12px;
+      }
+
+      .hud-chip {
+        border: 1px solid rgba(122, 62, 52, 0.3);
+        border-radius: 999px;
+        background: rgba(255, 245, 236, 0.85);
+        padding: 3px 10px;
+      }
+
+      .hud-chip span { color: var(--muted); }
+      .hud-chip strong { font-variant-numeric: tabular-nums; }
+
+      /* ---- 牌桌：绿色台面 ---- */
+      .stage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 394 / 470;
+        border-radius: 12px;
+        border: 3px solid #9c5b3c;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse 120% 70% at 50% 30%, #7ecf8f 0%, #58b271 40%, #3d9159 68%, #2f7a4a 100%);
+        box-shadow: 0 10px 26px rgba(122, 52, 42, 0.35);
+      }
+
+      /* 桌沿 */
+      .stage .felt-edge {
+        position: absolute;
+        inset: 0;
+        border-radius: 9px;
+        border: 2px solid rgba(255, 255, 255, 0.28);
+        pointer-events: none;
+      }
+
+      .tower { position: absolute; inset: 0; }
+
+      .tile {
+        position: absolute;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        cursor: pointer;
+        transform-origin: 50% 100%;
+        transition:
+          left 240ms cubic-bezier(.32,.72,.28,1),
+          top 300ms cubic-bezier(.42,.04,.52,1.22),
+          width 240ms ease,
+          height 240ms ease,
+          transform 150ms ease,
+          opacity 150ms ease,
+          filter 150ms ease;
+        will-change: left, top, transform;
+      }
+
+      .tile img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(1.5px 2.5px 2px rgba(18, 56, 34, 0.5));
+      }
+
+      .tile.blocked { cursor: default; }
+      .tile.blocked img { filter: brightness(.66) saturate(.75) drop-shadow(1px 2px 1px rgba(18, 56, 34, 0.4)); }
+
+      .tile:not(.blocked):hover { transform: translateY(-3px) scale(1.06); }
+      .tile:not(.blocked):hover img { filter: drop-shadow(2px 5px 4px rgba(18, 56, 34, 0.55)); }
+
+      .tile.falling img { animation: nudge 320ms ease; }
+
+      @keyframes nudge {
+        0% { transform: rotate(0deg) translateY(0); }
+        30% { transform: rotate(-2deg) translateY(2px); }
+        65% { transform: rotate(1.1deg) translateY(-1px); }
+        100% { transform: rotate(0deg) translateY(0); }
+      }
+
+      .tile.vanish {
+        opacity: 0;
+        transform: translateY(-26px) scale(1.12);
+        pointer-events: none;
+      }
+
+      .loose-zone {
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        width: 38%;
+        display: flex;
+        flex-wrap: wrap-reverse;
+        justify-content: flex-end;
+        align-content: flex-start;
+        gap: 3px;
+        z-index: 620;
+      }
+
+      .loose-zone-title {
+        font-size: 10px;
+        color: rgba(58, 32, 26, 0.55);
+        text-align: right;
+        width: 100%;
+        letter-spacing: 3px;
+      }
+
+      .loose-zone .tile {
+        position: relative;
+        width: 28px;
+        height: 38px;
+        animation: looseDrop 380ms cubic-bezier(.2,.7,.4,1.2);
+      }
+
+      @keyframes looseDrop {
+        0% { transform: translate(-52px, 34px) rotate(-34deg) scale(1.25); opacity: 0; }
+        100% { transform: translate(0, 0) rotate(0) scale(1); opacity: 1; }
+      }
+
+      .candidate-list {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        min-height: 30px;
+        padding: 8px 2px 4px;
+      }
+
+      .candidate-list button {
+        border: 1px solid #a86a4a;
+        background: #fff5ec;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .candidate-list button:active { transform: scale(.97); }
+
+      .slot-area {
+        background: #7a4030;
+        border-radius: 10px;
+        padding: 6px 8px 8px;
+        box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.38);
+      }
+
+      .slot-grid {
+        display: grid;
+        grid-template-columns: repeat(var(--slot-count), 1fr);
+        gap: 4px;
+      }
+
+      .slot-cell {
+        aspect-ratio: 64 / 86;
+        border-radius: 5px;
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+        position: relative;
+        padding: 0;
+        border: 0;
+        overflow: visible;
+      }
+
+      .slot-cell img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .slot-cell.pop img { animation: slotPop 240ms ease; }
+
+      @keyframes slotPop {
+        0% { transform: scale(1.35) translateY(-10px); }
+        100% { transform: scale(1); }
+      }
+
+      .status-line {
+        min-height: 20px;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 6px 4px 0;
+      }
+
+      .panel {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 8px 2px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .panel label { display: flex; gap: 4px; align-items: center; }
+      .panel input[type="range"] { width: 84px; }
+      .panel input { font: inherit; accent-color: var(--jade); }
+      .panel input[type="text"] { width: 60px; }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(58, 26, 20, 0.62);
+        display: grid;
+        place-items: center;
+        z-index: 100;
+      }
+
+      .overlay[hidden] { display: none; }
+
+      .overlay-card {
+        background: #fff5ec;
+        border-radius: 12px;
+        padding: 22px 26px;
+        text-align: center;
+        max-width: 300px;
+      }
+
+      .overlay-card h2 { margin: 0 0 8px; font-size: 20px; }
+      .overlay-card p { margin: 0 0 16px; font-size: 13px; color: var(--muted); }
+      .overlay-card button {
+        border: 0;
+        border-radius: 8px;
+        background: var(--jade);
+        color: #fff;
+        padding: 8px 26px;
+        font-size: 15px;
+        cursor: pointer;
+      }
+
+      @media (max-width: 399px) {
+        .app { max-width: none; padding: 6px 6px 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <strong>胡了卜 · 侧视原型</strong>
+        <span id="levelLabel">第 1 关</span>
+        <span class="spacer"></span>
+        <button id="restartButton" type="button">重开</button>
+      </div>
+
+      <div class="hud">
+        <span class="hud-chip"><span>余牌 </span><strong id="hudRemaining">0</strong></span>
+        <span class="hud-chip"><span>积分 </span><strong id="hudScore">0</strong></span>
+        <span class="hud-chip"><span>可点 </span><strong id="hudTops">0</strong></span>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="tower" id="tower"></div>
+        <div class="loose-zone" id="looseZone">
+          <div class="loose-zone-title">震落区</div>
+        </div>
+        <div class="felt-edge"></div>
+      </div>
+
+      <div class="candidate-list" id="candidateList"></div>
+
+      <div class="slot-area">
+        <div class="slot-grid" id="slotGrid" style="--slot-count: 8"></div>
+      </div>
+
+      <div class="status-line" id="status">点击顶部露出的立牌</div>
+
+      <div class="panel">
+        <label>底列 <input type="range" id="baseColsInput" min="6" max="11" step="1" value="8" /> <span id="baseColsLabel">8</span></label>
+        <label>底排 <input type="range" id="baseRowsInput" min="3" max="6" step="1" value="4" /> <span id="baseRowsLabel">4</span></label>
+        <label>层数 <input type="range" id="layersInput" min="2" max="6" step="1" value="5" /> <span id="layersLabel">5</span></label>
+        <label>种子 <input type="text" id="seedInput" placeholder="随机" /></label>
+        <button id="regenerateButton" type="button">重新生成</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay" hidden>
+      <div class="overlay-card">
+        <h2 id="overlayTitle">通关</h2>
+        <p id="overlayText"></p>
+        <button id="overlayButton" type="button">继续</button>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+
+      // ============ 常量 ============
+      const UI_SKIN_ASSET_ROOT = "./assets/ui-v6";
+      const TILE_ASSET_SUITS = { wan: "wan", tiao: "bamboo", tong: "dot" };
+      const HONOR_ASSET_NAMES = { 1: "east", 2: "south", 3: "west", 4: "north", 5: "red", 6: "green", 7: "whiteboard" };
+      const HONOR_LABELS = { 1: "东", 2: "南", 3: "西", 4: "北", 5: "中", 6: "发", 7: "白" };
+      const SUIT_LABELS = { wan: "万", tiao: "条", tong: "筒", honor: "字" };
+      const NUMBER_SUITS = ["wan", "tiao", "tong"];
+      const BASE_SCORE = { chi: 10, peng: 20, gang: 50, hu: 80 };
+      const SLOT_LIMIT = 8;
+      const COMBO_ORDER = { hu: 0, gang: 1, peng: 2, chi: 3 };
+      const TYPE_LABELS = { chi: "吃", peng: "碰", gang: "杠", hu: "胡", bugang: "补杠" };
+
+      // 舞台逻辑坐标（对应 CSS aspect-ratio 394/470）
+      const STAGE_W = 394;
+      const STAGE_H = 470;
+
+      // ---- 伪 3D 参数（按参考图量化：斜俯视 + 骑缝错位）----
+      const TILE_W = 44;                 // 前排立牌宽
+      const TILE_H = 60;                 // 立牌高（宽高比 1:1.36 接近参考图 1:1.5）
+      const COL_STEP_RATIO = 0.82;       // 同排相邻牌横向步距（略重叠省宽度）
+      const DEPTH_DX = 0.34;             // 每深一排向右错位（牌宽比例）
+      const DEPTH_LIFT = 0.42;           // 每深一排屏幕上抬（牌高比例 → 前排盖住后排 ~58%）
+      const LAYER_LIFT = 0.30;           // 每高一层屏幕上抬（牌高比例，斜俯视 20-30%）
+      const LAYER_DX = 0.10;             // 每高一层轻微右移（透视）
+      const BACK_SCALE = 0.045;          // 每深一排缩小比例
+      const TOP_STRIP = 0.42;            // 顶部露出条带占牌高比例（可点判定）
+      const BLOCK_COVER = 0.5;           // 条带被覆盖超过此比例 → 不可点
+
+      // ============ 工具 ============
+      function createSeededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value = Math.imul(value, 1664525) + 1013904223;
+          return (value >>> 0) / 4294967296;
+        };
+      }
+
+      function hashText(text) {
+        let hash = 2166136261;
+        for (let index = 0; index < text.length; index += 1) {
+          hash ^= text.charCodeAt(index);
+          hash = Math.imul(hash, 16777619);
+        }
+        return hash >>> 0;
+      }
+
+      function randomBetween(random, min, max) {
+        return min + random() * (max - min);
+      }
+
+      function shuffleItems(items, random) {
+        const copy = [...items];
+        for (let index = copy.length - 1; index > 0; index -= 1) {
+          const targetIndex = Math.floor(random() * (index + 1));
+          [copy[index], copy[targetIndex]] = [copy[targetIndex], copy[index]];
+        }
+        return copy;
+      }
+
+      function getTileAssetUrl(tile) {
+        if (tile.suit === "honor") {
+          const honorName = HONOR_ASSET_NAMES[tile.rank];
+          return honorName ? `${UI_SKIN_ASSET_ROOT}/tiles/mahjong/honor/tile_honor_${honorName}.png` : null;
+        }
+        const suitName = TILE_ASSET_SUITS[tile.suit];
+        return suitName ? `${UI_SKIN_ASSET_ROOT}/tiles/mahjong/${suitName}/tile_${suitName}_${String(tile.rank).padStart(2, "0")}.png` : null;
+      }
+
+      function tileLabel(tile) {
+        if (tile.suit === "honor") return HONOR_LABELS[tile.rank] ?? `字${tile.rank}`;
+        return `${tile.rank}${SUIT_LABELS[tile.suit]}`;
+      }
+
+      // ============ 模型 ============
+      // tile: { id, suit, rank, col, row, layer, location: 'tower'|'slot'|'loose'|'removed' }
+      //   col   = 世界网格横向坐标（可含 .5，骑缝错位）
+      //   row   = 世界网格深度坐标（可含 .5，0 最前排）
+      //   layer = 高度层（0 底层）
+      // 生成：layer L 有 (baseCols-L) 列 × (baseRows-L) 排，起点偏移 0.5L —— 上层骑在下层交界。
+
+      const state = {
+        tiles: [],
+        slot: [],
+        score: 0,
+        level: 1,
+        lastSlotId: null,
+        looseSeq: 0,
+      };
+
+      const view = {
+        tower: document.querySelector("#tower"),
+        looseZone: document.querySelector("#looseZone"),
+        candidateList: document.querySelector("#candidateList"),
+        slotGrid: document.querySelector("#slotGrid"),
+        status: document.querySelector("#status"),
+        hudRemaining: document.querySelector("#hudRemaining"),
+        hudScore: document.querySelector("#hudScore"),
+        hudTops: document.querySelector("#hudTops"),
+        levelLabel: document.querySelector("#levelLabel"),
+        overlay: document.querySelector("#overlay"),
+        overlayTitle: document.querySelector("#overlayTitle"),
+        overlayText: document.querySelector("#overlayText"),
+        overlayButton: document.querySelector("#overlayButton"),
+        restartButton: document.querySelector("#restartButton"),
+        regenerateButton: document.querySelector("#regenerateButton"),
+        baseColsInput: document.querySelector("#baseColsInput"),
+        baseColsLabel: document.querySelector("#baseColsLabel"),
+        baseRowsInput: document.querySelector("#baseRowsInput"),
+        baseRowsLabel: document.querySelector("#baseRowsLabel"),
+        layersInput: document.querySelector("#layersInput"),
+        layersLabel: document.querySelector("#layersLabel"),
+        seedInput: document.querySelector("#seedInput"),
+      };
+
+      // ---- 组合包生成 ----
+      function buildSolvableFaces(totalCount, random) {
+        const groups = [];
+        let remaining = totalCount;
+
+        if (state.level >= 2 && remaining >= 8) {
+          groups.push({ type: "hu", count: 8 });
+          remaining -= 8;
+        }
+        const gangCount = remaining >= 26 ? 2 : remaining >= 12 ? 1 : 0;
+        for (let index = 0; index < gangCount; index += 1) {
+          groups.push({ type: "gang", count: 4 });
+          remaining -= 4;
+        }
+        while (remaining >= 3) {
+          groups.push({ type: random() < 0.5 ? "chi" : "peng", count: 3 });
+          remaining -= 3;
+        }
+        if (remaining === 2) groups.push({ type: "pair", count: 2 });
+
+        const faces = [];
+        for (const group of groups) {
+          faces.push(...makeGroupFaces(group, random));
+        }
+        return faces;
+      }
+
+      function pickSuit(random, allowHonor = true) {
+        const roll = random();
+        if (allowHonor && roll < 0.14) return "honor";
+        return NUMBER_SUITS[Math.floor(roll * 3) % 3];
+      }
+
+      function makeGroupFaces(group, random) {
+        const faces = [];
+        if (group.type === "hu") {
+          const suit = pickSuit(random, false);
+          for (let index = 0; index < 3; index += 1) faces.push({ suit, rank: 1 + Math.floor(random() * 9) });
+          for (let index = 0; index < 3; index += 1) faces.push({ suit, rank: 1 + Math.floor(random() * 9) });
+          const pairRank = 1 + Math.floor(random() * 9);
+          faces.push({ suit, rank: pairRank }, { suit, rank: pairRank });
+          return faces;
+        }
+        if (group.type === "gang" || group.type === "pair") {
+          const suit = pickSuit(random, false);
+          const rank = 1 + Math.floor(random() * 9);
+          for (let index = 0; index < group.count; index += 1) faces.push({ suit, rank });
+          return faces;
+        }
+        if (group.type === "peng") {
+          const suit = pickSuit(random);
+          const rank = suit === "honor" ? 1 + Math.floor(random() * 7) : 1 + Math.floor(random() * 9);
+          for (let index = 0; index < 3; index += 1) faces.push({ suit, rank });
+          return faces;
+        }
+        const suit = pickSuit(random, false);
+        const start = 1 + Math.floor(random() * 7);
+        for (let offset = 0; offset < 3; offset += 1) faces.push({ suit, rank: start + offset });
+        return faces;
+      }
+
+      // ---- 组装关卡：实心金字塔，上层骑缝错位 ----
+      function generateLevel() {
+        const baseCols = Number(view.baseColsInput.value);
+        const baseRows = Number(view.baseRowsInput.value);
+        const layerCount = Number(view.layersInput.value);
+        const seedText = view.seedInput.value.trim() || `lv${state.level}-${Math.floor(Math.random() * 1e9)}`;
+        const random = createSeededRandom(hashText(seedText));
+
+        const positions = [];
+        for (let layer = 0; layer < layerCount; layer += 1) {
+          const cols = baseCols - layer;
+          const rows = baseRows - layer;
+          if (cols < 1 || rows < 1) break;
+          const offset = layer * 0.5;
+          for (let row = 0; row < rows; row += 1) {
+            for (let col = 0; col < cols; col += 1) {
+              positions.push({ col: offset + col, row: offset + row, layer });
+            }
+          }
+        }
+        const faces = shuffleItems(buildSolvableFaces(positions.length, random), random);
+
+        state.tiles = positions.map((position, index) => ({
+          id: `t${index + 1}`,
+          ...faces[index],
+          col: position.col,
+          row: position.row,
+          layer: position.layer,
+          location: "tower",
+          wasMoved: false,
+        }));
+        state.slot = [];
+        state.score = 0;
+        state.looseSeq = 0;
+
+        view.tower.innerHTML = "";
+        view.looseZone.querySelectorAll(".loose-tile-slot").forEach((slot) => slot.remove());
+        renderAll("新牌山已生成：顶部露出的牌可点");
+      }
+
+      // ---- 屏幕几何 ----
+      function tileGeometry(tile) {
+        const scale = 1 - Math.min(0.3, tile.row * BACK_SCALE);
+        const width = TILE_W * scale;
+        const height = TILE_H * scale;
+        const colStep = TILE_W * COL_STEP_RATIO;
+        // 深度右移 + 层高上移 + 层透视右移；锚点为牌脚中心
+        const footX = STAGE_W / 2 + (tile.col - (tile.maxColOffset ?? tile.col)) * 0; // col 直接用
+        const x = 20 + tile.col * colStep + tile.row * DEPTH_DX * TILE_W + tile.layer * LAYER_DX * TILE_W;
+        const y = STAGE_H - 58 - tile.row * DEPTH_LIFT * TILE_H - tile.layer * LAYER_LIFT * TILE_H;
+        return { x, y, width, height };
+      }
+
+      function tileScreenRect(tile) {
+        const { x, y, width, height } = tileGeometry(tile);
+        return { left: x - width / 2, top: y - height, right: x + width / 2, bottom: y, width, height };
+      }
+
+      // ---- 可点判定：顶部条带露出 ----
+      function computePickability() {
+        const towerTiles = state.tiles.filter((tile) => tile.location === "tower");
+        for (const tile of towerTiles) tile.pickable = true;
+
+        for (const tile of towerTiles) {
+          const rect = tileScreenRect(tile);
+          const stripTop = rect.top;
+          const stripBottom = rect.top + rect.height * TOP_STRIP;
+          let coveredLeft = rect.left;
+          let coveredRight = rect.left;
+
+          const coverers = towerTiles.filter((other) => {
+            if (other.id === tile.id) return false;
+            // 只有视觉在前的牌才算遮挡：更高层，或同层更前排
+            const inFront = other.layer > tile.layer || (other.layer === tile.layer && other.row < tile.row);
+            if (!inFront) return false;
+            const otherRect = tileScreenRect(other);
+            return otherRect.bottom > stripTop && otherRect.top < stripBottom && otherRect.right > rect.left && otherRect.left < rect.right;
+          });
+
+          // 计算条带被覆盖的水平跨度
+          const spans = coverers
+            .map((other) => {
+              const otherRect = tileScreenRect(other);
+              return [Math.max(otherRect.left, rect.left), Math.min(otherRect.right, rect.right)];
+            })
+            .filter(([start, end]) => end > start)
+            .sort((a, b) => a[0] - b[0]);
+
+          let coveredWidth = 0;
+          let spanStart = null;
+          let spanEnd = null;
+          for (const [start, end] of spans) {
+            if (spanStart === null) { spanStart = start; spanEnd = end; }
+            else if (start <= spanEnd) { spanEnd = Math.max(spanEnd, end); }
+            else { coveredWidth += spanEnd - spanStart; spanStart = start; spanEnd = end; }
+          }
+          if (spanStart !== null) coveredWidth += spanEnd - spanStart;
+
+          const stripWidth = rect.width;
+          tile.pickable = coveredWidth / stripWidth < BLOCK_COVER;
+        }
+      }
+
+      function isTilePickable(tile) {
+        if (tile.location === "loose") return true;
+        if (tile.location !== "tower") return false;
+        return Boolean(tile.pickable);
+      }
+
+      // ---- 重力：支撑消失，上方牌下落一层 ----
+      function hasSupport(tile, tiles) {
+        if (tile.layer === 0) return true;
+        return tiles.some((other) => (
+          other.id !== tile.id
+          && other.location === "tower"
+          && other.layer === tile.layer - 1
+          && Math.abs(other.col - tile.col) < 0.75
+          && Math.abs(other.row - tile.row) < 0.75
+        ));
+      }
+
+      function settleGravity(changedColumnsHint) {
+        let movedAny = true;
+        let guard = 0;
+        while (movedAny && guard < 40) {
+          guard += 1;
+          movedAny = false;
+          for (const tile of state.tiles) {
+            if (tile.location !== "tower" || tile.layer === 0) continue;
+            if (hasSupport(tile, state.tiles)) continue;
+            tile.layer -= 1;
+            tile.wasMoved = true;
+            movedAny = true;
+          }
+        }
+      }
+
+      // ---- 点击入槽 ----
+      function moveTileToSlot(tileId) {
+        const tile = state.tiles.find((item) => item.id === tileId);
+        if (!tile || !isTilePickable(tile)) return;
+        if (state.slot.length >= SLOT_LIMIT) {
+          setStatus("主槽已满，请先发动组合");
+          return;
+        }
+
+        tile.location = "slot";
+        state.slot.push(tile.id);
+        state.lastSlotId = tile.id;
+
+        settleGravity();
+        renderAll(`${tileLabel(tile)} 入槽`);
+        checkFailState();
+      }
+
+      // ---- 组合判定 ----
+      function getComboCandidates() {
+        const slotTiles = state.slot.map((id) => state.tiles.find((tile) => tile.id === id)).filter(Boolean);
+        const candidates = [];
+
+        const huCandidate = getHuCandidate(slotTiles);
+        if (huCandidate) candidates.push(huCandidate);
+
+        const bySuitRank = new Map();
+        for (const tile of slotTiles) {
+          const key = `${tile.suit}-${tile.rank}`;
+          const group = bySuitRank.get(key) ?? [];
+          group.push(tile);
+          bySuitRank.set(key, group);
+        }
+        for (const group of bySuitRank.values()) {
+          if (group.length >= 4) candidates.push({ type: "gang", tiles: group.slice(0, 4) });
+          if (group.length >= 3) candidates.push({ type: "peng", tiles: group.slice(0, 3) });
+        }
+        for (const suit of NUMBER_SUITS) {
+          const byRank = new Map();
+          for (const tile of slotTiles) {
+            if (tile.suit !== suit) continue;
+            const group = byRank.get(tile.rank) ?? [];
+            group.push(tile);
+            byRank.set(tile.rank, group);
+          }
+          for (let rank = 1; rank <= 7; rank += 1) {
+            const first = byRank.get(rank)?.[0];
+            const second = byRank.get(rank + 1)?.[0];
+            const third = byRank.get(rank + 2)?.[0];
+            if (first && second && third) candidates.push({ type: "chi", tiles: [first, second, third] });
+          }
+        }
+
+        const seen = new Set();
+        return candidates
+          .filter((candidate) => {
+            const key = `${candidate.type}:${candidate.tiles.map((tile) => tile.id).sort().join(",")}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .sort((a, b) => COMBO_ORDER[a.type] - COMBO_ORDER[b.type]);
+      }
+
+      function getHuCandidate(slotTiles) {
+        if (slotTiles.length !== SLOT_LIMIT) return null;
+        const groups = searchHuSplit(slotTiles, []);
+        if (!groups) return null;
+        return { type: "hu", tiles: groups.flat() };
+      }
+
+      function searchHuSplit(remaining, groups) {
+        if (remaining.length === 0) {
+          const pairCount = groups.filter((group) => group.length === 2).length;
+          const tripleCount = groups.filter((group) => group.length === 3).length;
+          return pairCount === 1 && tripleCount === 2 ? groups : null;
+        }
+        if (remaining.length < 2) return null;
+
+        const first = remaining[0];
+        const sameRank = remaining.filter((tile) => tile.suit === first.suit && tile.rank === first.rank);
+        if (sameRank.length >= 3) {
+          const rest = remaining.filter((tile) => tile !== sameRank[0] && tile !== sameRank[1] && tile !== sameRank[2]);
+          const result = searchHuSplit(rest, [...groups, [sameRank[0], sameRank[1], sameRank[2]]]);
+          if (result) return result;
+        }
+        if (sameRank.length >= 2) {
+          const rest = remaining.filter((tile) => tile !== sameRank[0] && tile !== sameRank[1]);
+          const result = searchHuSplit(rest, [...groups, [sameRank[0], sameRank[1]]]);
+          if (result) return result;
+        }
+        if (first.suit !== "honor") {
+          const second = remaining.find((tile) => tile.suit === first.suit && tile.rank === first.rank + 1);
+          const third = remaining.find((tile) => tile.suit === first.suit && tile.rank === first.rank + 2);
+          if (second && third) {
+            const rest = remaining.filter((tile) => tile !== first && tile !== second && tile !== third);
+            const result = searchHuSplit(rest, [...groups, [first, second, third]]);
+            if (result) return result;
+          }
+        }
+        return null;
+      }
+
+      // ---- 发动组合 ----
+      function executeCombo(candidate) {
+        for (const tile of candidate.tiles) {
+          tile.location = "removed";
+        }
+        const ids = new Set(candidate.tiles.map((tile) => tile.id));
+        state.slot = state.slot.filter((id) => !ids.has(id));
+        state.score += BASE_SCORE[candidate.type] ?? 0;
+
+        let message = `${TYPE_LABELS[candidate.type]} 成功：${candidate.tiles.map(tileLabel).join(" ")}`;
+        if (candidate.type === "hu") {
+          message += "｜震落 3 张压顶牌";
+          shakeLooseTiles(3);
+        } else if (candidate.type === "gang") {
+          message += "｜震落 2 张压顶牌";
+          shakeLooseTiles(2);
+        }
+        settleGravity();
+        renderAll(message);
+        checkLevelClear();
+      }
+
+      // ---- 震落：从最高层飞到侧边散牌区 ----
+      function shakeLooseTiles(count) {
+        let shaken = 0;
+        let guard = 0;
+        while (shaken < count && guard < 80) {
+          guard += 1;
+          const towerTiles = state.tiles.filter((tile) => tile.location === "tower");
+          if (towerTiles.length === 0) break;
+          const topLayer = Math.max(...towerTiles.map((tile) => tile.layer));
+          const candidates = towerTiles.filter((tile) => tile.layer === topLayer);
+          const target = candidates[Math.floor(Math.random() * candidates.length)];
+          target.location = "loose";
+          target.looseIndex = state.looseSeq;
+          state.looseSeq += 1;
+          shaken += 1;
+        }
+      }
+
+      // ---- 失败 / 通关 ----
+      function checkFailState() {
+        if (state.slot.length < SLOT_LIMIT) return;
+        if (getComboCandidates().length > 0) return;
+        showOverlay("主槽已满", "没有可发动组合，本关失败。", () => {
+          hideOverlay();
+          generateLevel();
+        });
+      }
+
+      function checkLevelClear() {
+        const boardCount = state.tiles.filter((tile) => tile.location === "tower" || tile.location === "loose").length;
+        if (boardCount > 0) return;
+        state.level += 1;
+        showOverlay("本关通关", `当前积分 ${state.score}，进入第 ${state.level} 关。`, () => {
+          hideOverlay();
+          view.levelLabel.textContent = `第 ${state.level} 关`;
+          generateLevel();
+        });
+      }
+
+      function showOverlay(title, text, onClose) {
+        view.overlayTitle.textContent = title;
+        view.overlayText.textContent = text;
+        view.overlayButton.onclick = onClose;
+        view.overlay.hidden = false;
+      }
+
+      function hideOverlay() {
+        view.overlay.hidden = true;
+      }
+
+      function setStatus(text) {
+        view.status.textContent = text;
+      }
+
+      // ---- 渲染 ----
+      function renderAll(message) {
+        computePickability();
+        renderTower();
+        renderLooseZone();
+        renderSlot();
+        renderCandidates();
+        renderHud();
+        if (message) setStatus(message);
+      }
+
+      function renderTower() {
+        const towerTiles = state.tiles.filter((tile) => tile.location === "tower");
+
+        for (const button of [...view.tower.querySelectorAll(".tile")]) {
+          const tileId = button.dataset.tileId;
+          if (!towerTiles.some((tile) => tile.id === tileId) && !button.classList.contains("vanish")) {
+            button.classList.add("vanish");
+            setTimeout(() => button.remove(), 200);
+          }
+        }
+
+        // 绘制顺序：先深后浅（row 大先画），先低层后高层
+        const sorted = [...towerTiles].sort((a, b) => (b.row - a.row) || (a.layer - b.layer) || (a.col - b.col));
+
+        for (const tile of sorted) {
+          let button = view.tower.querySelector(`[data-tile-id="${tile.id}"]`);
+          if (!button) {
+            button = document.createElement("button");
+            button.type = "button";
+            button.className = "tile";
+            button.dataset.tileId = tile.id;
+            const image = document.createElement("img");
+            image.src = getTileAssetUrl(tile);
+            image.alt = "";
+            image.decoding = "async";
+            button.append(image);
+            button.addEventListener("click", () => moveTileToSlot(tile.id));
+            view.tower.append(button);
+          }
+
+          const { x, y, width, height } = tileGeometry(tile);
+          button.style.left = `${((x - width / 2) / STAGE_W) * 100}%`;
+          button.style.top = `${((y - height) / STAGE_H) * 100}%`;
+          button.style.width = `${(width / STAGE_W) * 100}%`;
+          button.style.height = `${(height / STAGE_H) * 100}%`;
+          // 层为主序，前排（row 小）盖住后排
+          button.style.zIndex = String(100 + tile.layer * 30 + Math.max(0, 20 - tile.row));
+          const pickable = isTilePickable(tile);
+          button.classList.toggle("blocked", !pickable);
+          button.disabled = !pickable;
+          button.setAttribute("aria-label", `${tileLabel(tile)}${pickable ? " 可点" : " 被压"}`);
+          if (tile.wasMoved) {
+            button.classList.add("falling");
+            tile.wasMoved = false;
+            setTimeout(() => button.classList.remove("falling"), 340);
+          }
+        }
+      }
+
+      function renderLooseZone() {
+        const looseTiles = state.tiles
+          .filter((tile) => tile.location === "loose")
+          .sort((a, b) => (a.looseIndex ?? 0) - (b.looseIndex ?? 0));
+        for (const tile of looseTiles) {
+          if (view.looseZone.querySelector(`[data-tile-id="${tile.id}"]`)) continue;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "tile";
+          button.dataset.tileId = tile.id;
+          const image = document.createElement("img");
+          image.src = getTileAssetUrl(tile);
+          image.alt = "";
+          button.setAttribute("aria-label", `${tileLabel(tile)} 震落牌，可点击`);
+          button.append(image);
+          button.addEventListener("click", () => moveTileToSlot(tile.id));
+          view.looseZone.append(button);
+        }
+        for (const button of [...view.looseZone.querySelectorAll(".tile")]) {
+          const tileId = button.dataset.tileId;
+          const tile = state.tiles.find((item) => item.id === tileId);
+          if (!tile || tile.location !== "loose") button.remove();
+        }
+      }
+
+      function renderSlot() {
+        view.slotGrid.innerHTML = "";
+        for (let index = 0; index < SLOT_LIMIT; index += 1) {
+          const cell = document.createElement("div");
+          cell.className = "slot-cell";
+          const tileId = state.slot[index];
+          if (tileId) {
+            const tile = state.tiles.find((item) => item.id === tileId);
+            if (tile) {
+              const image = document.createElement("img");
+              image.src = getTileAssetUrl(tile);
+              image.alt = tileLabel(tile);
+              cell.append(image);
+              if (tile.id === state.lastSlotId) cell.classList.add("pop");
+            }
+          }
+          view.slotGrid.append(cell);
+        }
+      }
+
+      function renderCandidates() {
+        const candidates = getComboCandidates();
+        view.candidateList.innerHTML = "";
+        for (const candidate of candidates.slice(0, 6)) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = `${TYPE_LABELS[candidate.type]}：${candidate.tiles.map(tileLabel).join(" ")}`;
+          button.addEventListener("click", () => executeCombo(candidate));
+          view.candidateList.append(button);
+        }
+      }
+
+      function renderHud() {
+        const boardCount = state.tiles.filter((tile) => tile.location === "tower" || tile.location === "loose").length;
+        view.hudRemaining.textContent = String(boardCount);
+        view.hudScore.textContent = String(state.score);
+        const tops = state.tiles.filter((tile) => tile.location === "tower" && tile.pickable).length;
+        view.hudTops.textContent = String(tops);
+      }
+
+      // ---- 事件 ----
+      view.restartButton.addEventListener("click", () => {
+        state.level = 1;
+        view.levelLabel.textContent = "第 1 关";
+        generateLevel();
+      });
+
+      view.regenerateButton.addEventListener("click", () => {
+        generateLevel();
+      });
+
+      view.baseColsInput.addEventListener("input", () => {
+        view.baseColsLabel.textContent = view.baseColsInput.value;
+      });
+      view.baseRowsInput.addEventListener("input", () => {
+        view.baseRowsLabel.textContent = view.baseRowsInput.value;
+      });
+      view.layersInput.addEventListener("input", () => {
+        view.layersLabel.textContent = view.layersInput.value;
+      });
+
+      // ---- 启动 ----
+      generateLevel();
+      window.__sideViewState = state;
+    </script>
+  </body>
+</html>

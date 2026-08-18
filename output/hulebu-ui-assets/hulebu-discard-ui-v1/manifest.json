@@ -1,0 +1,199 @@
+{
+  "name": "hulebu-discard-ui-v1",
+  "version": 1,
+  "designViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "resourceScale": 2,
+  "textPolicy": "所有运行时中文由 Cocos Label 绘制，PNG 不烧字。",
+  "assets": [
+    {
+      "key": "discard.discard.entry.normal",
+      "path": "components/discard-entry-normal.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        30,
+        30,
+        28,
+        28
+      ],
+      "alphaBbox": [
+        38,
+        7,
+        244,
+        259
+      ],
+      "sha256": "81abb7311e588b9d9dab4ed78e1e3fbfd763cd4ef915134e7c4bba6f70a3ebe8"
+    },
+    {
+      "key": "discard.discard.entry.active",
+      "path": "components/discard-entry-active.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        30,
+        30,
+        28,
+        28
+      ],
+      "alphaBbox": [
+        9,
+        5,
+        226,
+        264
+      ],
+      "sha256": "d3e7b91b70153ed3f489fc956ca42ecb343ae98ecd7d6c80c0b72815c9e4bd8d"
+    },
+    {
+      "key": "discard.discard.entry.disabled",
+      "path": "components/discard-entry-disabled.png",
+      "width": 244,
+      "height": 272,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        30,
+        30,
+        28,
+        28
+      ],
+      "alphaBbox": [
+        0,
+        7,
+        194,
+        259
+      ],
+      "sha256": "2563911d87eceb8d1c0bd8bc7c79a8540b85963c9bd57b1a54fe5c6d253914d4"
+    },
+    {
+      "key": "discard.selection.frame",
+      "path": "components/selection-frame.png",
+      "width": 132,
+      "height": 180,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Simple",
+      "nineSlice": null,
+      "alphaBbox": [
+        13,
+        3,
+        128,
+        166
+      ],
+      "sha256": "5da4864a7bbeaf43e6e47cb6647fc58e78a3d04061d96764d9bb77b4f8377834"
+    },
+    {
+      "key": "discard.helper.ribbon",
+      "path": "components/helper-ribbon.png",
+      "width": 560,
+      "height": 92,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        42,
+        42,
+        26,
+        26
+      ],
+      "alphaBbox": [
+        8,
+        6,
+        552,
+        81
+      ],
+      "sha256": "e71c103addf76e689ec4822d2936035b87b9fdad3e7bdd67b2fa6c92fa3af2d4"
+    },
+    {
+      "key": "discard.confirm.bar",
+      "path": "components/confirm-bar.png",
+      "width": 700,
+      "height": 142,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        38,
+        38,
+        32,
+        32
+      ],
+      "alphaBbox": [
+        0,
+        0,
+        700,
+        142
+      ],
+      "sha256": "ff1a06e469bef3030bf299d70dadaef85f469fee358d721553b1325356a3b960"
+    },
+    {
+      "key": "discard.river.panel",
+      "path": "components/river-panel.png",
+      "width": 360,
+      "height": 190,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        34,
+        34,
+        30,
+        30
+      ],
+      "alphaBbox": [
+        0,
+        0,
+        360,
+        190
+      ],
+      "sha256": "182caea45fcf2b22ba49ebbdf6af6099830c8d9fe13b8b7d6e96a59049ae1d2c"
+    },
+    {
+      "key": "discard.success.badge",
+      "path": "components/success-badge.png",
+      "width": 310,
+      "height": 84,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "spriteType": "Sliced",
+      "nineSlice": [
+        32,
+        32,
+        24,
+        24
+      ],
+      "alphaBbox": [
+        8,
+        6,
+        302,
+        73
+      ],
+      "sha256": "d4ae5d62936c69489e80c9b7bacad086e49b79b6ffbbff8820bbdac3e150c01f"
+    }
+  ]
+}

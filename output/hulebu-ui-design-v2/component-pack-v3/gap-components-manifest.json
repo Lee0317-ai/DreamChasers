@@ -1,0 +1,81 @@
+{
+  "assets": [
+    {
+      "name": "combo-choice-panel",
+      "size": [
+        900,
+        900
+      ]
+    },
+    {
+      "name": "discard-rescue-panel",
+      "size": [
+        860,
+        640
+      ]
+    },
+    {
+      "name": "archetype-card",
+      "size": [
+        340,
+        480
+      ]
+    },
+    {
+      "name": "boss-health-bar",
+      "size": [
+        860,
+        260
+      ]
+    },
+    {
+      "name": "btn-confirm",
+      "size": [
+        300,
+        130
+      ]
+    },
+    {
+      "name": "btn-cancel",
+      "size": [
+        300,
+        130
+      ]
+    },
+    {
+      "name": "btn-close",
+      "size": [
+        140,
+        140
+      ]
+    },
+    {
+      "name": "btn-back",
+      "size": [
+        140,
+        140
+      ]
+    },
+    {
+      "name": "toast-banner",
+      "size": [
+        720,
+        180
+      ]
+    },
+    {
+      "name": "tutorial-highlight-frame",
+      "size": [
+        520,
+        520
+      ]
+    },
+    {
+      "name": "result-stats-panel",
+      "size": [
+        680,
+        760
+      ]
+    }
+  ]
+}

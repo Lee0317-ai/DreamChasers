@@ -1,0 +1,1 @@
+Restyle this single normal Mahjong map node as an independent transparent asset. Preserve a friendly round node with one blank center for a runtime level number and a small Mahjong tile motif. Match the approved warm ivory, mint green, coral pink, rounded clay-like material. No text, no numbers, no path, no background, no mascot, transparent background, straight front view.

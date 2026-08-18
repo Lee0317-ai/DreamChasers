@@ -1,0 +1,52 @@
+{
+  "assets": [
+    {
+      "name": "title-brand",
+      "size": [
+        760,
+        190
+      ],
+      "runtimeTextAreas": true
+    },
+    {
+      "name": "mode-card",
+      "size": [
+        440,
+        300
+      ],
+      "runtimeTextAreas": true
+    },
+    {
+      "name": "level-node",
+      "size": [
+        190,
+        190
+      ],
+      "runtimeTextAreas": false
+    },
+    {
+      "name": "reward-card",
+      "size": [
+        340,
+        480
+      ],
+      "runtimeTextAreas": true
+    },
+    {
+      "name": "victory-seal",
+      "size": [
+        280,
+        280
+      ],
+      "runtimeTextAreas": false
+    },
+    {
+      "name": "failure-seal",
+      "size": [
+        280,
+        280
+      ],
+      "runtimeTextAreas": false
+    }
+  ]
+}
