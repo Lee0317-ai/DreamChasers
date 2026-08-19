@@ -3010,8 +3010,6 @@ export class GameSceneController extends Component {
       layout,
     );
     backdrop.getComponent(BlockInputEvents) ?? backdrop.addComponent(BlockInputEvents);
-    backdrop.off(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
-    backdrop.on(Node.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
     backdrop.setSiblingIndex(1);
   }
 
