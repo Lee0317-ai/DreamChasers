@@ -10,6 +10,8 @@ import { HULEBU_META_FLOW_UI } from "./assets/HulebuMetaFlowUiCatalog";
 import { safeApplySpriteFrame } from "./utils/HulebuSpriteSafety";
 import { HULEBU_FORMAL_UI_SPRITES } from "./assets/HulebuFormalUiCatalog";
 import { HULEBU_V3_UI_SPRITES } from "./assets/HulebuV3UiCatalog";
+import { HulebuMascotGuide, type HulebuMascotState } from "./HulebuMascotGuide";
+import { HulebuPreviewAuthAdapter, type HulebuAuthMode } from "./application/HulebuAuthAdapter";
 import { resolveHulebuPortraitZones } from "./bootstrap/HulebuPortraitLayout";
 import { GameCoordinator, type CoordinatorResult } from "./application/GameCoordinator";
 import { ContentRepository, HULEBU_LEGACY_CONTENT_SOURCE } from "./content/ContentRepository";
@@ -303,6 +305,9 @@ export class GameSceneController extends Component {
   };
   private readonly activeRunSaveService: SaveService<HulebuActiveRunSnapshot> = this.createActiveRunSaveService(this.activeRunStorage);
   private readonly tileSpriteCatalog = new HulebuTileSpriteCatalog();
+  private readonly authAdapter = new HulebuPreviewAuthAdapter();
+  private mascotGuide: HulebuMascotGuide | null = null;
+  private lastMascotHint = "";
   private readonly counterTouchEndHandler = (event: EventTouch): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly counterMouseUpHandler = (event: EventMouse): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly metaFlowTouchEndHandler = (event: EventTouch): void => this.handleMetaFlowInputEnd(event.getUILocation());
@@ -620,9 +625,52 @@ export class GameSceneController extends Component {
     this.meldRiverLayer?.applyMeldRiverNodes(sceneModel.openMeldNodes, sceneModel.riverNodes);
     this.comboBar?.applyComboControls(sceneModel.comboControls);
     this.applyShellHud(sceneModel.hud);
+    this.updateMascotGuide(sceneModel);
     if (this.hud) {
       this.hud.node.active = false;
     }
+  }
+
+  private updateMascotGuide(sceneModel: HulebuCocosSceneModel): void {
+    if (this.gamePhase !== "playing") {
+      this.hideMascotGuide();
+      return;
+    }
+    const copy = this.resolveTutorialGuideCopy(sceneModel);
+    if (!copy) {
+      this.hideMascotGuide();
+      return;
+    }
+    const hintKey = `${copy.title}:${copy.body}`;
+    if (hintKey === this.lastMascotHint) {
+      return;
+    }
+    this.lastMascotHint = hintKey;
+    const hasAction = sceneModel.comboControls.some((control) => control.interactable);
+    this.showMascotHint(
+      this.ensureToolOverlayRoot(),
+      copy.body,
+      hasAction ? "guide" : "think",
+      3600,
+    );
+  }
+
+  private showMascotHint(
+    root: Node,
+    text: string,
+    state: HulebuMascotState = "guide",
+    durationMs = 3200,
+  ): void {
+    const mascotRoot = this.ensureChild(root, "MascotGuideRoot");
+    mascotRoot.layer = root.layer;
+    mascotRoot.active = true;
+    this.mascotGuide = mascotRoot.getComponent(HulebuMascotGuide) ?? mascotRoot.addComponent(HulebuMascotGuide);
+    this.mascotGuide.showHint(text, state, durationMs);
+  }
+
+  private hideMascotGuide(): void {
+    this.lastMascotHint = "";
+    this.mascotGuide?.hide();
   }
 
   private exposeBrowserDebugApi(): void {
@@ -1195,6 +1243,7 @@ export class GameSceneController extends Component {
       layout,
       true,
     );
+    this.showMascotHint(overlay, tutorialFinished ? "新手流程完成啦！" : "做得好，继续整理下一层牌山。", "happy", 3200);
   }
 
   private showFailureOverlay(): void {
@@ -1211,6 +1260,7 @@ export class GameSceneController extends Component {
     this.drawMetaFlowSprite(overlay, "FailureSuggestion", HULEBU_META_FLOW_UI.result.suggestionPanel, 195, 420, 300, 78, layout, true);
     this.drawMetaFlowLabel(overlay, "FailureSuggestionText", "调整牌序后再试一次", 195, 420, 250, 22, 12, new Color(94, 59, 31, 255), layout);
     this.drawMetaFlowButton(overlay, "FailureRestartButton", HULEBU_META_FLOW_UI.result.primaryButton, "重新开始", 195, 548, 210, 52, () => this.restartRun(), layout, true);
+    this.showMascotHint(overlay, "别急，先找能组成吃碰杠的牌，再决定是否弃牌。", "failed", 3600);
   }
 
   private showRewardOverlay(): void {
@@ -1296,6 +1346,7 @@ export class GameSceneController extends Component {
     this.pendingComboChoice = { combo, options };
     const overlay = this.prepareFlowOverlay();
     this.drawComboChoiceOptions(overlay, combo, options);
+    this.showMascotHint(overlay, "同类组合有多个选择，点一个你想消除的组合。", "guide", 3200);
   }
 
   private restorePendingComboChoiceOverlay(pendingCombo: PendingComboContext | null): void {
@@ -1446,10 +1497,19 @@ export class GameSceneController extends Component {
     this.drawMetaFlowLabel(overlay, "TitleName", "胡了卜", 195, 122, 250, 42, 30, new Color(47, 102, 72, 255), layout);
     this.drawMetaFlowSprite(overlay, "TitleSeal", HULEBU_META_FLOW_UI.title.jadeSeal, 195, 230, 88, 88, layout);
     this.drawMetaFlowLabel(overlay, "TitleTagline", "一局一局，把牌山打成自己的路", 195, 316, 340, 34, 15, new Color(92, 58, 40, 255), layout);
-    this.drawMetaFlowButton(overlay, "TitleGuest", HULEBU_META_FLOW_UI.common.primaryButton, "游客试玩", 195, 438, 248, 58, () => this.showLobbyOverlay(), layout, true);
-    this.drawMetaFlowButton(overlay, "TitleAccount", HULEBU_META_FLOW_UI.common.secondaryButton, "账号登录", 195, 510, 248, 52, () => this.showLobbyOverlay(), layout, true, new Color(93, 57, 31, 255));
+    this.drawMetaFlowButton(overlay, "TitleGuest", HULEBU_V3_UI_SPRITES.t291.loginGuest, "游客试玩", 195, 438, 248, 52, () => this.startPreviewAuth("guest"), layout, true, new Color(93, 57, 31, 255));
+    this.drawMetaFlowButton(overlay, "TitleAccount", HULEBU_V3_UI_SPRITES.t291.loginWechat, "微信登录并开始", 195, 510, 248, 58, () => this.startPreviewAuth("wechat"), layout, true, new Color(47, 102, 72, 255));
     this.drawMetaFlowSprite(overlay, "TitleNote", HULEBU_META_FLOW_UI.common.notePanel, 195, 626, 300, 72, layout, true);
     this.drawMetaFlowLabel(overlay, "TitleNoteText", "当前版本支持游客本地档案，进入后可随时继续", 195, 626, 270, 38, 11, new Color(99, 66, 39, 255), layout);
+    this.drawMetaFlowSprite(overlay, "MascotLoginPedestal", HULEBU_V3_UI_SPRITES.t291.mascotPedestal, 195, 390, 168, 72, layout);
+    this.showMascotHint(overlay, "欢迎来到胡了卜，登录后可以同步进度。", "idle", 4200);
+  }
+
+  private startPreviewAuth(mode: HulebuAuthMode): void {
+    this.showMascotHint(this.rewardOverlay ?? this.node, mode === "wechat" ? "正在连接微信试玩身份…" : "正在进入游客试玩…", "think", 1800);
+    void this.authAdapter.signIn(mode).then(() => {
+      this.showLobbyOverlay();
+    });
   }
 
   private showLobbyOverlay(): void {
@@ -1466,6 +1526,7 @@ export class GameSceneController extends Component {
     this.drawMetaFlowLabel(overlay, "LobbyCoins", `${this.metaCoins} 铜钱`, 319, 78, 92, 24, 12, new Color(80, 48, 26, 255), layout);
     this.drawMetaFlowLabel(overlay, "LobbyTitle", "选一条路，继续这局牌", 195, 151, 300, 28, 16, new Color(92, 58, 40, 255), layout);
     this.drawLobbyModeChoices(overlay);
+    this.showMascotHint(overlay, "选择主线开始新手教学，也可以继续上一局。", "guide", 3600);
   }
 
   private showModeSelectionOverlay(): void {

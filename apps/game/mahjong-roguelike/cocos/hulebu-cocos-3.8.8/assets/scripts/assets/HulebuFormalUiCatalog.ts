@@ -18,27 +18,27 @@ export const HULEBU_FORMAL_UI_SPRITES = {
     chi: {
       normal: HULEBU_V3_UI_SPRITES.actions.chi,
       active: HULEBU_V3_UI_SPRITES.actions.chi,
-      disabled: HULEBU_V3_UI_SPRITES.actions.chi,
+      disabled: HULEBU_V3_UI_SPRITES.t291.states.actionChiDisabled,
     },
     peng: {
       normal: HULEBU_V3_UI_SPRITES.actions.peng,
       active: HULEBU_V3_UI_SPRITES.actions.peng,
-      disabled: HULEBU_V3_UI_SPRITES.actions.peng,
+      disabled: HULEBU_V3_UI_SPRITES.t291.states.actionPengDisabled,
     },
     gang: {
       normal: HULEBU_V3_UI_SPRITES.actions.gang,
       active: HULEBU_V3_UI_SPRITES.actions.gang,
-      disabled: HULEBU_V3_UI_SPRITES.actions.gang,
+      disabled: HULEBU_V3_UI_SPRITES.t291.states.actionGangDisabled,
     },
     hu: {
       normal: HULEBU_V3_UI_SPRITES.actions.hu,
       active: HULEBU_V3_UI_SPRITES.actions.hu,
-      disabled: HULEBU_V3_UI_SPRITES.actions.hu,
+      disabled: HULEBU_V3_UI_SPRITES.t291.states.actionHuDisabled,
     },
     bugang: {
       normal: HULEBU_V3_UI_SPRITES.actions.bugang,
       active: HULEBU_V3_UI_SPRITES.actions.bugang,
-      disabled: HULEBU_V3_UI_SPRITES.actions.bugang,
+      disabled: HULEBU_V3_UI_SPRITES.t291.states.actionBugangDisabled,
     },
   },
   tools: {

@@ -646,7 +646,7 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.misc.titleBrand");
     expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.cards.mode");
     expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.modes.mainline");
-    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.map.reward");
+    expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.t291.nodeCurrent");
     expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.misc.victorySeal");
     expect(catalogText).toContain("HULEBU_V3_UI_SPRITES.misc.failureSeal");
     expect(controllerText).toContain("private showTitleOverlay(): void");
@@ -2405,6 +2405,54 @@ describe("hulebu Cocos Creator 3.8.8 project scaffold", () => {
     expect(meldRiverLayerBinder).toContain("HULEBU_V3_UI_SPRITES.playfield.meldPool");
     expect(meldEntrySection).not.toContain("applyMeldPoolSprite");
     expect(meldPoolSection).toContain("this.applyMeldPoolSprite(panel, transform.width, transform.height)");
+  });
+
+  test("integrates the login and gameplay mascot guide flow", () => {
+    const mascotGuidePath = "assets/scripts/HulebuMascotGuide.ts";
+    const authAdapterPath = "assets/scripts/application/HulebuAuthAdapter.ts";
+    expect(fs.existsSync(path.join(cocosRoot, mascotGuidePath)), mascotGuidePath).toBe(true);
+    expect(fs.existsSync(path.join(cocosRoot, authAdapterPath)), authAdapterPath).toBe(true);
+
+    const mascotGuide = readText(mascotGuidePath);
+    const authAdapter = readText(authAdapterPath);
+    const controller = readText("assets/scripts/GameSceneController.ts");
+    const catalog = readText("assets/scripts/assets/HulebuV3UiCatalog.ts");
+
+    expect(mascotGuide).toContain("HulebuMascotState");
+    expect(mascotGuide).toContain("showHint");
+    expect(mascotGuide).toContain("Tween");
+    expect(authAdapter).toContain("HulebuAuthAdapter");
+    expect(authAdapter).toContain("guest");
+    expect(authAdapter).toContain("wechat");
+    expect(authAdapter).not.toContain("appSecret");
+    expect(controller).toContain("HulebuMascotGuide");
+    expect(controller).toContain("微信登录并开始");
+    expect(controller).toContain("showMascotHint");
+    expect(controller).toContain("游客试玩");
+    expect(catalog).toContain("mascot");
+    expect(catalog).toContain("toast: sprite(");
+  });
+
+  test("imports the T291 missing UI asset pack", () => {
+    const base = path.join(cocosRoot, "assets/resources/ui/hulebu/t291");
+    const basePngs = fs.existsSync(base)
+      ? fs.readdirSync(base).filter((name) => name.endsWith(".png"))
+      : [];
+    const stateRoot = path.join(base, "states");
+    const statePngs = fs.existsSync(stateRoot)
+      ? fs.readdirSync(stateRoot).filter((name) => name.endsWith(".png"))
+      : [];
+    expect(basePngs).toHaveLength(30);
+    expect(statePngs).toHaveLength(17);
+    for (const file of [...basePngs.map((name) => path.join(base, name)), ...statePngs.map((name) => path.join(stateRoot, name))]) {
+      expect(fs.existsSync(`${file}.meta`), path.relative(cocosRoot, file)).toBe(true);
+      expect(readPngInfo(file).colorType, path.relative(cocosRoot, file)).toBe(6);
+    }
+    const catalog = readText("assets/scripts/assets/HulebuV3UiCatalog.ts");
+    expect(catalog).toContain("t291/login-wechat-normal");
+    expect(catalog).toContain("t291/speech-bubble-left");
+    expect(catalog).toContain("t291/states/action-peng-disabled");
+    expect(catalog).toContain("t291/result-title-victory");
   });
 
   test("archives v6 non-tile UI resources for Cocos visual pass", () => {
