@@ -311,6 +311,7 @@ export class GameSceneController extends Component {
   private readonly counterTouchEndHandler = (event: EventTouch): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly counterMouseUpHandler = (event: EventMouse): void => this.handleCounterInputEnd(event.getUILocation());
   private readonly metaFlowTouchEndHandler = (event: EventTouch): void => this.handleMetaFlowInputEnd(event.getUILocation());
+  private readonly metaFlowMouseUpHandler = (event: EventMouse): void => this.handleMetaFlowInputEnd(event.getUILocation());
   private counterExpanded = false;
   private lastCounterToggleAt = 0;
   private currentLevelIndex = 0;
@@ -3551,11 +3552,15 @@ export class GameSceneController extends Component {
   private bindCounterInputEvents(): void {
     input.on(Input.EventType.TOUCH_END, this.counterTouchEndHandler, this);
     input.on(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this);
+    input.on(Input.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
+    input.on(Input.EventType.MOUSE_UP, this.metaFlowMouseUpHandler, this);
   }
 
   private unbindCounterInputEvents(): void {
     input.off(Input.EventType.TOUCH_END, this.counterTouchEndHandler, this);
     input.off(Input.EventType.MOUSE_UP, this.counterMouseUpHandler, this);
+    input.off(Input.EventType.TOUCH_END, this.metaFlowTouchEndHandler, this);
+    input.off(Input.EventType.MOUSE_UP, this.metaFlowMouseUpHandler, this);
   }
 
   private handleCounterInputEnd(pointer: { x: number; y: number }): void {
