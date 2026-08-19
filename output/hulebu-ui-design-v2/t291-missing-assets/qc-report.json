@@ -1,0 +1,948 @@
+{
+  "task": "T291",
+  "normalizedCount": 30,
+  "stateCount": 17,
+  "assets": [
+    {
+      "path": "normalized/chapter-switch-frame.png",
+      "size": [
+        360,
+        120
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        47,
+        7,
+        312,
+        113
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/event-title-panel.png",
+      "size": [
+        720,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        217,
+        9,
+        503,
+        150
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/icon-cloud-sync.png",
+      "size": [
+        160,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        3,
+        16,
+        157,
+        144
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/icon-login-error.png",
+      "size": [
+        160,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        3,
+        19,
+        157,
+        141
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/icon-wechat.png",
+      "size": [
+        160,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        10,
+        9,
+        149,
+        150
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/loading-spinner-sheet.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        30,
+        30,
+        481,
+        481
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/lobby-continue-panel.png",
+      "size": [
+        760,
+        170
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        215,
+        10,
+        544,
+        160
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/lobby-entry-collection.png",
+      "size": [
+        440,
+        300
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        9,
+        54,
+        431,
+        245
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/lobby-entry-growth.png",
+      "size": [
+        440,
+        300
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        9,
+        35,
+        431,
+        265
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/lobby-entry-mainline.png",
+      "size": [
+        440,
+        300
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        9,
+        35,
+        431,
+        265
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/lobby-entry-modes.png",
+      "size": [
+        440,
+        300
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        24,
+        18,
+        416,
+        282
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/login-guest-normal.png",
+      "size": [
+        640,
+        140
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        126,
+        8,
+        513,
+        131
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/login-status-panel.png",
+      "size": [
+        720,
+        180
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        228,
+        11,
+        491,
+        169
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/login-wechat-normal.png",
+      "size": [
+        640,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        135,
+        9,
+        505,
+        150
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/mascot-login-pedestal.png",
+      "size": [
+        420,
+        180
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        70,
+        11,
+        349,
+        169
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/mode-collection.png",
+      "size": [
+        280,
+        280
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        18,
+        17,
+        261,
+        263
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/node-current.png",
+      "size": [
+        210,
+        210
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        7,
+        12,
+        203,
+        197
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/node-locked.png",
+      "size": [
+        190,
+        190
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        15,
+        11,
+        174,
+        178
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/result-suggestion-panel.png",
+      "size": [
+        720,
+        190
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        162,
+        11,
+        558,
+        178
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/result-title-failure.png",
+      "size": [
+        760,
+        190
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        211,
+        11,
+        549,
+        178
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/result-title-victory.png",
+      "size": [
+        760,
+        190
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        191,
+        11,
+        569,
+        178
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/result-unlock-ribbon.png",
+      "size": [
+        720,
+        150
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        202,
+        9,
+        517,
+        141
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/reward-title-panel.png",
+      "size": [
+        720,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        249,
+        9,
+        471,
+        150
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/speech-bubble-left.png",
+      "size": [
+        720,
+        260
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        175,
+        15,
+        545,
+        244
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/speech-bubble-right.png",
+      "size": [
+        720,
+        260
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        164,
+        15,
+        555,
+        244
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/speech-bubble-success.png",
+      "size": [
+        720,
+        260
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        170,
+        15,
+        550,
+        244
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/speech-bubble-top.png",
+      "size": [
+        640,
+        240
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        113,
+        14,
+        526,
+        225
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/speech-bubble-warning.png",
+      "size": [
+        720,
+        260
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        167,
+        15,
+        553,
+        244
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/star-empty.png",
+      "size": [
+        120,
+        120
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        5,
+        7,
+        114,
+        113
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/star-filled.png",
+      "size": [
+        120,
+        120
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        6,
+        7,
+        113,
+        113
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-bugang-disabled.png",
+      "size": [
+        768,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        34,
+        75,
+        734,
+        436
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-bugang-pressed.png",
+      "size": [
+        768,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        54,
+        96,
+        714,
+        440
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-chi-disabled.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        32,
+        31,
+        480,
+        481
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-chi-pressed.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        43,
+        55,
+        468,
+        482
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-gang-disabled.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        34,
+        31,
+        477,
+        481
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-gang-pressed.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        46,
+        55,
+        466,
+        482
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-hu-disabled.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        31,
+        34,
+        481,
+        478
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-hu-pressed.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        42,
+        59,
+        469,
+        478
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-peng-disabled.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        31,
+        38,
+        481,
+        474
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/action-peng-pressed.png",
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        42,
+        61,
+        469,
+        476
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/login-guest-pressed.png",
+      "size": [
+        640,
+        140
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        135,
+        13,
+        504,
+        134
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/login-wechat-disabled.png",
+      "size": [
+        640,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        135,
+        9,
+        505,
+        150
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/login-wechat-pressed.png",
+      "size": [
+        640,
+        160
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "contentBounds": [
+        146,
+        15,
+        495,
+        152
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/tool-discard-disabled.png",
+      "size": [
+        180,
+        180
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        16,
+        10,
+        163,
+        170
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/tool-shuffle-disabled.png",
+      "size": [
+        180,
+        180
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        13,
+        10,
+        167,
+        170
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/tool-undo-disabled.png",
+      "size": [
+        180,
+        180
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        12,
+        10,
+        167,
+        170
+      ],
+      "nonEmpty": true
+    },
+    {
+      "path": "normalized/states/tool-vision-disabled.png",
+      "size": [
+        180,
+        180
+      ],
+      "mode": "RGBA",
+      "hasAlpha": true,
+      "alphaExtrema": [
+        0,
+        158
+      ],
+      "contentBounds": [
+        16,
+        10,
+        163,
+        170
+      ],
+      "nonEmpty": true
+    }
+  ],
+  "failures": []
+}

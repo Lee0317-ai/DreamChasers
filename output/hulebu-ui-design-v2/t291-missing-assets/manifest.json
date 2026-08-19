@@ -1,0 +1,668 @@
+{
+  "task": "T291",
+  "style": "polished 2D mobile game UI asset for the Hulebu cute mahjong roguelike, warm ivory ceramic face, mint-green side thickness, coral-pink edge accents, rounded chunky toy proportions, soft clay-like volume, clean HD game art, consistent straight front view, no pixel art",
+  "assets": [
+    {
+      "name": "login-wechat-normal",
+      "source": "images/raw/login-wechat-normal.png",
+      "prompt": "prompts/login-wechat-normal.prompt.txt",
+      "targetSize": [
+        640,
+        160
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "login-guest-normal",
+      "source": "images/raw/login-guest-normal.png",
+      "prompt": "prompts/login-guest-normal.prompt.txt",
+      "targetSize": [
+        640,
+        140
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "login-status-panel",
+      "source": "images/raw/login-status-panel.png",
+      "prompt": "prompts/login-status-panel.prompt.txt",
+      "targetSize": [
+        720,
+        180
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "icon-wechat",
+      "source": "images/raw/icon-wechat.png",
+      "prompt": "prompts/icon-wechat.prompt.txt",
+      "targetSize": [
+        160,
+        160
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "icon-cloud-sync",
+      "source": "images/raw/icon-cloud-sync.png",
+      "prompt": "prompts/icon-cloud-sync.prompt.txt",
+      "targetSize": [
+        160,
+        160
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "icon-login-error",
+      "source": "images/raw/icon-login-error.png",
+      "prompt": "prompts/icon-login-error.prompt.txt",
+      "targetSize": [
+        160,
+        160
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "loading-spinner-sheet",
+      "source": "images/raw/loading-spinner-sheet.png",
+      "prompt": "prompts/loading-spinner-sheet.prompt.txt",
+      "targetSize": [
+        512,
+        512
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "mascot-login-pedestal",
+      "source": "images/raw/mascot-login-pedestal.png",
+      "prompt": "prompts/mascot-login-pedestal.prompt.txt",
+      "targetSize": [
+        420,
+        180
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "speech-bubble-left",
+      "source": "images/raw/speech-bubble-left.png",
+      "prompt": "prompts/speech-bubble-left.prompt.txt",
+      "targetSize": [
+        720,
+        260
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "speech-bubble-right",
+      "source": "images/raw/speech-bubble-right.png",
+      "prompt": "prompts/speech-bubble-right.prompt.txt",
+      "targetSize": [
+        720,
+        260
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "speech-bubble-top",
+      "source": "images/raw/speech-bubble-top.png",
+      "prompt": "prompts/speech-bubble-top.prompt.txt",
+      "targetSize": [
+        640,
+        240
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "speech-bubble-warning",
+      "source": "images/raw/speech-bubble-warning.png",
+      "prompt": "prompts/speech-bubble-warning.prompt.txt",
+      "targetSize": [
+        720,
+        260
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "speech-bubble-success",
+      "source": "images/raw/speech-bubble-success.png",
+      "prompt": "prompts/speech-bubble-success.prompt.txt",
+      "targetSize": [
+        720,
+        260
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "lobby-entry-mainline",
+      "source": "images/raw/lobby-entry-mainline.png",
+      "prompt": "prompts/lobby-entry-mainline.prompt.txt",
+      "targetSize": [
+        440,
+        300
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "lobby-entry-modes",
+      "source": "images/raw/lobby-entry-modes.png",
+      "prompt": "prompts/lobby-entry-modes.prompt.txt",
+      "targetSize": [
+        440,
+        300
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "lobby-entry-collection",
+      "source": "images/raw/lobby-entry-collection.png",
+      "prompt": "prompts/lobby-entry-collection.prompt.txt",
+      "targetSize": [
+        440,
+        300
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "lobby-entry-growth",
+      "source": "images/raw/lobby-entry-growth.png",
+      "prompt": "prompts/lobby-entry-growth.prompt.txt",
+      "targetSize": [
+        440,
+        300
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "mode-collection",
+      "source": "images/raw/mode-collection.png",
+      "prompt": "prompts/mode-collection.prompt.txt",
+      "targetSize": [
+        280,
+        280
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "lobby-continue-panel",
+      "source": "images/raw/lobby-continue-panel.png",
+      "prompt": "prompts/lobby-continue-panel.prompt.txt",
+      "targetSize": [
+        760,
+        170
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "node-current",
+      "source": "images/raw/node-current.png",
+      "prompt": "prompts/node-current.prompt.txt",
+      "targetSize": [
+        210,
+        210
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "node-locked",
+      "source": "images/raw/node-locked.png",
+      "prompt": "prompts/node-locked.prompt.txt",
+      "targetSize": [
+        190,
+        190
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "star-empty",
+      "source": "images/raw/star-empty.png",
+      "prompt": "prompts/star-empty.prompt.txt",
+      "targetSize": [
+        120,
+        120
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "star-filled",
+      "source": "images/raw/star-filled.png",
+      "prompt": "prompts/star-filled.prompt.txt",
+      "targetSize": [
+        120,
+        120
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "chapter-switch-frame",
+      "source": "images/raw/chapter-switch-frame.png",
+      "prompt": "prompts/chapter-switch-frame.prompt.txt",
+      "targetSize": [
+        360,
+        120
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "result-title-victory",
+      "source": "images/raw/result-title-victory.png",
+      "prompt": "prompts/result-title-victory.prompt.txt",
+      "targetSize": [
+        760,
+        190
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "result-title-failure",
+      "source": "images/raw/result-title-failure.png",
+      "prompt": "prompts/result-title-failure.prompt.txt",
+      "targetSize": [
+        760,
+        190
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "result-suggestion-panel",
+      "source": "images/raw/result-suggestion-panel.png",
+      "prompt": "prompts/result-suggestion-panel.prompt.txt",
+      "targetSize": [
+        720,
+        190
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "result-unlock-ribbon",
+      "source": "images/raw/result-unlock-ribbon.png",
+      "prompt": "prompts/result-unlock-ribbon.prompt.txt",
+      "targetSize": [
+        720,
+        150
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "reward-title-panel",
+      "source": "images/raw/reward-title-panel.png",
+      "prompt": "prompts/reward-title-panel.prompt.txt",
+      "targetSize": [
+        720,
+        160
+      ],
+      "kind": "mother"
+    },
+    {
+      "name": "event-title-panel",
+      "source": "images/raw/event-title-panel.png",
+      "prompt": "prompts/event-title-panel.prompt.txt",
+      "targetSize": [
+        720,
+        160
+      ],
+      "kind": "mother"
+    }
+  ],
+  "normalizedAssets": [
+    {
+      "name": "login-wechat-normal",
+      "raw": "images/raw/login-wechat-normal.png",
+      "clean": "images/clean/login-wechat-normal.png",
+      "normalized": "normalized/login-wechat-normal.png",
+      "size": [
+        640,
+        160
+      ],
+      "alpha": true,
+      "prompt": "prompts/login-wechat-normal.prompt.txt"
+    },
+    {
+      "name": "login-guest-normal",
+      "raw": "images/raw/login-guest-normal.png",
+      "clean": "images/clean/login-guest-normal.png",
+      "normalized": "normalized/login-guest-normal.png",
+      "size": [
+        640,
+        140
+      ],
+      "alpha": true,
+      "prompt": "prompts/login-guest-normal.prompt.txt"
+    },
+    {
+      "name": "login-status-panel",
+      "raw": "images/raw/login-status-panel.png",
+      "clean": "images/clean/login-status-panel.png",
+      "normalized": "normalized/login-status-panel.png",
+      "size": [
+        720,
+        180
+      ],
+      "alpha": true,
+      "prompt": "prompts/login-status-panel.prompt.txt"
+    },
+    {
+      "name": "icon-wechat",
+      "raw": "images/raw/icon-wechat.png",
+      "clean": "images/clean/icon-wechat.png",
+      "normalized": "normalized/icon-wechat.png",
+      "size": [
+        160,
+        160
+      ],
+      "alpha": true,
+      "prompt": "prompts/icon-wechat.prompt.txt"
+    },
+    {
+      "name": "icon-cloud-sync",
+      "raw": "images/raw/icon-cloud-sync.png",
+      "clean": "images/clean/icon-cloud-sync.png",
+      "normalized": "normalized/icon-cloud-sync.png",
+      "size": [
+        160,
+        160
+      ],
+      "alpha": true,
+      "prompt": "prompts/icon-cloud-sync.prompt.txt"
+    },
+    {
+      "name": "icon-login-error",
+      "raw": "images/raw/icon-login-error.png",
+      "clean": "images/clean/icon-login-error.png",
+      "normalized": "normalized/icon-login-error.png",
+      "size": [
+        160,
+        160
+      ],
+      "alpha": true,
+      "prompt": "prompts/icon-login-error.prompt.txt"
+    },
+    {
+      "name": "loading-spinner-sheet",
+      "raw": "images/raw/loading-spinner-sheet.png",
+      "clean": "images/clean/loading-spinner-sheet.png",
+      "normalized": "normalized/loading-spinner-sheet.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true,
+      "prompt": "prompts/loading-spinner-sheet.prompt.txt"
+    },
+    {
+      "name": "mascot-login-pedestal",
+      "raw": "images/raw/mascot-login-pedestal.png",
+      "clean": "images/clean/mascot-login-pedestal.png",
+      "normalized": "normalized/mascot-login-pedestal.png",
+      "size": [
+        420,
+        180
+      ],
+      "alpha": true,
+      "prompt": "prompts/mascot-login-pedestal.prompt.txt"
+    },
+    {
+      "name": "speech-bubble-left",
+      "raw": "images/raw/speech-bubble-left.png",
+      "clean": "images/clean/speech-bubble-left.png",
+      "normalized": "normalized/speech-bubble-left.png",
+      "size": [
+        720,
+        260
+      ],
+      "alpha": true,
+      "prompt": "prompts/speech-bubble-left.prompt.txt"
+    },
+    {
+      "name": "speech-bubble-right",
+      "raw": "images/raw/speech-bubble-right.png",
+      "clean": "images/clean/speech-bubble-right.png",
+      "normalized": "normalized/speech-bubble-right.png",
+      "size": [
+        720,
+        260
+      ],
+      "alpha": true,
+      "prompt": "prompts/speech-bubble-right.prompt.txt"
+    },
+    {
+      "name": "speech-bubble-top",
+      "raw": "images/raw/speech-bubble-top.png",
+      "clean": "images/clean/speech-bubble-top.png",
+      "normalized": "normalized/speech-bubble-top.png",
+      "size": [
+        640,
+        240
+      ],
+      "alpha": true,
+      "prompt": "prompts/speech-bubble-top.prompt.txt"
+    },
+    {
+      "name": "speech-bubble-warning",
+      "raw": "images/raw/speech-bubble-warning.png",
+      "clean": "images/clean/speech-bubble-warning.png",
+      "normalized": "normalized/speech-bubble-warning.png",
+      "size": [
+        720,
+        260
+      ],
+      "alpha": true,
+      "prompt": "prompts/speech-bubble-warning.prompt.txt"
+    },
+    {
+      "name": "speech-bubble-success",
+      "raw": "images/raw/speech-bubble-success.png",
+      "clean": "images/clean/speech-bubble-success.png",
+      "normalized": "normalized/speech-bubble-success.png",
+      "size": [
+        720,
+        260
+      ],
+      "alpha": true,
+      "prompt": "prompts/speech-bubble-success.prompt.txt"
+    },
+    {
+      "name": "lobby-entry-mainline",
+      "raw": "images/raw/lobby-entry-mainline.png",
+      "clean": "images/clean/lobby-entry-mainline.png",
+      "normalized": "normalized/lobby-entry-mainline.png",
+      "size": [
+        440,
+        300
+      ],
+      "alpha": true,
+      "prompt": "prompts/lobby-entry-mainline.prompt.txt"
+    },
+    {
+      "name": "lobby-entry-modes",
+      "raw": "images/raw/lobby-entry-modes.png",
+      "clean": "images/clean/lobby-entry-modes.png",
+      "normalized": "normalized/lobby-entry-modes.png",
+      "size": [
+        440,
+        300
+      ],
+      "alpha": true,
+      "prompt": "prompts/lobby-entry-modes.prompt.txt"
+    },
+    {
+      "name": "lobby-entry-collection",
+      "raw": "images/raw/lobby-entry-collection.png",
+      "clean": "images/clean/lobby-entry-collection.png",
+      "normalized": "normalized/lobby-entry-collection.png",
+      "size": [
+        440,
+        300
+      ],
+      "alpha": true,
+      "prompt": "prompts/lobby-entry-collection.prompt.txt"
+    },
+    {
+      "name": "lobby-entry-growth",
+      "raw": "images/raw/lobby-entry-growth.png",
+      "clean": "images/clean/lobby-entry-growth.png",
+      "normalized": "normalized/lobby-entry-growth.png",
+      "size": [
+        440,
+        300
+      ],
+      "alpha": true,
+      "prompt": "prompts/lobby-entry-growth.prompt.txt"
+    },
+    {
+      "name": "mode-collection",
+      "raw": "images/raw/mode-collection.png",
+      "clean": "images/clean/mode-collection.png",
+      "normalized": "normalized/mode-collection.png",
+      "size": [
+        280,
+        280
+      ],
+      "alpha": true,
+      "prompt": "prompts/mode-collection.prompt.txt"
+    },
+    {
+      "name": "lobby-continue-panel",
+      "raw": "images/raw/lobby-continue-panel.png",
+      "clean": "images/clean/lobby-continue-panel.png",
+      "normalized": "normalized/lobby-continue-panel.png",
+      "size": [
+        760,
+        170
+      ],
+      "alpha": true,
+      "prompt": "prompts/lobby-continue-panel.prompt.txt"
+    },
+    {
+      "name": "node-current",
+      "raw": "images/raw/node-current.png",
+      "clean": "images/clean/node-current.png",
+      "normalized": "normalized/node-current.png",
+      "size": [
+        210,
+        210
+      ],
+      "alpha": true,
+      "prompt": "prompts/node-current.prompt.txt"
+    },
+    {
+      "name": "node-locked",
+      "raw": "images/raw/node-locked.png",
+      "clean": "images/clean/node-locked.png",
+      "normalized": "normalized/node-locked.png",
+      "size": [
+        190,
+        190
+      ],
+      "alpha": true,
+      "prompt": "prompts/node-locked.prompt.txt"
+    },
+    {
+      "name": "star-empty",
+      "raw": "images/raw/star-empty.png",
+      "clean": "images/clean/star-empty.png",
+      "normalized": "normalized/star-empty.png",
+      "size": [
+        120,
+        120
+      ],
+      "alpha": true,
+      "prompt": "prompts/star-empty.prompt.txt"
+    },
+    {
+      "name": "star-filled",
+      "raw": "images/raw/star-filled.png",
+      "clean": "images/clean/star-filled.png",
+      "normalized": "normalized/star-filled.png",
+      "size": [
+        120,
+        120
+      ],
+      "alpha": true,
+      "prompt": "prompts/star-filled.prompt.txt"
+    },
+    {
+      "name": "chapter-switch-frame",
+      "raw": "images/raw/chapter-switch-frame.png",
+      "clean": "images/clean/chapter-switch-frame.png",
+      "normalized": "normalized/chapter-switch-frame.png",
+      "size": [
+        360,
+        120
+      ],
+      "alpha": true,
+      "prompt": "prompts/chapter-switch-frame.prompt.txt"
+    },
+    {
+      "name": "result-title-victory",
+      "raw": "images/raw/result-title-victory.png",
+      "clean": "images/clean/result-title-victory.png",
+      "normalized": "normalized/result-title-victory.png",
+      "size": [
+        760,
+        190
+      ],
+      "alpha": true,
+      "prompt": "prompts/result-title-victory.prompt.txt"
+    },
+    {
+      "name": "result-title-failure",
+      "raw": "images/raw/result-title-failure.png",
+      "clean": "images/clean/result-title-failure.png",
+      "normalized": "normalized/result-title-failure.png",
+      "size": [
+        760,
+        190
+      ],
+      "alpha": true,
+      "prompt": "prompts/result-title-failure.prompt.txt"
+    },
+    {
+      "name": "result-suggestion-panel",
+      "raw": "images/raw/result-suggestion-panel.png",
+      "clean": "images/clean/result-suggestion-panel.png",
+      "normalized": "normalized/result-suggestion-panel.png",
+      "size": [
+        720,
+        190
+      ],
+      "alpha": true,
+      "prompt": "prompts/result-suggestion-panel.prompt.txt"
+    },
+    {
+      "name": "result-unlock-ribbon",
+      "raw": "images/raw/result-unlock-ribbon.png",
+      "clean": "images/clean/result-unlock-ribbon.png",
+      "normalized": "normalized/result-unlock-ribbon.png",
+      "size": [
+        720,
+        150
+      ],
+      "alpha": true,
+      "prompt": "prompts/result-unlock-ribbon.prompt.txt"
+    },
+    {
+      "name": "reward-title-panel",
+      "raw": "images/raw/reward-title-panel.png",
+      "clean": "images/clean/reward-title-panel.png",
+      "normalized": "normalized/reward-title-panel.png",
+      "size": [
+        720,
+        160
+      ],
+      "alpha": true,
+      "prompt": "prompts/reward-title-panel.prompt.txt"
+    },
+    {
+      "name": "event-title-panel",
+      "raw": "images/raw/event-title-panel.png",
+      "clean": "images/clean/event-title-panel.png",
+      "normalized": "normalized/event-title-panel.png",
+      "size": [
+        720,
+        160
+      ],
+      "alpha": true,
+      "prompt": "prompts/event-title-panel.prompt.txt"
+    }
+  ]
+}

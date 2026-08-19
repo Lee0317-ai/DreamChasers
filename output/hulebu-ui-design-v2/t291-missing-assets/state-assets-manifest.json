@@ -1,0 +1,174 @@
+{
+  "assets": [
+    {
+      "name": "login-wechat-pressed",
+      "source": "normalized/states/login-wechat-pressed.png",
+      "state": "pressed",
+      "size": [
+        640,
+        160
+      ],
+      "alpha": true
+    },
+    {
+      "name": "login-wechat-disabled",
+      "source": "normalized/states/login-wechat-disabled.png",
+      "state": "disabled",
+      "size": [
+        640,
+        160
+      ],
+      "alpha": true
+    },
+    {
+      "name": "login-guest-pressed",
+      "source": "normalized/states/login-guest-pressed.png",
+      "state": "pressed",
+      "size": [
+        640,
+        140
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-chi-pressed",
+      "source": "normalized/states/action-chi-pressed.png",
+      "state": "pressed",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-chi-disabled",
+      "source": "normalized/states/action-chi-disabled.png",
+      "state": "disabled",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-peng-pressed",
+      "source": "normalized/states/action-peng-pressed.png",
+      "state": "pressed",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-peng-disabled",
+      "source": "normalized/states/action-peng-disabled.png",
+      "state": "disabled",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-gang-pressed",
+      "source": "normalized/states/action-gang-pressed.png",
+      "state": "pressed",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-gang-disabled",
+      "source": "normalized/states/action-gang-disabled.png",
+      "state": "disabled",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-bugang-pressed",
+      "source": "normalized/states/action-bugang-pressed.png",
+      "state": "pressed",
+      "size": [
+        768,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-bugang-disabled",
+      "source": "normalized/states/action-bugang-disabled.png",
+      "state": "disabled",
+      "size": [
+        768,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-hu-pressed",
+      "source": "normalized/states/action-hu-pressed.png",
+      "state": "pressed",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "action-hu-disabled",
+      "source": "normalized/states/action-hu-disabled.png",
+      "state": "disabled",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": true
+    },
+    {
+      "name": "tool-shuffle-disabled",
+      "source": "normalized/states/tool-shuffle-disabled.png",
+      "state": "disabled",
+      "size": [
+        180,
+        180
+      ],
+      "alpha": true
+    },
+    {
+      "name": "tool-undo-disabled",
+      "source": "normalized/states/tool-undo-disabled.png",
+      "state": "disabled",
+      "size": [
+        180,
+        180
+      ],
+      "alpha": true
+    },
+    {
+      "name": "tool-vision-disabled",
+      "source": "normalized/states/tool-vision-disabled.png",
+      "state": "disabled",
+      "size": [
+        180,
+        180
+      ],
+      "alpha": true
+    },
+    {
+      "name": "tool-discard-disabled",
+      "source": "normalized/states/tool-discard-disabled.png",
+      "state": "disabled",
+      "size": [
+        180,
+        180
+      ],
+      "alpha": true
+    }
+  ]
+}
