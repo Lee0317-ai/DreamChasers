@@ -587,7 +587,9 @@ export class GameSceneController extends Component {
       return;
     }
 
-    if (this.loadConfiguredLevelOnStart) {
+    // The formal scene may keep the sample flag for editor previews, but the
+    // configured flow must win whenever it is enabled.
+    if (this.loadConfiguredLevelOnStart || this.autoLoadSampleScene) {
       this.activeRunSnapshot = this.loadActiveRunSnapshot();
       this.lastSettlementSnapshot = this.readLastSettlementSnapshot();
       this.metaProgress = this.readMetaProgressSnapshot();
